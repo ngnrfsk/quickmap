@@ -64,6 +64,11 @@
 - Fixed OA data label fallback when Label column missing
 - All data sources now have consistent label behavior
 
+#### Issue 8: Borough Colour Palettes (v0.8.11)
+- Restructured borough_palettes as nested named lists for easy colour access
+- Added show_borough_colours() helper function to display available colours
+- Usage: borough_palettes$merton$purple or borough_palettes$wandsworth$blue
+
 ### Historical Completed Tasks
 
 #### Task 1E.1: Fix Legend Text and Marker Scaling Issues (2025-10-15, v0.8.7.1, commit: aa56fc2)
@@ -119,47 +124,42 @@
 
 ## Outstanding Issues
 
-### Essential
-
-7. Duplicate Legend - Leaflet legend still added via `addLegendImage` in `add_map_control`
+### Essential visual site fixes for LCA site
+12. Collapsible Radio Buttons - Make radio buttons collapse and move to bottom left corner
+10. Zoom Level on Map Open - Ensure markers fill screen with no empty borders
+14. Select Start Layer - Allow users to specify which layer is visible on initial map load
+4: Recheck the Legend Size Issues (v0.8.7.3) for different screen sizes
 
 ### High Priority Issues
 8. Subfolder Generation - Static image generation creates unwanted subfolders with leaflet JS libraries
 9. Marker/Text/Legend Size Logic - Create unified scaling system for markers, text, and legends
-10. Zoom Level on Map Open - Ensure markers fill screen with no empty borders
 11. Ward and Marker Labeling Consistency - Make ward and marker labels consistent between static and interactive maps
-12. Collapsible Radio Buttons - Make radio buttons collapse and move to bottom left corner
 
 ### Medium Priority Issues
-14. Select Start Layer - Allow users to specify which layer is visible on initial map load
-4: Legend Size Issues (v0.8.7.3) this needs looking at again 
+
 
 ### Low Priority Issues
-15. Split Import and Map Create - Separate data loading from map generation
+15. Split Import and Map Create - Separate data loading from map generation (version 1)
 16. Automate Label Location - Automate label location, clustering, and spread
 17. Prepare for R Library Packaging - Structure code and documentation for R library packaging
 
 ### Code Quality and Refactoring Tasks
 
-#### Refactor-1: Complete Code Cleanup and TODO Resolution
-**Category**: Code Quality **Description**: Remove technical debt, resolve TODOs, clean up commented code
-- Remove 150+ lines of dead code (8% of file)
-- Fix critical TODOs causing crashes (boroughs parameter, error trapping)
-- Remove debug print statements
-- Standardize documentation
-**Expected Effort**: 4-5 hours **Risk Level**: Low-Medium
-
-#### Refactor-2: Comprehensive Configuration System Enhancement
+#### Refactor-4: Comprehensive Configuration System Enhancement = version 0.9
 **Category**: Architecture **Description**: Create robust, multi-layered configuration system
-**Phases**: 
+**Phases**:
 - Phase 1: Parameterize hardcoded values
 - Phase 2: Config file system (YAML/JSON)
 - Phase 3: Parameter validation system
+- Simplify parameter controls e.g.
+  - Explain Duplicate Legend controls functionality, or replace legend control with a 3-way switch of FALSE, TRUE (HTML), and something for Leaflet legend added via `addLegendImage` in `add_map_control`
+  - Use one set of commands for titles, banners, prefixews for time slices (basically, think through this stuff)
+
 **Expected Effort**: 6-8 hours **Complexity**: Medium
 
-#### Refactor-3: Modular Architecture Enhancement
+#### Refactor-5: Modular Architecture Enhancement = Version 0.10.0
 **Category**: Architecture **Description**: Split monolithic quickmap.R into focused, maintainable modules
-**Proposed Modules**: 
+**Proposed Modules**:
 - `R/data_io.R` - Data loading and transformation
 - `R/data_processing.R` - Filtering and spatial operations
 - `R/layer_generation.R` - Icon and layer creation
@@ -169,9 +169,9 @@
 - `R/utils.R` - Utilities and helpers
 **Expected Effort**: 8-12 hours **Complexity**: High
 
-#### Refactor-4: Modern R Practices Implementation
+#### Refactor-4: Modern R Practices Implementation and setup as a library for package installs = version 1.0
 **Category**: Code Quality **Description**: Modernize codebase with contemporary R development practices
-**Key Areas**: 
+**Key Areas**:
 - Tidyverse consistency
 - Comprehensive error handling
 - Structured logging system
@@ -180,6 +180,11 @@
 - Performance monitoring
 **Expected Effort**: 12-16 hours **Complexity**: High
 
+#### Version 1.1-1.9
+**Category**: New Features
+- Add slider control for timeline
+- Add animated/auto-start time steps for timeslices
+- Add animation export
 
 ### Quick Start
 1. Load latest version: `source("quickmap.R")`

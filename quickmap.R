@@ -1,6 +1,8 @@
 # Working, stable production codebase for quickmap ####
 # Version 0.8.10
 
+#2345678901234567890123456789012345678901234567890123456789012345678901234567890 Hollerith limit
+
 # Architecture: Unified single-loop processing generates both HTML and static images.
 # Generic layer system: prepare_generic_layer_data() → create_generic_icons() → addMarkers()
 
@@ -17,6 +19,8 @@
 #   v0.8.9: Marker labels control - Added show_marker_labels parameter (5-state control),
 #          REMOVED use_data_labels parameter (breaking change)
 #   v0.8.10: Fixed schools label behavior and OA data label fallback with warnings
+#   v0.8.11: Borough colour palettes - Added nested named list structure for easy access,
+#           Added show_borough_colours() helper function to display available colours
 
 # Breaking Changes:
 #   v0.8.9: use_data_labels parameter removed (replaced by show_marker_labels)
@@ -36,12 +40,12 @@
 # Configuration:
 # Setup: Set DATA_PATH environment variable before sourcing
 # Example: Sys.setenv(DATA_PATH = "~/path/to/data")
-# 
+#
 # Marker Sizing: Base sizes for 1200x1200px images (Schools:12px, DT/BL:20px)
 # Scaling: Static images use geometric mean based on dimensions
-# 
+#
 # Available Color Scales: who_no2, stripes_no2, gla_pm25, lbw_no2, lbrut_no2, lbm_no2, deltas
-# 
+#
 # Static-Only Maps: Set csv_data_file="none" and oa_data_file="none" for schools-only maps
 #
 # Package Dependencies (auto-installed):
@@ -225,7 +229,7 @@ import_csv_data <- function(
     check.names = FALSE,
     na.strings = c("", "NA", "NaN")
   )
-  names(data) <- gsub("^X", "", names(data)) 
+  names(data) <- gsub("^X", "", names(data))
   if (!all(required_cols %in% names(data))) {
     stop(paste(
       "Missing required columns:",
@@ -409,6 +413,57 @@ TITLE_STYLES <- list(
   interactive_width = "50vw",
   static_width = "95vw"
 )
+
+# Borough brand palettes ####
+borough_palettes <- list(
+  merton = list(
+    purple = "#5F3E94",
+    green = "#078141",
+    black = "#000000",
+    white = "#ffffff",
+    cream = "#f5f7e3",
+    lavender = "#DED4E9",
+    lime = "#39b54a",
+    pink = "#b94090"
+  ),
+  wandsworth = list(
+    blue = "#01a7f5",
+    white = "#ffffff",
+    black = "#000000",
+    navy = "#306cb2",
+    orange = "#ff9c30",
+    green = "#159b48",
+    lime = "#83c44c"
+  ),
+  richmond = list(
+    navy = "#00123d",
+    green = "#394D00",
+    white = "#ffffff",
+    black = "#000000",
+    grey = "#e6e7e8"
+  )
+)
+
+# Helper function to display available borough colours
+show_borough_colours <- function(borough = NULL) {
+  if (is.null(borough)) {
+    cat("Available boroughs:", paste(names(borough_palettes), collapse = ", "), "\n")
+    cat("Usage: show_borough_colours('merton')\n")
+    return(invisible(NULL))
+  }
+
+  if (!borough %in% names(borough_palettes)) {
+    stop("Borough '", borough, "' not found. Available: ",
+         paste(names(borough_palettes), collapse = ", "))
+  }
+
+  colours <- borough_palettes[[borough]]
+  cat("Colours for", borough, ":\n")
+  for (name in names(colours)) {
+    cat("  ", name, ": ", colours[[name]], "\n", sep = "")
+  }
+  cat("\nUsage: borough_palettes$", borough, "$", names(colours)[1], "\n", sep = "")
+}
 
 # Unified colour scale definitions ####
 colour_scales <- list(
@@ -872,7 +927,7 @@ apply_custom_layout_in_html <- function(
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%%; font-family: Arial, sans-serif; overflow: hidden; }
     body { display: flex; flex-direction: column; }
-  
+
   .banner {
     background: %s;
     color: white;
@@ -883,10 +938,10 @@ apply_custom_layout_in_html <- function(
     flex-shrink: 0;
     font-weight: bold;            /* Bold text for better visibility */
   }
-  
+
   .map-container { flex: 1; position: relative; min-height: 0; }
   .map-container > div { height: 100%% !important; }
-  
+
   .legend {
     background: #f8f9fa;
     border-top: 3px solid #dee2e6;    /* Thicker border for images */
@@ -904,16 +959,16 @@ apply_custom_layout_in_html <- function(
     font-size: 1.2rem;               /* Larger header font */
     background: #e9ecef;
   }
-  
+
   .legend-header:hover { background: #dee2e6; }
-      
-      .legend-toggle { 
+
+      .legend-toggle {
         transition: transform 0.3s ease;
         font-size: 0.8em;
       }
-    
+
     .legend.collapsed .legend-toggle { transform: rotate(-90deg); }
-    
+
     .legend-items {
       padding: 1rem;                     /* Larger padding */
       display: flex;
@@ -925,12 +980,12 @@ apply_custom_layout_in_html <- function(
       overflow: hidden;
       transition: max-height 0.3s ease, padding 0.3s ease;
     }
-    
-    .legend.collapsed .legend-items { 
-      max-height: 0; 
+
+    .legend.collapsed .legend-items {
+      max-height: 0;
       padding: 0 0.25rem;
     }
-    
+
     .legend-item { display: flex; align-items: center; gap: 1rem; }
 
     .legend-symbol {
@@ -1360,7 +1415,7 @@ prepare_generic_layer_data <- function(
   # Extract show_marker_labels from options
   show_labels <- if (!is.null(layer_config$options))
     layer_config$options$show_marker_labels else FALSE
-  
+
   # Route to appropriate preparation function based on layer type
   switch(
     layer_config$layer_type,
@@ -1484,7 +1539,7 @@ prepare_static_layer_data <- function(static_sf, show_marker_labels) {
 #'
 #' @param data Data frame with spatial data
 #' @param pollutant Pollutant column name (e.g., "no2", "pm25"). NULL for schools.
-#' @param show_marker_labels Control parameter: FALSE (none), TRUE (hover), 
+#' @param show_marker_labels Control parameter: FALSE (none), TRUE (hover),
 #'        "values_on" (always), "labels" (hover), "labels_on" (always)
 #' @param layer_type Layer type: "bl_nodes" (OA data), "dt_sites" (CSV data), or "schools"
 #' @return Character vector of labels for markers
@@ -1505,12 +1560,12 @@ generate_marker_labels <- function(data, pollutant, show_marker_labels, layer_ty
   # Determine what labels to generate
   show_values <- show_marker_labels %in% c(TRUE, "values_on")
   show_custom <- show_marker_labels %in% c("labels", "labels_on")
-  
+
   if (!show_values && !show_custom) {
     # No labels
     return(rep("", nrow(data)))
   }
-  
+
   # Special handling for schools: always use School column regardless of show_marker_labels mode
   # Schools don't have pollutant data, so they show school names in all modes (when enabled)
   if (layer_type == "schools") {
@@ -1520,7 +1575,7 @@ generate_marker_labels <- function(data, pollutant, show_marker_labels, layer_ty
       return(rep("", nrow(data)))
     }
   }
-  
+
   if (show_custom) {
     # Try to use Label column (CSV/DT data)
     if ("Label" %in% names(data)) {
@@ -1531,7 +1586,7 @@ generate_marker_labels <- function(data, pollutant, show_marker_labels, layer_ty
       if (layer_type == "bl_nodes") {
         if (!is.null(pollutant) && pollutant %in% names(data)) {
           warning(
-            "show_marker_labels set to '", show_marker_labels, 
+            "show_marker_labels set to '", show_marker_labels,
             "' but no Label column found in bl_nodes data. Showing pollution values instead.",
             call. = FALSE
           )
@@ -1543,7 +1598,7 @@ generate_marker_labels <- function(data, pollutant, show_marker_labels, layer_ty
           return(value_str)
         } else {
           warning(
-            "show_marker_labels set to '", show_marker_labels, 
+            "show_marker_labels set to '", show_marker_labels,
             "' but no Label column found in bl_nodes data. No labels will be shown.",
             call. = FALSE
           )
@@ -1554,7 +1609,7 @@ generate_marker_labels <- function(data, pollutant, show_marker_labels, layer_ty
       return(rep("", nrow(data)))
     }
   }
-  
+
   # Show pollution values (for CSV and OA data)
   if (show_values) {
     if (is.null(pollutant) || !pollutant %in% names(data)) {
@@ -1567,7 +1622,7 @@ generate_marker_labels <- function(data, pollutant, show_marker_labels, layer_ty
     )
     return(value_str)
   }
-  
+
   return(rep("", nrow(data)))
 }
 
@@ -1670,7 +1725,7 @@ add_map_controls <- function(
   if (identical(years, "static_only")) {
     years <- "2024"  # Use dummy year for processing (will be ignored for layer control)
   }
-  
+
   # Validation - years and bbox must be provided
   if (is.null(years)) stop("years parameter is required")
   if (is.null(bbox)) stop("bbox parameter is required")
@@ -1804,7 +1859,7 @@ generate_map_layers <- function(
           # Extract show_marker_labels from layer config
           show_labels <- if (!is.null(layer_config$options))
             layer_config$options$show_marker_labels else FALSE
-          
+
           base_map <- add_layer(
             base_map,
             layer_data,
@@ -1822,11 +1877,11 @@ generate_map_layers <- function(
       # Static layers (schools, hospitals, etc.) - always process
       static_data <- get(layer_config$data_source, envir = data_env)
       layer_data <- prepare_generic_layer_data(layer_config, static_data)
-      
+
       # Extract show_marker_labels from layer config
       show_labels <- if (!is.null(layer_config$options))
         layer_config$options$show_marker_labels else FALSE
-      
+
       base_map <- add_layer(
         base_map,
         layer_data,
@@ -1871,7 +1926,7 @@ generate_map_layers <- function(
 #'   Used for coloring markers and legend generation.
 #' @param years_to_plot Years to display on map. NULL uses all available years from data,
 #'   or specify a vector like c(2020, 2021, 2022).
-#' @param vignette_overlay_on If TRUE, adds vignette overlay around borough boundary to 
+#' @param vignette_overlay_on If TRUE, adds vignette overlay around borough boundary to
 #'   darken areas outside the selected borough(s) for visual focus.
 #' @param scale_to_use Color scale name for pollution values (default: "who_no2").
 #'   Options: "who_no2", "stripes_no2", "gla_pm25", "lbw_no2", "lbrut_no2", "lbm_no2", "deltas".
@@ -1899,42 +1954,42 @@ generate_map_layers <- function(
 #' @param border_width Width of border styling (default: "5px").
 #' @param banner_text Text to display in banner if show_banner is TRUE (default: "Air Quality Map").
 #'
-#' @return Invisible Leaflet map object. Side effects: Saves HTML file to 
-#'   \code{aq_maps/} directory. If \code{image_export=TRUE}, also saves JPG 
+#' @return Invisible Leaflet map object. Side effects: Saves HTML file to
+#'   \code{aq_maps/} directory. If \code{image_export=TRUE}, also saves JPG
 #'   files (one per year).
 #'
 #' @details
 #' This function creates interactive Leaflet maps or static JPG images showing
 #' air quality data from multiple sources:
-#' 
+#'
 #' \strong{Data Sources:}
 #' - Diffusion tubes (CSV): Annual NO2 measurements with Easting/Northing columns
 #' - Breathe London (RData): Continuous sensor data with hourly measurements
 #' - Schools (CSV): Location data with Level (Primary/Secondary) classifications
-#' 
+#'
 #' \strong{Visual Output:}
 #' - Interactive maps: Clickable year selector, zoom/pan, marker labels on hover
 #' - Static images: High-resolution JPG files suitable for reports/publications
 #' - Base map: OpenStreetMap tiles
 #' - Markers: Colored shapes (circles=DT sites, diamonds=BL nodes, crosses=schools)
-#' 
+#'
 #' \strong{Coordinate Systems:}
 #' - Input: British National Grid (Easting/Northing, CRS 27700)
 #' - Output: WGS84 (lat/lon, CRS 4326)
 #' - Boundary data: Automatic coordinate transformation
-#' 
+#'
 #' \strong{Setup Required:}
 #' Set \code{Sys.setenv(DATA_PATH = "~/path/to/data")} before sourcing.
 #' This allows relative file paths for all data sources.
-#' 
+#'
 #' \strong{Marker Sizing:}
-#' Base sizes for 1200x1200px reference: Schools (12px cross), DT sites (20px circle), 
+#' Base sizes for 1200x1200px reference: Schools (12px cross), DT sites (20px circle),
 #' BL nodes (20px diamond). Static images automatically scale markers using geometric mean.
-#' 
+#'
 #' \strong{Static-Only Maps:}
 #' Create schools-only maps by setting \code{csv_data_file="none"} and \code{oa_data_file="none"}.
 #' System automatically detects and handles this configuration.
-#' 
+#'
 #' \strong{Available Color Scales:}
 #' Use with \code{scale_to_use} parameter:
 #' - \code{who_no2} (default): WHO NO2 guidelines
@@ -1944,18 +1999,25 @@ generate_map_layers <- function(
 #' - \code{lbrut_no2}: Richmond NO2 scale
 #' - \code{lbm_no2}: Merton NO2 scale
 #' - \code{deltas}: Year-on-year NO2 changes (blue=improvement, red=deterioration)
-#' 
+#'
 #' \strong{Label Display Modes:}
 #' - \code{FALSE}: No labels
 #' - \code{TRUE}: Values on hover (interactive only)
 #' - \code{"values_on"}: Values always visible
 #' - \code{"labels"}: Custom labels on hover
 #' - \code{"labels_on"}: Custom labels always visible
-
+#'
+#' \strong{Borough Colour Palettes:}
+#' Use \code{borough_palettes$borough$colour} for banner/border styling:
+#' - \code{borough_palettes$merton$purple} - Merton purple (#5F3E94)
+#' - \code{borough_palettes$wandsworth$blue} - Wandsworth blue (#01a7f5)
+#' - \code{borough_palettes$richmond$navy} - Richmond navy (#00123d)
+#' Call \code{show_borough_colours()} to list all available boroughs and colours.
+#'
 #' @examples
 #' # Basic usage (set DATA_PATH first)
 #' Sys.setenv(DATA_PATH = "~/path/to/data")
-#' 
+#'
 #' # Create interactive map with NO2 data
 #' create_pollution_map(
 #'   csv_data_file = "wandsworth_2017_2024_no_labels.csv",
@@ -1965,7 +2027,7 @@ generate_map_layers <- function(
 #'   pollutant = "no2",
 #'   output_file = "wandsworth_2024.html"
 #' )
-#' 
+#'
 #' # Create static JPG export
 #' create_pollution_map(
 #'   csv_data_file = "wandsworth_2017_2024_no_labels.csv",
@@ -1979,7 +2041,7 @@ generate_map_layers <- function(
 #'   map_height_px = 1080,
 #'   output_file = "wandsworth_2024"
 #' )
-#' 
+#'
 #' # Schools-only map (static data)
 #' create_pollution_map(
 #'   csv_data_file = "none",
@@ -1991,9 +2053,9 @@ generate_map_layers <- function(
 
 #' @seealso Color scales: \code{who_no2} (default), \code{stripes_no2}, \code{gla_pm25},
 #'   \code{lbw_no2}, \code{lbrut_no2}, \code{lbm_no2}, \code{deltas} (year-on-year changes)
-#'   
+#'
 #' Setup: Set \code{DATA_PATH} environment variable before use
-#'   
+#'
 #' Static-only maps: Set both \code{csv_data_file="none"} and \code{oa_data_file="none"}
 
 #' @note
@@ -2007,7 +2069,7 @@ generate_map_layers <- function(
 
 #' @section Configuration Constants:
 #' These constants control system behavior and can be modified in the code:
-#' 
+#'
 #' \itemize{
 #'   \item{\code{MISSING_DATA_THRESHOLD} (line 68): Filter threshold for data quality (default: 20\%)}
 #'   \item{\code{BOUNDARY_CONFIG} (line 340): Borough name corrections and boundary file configuration}
@@ -2019,7 +2081,7 @@ generate_map_layers <- function(
 
 #' @section Breaking Changes (v0.8.9):
 #' The parameter \code{use_data_labels} was removed and replaced by \code{show_marker_labels}.
-#' 
+#'
 #' \strong{Migration guide:}
 #' \itemize{
 #'   \item Old: \code{use_data_labels = TRUE}
@@ -2040,27 +2102,28 @@ create_pollution_map <- function(
   #output file names, image export and image size
   output_file = "pollution_map.html", # name for the HTML and image files
   image_export = FALSE,
-  map_width_px = 1200,
-  map_height_px = 1200,
+  map_width_px = 1920, # setup for 1080p screensize
+  map_height_px = 1080, #
   # location parameters
   boroughs,
   # data processing parameters
   pollutant = "no2",
   years_to_plot = NULL,
+  # titles
+  html_page_title = "Air pollution map", # default title for HTML page
+  banner_text = "Air Quality Map",
   # styling parameters
   vignette_overlay_on = TRUE,
   scale_to_use = "who_no2",
   title_prefix = "",
   show_marker_labels = FALSE,  # FALSE | TRUE | "values_on" | "labels" | "labels_on"
-  html_page_title = "Air pollution map",
-  show_legend = TRUE,
-  show_title = TRUE,
-  border_color = "#078141",
+  show_banner = FALSE,
+  show_legend = FALSE, # default to FALSE to avoid confusion with HTML legend
+  show_title = FALSE, # default to FALSE to avoid confusion with HTML banner
   banner_color = "#078141", # Optional: green banner (or use "#2c3e50" for dark blue)
   border_width = "5px",
-  show_banner = FALSE,
   show_boundary_labels = FALSE,
-  banner_text = "Air Quality Map"
+
 ) {
   # initial setup
   # setup the bounding box and overlays, limited error traps  ####
