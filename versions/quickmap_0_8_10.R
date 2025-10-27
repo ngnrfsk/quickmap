@@ -14,8 +14,15 @@
 #   v0.8.7-v0.8.7.3: Unified banner/legend system with scaling, missing data filtering,
 #                    static map zoom/initialization fixes
 #   v0.8.8: Boundary labels control - Added show_boundary_labels parameter
-#   v0.8.9: Marker labels control - Added show_marker_labels parameter (5-state control)
+#   v0.8.9: Marker labels control - Added show_marker_labels parameter (5-state control),
+#          REMOVED use_data_labels parameter (breaking change)
 #   v0.8.10: Fixed schools label behavior and OA data label fallback with warnings
+
+# Breaking Changes:
+#   v0.8.9: use_data_labels parameter removed (replaced by show_marker_labels)
+#           Old usage: use_data_labels = TRUE
+#           New usage: show_marker_labels = TRUE (or "values_on", "labels", "labels_on")
+#           See function documentation below for migration details
 
 # Core Functions:
 #   create_pollution_map() - Main entry point, unified processing for HTML and static images
@@ -25,6 +32,21 @@
 #   prepare_generic_layer_data() - Prepares data for mapping based on layer type
 #   generate_marker_labels() - Generates labels based on show_marker_labels parameter
 #   add_layer() - Adds markers to map with label visibility control
+
+# Configuration:
+# Setup: Set DATA_PATH environment variable before sourcing
+# Example: Sys.setenv(DATA_PATH = "~/path/to/data")
+# 
+# Marker Sizing: Base sizes for 1200x1200px images (Schools:12px, DT/BL:20px)
+# Scaling: Static images use geometric mean based on dimensions
+# 
+# Available Color Scales: who_no2, stripes_no2, gla_pm25, lbw_no2, lbrut_no2, lbm_no2, deltas
+# 
+# Static-Only Maps: Set csv_data_file="none" and oa_data_file="none" for schools-only maps
+#
+# Package Dependencies (auto-installed):
+# Required: leaflet, sf, dplyr, leaflegend, tidyr, lubridate, stringr,
+#          webshot2, htmlwidgets, htmltools, leaflet.extras
 
 # Install and load required packages
 packages <- c(
@@ -56,6 +78,8 @@ lapply(packages, library, character.only = TRUE)
 
 # Data quality threshold ####
 # Sites with more than this percentage of missing data will be filtered out
+# Used by process_oa_data() to remove low-quality site-years
+# Modify this value to change quality filtering threshold
 MISSING_DATA_THRESHOLD <- 20 # Percent
 
 # function definitions ####
@@ -325,6 +349,9 @@ create_vignette_overlay <- function(spatial_feature) {
 }
 
 # Boundary data configuration ####
+# Configures boundary loading and name handling
+# name_corrections: Auto-corrects common borough name variations
+# To add corrections, add entries to name_corrections vector below
 BOUNDARY_CONFIG <- list(
   data_file = "ward_boundaries.Rdata",
   data_object = "wardBoundaries",
@@ -338,7 +365,9 @@ BOUNDARY_CONFIG <- list(
 )
 
 # Map styling constants ####
+# Edit these to customize map appearance
 
+# Boundary polygons: dashed for interactive, solid for static
 BOUNDARY_STYLES <- list(
   interactive = list(
     color = "#078141",
@@ -358,6 +387,7 @@ BOUNDARY_STYLES <- list(
   )
 )
 
+# Vignette: darkens area outside borough boundary (grey overlay at 40% opacity)
 VIGNETTE_STYLE <- list(
   fillColor = "grey",
   fillOpacity = 0.4,
@@ -365,6 +395,7 @@ VIGNETTE_STYLE <- list(
   weight = 0
 )
 
+# Legend styling: font sizes and symbol dimensions
 LEGEND_STYLE <- list(
   title = "font-size: 12px; font-weight:bold; margin: 2px 0; line-height: 1.4;",
   labels = "font-size: 12px; margin: 2px 0; line-height: 1.4; vertical-align: middle;",
@@ -372,6 +403,7 @@ LEGEND_STYLE <- list(
   display_size = list(width = 12, height = 12)
 )
 
+# Title styling: semi-transparent background, responsive widths
 TITLE_STYLES <- list(
   base = "background-color: rgba(255,255,255,0.8); padding: 2px 2px; border-radius: 3px; text-align: center; margin-top: 4px; line-height: 0.9; margin-left: auto; margin-right: auto;",
   interactive_width = "50vw",
@@ -1154,11 +1186,15 @@ create_generic_icons <- function(
   image_scale_factor = 1.0 # Scale factor for marker sizing (1.0 = default, >1.0 for larger images)
 ) {
   # Determine shape and base size, then apply scaling
+  # Base sizes are for 1200x1200px reference images
+  # For other sizes: scale = sqrt((width × height) / (1200 × 1200))
+  # HTML maps: image_scale_factor = 1.0 (no scaling)
+  # Static maps: image_scale_factor calculated from dimensions
   base_shape_config <- switch(
     layer_type,
-    "schools" = list(shape = 'cross', size = 12), # Base size for 1200x1200
-    "dt_sites" = list(shape = 'circle', size = 20), # Base size for 1200x1200
-    "bl_nodes" = list(shape = 'diamond', size = 20), # Base size for 1200x1200
+    "schools" = list(shape = 'cross', size = 12),
+    "dt_sites" = list(shape = 'circle', size = 20),
+    "bl_nodes" = list(shape = 'diamond', size = 20),
     stop("Unknown layer type: ", layer_type)
   )
 
@@ -1863,18 +1899,135 @@ generate_map_layers <- function(
 #' @param border_width Width of border styling (default: "5px").
 #' @param banner_text Text to display in banner if show_banner is TRUE (default: "Air Quality Map").
 #'
-#' @return Leaflet map object. Also saves HTML file and optionally JPG files to 'aq_maps/' directory.
+#' @return Invisible Leaflet map object. Side effects: Saves HTML file to 
+#'   \code{aq_maps/} directory. If \code{image_export=TRUE}, also saves JPG 
+#'   files (one per year).
 #'
 #' @details
-#' This function creates maps showing air quality data from multiple sources:
-#' - Diffusion tubes (CSV): Annual NO2 measurements at specific sites
-#' - Breathe London (RData): Continuous sensor data with hourly measurements
-#' - Schools (CSV): Location data for educational facilities
+#' This function creates interactive Leaflet maps or static JPG images showing
+#' air quality data from multiple sources:
 #' 
-#' Maps can be interactive (HTML with year selector) or static (JPG images).
-#' Both use the same unified layer system with consistent styling and scaling.
-#'
-#' @seealso Available color scales: who_no2, stripes_no2, gla_pm25, lbw_no2, lbrut_no2, lbm_no2, deltas
+#' \strong{Data Sources:}
+#' - Diffusion tubes (CSV): Annual NO2 measurements with Easting/Northing columns
+#' - Breathe London (RData): Continuous sensor data with hourly measurements
+#' - Schools (CSV): Location data with Level (Primary/Secondary) classifications
+#' 
+#' \strong{Visual Output:}
+#' - Interactive maps: Clickable year selector, zoom/pan, marker labels on hover
+#' - Static images: High-resolution JPG files suitable for reports/publications
+#' - Base map: OpenStreetMap tiles
+#' - Markers: Colored shapes (circles=DT sites, diamonds=BL nodes, crosses=schools)
+#' 
+#' \strong{Coordinate Systems:}
+#' - Input: British National Grid (Easting/Northing, CRS 27700)
+#' - Output: WGS84 (lat/lon, CRS 4326)
+#' - Boundary data: Automatic coordinate transformation
+#' 
+#' \strong{Setup Required:}
+#' Set \code{Sys.setenv(DATA_PATH = "~/path/to/data")} before sourcing.
+#' This allows relative file paths for all data sources.
+#' 
+#' \strong{Marker Sizing:}
+#' Base sizes for 1200x1200px reference: Schools (12px cross), DT sites (20px circle), 
+#' BL nodes (20px diamond). Static images automatically scale markers using geometric mean.
+#' 
+#' \strong{Static-Only Maps:}
+#' Create schools-only maps by setting \code{csv_data_file="none"} and \code{oa_data_file="none"}.
+#' System automatically detects and handles this configuration.
+#' 
+#' \strong{Available Color Scales:}
+#' Use with \code{scale_to_use} parameter:
+#' - \code{who_no2} (default): WHO NO2 guidelines
+#' - \code{stripes_no2}: Striped NO2 scale
+#' - \code{gla_pm25}: GLA PM2.5 scale
+#' - \code{lbw_no2}: Wandsworth NO2 scale
+#' - \code{lbrut_no2}: Richmond NO2 scale
+#' - \code{lbm_no2}: Merton NO2 scale
+#' - \code{deltas}: Year-on-year NO2 changes (blue=improvement, red=deterioration)
+#' 
+#' \strong{Label Display Modes:}
+#' - \code{FALSE}: No labels
+#' - \code{TRUE}: Values on hover (interactive only)
+#' - \code{"values_on"}: Values always visible
+#' - \code{"labels"}: Custom labels on hover
+#' - \code{"labels_on"}: Custom labels always visible
+
+#' @examples
+#' # Basic usage (set DATA_PATH first)
+#' Sys.setenv(DATA_PATH = "~/path/to/data")
+#' 
+#' # Create interactive map with NO2 data
+#' create_pollution_map(
+#'   csv_data_file = "wandsworth_2017_2024_no_labels.csv",
+#'   school_file = "schools_Wandsworth.csv",
+#'   boroughs = "Wandsworth",
+#'   years_to_plot = 2024,
+#'   pollutant = "no2",
+#'   output_file = "wandsworth_2024.html"
+#' )
+#' 
+#' # Create static JPG export
+#' create_pollution_map(
+#'   csv_data_file = "wandsworth_2017_2024_no_labels.csv",
+#'   oa_data_file = "bl_imperial_annualised_2021_2025.Rdata",
+#'   school_file = "schools_Wandsworth.csv",
+#'   boroughs = "Wandsworth",
+#'   pollutant = "no2",
+#'   years_to_plot = 2024,
+#'   image_export = TRUE,
+#'   map_width_px = 1920,
+#'   map_height_px = 1080,
+#'   output_file = "wandsworth_2024"
+#' )
+#' 
+#' # Schools-only map (static data)
+#' create_pollution_map(
+#'   csv_data_file = "none",
+#'   oa_data_file = "none",
+#'   school_file = "schools_Wandsworth.csv",
+#'   boroughs = "Wandsworth",
+#'   output_file = "schools_only.html"
+#' )
+
+#' @seealso Color scales: \code{who_no2} (default), \code{stripes_no2}, \code{gla_pm25},
+#'   \code{lbw_no2}, \code{lbrut_no2}, \code{lbm_no2}, \code{deltas} (year-on-year changes)
+#'   
+#' Setup: Set \code{DATA_PATH} environment variable before use
+#'   
+#' Static-only maps: Set both \code{csv_data_file="none"} and \code{oa_data_file="none"}
+
+#' @note
+#' \itemize{
+#'   \item Set \code{DATA_PATH} environment variable before sourcing script
+#'   \item Borough names are case-insensitive
+#'   \item Year columns in CSV should be named YYYY format (e.g., "2024")
+#'   \item Static JPG exports require Chrome/Chromium browser for webshot2
+#'   \item All output files saved to \code{aq_maps/} directory (auto-created)
+#' }
+
+#' @section Configuration Constants:
+#' These constants control system behavior and can be modified in the code:
+#' 
+#' \itemize{
+#'   \item{\code{MISSING_DATA_THRESHOLD} (line 68): Filter threshold for data quality (default: 20\%)}
+#'   \item{\code{BOUNDARY_CONFIG} (line 340): Borough name corrections and boundary file configuration}
+#'   \item{\code{BOUNDARY_STYLES} (line 355): Visual styling for interactive vs static boundary polygons}
+#'   \item{\code{VIGNETTE_STYLE} (line 375): Grey overlay appearance outside borough boundaries}
+#'   \item{\code{LEGEND_STYLE} (line 383): Legend font sizes and symbol dimensions}
+#'   \item{\code{TITLE_STYLES} (line 391): Map title styling and responsive widths}
+#' }
+
+#' @section Breaking Changes (v0.8.9):
+#' The parameter \code{use_data_labels} was removed and replaced by \code{show_marker_labels}.
+#' 
+#' \strong{Migration guide:}
+#' \itemize{
+#'   \item Old: \code{use_data_labels = TRUE}
+#'   \item New: \code{show_marker_labels = TRUE} (shows values on hover, auto-hide)
+#'   \item For always-visible values: \code{show_marker_labels = "values_on"}
+#'   \item For custom labels on hover: \code{show_marker_labels = "labels"}
+#'   \item For custom labels always visible: \code{show_marker_labels = "labels_on"}
+#' }
 #'
 #' @note Consider adding input validation for boundary_names, pollutant, and colour scale parameters
 
