@@ -5,6 +5,7 @@ This is the quickmap R project for creating interactive and static air pollution
 
 ## Code Style & Best Practices
 
+- Always aim for simplest, most readable code, avoid over-engineering
 - Follow existing R style in the codebase
 - Use roxygen2 documentation for functions
 - Maintain version history in file header
