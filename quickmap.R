@@ -436,8 +436,8 @@ borough_palettes <- list(
     lime = "#83c44c"
   ),
   richmond = list(
-    navy = "#00123d",
-    green = "#394D00",
+    blue = "#005794",
+    green = "#9bcc66",
     white = "#ffffff",
     black = "#000000",
     grey = "#e6e7e8"
@@ -447,14 +447,22 @@ borough_palettes <- list(
 # Helper function to display available borough colours
 show_borough_colours <- function(borough = NULL) {
   if (is.null(borough)) {
-    cat("Available boroughs:", paste(names(borough_palettes), collapse = ", "), "\n")
+    cat(
+      "Available boroughs:",
+      paste(names(borough_palettes), collapse = ", "),
+      "\n"
+    )
     cat("Usage: show_borough_colours('merton')\n")
     return(invisible(NULL))
   }
 
   if (!borough %in% names(borough_palettes)) {
-    stop("Borough '", borough, "' not found. Available: ",
-         paste(names(borough_palettes), collapse = ", "))
+    stop(
+      "Borough '",
+      borough,
+      "' not found. Available: ",
+      paste(names(borough_palettes), collapse = ", ")
+    )
   }
 
   colours <- borough_palettes[[borough]]
@@ -462,7 +470,14 @@ show_borough_colours <- function(borough = NULL) {
   for (name in names(colours)) {
     cat("  ", name, ": ", colours[[name]], "\n", sep = "")
   }
-  cat("\nUsage: borough_palettes$", borough, "$", names(colours)[1], "\n", sep = "")
+  cat(
+    "\nUsage: borough_palettes$",
+    borough,
+    "$",
+    names(colours)[1],
+    "\n",
+    sep = ""
+  )
 }
 
 # Unified colour scale definitions ####
@@ -1367,12 +1382,22 @@ get_measurement_layers <- function(
 
 # Create data preparation functions
 # Re-add this function (it's still needed):
-prepare_bl_layer_data <- function(oa_subset, pollutant, scale_to_use, show_marker_labels) {
+prepare_bl_layer_data <- function(
+  oa_subset,
+  pollutant,
+  scale_to_use,
+  show_marker_labels
+) {
   # Return NULL if no data to process
   if (nrow(oa_subset) == 0) return(NULL)
 
   # Generate labels using unified function
-  labels <- generate_marker_labels(oa_subset, pollutant, show_marker_labels, "bl_nodes")
+  labels <- generate_marker_labels(
+    oa_subset,
+    pollutant,
+    show_marker_labels,
+    "bl_nodes"
+  )
 
   # Return structured data ready for marker creation
   list(
@@ -1396,7 +1421,12 @@ prepare_dt_layer_data <- function(
   )
 
   # Generate labels using unified function
-  labels <- generate_marker_labels(subset_data, pollutant, show_marker_labels, "dt_sites")
+  labels <- generate_marker_labels(
+    subset_data,
+    pollutant,
+    show_marker_labels,
+    "dt_sites"
+  )
 
   # Return structured data ready for mapping
   list(
@@ -1453,7 +1483,7 @@ add_layer <- function(
   scale_to_use = NULL,
   label_sizing = 1.0,
   image_scale_factor = 1.0, # Scale factor for marker sizing (1.0 = default)
-  show_marker_labels = FALSE  # Label visibility mode from layer configuration
+  show_marker_labels = FALSE # Label visibility mode from layer configuration
 ) {
   # Early return if layer data is NULL
   if (is.null(layer_data)) return(map)
@@ -1479,7 +1509,7 @@ add_layer <- function(
 
   # Common label options
   label_opts <- labelOptions(
-    noHide = no_hide,  # Controlled by show_marker_labels parameter: TRUE for "values_on"/"labels_on", FALSE otherwise
+    noHide = no_hide, # Controlled by show_marker_labels parameter: TRUE for "values_on"/"labels_on", FALSE otherwise
     direction = "bottom",
     offset = c(0, 12),
     textOnly = TRUE,
@@ -1521,7 +1551,12 @@ add_layer <- function(
 #' @return List with data, labels, and layer_type for schools
 prepare_static_layer_data <- function(static_sf, show_marker_labels) {
   # Generate labels using unified function (schools always use School column)
-  labels <- generate_marker_labels(static_sf, pollutant = NULL, show_marker_labels, "schools")
+  labels <- generate_marker_labels(
+    static_sf,
+    pollutant = NULL,
+    show_marker_labels,
+    "schools"
+  )
 
   # Return structured data ready for generic processing
   # (same pattern as other layers)
@@ -1556,7 +1591,12 @@ prepare_static_layer_data <- function(static_sf, show_marker_labels) {
 #' - "values_on": Returns values always visible
 #' - "labels": Returns custom labels for hover (auto-hide)
 #' - "labels_on": Returns custom labels always visible
-generate_marker_labels <- function(data, pollutant, show_marker_labels, layer_type) {
+generate_marker_labels <- function(
+  data,
+  pollutant,
+  show_marker_labels,
+  layer_type
+) {
   # Determine what labels to generate
   show_values <- show_marker_labels %in% c(TRUE, "values_on")
   show_custom <- show_marker_labels %in% c("labels", "labels_on")
@@ -1586,7 +1626,8 @@ generate_marker_labels <- function(data, pollutant, show_marker_labels, layer_ty
       if (layer_type == "bl_nodes") {
         if (!is.null(pollutant) && pollutant %in% names(data)) {
           warning(
-            "show_marker_labels set to '", show_marker_labels,
+            "show_marker_labels set to '",
+            show_marker_labels,
             "' but no Label column found in bl_nodes data. Showing pollution values instead.",
             call. = FALSE
           )
@@ -1598,7 +1639,8 @@ generate_marker_labels <- function(data, pollutant, show_marker_labels, layer_ty
           return(value_str)
         } else {
           warning(
-            "show_marker_labels set to '", show_marker_labels,
+            "show_marker_labels set to '",
+            show_marker_labels,
             "' but no Label column found in bl_nodes data. No labels will be shown.",
             call. = FALSE
           )
@@ -1667,7 +1709,12 @@ add_title <- function(map, text, interactive) {
 #' @param interactive If TRUE, for interactive HTML map; if FALSE, for static export
 #' @param show_labels If TRUE, show borough labels on the map
 #' @return Modified map with boundary polygons
-add_boundary_polygons <- function(map, borough_sf, interactive, show_labels = FALSE) {
+add_boundary_polygons <- function(
+  map,
+  borough_sf,
+  interactive,
+  show_labels = FALSE
+) {
   style <- BOUNDARY_STYLES[[if (interactive) "interactive" else "static"]]
 
   # Set label and labelOptions based on show_labels parameter
@@ -1684,7 +1731,7 @@ add_boundary_polygons <- function(map, borough_sf, interactive, show_labels = FA
       ),
       textsize = "12px",
       direction = "auto",
-      noHide = TRUE  # Makes labels permanently visible
+      noHide = TRUE # Makes labels permanently visible
     )
   } else {
     label <- NULL
@@ -1723,7 +1770,7 @@ add_map_controls <- function(
   # Handle "static_only" case (no temporal layers - only schools) before validation
   # This happens when csv_data_file == "none" && oa_data_file == "none"
   if (identical(years, "static_only")) {
-    years <- "2024"  # Use dummy year for processing (will be ignored for layer control)
+    years <- "2024" # Use dummy year for processing (will be ignored for layer control)
   }
 
   # Validation - years and bbox must be provided
@@ -1732,7 +1779,12 @@ add_map_controls <- function(
 
   # Add boundaries
   if (!is.null(borough_sf)) {
-    map <- add_boundary_polygons(map, borough_sf, interactive, show_labels = show_boundary_labels)
+    map <- add_boundary_polygons(
+      map,
+      borough_sf,
+      interactive,
+      show_labels = show_boundary_labels
+    )
   }
 
   # Fit bounds with minimal padding for both interactive and static maps (tighter fill)
@@ -2116,14 +2168,14 @@ create_pollution_map <- function(
   vignette_overlay_on = TRUE,
   scale_to_use = "who_no2",
   title_prefix = "",
-  show_marker_labels = FALSE,  # FALSE | TRUE | "values_on" | "labels" | "labels_on"
+  show_marker_labels = FALSE, # FALSE | TRUE | "values_on" | "labels" | "labels_on"
   show_banner = FALSE,
   show_legend = FALSE, # default to FALSE to avoid confusion with HTML legend
   show_title = FALSE, # default to FALSE to avoid confusion with HTML banner
-  banner_color = "#078141", # Optional: green banner (or use "#2c3e50" for dark blue)
+  banner_color = borough_palettes$merton$purple, # show_borough_colours() to list all available
+  border_color = banner_color,
   border_width = "5px",
-  show_boundary_labels = FALSE,
-
+  show_boundary_labels = FALSE
 ) {
   # initial setup
   # setup the bounding box and overlays, limited error traps  ####
@@ -2266,11 +2318,11 @@ create_pollution_map <- function(
       html_map,
       measurement_layers,
       yr,
-        pollutant,
-        scale_to_use,
-        environment(),
-        1.0 # Interactive HTML maps use default scale factor (no scaling)
-      )
+      pollutant,
+      scale_to_use,
+      environment(),
+      1.0 # Interactive HTML maps use default scale factor (no scaling)
+    )
 
     # Generate fresh static image to export if enabled
     if (image_export) {
