@@ -1,0 +1,9 @@
+{
+  "[r]": {
+    "editor.rulers": [],
+    "editor.wordWrap": "off"
+  },
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true
+}
+
