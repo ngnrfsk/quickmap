@@ -1,5 +1,5 @@
 # Working, stable production codebase for quickmap ####
-# Version 0.8.10
+# Version 0.8.11
 
 #2345678901234567890123456789012345678901234567890123456789012345678901234567890 Hollerith limit
 

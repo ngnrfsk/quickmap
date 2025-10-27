@@ -108,4 +108,18 @@ map7 <- create_pollution_map(
   output_file = "test_7_labels_schools.html"
 )
 
+# Test 6: OA data only - test warning behavior for "labels" mode
+map8 <- create_pollution_map(
+  csv_data_file = "none",
+  oa_data_file = test_oa_file,
+  school_file = "none",
+  boroughs = c("Wandsworth", "Merton"),
+  years_to_plot = 2024,
+  show_marker_labels = "labels_on",
+  banner_text = "Test 8: OA only with 'labels_on' (should warn)",
+  show_banner = TRUE,
+  show_legend = FALSE,
+  output_file = "test_8_labels_oa_warning_on.html"
+)
+
 cat("All tests completed. Check aq_maps/ directory for output files.\n")
