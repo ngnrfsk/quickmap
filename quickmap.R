@@ -904,7 +904,7 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE) {
 #'
 #' @param html_file Path to saved HTML file (will be modified in place)
 #' @param banner_text Text for banner (NULL to skip banner entirely)
-#' @param banner_color Hex color for banner background (default "#2c3e50")
+#' @param banner_colour Hex color for banner background (default "#2c3e50")
 #' @param scale_name Name of colour_scale to use for legend (e.g., "who_no2")
 #' @param collapsed_mobile Should legend start collapsed on mobile (default TRUE)
 #' @return Invisibly returns TRUE on success
@@ -916,7 +916,7 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE) {
 apply_custom_layout_in_html <- function(
   html_file,
   banner_text = NULL,
-  banner_color = "#2c3e50",
+  banner_colour = "#2c3e50",
   scale_name,
   collapsed_mobile = TRUE,
   image_mode = FALSE, # FALSE = interactive HTML, TRUE = static image export
@@ -1215,7 +1215,7 @@ apply_custom_layout_in_html <- function(
   }
 
   # Insert banner color into CSS
-  custom_css <- sprintf(custom_css, banner_color)
+  custom_css <- sprintf(custom_css, banner_colour)
 
   # Insert viewport and CSS before </head>
   html_text <- sub(
@@ -1252,7 +1252,7 @@ create_generic_icons <- function(
   data,
   layer_type,
   pollutant = NULL,
-  scale_to_use = NULL,
+  colour_scale = NULL,
   image_scale_factor = 1.0 # Scale factor for marker sizing (1.0 = default, >1.0 for larger images)
 ) {
   # Determine shape and base size, then apply scaling
@@ -1287,11 +1287,11 @@ create_generic_icons <- function(
     },
     "dt_sites" = {
       # Use assign_colour for continuous pollution data
-      sapply(data[[pollutant]], assign_colour, scale = scale_to_use)
+      sapply(data[[pollutant]], assign_colour, scale = colour_scale)
     },
     "bl_nodes" = {
       # Use assign_colour for continuous pollution data
-      sapply(data[[pollutant]], assign_colour, scale = scale_to_use)
+      sapply(data[[pollutant]], assign_colour, scale = colour_scale)
     }
   )
 
@@ -1313,7 +1313,7 @@ create_generic_icons <- function(
 # Add colored bounding box around map
 add_map_border <- function(
   map,
-  border_color = "#078141",
+  banner_colour = "#078141",
   border_width = "5px",
   border_radius = "8px",
   padding = "10px"
@@ -1329,7 +1329,7 @@ add_map_border <- function(
       overflow: hidden;
     ",
       border_width,
-      border_color,
+      banner_colour,
       border_radius,
       padding
     ),
@@ -1385,7 +1385,7 @@ get_measurement_layers <- function(
 prepare_bl_layer_data <- function(
   oa_subset,
   pollutant,
-  scale_to_use,
+  colour_scale,
   show_marker_labels
 ) {
   # Return NULL if no data to process
@@ -1410,14 +1410,14 @@ prepare_bl_layer_data <- function(
 prepare_dt_layer_data <- function(
   subset_data,
   pollutant,
-  scale_to_use,
+  colour_scale,
   show_marker_labels
 ) {
   # Pre-compute colors for all points
   colors <- sapply(
     subset_data[[pollutant]],
     assign_colour,
-    scale = scale_to_use
+    scale = colour_scale
   )
 
   # Generate labels using unified function
@@ -1440,7 +1440,7 @@ prepare_generic_layer_data <- function(
   layer_config,
   year_data,
   pollutant = NULL,
-  scale_to_use = NULL
+  colour_scale = NULL
 ) {
   # Extract show_marker_labels from options
   show_labels <- if (!is.null(layer_config$options))
@@ -1450,10 +1450,10 @@ prepare_generic_layer_data <- function(
   switch(
     layer_config$layer_type,
     "bl_nodes" = {
-      prepare_bl_layer_data(year_data, pollutant, scale_to_use, show_labels)
+      prepare_bl_layer_data(year_data, pollutant, colour_scale, show_labels)
     },
     "dt_sites" = {
-      prepare_dt_layer_data(year_data, pollutant, scale_to_use, show_labels)
+      prepare_dt_layer_data(year_data, pollutant, colour_scale, show_labels)
     },
     "schools" = {
       prepare_static_layer_data(year_data, show_labels)
@@ -1471,7 +1471,7 @@ prepare_generic_layer_data <- function(
 #'   settings
 #' @param year The year for temporal layers (NULL for static layers)
 #' @param pollutant The pollutant type for relevant layers
-#' @param scale_to_use The scale to use for icons
+#' @param colour_scale The scale to use for icons
 #' @param label_sizing Scaling factor for label size (default 1.0)
 #' @return Updated map object with new layer
 add_layer <- function(
@@ -1480,7 +1480,7 @@ add_layer <- function(
   layer_config,
   year = NULL,
   pollutant = NULL,
-  scale_to_use = NULL,
+  colour_scale = NULL,
   label_sizing = 1.0,
   image_scale_factor = 1.0, # Scale factor for marker sizing (1.0 = default)
   show_marker_labels = FALSE # Label visibility mode from layer configuration
@@ -1496,7 +1496,7 @@ add_layer <- function(
     layer_data$data,
     layer_type,
     pollutant,
-    scale_to_use,
+    colour_scale,
     image_scale_factor
   )
 
@@ -1867,7 +1867,7 @@ add_map_controls <- function(
 #' @param measurement_layers Layer configuration from get_measurement_layers()
 #' @param target_year Year to display (or "static_only" for static layers only)
 #' @param pollutant,pollutant Pollutant name for coloring markers
-#' @param scale_to_use Color scale name
+#' @param colour_scale Color scale name
 #' @param data_env Environment containing data objects
 #' @param image_scale_factor Scale factor for marker sizing (1.0 for HTML, >1.0 for images)
 #' @return Map with all layers added
@@ -1876,7 +1876,7 @@ generate_map_layers <- function(
   measurement_layers,
   target_year,
   pollutant,
-  scale_to_use,
+  colour_scale,
   data_env,
   image_scale_factor = 1.0
 ) {
@@ -1905,7 +1905,7 @@ generate_map_layers <- function(
           layer_config,
           year_data,
           pollutant,
-          scale_to_use
+          colour_scale
         )
         if (!is.null(layer_data)) {
           # Extract show_marker_labels from layer config
@@ -1918,7 +1918,7 @@ generate_map_layers <- function(
             layer_config,
             target_year,
             pollutant,
-            scale_to_use,
+            colour_scale,
             label_sizing = 1.0,
             image_scale_factor,
             show_marker_labels = show_labels
@@ -1940,7 +1940,7 @@ generate_map_layers <- function(
         layer_config,
         year = NULL,
         pollutant = NULL,
-        scale_to_use = NULL,
+        colour_scale = NULL,
         label_sizing = 1.0,
         image_scale_factor,
         show_marker_labels = show_labels
@@ -1980,7 +1980,7 @@ generate_map_layers <- function(
 #'   or specify a vector like c(2020, 2021, 2022).
 #' @param vignette_overlay_on If TRUE, adds vignette overlay around borough boundary to
 #'   darken areas outside the selected borough(s) for visual focus.
-#' @param scale_to_use Color scale name for pollution values (default: "who_no2").
+#' @param colour_scale Color scale name for pollution values (default: "who_no2").
 #'   Options: "who_no2", "stripes_no2", "gla_pm25", "lbw_no2", "lbrut_no2", "lbm_no2", "deltas".
 #' @param title_prefix Prefix text to add before year in map title (default: "").
 #' @param show_marker_labels Control marker label visibility (default: FALSE).
@@ -1999,11 +1999,8 @@ generate_map_layers <- function(
 #'   Banner only appears when HTML post-processing is applied.
 #' @param show_boundary_labels If TRUE, shows borough boundary labels on the map (default: FALSE).
 #'   Labels appear on borough polygons and are always visible when enabled.
-#' @param border_color Color for border and banner styling (default: "#078141" green).
+#' @param banner_colour Color for border and banner styling (default: "#078141" green).
 #'   Also used for vignette overlay if vignette_overlay_on is TRUE.
-#' @param banner_color Background color for banner (default: "#078141" green).
-#'   Alternative: "#2c3e50" for dark blue banner.
-#' @param border_width Width of border styling (default: "5px").
 #' @param banner_text Text to display in banner if show_banner is TRUE (default: "Air Quality Map").
 #'
 #' @return Invisible Leaflet map object. Side effects: Saves HTML file to
@@ -2043,7 +2040,7 @@ generate_map_layers <- function(
 #' System automatically detects and handles this configuration.
 #'
 #' \strong{Available Color Scales:}
-#' Use with \code{scale_to_use} parameter:
+#' Use with \code{colour_scale} parameter:
 #' - \code{who_no2} (default): WHO NO2 guidelines
 #' - \code{stripes_no2}: Striped NO2 scale
 #' - \code{gla_pm25}: GLA PM2.5 scale
@@ -2166,15 +2163,13 @@ create_pollution_map <- function(
   banner_text = "Air Quality Map",
   # styling parameters
   vignette_overlay_on = TRUE,
-  scale_to_use = "who_no2",
+  colour_scale = "who_no2",
   title_prefix = "",
   show_marker_labels = FALSE, # FALSE | TRUE | "values_on" | "labels" | "labels_on"
   show_banner = FALSE,
   show_legend = FALSE, # default to FALSE to avoid confusion with HTML legend
   show_title = FALSE, # default to FALSE to avoid confusion with HTML banner
-  banner_color = borough_palettes$merton$purple, # show_borough_colours() to list all available
-  border_color = banner_color,
-  border_width = "5px",
+  banner_colour = borough_palettes$merton$purple, # show_borough_colours() to list all available
   show_boundary_labels = FALSE
 ) {
   # initial setup
@@ -2252,7 +2247,7 @@ create_pollution_map <- function(
   if (vignette_overlay_on)
     vignette_overlay <- create_vignette_overlay(borough_sf)
   bbox <- st_bbox(borough_sf)
-  legend_info <- get_colour_legend(scale_to_use)
+  legend_info <- get_colour_legend(colour_scale)
 
   # create the HMTL map object ####
 
@@ -2319,7 +2314,7 @@ create_pollution_map <- function(
       measurement_layers,
       yr,
       pollutant,
-      scale_to_use,
+      colour_scale,
       environment(),
       1.0 # Interactive HTML maps use default scale factor (no scaling)
     )
@@ -2340,7 +2335,7 @@ create_pollution_map <- function(
         measurement_layers,
         yr,
         pollutant,
-        scale_to_use,
+        colour_scale,
         environment(),
         marker_scale_factor
       )
@@ -2351,7 +2346,7 @@ create_pollution_map <- function(
         measurement_layers,
         "static_only",
         pollutant,
-        scale_to_use,
+        colour_scale,
         environment(),
         marker_scale_factor
       )
@@ -2390,8 +2385,8 @@ create_pollution_map <- function(
           apply_custom_layout_in_html(
             html_file = html_file,
             banner_text = if (show_banner) banner_text else NULL,
-            banner_color = border_color,
-            scale_name = scale_to_use,
+            banner_colour = banner_colour,
+            scale_name = colour_scale,
             collapsed_mobile = FALSE, # Keep expanded for static images
             image_mode = TRUE, # Enable image optimization for static JPG export
             image_dimensions = c(map_width_px, map_height_px)
@@ -2445,8 +2440,8 @@ create_pollution_map <- function(
         apply_custom_layout_in_html(
           html_file = html_file,
           banner_text = if (show_banner) banner_text else NULL,
-          banner_color = border_color, # Reuse border_color parameter
-          scale_name = scale_to_use, # Uses existing scale parameter
+          banner_colour = banner_colour, # Reuse banner_colour parameter
+          scale_name = colour_scale, # Uses existing scale parameter
           collapsed_mobile = TRUE
         )
       },
@@ -2461,71 +2456,6 @@ create_pollution_map <- function(
       unlink(files_folder, recursive = TRUE)
     }
   }
-  #
-  # ### END OF NEW CODE
-  #
-  #   # Save HTML map if required
-  #   if (!is.null(output_file)) {
-  #     html_file <- file.path("aq_maps", output_file)
-  #
-  #     # Save the leaflet widget directly (banner and legend styling already applied)
-  #     htmlwidgets::saveWidget(
-  #       html_map,
-  #       file = html_file,
-  #       selfcontained = TRUE,
-  #       title = html_page_title
-  #     )
-  #
-  #     # Apply border styling by modifying the HTML file after saving
-  #     if (border_width != "0px") {
-  #       html_content <- readLines(html_file)
-  #
-  #       # Add CSS for border styling
-  #       border_css <- sprintf(
-  #         '
-  #       <style>
-  #         body {
-  #           margin: 0;
-  #           padding: 0;
-  #         }
-  #         #htmlwidget_container {
-  #           border: %s solid %s !important;
-  #           border-radius: 8px;
-  #           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  #           margin: 0;
-  #           padding: 0;
-  #         }
-  #         .leaflet-container {
-  #           border-radius: 8px;
-  #         }
-  #         .banner-control {
-  #           background: transparent !important;
-  #           border: none !important;
-  #           box-shadow: none !important;
-  #         }
-  #       </style>
-  #       ',
-  #         border_width,
-  #         border_color
-  #       )
-  #
-  #       # Insert CSS before </head>
-  #       html_content <- gsub(
-  #         "</head>",
-  #         paste0(border_css, "</head>"),
-  #         html_content
-  #       )
-  #
-  #       # Write back to file
-  #       writeLines(html_content, html_file)
-  #     }
-  #
-  #     # Force cleanup of _files folder as there seems to be a bug
-  #     files_folder <- paste0(tools::file_path_sans_ext(html_file), "_files")
-  #     if (dir.exists(files_folder)) {
-  #       unlink(files_folder, recursive = TRUE)
-  #     }
-  #   }
 
   # Return the map (remove the image export conditional return)
   return(invisible(html_map))

@@ -6,10 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **QuickMap** is an R project for generating interactive air quality maps showing pollution data (NO2, PM2.5) overlaid with school locations and borough boundaries. It creates both interactive Leaflet HTML maps and static JPG exports for local government air quality reporting.
 
-### Current Version: 0.8.6
-- **Production code**: `quickmap.R` (stable, recently updated from v0.8.6)
-- **Development versions**: `quickmap_0_8_5.R`, `quickmap_0_8_6.R`, `quickmap_0_8_6_2.R`, `quickmap_0_8_6_3.R`
-- **Test scripts**: `test_quickmap.R`, various example scripts
+### Current Version: 0.8.11
+- **Production code**: `quickmap.R` (stable, 2,462 lines)
+- **Archived versions**: `versions/quickmap_0_8_5.R` through `versions/quickmap_0_8_11.R` (15 versions)
+- **Test scripts**: 14 test scripts in `tests/` directory
+- **Utility scripts**: 6 scripts in `scripts/` directory
 
 ## Core Architecture
 
@@ -108,7 +109,7 @@ Each scale defines:
 - `labels`: Legend text
 - `title`: Scale description
 
-## UI Enhancement System (v0.8.6+)
+## UI Enhancement System
 
 ### External Legend System
 - **Mobile responsive**: Auto-collapses on screens <480px
@@ -147,5 +148,10 @@ Core R packages (auto-installed):
 - **v0.8.0**: Major refactor to unified architecture
 - **v0.8.5**: Code cleanup and simplification
 - **v0.8.6**: Enhanced UI with external legends and banners
+- **v0.8.7-v0.8.7.3**: Unified banner/legend system with proportional scaling, missing data filtering
+- **v0.8.8**: Boundary labels control (`show_boundary_labels` parameter)
+- **v0.8.9**: Marker labels control (5-state `show_marker_labels` parameter, removed `use_data_labels`)
+- **v0.8.10**: Fixed schools label behavior and OA data label fallback
+- **v0.8.11**: Borough colour palettes (nested named lists) and `show_borough_colours()` helper
 
-Development versions (`quickmap_0_8_6_*.R`) contain experimental features being tested before integration into the stable version.
+All archived versions are stored in `versions/` directory. Current stable version is always `quickmap.R`.
