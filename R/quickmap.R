@@ -1,5 +1,5 @@
 # Working, stable production codebase for quickmap ####
-# Version 0.9.0
+# Version 0.9.0.1
 
 #2345678901234567890123456789012345678901234567890123456789012345678901234567890 Hollerith limit
 
@@ -27,6 +27,7 @@
 #          Merged 7 parameters into 3 (image export, title, styling)
 #          Removed leaflet legend/title controls (HTML-only styling system)
 #          Removed 58 lines of code (2.3% reduction)
+#   v0.9.0.1: UI fixes - Year control bottom-right, collapsed, defaults to latest year
 
 # Breaking Changes:
 #   v0.8.9: use_data_labels parameter removed (replaced by marker_labels)
@@ -1195,6 +1196,57 @@ apply_custom_layout_in_html <- function(
         border-width: 1px;
       }
     }
+
+    /* Year control toggle with text character */
+    .leaflet-control-layers-toggle {
+      background-image: none !important;
+      width: 32px;
+      height: 32px;
+      background-color: white;
+      border-radius: 4px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      text-decoration: none;
+    }
+
+    .leaflet-control-layers-toggle::before {
+      content: '▲▼';
+    }
+
+    .leaflet-control-layers-toggle:hover {
+      background-color: #f4f4f4;
+    }
+
+    .leaflet-control-layers-expanded {
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      min-width: 100px;
+    }
+
+    .leaflet-control-layers-base label {
+      display: block;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .leaflet-control-layers-base label:hover {
+      background-color: #f0f0f0;
+      border-radius: 2px;
+    }
+
+    @media (max-width: 768px) {
+      .leaflet-control-layers-toggle {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+    }
     </style>\n"
   }
 
@@ -1839,8 +1891,22 @@ add_map_controls <- function(
     map <- map |>
       addLayersControl(
         baseGroups = baseGroups,
-        options = layersControlOptions(collapsed = FALSE, position = 'topleft')
+        options = layersControlOptions(
+          collapsed = TRUE,
+          position = 'bottomright'
+        )
       )
+
+    # Default to showing latest year only
+    latest_year <- max(baseGroups)
+
+    # Hide all years first, then show only the latest
+    for (yr in baseGroups) {
+      map <- hideGroup(map, as.character(yr))
+    }
+
+    # Show only the latest year
+    map <- showGroup(map, as.character(latest_year))
   }
 
   # Leaflet legend and title controls removed - using HTML banner/legend system only
@@ -2198,7 +2264,11 @@ create_pollution_map <- function(
 
   # Load CSV data (diffusion tubes)
   if (diffusion_tube_file != "none") {
-    csv_result <- load_data_file(diffusion_tube_file, "csv", c("Easting", "Northing"))
+    csv_result <- load_data_file(
+      diffusion_tube_file,
+      "csv",
+      c("Easting", "Northing")
+    )
     if (!is.null(csv_result)) {
       sf_data_wgs84 <- get_temporal_data(csv_result$data) |>
         transform_to_wgs84()
@@ -2252,8 +2322,7 @@ create_pollution_map <- function(
   }
 
   if (is.null(borough_sf)) return()
-  if (vignette)
-    vignette_overlay <- create_vignette_overlay(borough_sf)
+  if (vignette) vignette_overlay <- create_vignette_overlay(borough_sf)
   bbox <- st_bbox(borough_sf)
   legend_info <- get_colour_legend(colour_scale)
 
