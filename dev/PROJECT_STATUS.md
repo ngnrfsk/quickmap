@@ -220,24 +220,58 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
 
 **Expected Effort**: 4-6 hours remaining **Complexity**: Medium
 
-#### Refactor-5: Modular Architecture Enhancement = Version 0.10.0
+#### Refactor-5: Modular Architecture = Version 0.9.x Series
 
-**Category**: Architecture **Description**: Split monolithic quickmap.R into
-focused, maintainable modules **Proposed Modules**: - `R/data_io.R` - Data
-loading and transformation - `R/data_processing.R` - Filtering and spatial
-operations - `R/layer_generation.R` - Icon and layer creation -
-`R/styling_rendering.R` - Map styling and controls - `R/html_export.R` - HTML
-processing and export - `R/config.R` - Configuration and color scales -
-`R/utils.R` - Utilities and helpers **Expected Effort**: 8-12 hours
-**Complexity**: High
+**Category**: Architecture
+**Description**: Split monolithic quickmap.R into focused, maintainable modules
+**Goal**: By v1.0, `create_pollution_map()` becomes a thin wrapper calling modular functions
 
-#### Refactor-4: Modern R Practices Implementation and setup as a library for package installs = version 1.0
+**Proposed Modules**:
+- `R/data_io.R` - Data loading and transformation
+- `R/data_processing.R` - Filtering and spatial operations
+- `R/layer_generation.R` - Icon and layer creation
+- `R/styling_rendering.R` - Map styling and controls
+- `R/html_export.R` - HTML processing and export
+- `R/config.R` - Configuration and color scales
+- `R/utils.R` - Utilities and helpers
 
-**Category**: Code Quality **Description**: Modernize codebase with contemporary
-R development practices **Key Areas**: - Tidyverse consistency - Comprehensive
-error handling - Structured logging system - Testing infrastructure (testthat) -
-Code quality tools (styler, lintr) - Performance monitoring **Expected Effort**:
-12-16 hours **Complexity**: High
+**Evolution Path**:
+- **v0.9.1-v0.9.5**: Extract modules while maintaining single-file compatibility
+- **v0.9.6-v0.9.9**: Refactor `create_pollution_map()` to call modular functions
+- **v1.0**: `create_pollution_map()` as thin wrapper over clean modular architecture
+
+**Expected Effort**: 8-12 hours **Complexity**: High
+
+#### Refactor-6: Modern R Practices and Library Setup = Version 1.0
+
+**Category**: Code Quality
+**Description**: Modernize codebase with contemporary R development practices and prepare for CRAN submission
+
+**Architectural Goal**: `create_pollution_map()` as user-facing wrapper function:
+```r
+# v1.0 architecture
+create_pollution_map <- function(...) {
+  # Thin wrapper that calls:
+  data <- load_pollution_data(...)      # R/data_io.R
+  processed <- process_spatial_data(...) # R/data_processing.R
+  map <- create_base_map(...)           # R/map_creation.R
+  map <- add_pollution_layers(...)      # R/layer_generation.R
+  map <- apply_styling(...)             # R/styling_rendering.R
+  export_map(...)                       # R/html_export.R
+  return(map)
+}
+```
+
+**Key Areas**:
+- Tidyverse consistency
+- Comprehensive error handling
+- Structured logging system
+- Testing infrastructure (testthat)
+- Code quality tools (styler, lintr)
+- Performance monitoring
+- CRAN submission preparation
+
+**Expected Effort**: 12-16 hours **Complexity**: High
 
 #### Version 1.1-1.9
 

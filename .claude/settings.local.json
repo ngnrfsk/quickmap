@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(tree:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Read(//tmp/openair-repo/R/**)",
+      "Read(//private/tmp/openair-repo/R/**)",
+      "Bash(option)",
+      "Bash(setting)",
+      "Read(//private/tmp/openair-repo/data/**)",
+      "Bash(layer)",
+      "Bash(spatial)"
     ],
     "deny": [],
     "ask": []
