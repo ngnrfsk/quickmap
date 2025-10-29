@@ -833,6 +833,265 @@ map <- quickmapFromOpenAir(
 
 ---
 
-**Document Version:** 2.0
-**Last Updated:** 2025-10-29 (OpenAir compatibility added)
-**Previous Version:** 1.0 (2025-10-28)
+## Architectural Evolution: v0.9.0 → v1.0
+
+### Vision: Modular Architecture with Thin Wrapper
+
+**Goal**: By v1.0, `create_pollution_map()` becomes a user-friendly wrapper
+over clean, modular functions.
+
+### Version Roadmap
+
+**v0.9.0 (CURRENT)**: Monolithic but organized
+- Single `R/quickmap.R` file (2427 lines)
+- All logic in `create_pollution_map()` function
+- 14 parameters, simplified from 21
+- Internal helper functions
+
+**v0.9.x Series (NEXT)**: Build modular architecture
+- Extract data loading → `load_pollution_data()`
+- Extract processing → `process_spatial_data()`
+- Extract layer creation → `create_pollution_layers()`
+- Extract styling → `apply_map_styling()`
+- Extract export → `export_pollution_map()`
+- Maintain `create_pollution_map()` as main interface
+
+**v1.0 (TARGET)**: Clean modular architecture
+```r
+# User-facing wrapper (thin)
+create_pollution_map <- function(
+  diffusion_tube_file = "none",
+  sensor_file = "none",
+  boroughs,
+  pollutant = "no2",
+  cols = "who_no2",  # OpenAir-compatible
+  styling_type = "none",
+  ...
+) {
+  # 1. Load data
+  data <- load_pollution_data(
+    diffusion_tube_file = diffusion_tube_file,
+    sensor_file = sensor_file,
+    school_file = school_file
+  )
+
+  # 2. Process spatial data
+  processed <- process_spatial_data(
+    data = data,
+    boroughs = boroughs,
+    pollutant = pollutant,
+    years = years
+  )
+
+  # 3. Create base map
+  map <- create_base_map(
+    boundary = processed$boundary,
+    zoom = processed$zoom_level
+  )
+
+  # 4. Add pollution layers
+  map <- add_pollution_layers(
+    map = map,
+    data = processed$layers,
+    pollutant = pollutant,
+    cols = cols
+  )
+
+  # 5. Apply styling
+  map <- apply_map_styling(
+    map = map,
+    styling_type = styling_type,
+    title = title,
+    banner_colour = banner_colour
+  )
+
+  # 6. Export if requested
+  if (!is.null(export_image)) {
+    export_pollution_map(
+      map = map,
+      output_file = output_file,
+      dimensions = export_image
+    )
+  }
+
+  return(map)
+}
+```
+
+### Benefits of Modular Architecture
+
+**For Users**:
+- Same simple interface (`create_pollution_map()`)
+- Access to building blocks for custom workflows
+- Can call individual functions for advanced use cases
+
+**For Developers**:
+- Each module testable in isolation
+- Clear separation of concerns
+- Easier to maintain and extend
+- Facilitates OpenAir integration at each layer
+
+**For OpenAir Integration**:
+```r
+# Advanced user can mix OpenAir + quickmap functions
+library(openair)
+library(quickmap)
+
+# Use OpenAir preprocessing
+filtered <- selectByDate(openair_data, year = 2020:2023)
+daily <- timeAverage(filtered, avg.time = "day")
+
+# Use quickmap spatial processing
+spatial <- process_spatial_data(daily, boroughs = "Wandsworth")
+
+# Use quickmap visualization
+map <- create_base_map(spatial$boundary)
+map <- add_pollution_layers(map, spatial$layers, cols = "jet")
+map <- apply_map_styling(map, styling_type = "html")
+```
+
+### Design Principles for Modular Functions
+
+**1. Single Responsibility**
+Each module should have one clear purpose:
+- `load_pollution_data()` → loads and validates data files
+- `process_spatial_data()` → spatial transformations and filtering
+- `create_pollution_layers()` → generates map layer objects
+- `apply_map_styling()` → applies visual styling
+- `export_pollution_map()` → handles file output
+
+**2. Clear Interfaces**
+Functions should have predictable input/output:
+```r
+# Input: file paths, Return: validated data frames
+load_pollution_data(diffusion_tube_file, sensor_file, school_file)
+  → list(dt_data, sensor_data, school_data)
+
+# Input: data + filters, Return: processed spatial objects
+process_spatial_data(data, boroughs, pollutant, years)
+  → list(layers, boundary, zoom_level)
+
+# Input: map + data, Return: map with layers
+add_pollution_layers(map, data, pollutant, cols)
+  → leaflet map object
+```
+
+**3. Composability**
+Functions should work together like building blocks:
+```r
+# Standard workflow
+data <- load_pollution_data(...)
+processed <- process_spatial_data(data, ...)
+map <- create_base_map(processed$boundary)
+map <- add_pollution_layers(map, processed$layers, ...)
+
+# Custom workflow (skip some steps)
+data <- load_pollution_data(...)
+# User does custom processing
+custom_layers <- my_custom_processing(data)
+map <- create_base_map(my_boundary)
+map <- add_pollution_layers(map, custom_layers, ...)
+```
+
+**4. OpenAir-Compatible Naming**
+Modular functions should follow OpenAir conventions:
+```r
+# Use dots for multi-word parameters
+load_pollution_data(
+  tube.file = "...",
+  sensor.file = "...",
+  school.file = "..."
+)
+
+# Use standard OpenAir parameter names
+process_spatial_data(
+  mydata,           # OpenAir convention
+  pollutant = "no2",
+  type = "default",
+  avg.time = "day"  # If aggregation added
+)
+
+# Accept OpenAir data structures
+add_pollution_layers(
+  map,
+  mydata,           # Can be OpenAir format
+  pollutant = "no2",
+  cols = "jet"      # OpenAir parameter name
+)
+```
+
+### Migration Strategy for v0.9.x
+
+**Phase 1 (v0.9.1-v0.9.3)**: Extract without breaking
+- Create new modular functions in same file
+- `create_pollution_map()` still contains all logic
+- New functions available but not required
+
+**Phase 2 (v0.9.4-v0.9.6)**: Gradual refactoring
+- Move logic from `create_pollution_map()` to modules
+- Maintain backward compatibility
+- Add tests for each module
+
+**Phase 3 (v0.9.7-v0.9.9)**: Optimize wrapper
+- `create_pollution_map()` becomes thin wrapper
+- All heavy lifting in modules
+- Document modular usage patterns
+
+**Phase 4 (v1.0)**: Clean architecture
+- One function per file in `R/` directory
+- Comprehensive roxygen2 documentation
+- Full testthat coverage
+- Ready for CRAN submission
+
+### Naming Conventions for Modules
+
+**Follow OpenAir patterns for exported functions**:
+```r
+# Data loading (internal helper - not exported)
+.load_csv_data <- function(file.path) { }
+
+# Data loading (exported function - OpenAir style)
+loadPollutionData <- function(
+  tube.file = "none",
+  sensor.file = "none",
+  school.file = "none"
+) { }
+
+# Processing (exported - OpenAir style)
+processSpatialData <- function(
+  mydata,
+  boroughs,
+  pollutant = "no2"
+) { }
+
+# Layer creation (exported - OpenAir style)
+addPollutionLayers <- function(
+  map,
+  mydata,
+  pollutant = "no2",
+  cols = "default"
+) { }
+```
+
+**Use quickmap-specific names for unique features**:
+```r
+# quickmap-specific (no OpenAir equivalent)
+applyBoroughStyling <- function(
+  map,
+  borough,
+  banner.colour = NULL
+) { }
+
+# quickmap-specific
+exportPollutionMap <- function(
+  map,
+  output.file,
+  image.dims = NULL
+) { }
+```
+
+---
+
+**Document Version:** 2.1
+**Last Updated:** 2025-10-29 (Architectural vision added)
+**Previous Versions:** 2.0 (2025-10-29), 1.0 (2025-10-28)
