@@ -1332,6 +1332,138 @@ apply_custom_layout_in_html <- function(
   legend_html <- generate_legend_html(scale_name, collapsed_mobile)
   html_text <- sub("</body>", paste0(legend_html, "</body>"), html_text)
 
+  # PROOF OF CONCEPT: HTML5 slider for year selection
+  test_html <- '
+<div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; padding: 10px; z-index: 1000; border: 2px solid #333; border-radius: 4px;">
+  <div style="margin-bottom: 10px;">
+    <strong>Year Control (Proof of Concept)</strong>
+  </div>
+  <input type="range" id="testSlider" min="0" max="7" value="7" style="width: 200px;">
+  <span id="testYear" style="margin-left: 10px; font-weight: bold;">2024</span>
+  <button id="testBtn" style="margin-left: 10px; padding: 5px 10px; cursor: pointer;">Test Access</button>
+  <div id="testResult" style="margin-top: 10px; font-size: 12px;"></div>
+</div>
+
+<script>
+(function() {
+  document.addEventListener(\'DOMContentLoaded\', function() {
+    var years = [\'2017\', \'2018\', \'2019\', \'2020\', \'2021\', \'2022\', \'2023\', \'2024\'];
+
+    document.getElementById("testBtn").addEventListener("click", function() {
+      try {
+        var mapDiv = document.querySelector(".leaflet-container");
+        if (!mapDiv) {
+          document.getElementById("testResult").innerHTML = "❌ FAIL: No .leaflet-container found";
+          return;
+        }
+
+        var widgetContainer = mapDiv.closest("[id^=htmlwidget-]");
+        if (!widgetContainer) {
+          document.getElementById("testResult").innerHTML = "❌ FAIL: No HTMLWidget container found";
+          return;
+        }
+
+        var widget = HTMLWidgets.find("#" + widgetContainer.id);
+        if (!widget) {
+          document.getElementById("testResult").innerHTML = "❌ FAIL: HTMLWidgets.find() returned null";
+          return;
+        }
+
+        var map = widget;
+        if (widget.getMap) map = widget.getMap();
+        else if (widget.map) map = widget.map;
+        else if (widget._map) map = widget._map;
+
+        if (!map.eachLayer) {
+          document.getElementById("testResult").innerHTML = "❌ FAIL: Cannot find Leaflet map object";
+          return;
+        }
+
+        var groups = {};
+        var totalLayers = 0;
+        map.eachLayer(function(layer) {
+          totalLayers++;
+          if (layer.options && layer.options.group) {
+            var g = layer.options.group;
+            groups[g] = (groups[g] || 0) + 1;
+          }
+        });
+
+        var groupInfo = JSON.stringify(groups, null, 2);
+        document.getElementById("testResult").innerHTML =
+          "✅ SUCCESS: Map accessible<br>" +
+          "Total layers: " + totalLayers + "<br>" +
+          "Groups: <pre style=\'margin:5px 0;\'>" + groupInfo + "</pre>";
+
+        console.log("Groups found:", groups);
+      } catch(e) {
+        document.getElementById("testResult").innerHTML = "❌ ERROR: " + e.message;
+        console.error(e);
+      }
+    });
+
+    var cachedMap = null;
+
+    function getMapInstance() {
+      if (cachedMap) return cachedMap;
+
+      var mapDiv = document.querySelector(".leaflet-container");
+      var widgetContainer = mapDiv.closest("[id^=htmlwidget-]");
+      var widget = HTMLWidgets.find("#" + widgetContainer.id);
+
+      cachedMap = widget;
+      if (widget.getMap) cachedMap = widget.getMap();
+      else if (widget.map) cachedMap = widget.map;
+      else if (widget._map) cachedMap = widget._map;
+
+      return cachedMap;
+    }
+
+    document.getElementById("testSlider").addEventListener("input", function() {
+      var index = parseInt(this.value);
+      var selectedYear = years[index];
+      document.getElementById("testYear").textContent = selectedYear;
+
+      try {
+        if (!window.quickmapLayerCache) {
+          console.error("window.quickmapLayerCache not found");
+          return;
+        }
+
+        var map = getMapInstance();
+        var layerCache = window.quickmapLayerCache;
+
+        var added = 0, removed = 0;
+        years.forEach(function(yr) {
+          if (!layerCache[yr]) return;
+
+          layerCache[yr].forEach(function(layer) {
+            if (yr === selectedYear) {
+              if (!map.hasLayer(layer)) {
+                map.addLayer(layer);
+                added++;
+              }
+            } else {
+              if (map.hasLayer(layer)) {
+                map.removeLayer(layer);
+                removed++;
+              }
+            }
+          });
+        });
+        console.log("Year switched to", selectedYear, "- Added:", added, "Removed:", removed);
+
+      } catch(e) {
+        console.error("Slider control error:", e);
+      }
+    });
+  });
+})();
+</script>
+'
+
+  html_text <- sub("</body>", paste0(test_html, "</body>"), html_text)
+
   # Write modified HTML back to file
   writeLines(html_text, html_file)
 
@@ -1885,28 +2017,54 @@ add_map_controls <- function(
       options = options
     )
 
-  # Layer control
+  # Layer control: JavaScript-based (proof of concept for slider)
+  # NOTE: addLayersControl() removed - it hides inactive groups before onRender,
+  # making layers inaccessible to JavaScript caching
   baseGroups <- if (interactive && length(years) > 1) years else NULL
   if (!is.null(baseGroups)) {
-    map <- map |>
-      addLayersControl(
-        baseGroups = baseGroups,
-        options = layersControlOptions(
-          collapsed = TRUE,
-          position = 'bottomright'
-        )
-      )
+    # Cache all year layers while visible, then hide all except latest
+    map <- map %>%
+      htmlwidgets::onRender("
+        function(el, x) {
+          var map = this;
+          var layersByGroup = {};
+          var latestYear = null;
 
-    # Default to showing latest year only
-    latest_year <- max(baseGroups)
+          // STAGE 1: Cache all layers by group (all visible at this point)
+          map.eachLayer(function(layer) {
+            if (layer.options && layer.options.group) {
+              var group = String(layer.options.group);
+              if (!layersByGroup[group]) {
+                layersByGroup[group] = [];
+              }
+              layersByGroup[group].push(layer);
 
-    # Hide all years first, then show only the latest
-    for (yr in baseGroups) {
-      map <- hideGroup(map, as.character(yr))
-    }
+              // Track latest year
+              if (!latestYear || parseInt(group) > parseInt(latestYear)) {
+                latestYear = group;
+              }
+            }
+          });
 
-    # Show only the latest year
-    map <- showGroup(map, as.character(latest_year))
+          // Store globally for slider access
+          window.quickmapLayerCache = layersByGroup;
+
+          // STAGE 2: Hide all years except latest
+          Object.keys(layersByGroup).forEach(function(yr) {
+            if (yr !== latestYear) {
+              layersByGroup[yr].forEach(function(layer) {
+                map.removeLayer(layer);
+              });
+            }
+          });
+
+          console.log('Layer cache initialized:', Object.keys(layersByGroup).reduce(function(acc, k) {
+            acc[k] = layersByGroup[k].length;
+            return acc;
+          }, {}));
+          console.log('Default year visible:', latestYear);
+        }
+      ")
   }
 
   # Leaflet legend and title controls removed - using HTML banner/legend system only
@@ -2226,7 +2384,7 @@ create_pollution_map <- function(
   # styling parameters
   vignette = TRUE,
   colour_scale = "who_no2",
-  styling_type = "none", # "none" | "html" - controls HTML banner and legend display
+  styling_type = "html", # "none" | "html" - controls HTML banner and legend display
   marker_labels = FALSE, # FALSE | TRUE | "values_on" | "labels" | "labels_on"
   banner_colour = borough_palettes$merton$purple, # show_borough_colours() to list all available
   boundary_labels = FALSE
