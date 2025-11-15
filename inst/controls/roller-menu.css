@@ -85,7 +85,7 @@
 }
 
 .year-item:hover {
-  background: #f8f9fa;
+  background: %s;
 }
 
 .year-item.selected {
