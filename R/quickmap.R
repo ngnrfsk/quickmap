@@ -1035,7 +1035,7 @@ apply_custom_layout_in_html <- function(
   }
 
   .map-container { flex: 1; position: relative; min-height: 0; }
-  .map-container > div { height: 100%% !important; }
+  .map-container > div:not(#yearControl) { height: 100%% !important; }
 
   .legend {
     background: #f8f9fa;
@@ -1108,7 +1108,7 @@ apply_custom_layout_in_html <- function(
     }
 
     .map-container { flex: 1; position: relative; min-height: 0; }
-    .map-container > div { height: 100%% !important; }
+    .map-container > div:not(#yearControl) { height: 100%% !important; }
 
     .legend {
       background: #f8f9fa;
