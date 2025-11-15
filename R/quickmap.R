@@ -1384,8 +1384,8 @@ apply_custom_layout_in_html <- function(
   legend_header_hover <- lighten_color(banner_colour, 75)  # Slightly darker for hover
 
   # Insert banner and legend colors into CSS
-  # Order: banner, legend_header, legend_header_hover, legend_header, legend_header_hover
-  custom_css <- sprintf(custom_css, banner_colour, legend_header_bg, legend_header_hover, legend_header_bg, legend_header_hover)
+  # Order: banner, legend_header_bg, legend_header_hover
+  custom_css <- sprintf(custom_css, banner_colour, legend_header_bg, legend_header_hover)
 
   # Insert viewport and CSS before </head>
   html_text <- sub(
