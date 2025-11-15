@@ -933,13 +933,41 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE) {
   )
 }
 
+#' Lighten or darken a hex color
+#'
+#' Adjusts color brightness by a percentage
+#'
+#' @param color Hex color string (e.g., "#2c3e50")
+#' @param amount Percentage to lighten (positive) or darken (negative), range -100 to 100
+#' @return Hex color string
+lighten_color <- function(color, amount = 15) {
+  # Convert hex to RGB
+  rgb_vals <- col2rgb(color)[, 1]
+
+  # Calculate adjustment (positive = lighter, negative = darker)
+  if (amount > 0) {
+    # Lighten: move toward white (255)
+    rgb_vals <- rgb_vals + ((255 - rgb_vals) * amount / 100)
+  } else {
+    # Darken: move toward black (0)
+    rgb_vals <- rgb_vals + (rgb_vals * amount / 100)
+  }
+
+  # Clamp values to 0-255
+  rgb_vals <- pmin(pmax(rgb_vals, 0), 255)
+
+  # Convert back to hex
+  rgb(rgb_vals[1], rgb_vals[2], rgb_vals[3], maxColorValue = 255)
+}
+
 #' Load roller menu control from external files
 #'
 #' Reads HTML, CSS, and JavaScript from inst/controls/ directory
 #' and combines them into a single HTML string for injection
 #'
+#' @param banner_colour Hex color for theming (default "#2c3e50")
 #' @return Character string containing combined HTML/CSS/JS
-load_roller_menu_control <- function() {
+load_roller_menu_control <- function(banner_colour = "#2c3e50") {
   # Define paths to control files
   controls_dir <- system.file("controls", package = "quickmap")
 
@@ -956,6 +984,12 @@ load_roller_menu_control <- function() {
   html_content <- paste(readLines(html_file, warn = FALSE), collapse = "\n")
   css_content <- paste(readLines(css_file, warn = FALSE), collapse = "\n")
   js_content <- paste(readLines(js_file, warn = FALSE), collapse = "\n")
+
+  # Calculate accent colors from banner_colour
+  accent_light <- lighten_color(banner_colour, 15)  # Lighter shade for selected background
+
+  # Inject banner_colour and accent into CSS template
+  css_content <- sprintf(css_content, banner_colour, banner_colour, accent_light, banner_colour, accent_light, banner_colour)
 
   # Combine into single HTML string
   combined <- sprintf('
@@ -1052,10 +1086,10 @@ apply_custom_layout_in_html <- function(
     align-items: center;
     font-weight: bold;
     font-size: 1.2rem;               /* Larger header font */
-    background: #e9ecef;
+    background: %s;
   }
 
-  .legend-header:hover { background: #dee2e6; }
+  .legend-header:hover { background: %s; }
 
       .legend-toggle {
         transition: transform 0.3s ease;
@@ -1124,10 +1158,10 @@ apply_custom_layout_in_html <- function(
       gap: 0.625rem;
       align-items: center;
       font-weight: bold;
-      background: #e9ecef;
+      background: %s;
     }
 
-    .legend-header:hover { background: #dee2e6; }
+    .legend-header:hover { background: %s; }
 
     .legend-toggle {
       transition: transform 0.3s ease;
@@ -1345,8 +1379,13 @@ apply_custom_layout_in_html <- function(
     )
   }
 
-  # Insert banner color into CSS
-  custom_css <- sprintf(custom_css, banner_colour)
+  # Calculate legend colors from banner_colour
+  legend_header_bg <- lighten_color(banner_colour, 85)  # Very light tint for legend header
+  legend_header_hover <- lighten_color(banner_colour, 75)  # Slightly darker for hover
+
+  # Insert banner and legend colors into CSS
+  # Order: banner, legend_header, legend_header_hover, legend_header, legend_header_hover
+  custom_css <- sprintf(custom_css, banner_colour, legend_header_bg, legend_header_hover, legend_header_bg, legend_header_hover)
 
   # Insert viewport and CSS before </head>
   html_text <- sub(
@@ -1369,7 +1408,7 @@ apply_custom_layout_in_html <- function(
   html_text <- sub("(<body[^>]*>)", paste0("\\1\n", banner_html), html_text)
 
   # Load roller menu control from external files
-  roller_menu_html <- load_roller_menu_control()
+  roller_menu_html <- load_roller_menu_control(banner_colour)
 
   # Generate legend HTML (starts with </div> to close map-container)
   legend_html <- generate_legend_html(scale_name, collapsed_mobile)
