@@ -1368,14 +1368,15 @@ apply_custom_layout_in_html <- function(
   # Insert banner/container after <body> tag (handles attributes)
   html_text <- sub("(<body[^>]*>)", paste0("\\1\n", banner_html), html_text)
 
-  # Generate and insert legend before </body>
-  legend_html <- generate_legend_html(scale_name, collapsed_mobile)
-  html_text <- sub("</body>", paste0(legend_html, "</body>"), html_text)
-
   # Load roller menu control from external files
   roller_menu_html <- load_roller_menu_control()
 
-  html_text <- sub("</body>", paste0(roller_menu_html, "</body>"), html_text)
+  # Generate legend HTML (starts with </div> to close map-container)
+  legend_html <- generate_legend_html(scale_name, collapsed_mobile)
+
+  # Insert control before legend (so it's inside map-container)
+  combined_html <- paste0(roller_menu_html, "\n", legend_html)
+  html_text <- sub("</body>", paste0(combined_html, "</body>"), html_text)
 
   # Write modified HTML back to file
   writeLines(html_text, html_file)
