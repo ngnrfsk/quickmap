@@ -6,7 +6,7 @@
 }
 
 .year-button {
-  background: white;
+  background: %s;
   border: 2px solid %s;
   border-radius: 0.5rem;
   padding: 0.625rem 1rem;
@@ -19,12 +19,12 @@
   justify-content: center;
   gap: 0.625rem;
   min-width: 6.25rem;
-  color: %s;
+  color: white;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .year-button:hover {
-  background: #f8f9fa;
+  background: %s;
   border-color: %s;
 }
 
