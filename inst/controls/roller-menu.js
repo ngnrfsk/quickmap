@@ -83,9 +83,23 @@
       yearItem.setAttribute('data-year', year);
       yearItem.textContent = year;
 
+      // Mark latest year as selected initially
+      if (year === latestYear) {
+        yearItem.classList.add('selected');
+      }
+
       // Add click handler for layer switching
       yearItem.addEventListener('click', function() {
         var clickedYear = this.getAttribute('data-year');
+
+        // Remove selected class from all items
+        var allItems = yearList.querySelectorAll('.year-item');
+        allItems.forEach(function(item) {
+          item.classList.remove('selected');
+        });
+
+        // Add selected class to clicked item
+        this.classList.add('selected');
 
         // Update selected year display
         selectedYearSpan.textContent = clickedYear;
