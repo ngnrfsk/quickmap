@@ -41,6 +41,8 @@
   border-radius: 4px;
   display: none;
   min-width: 100px;
+  max-height: 240px;
+  overflow-y: auto;
 }
 
 .year-list.show {
