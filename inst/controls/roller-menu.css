@@ -135,3 +135,9 @@
 .year-item.selected:hover {
   background: %s;
 }
+
+.year-item.keyboard-focused {
+  background: %s;
+  outline: 2px solid %s;
+  outline-offset: -2px;
+}

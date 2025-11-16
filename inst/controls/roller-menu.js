@@ -105,6 +105,9 @@
     var playInterval = null;
     var currentIndex = 0;
 
+    // Keyboard navigation state
+    var keyboardFocusIndex = -1; // Track which year item has keyboard focus
+
     // Read config from R (injected via window.quickmapConfig) or use defaults
     var config = window.quickmapConfig || {autoplay: false, playSpeed: 500};
     var playSpeed = config.playSpeed;
@@ -258,6 +261,101 @@
       if (e.key === 'Escape' && yearControl.classList.contains('expanded')) {
         yearControl.classList.remove('expanded');
         yearList.classList.remove('show');
+        keyboardFocusIndex = -1; // Reset keyboard focus
+      }
+    });
+
+    // Arrow key navigation
+    document.addEventListener('keydown', function(e) {
+      // Skip if single year mode
+      if (yearControl.classList.contains('single-year')) {
+        return;
+      }
+
+      var allItems = yearList.querySelectorAll('.year-item');
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault(); // Prevent page scroll
+
+        if (yearControl.classList.contains('expanded')) {
+          // Dropdown is open - navigate through items
+          if (keyboardFocusIndex === -1) {
+            // Initialize to current selected item
+            keyboardFocusIndex = currentIndex;
+          }
+
+          // Move focus
+          if (e.key === 'ArrowDown') {
+            keyboardFocusIndex = (keyboardFocusIndex + 1) % years.length;
+          } else {
+            keyboardFocusIndex = (keyboardFocusIndex - 1 + years.length) % years.length;
+          }
+
+          // Update visual highlight
+          allItems.forEach(function(item, index) {
+            if (index === keyboardFocusIndex) {
+              item.classList.add('keyboard-focused');
+              item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            } else {
+              item.classList.remove('keyboard-focused');
+            }
+          });
+
+        } else {
+          // Dropdown is closed - cycle years directly
+          if (e.key === 'ArrowDown') {
+            currentIndex = (currentIndex + 1) % years.length;
+          } else {
+            currentIndex = (currentIndex - 1 + years.length) % years.length;
+          }
+
+          var newYear = years[currentIndex];
+          selectedYearSpan.textContent = newYear;
+
+          // Update selected class
+          allItems.forEach(function(item, index) {
+            if (index === currentIndex) {
+              item.classList.add('selected');
+            } else {
+              item.classList.remove('selected');
+            }
+          });
+
+          // Switch map layers
+          switchToYear(newYear, years);
+        }
+      }
+
+      // Enter key when dropdown is open - apply selection
+      if (e.key === 'Enter' && yearControl.classList.contains('expanded')) {
+        e.preventDefault();
+
+        if (keyboardFocusIndex !== -1) {
+          var selectedYear = years[keyboardFocusIndex];
+          currentIndex = keyboardFocusIndex;
+
+          // Update display
+          selectedYearSpan.textContent = selectedYear;
+
+          // Update selected class
+          allItems.forEach(function(item, index) {
+            if (index === keyboardFocusIndex) {
+              item.classList.add('selected');
+              item.classList.remove('keyboard-focused');
+            } else {
+              item.classList.remove('selected');
+              item.classList.remove('keyboard-focused');
+            }
+          });
+
+          // Switch map layers
+          switchToYear(selectedYear, years);
+
+          // Close dropdown
+          yearControl.classList.remove('expanded');
+          yearList.classList.remove('show');
+          keyboardFocusIndex = -1;
+        }
       }
     });
 
