@@ -11,7 +11,7 @@
 .play-pause-button {
   background: %s;
   border: 2px solid %s;
-  border-radius: 50%;
+  border-radius: 50%%;
   width: 2.5rem;
   height: 2.5rem;
   cursor: pointer;
