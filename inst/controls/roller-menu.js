@@ -225,13 +225,18 @@
     yearButton.addEventListener('keydown', function(e) {
       if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault(); // Prevent page scroll on Space
-        e.stopPropagation();
 
         // Don't expand if single year
         if (yearControl.classList.contains('single-year')) {
           return;
         }
 
+        // If Enter pressed during arrow navigation, let document handler deal with it
+        if (e.key === 'Enter' && keyboardFocusIndex !== -1) {
+          return; // Don't toggle, let the selection handler fire
+        }
+
+        e.stopPropagation();
         yearControl.classList.toggle('expanded');
         yearList.classList.toggle('show');
 
