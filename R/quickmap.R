@@ -1034,6 +1034,193 @@ load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   return(sprintf("\n<style>\n%s\n</style>\n", css_content))
 }
 
+#' Load legend CSS from external file
+#'
+#' Reads legend CSS template from inst/legend/ directory and injects
+#' legend colors and mode-specific styling values
+#'
+#' @param banner_colour Hex color for banner (used to calculate legend header colors)
+#' @param image_mode Logical, if TRUE uses image-optimized styles, if FALSE uses interactive responsive styles
+#' @return Character string containing CSS wrapped in <style> tags
+load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
+  # Define path to legend CSS file
+  legend_dir <- system.file("legend", package = "quickmap")
+
+  # Fall back to local inst/legend if package not installed
+  if (legend_dir == "") {
+    legend_dir <- "inst/legend"
+  }
+
+  css_file <- file.path(legend_dir, "legend.css")
+
+  # Read CSS template
+  css_content <- paste(readLines(css_file, warn = FALSE), collapse = "\n")
+
+  # Calculate legend header colors from banner_colour
+  legend_header_bg <- lighten_color(banner_colour, 85)  # Very light tint
+  legend_header_hover <- lighten_color(banner_colour, 75)  # Slightly darker for hover
+
+  # Determine values based on mode
+  if (image_mode) {
+    # Image-optimized: larger sizes for JPG clarity
+    border_top <- "3px solid #dee2e6"
+    header_padding <- "1.5rem 2rem"
+    header_gap <- "1rem"
+    header_font_size <- "font-size: 1.2rem;"
+    items_padding <- "1rem"
+    items_gap <- "1rem"
+    items_font_size <- "font-size: 1rem;"
+    item_gap <- "1rem"
+    symbol_width <- "1.3rem"
+    symbol_height <- "1.3rem"
+    symbol_border <- "2px solid rgba(0,0,0,0.3)"
+    mobile_css <- ""  # No mobile styles for static images
+  } else {
+    # Interactive: responsive design with mobile breakpoints
+    border_top <- "2px solid #dee2e6"
+    header_padding <- "0.9375rem 1.25rem"
+    header_gap <- "0.625rem"
+    header_font_size <- ""
+    items_padding <- "0.625rem"
+    items_gap <- "0.625rem"
+    items_font_size <- ""
+    item_gap <- "0.625rem"
+    symbol_width <- "1.25rem"
+    symbol_height <- "1.25rem"
+    symbol_border <- "2px solid rgba(0,0,0,0.2)"
+
+    # Mobile responsive CSS for legend
+    mobile_css <- "
+/* Small phones (320-374px) */
+@media (max-width: 374px) {
+  .legend-header {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    gap: 0.375rem;
+  }
+  .legend-items {
+    gap: 0.5rem;
+    padding: 0.2rem;
+    flex-wrap: wrap;
+    font-size: 0.7rem;
+  }
+  .legend-item { gap: 0.2rem; }
+  .legend-symbol {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-width: 1px;
+  }
+}
+
+/* Standard phones (375-480px) */
+@media (min-width: 375px) and (max-width: 480px) {
+  .legend-header {
+    padding: 0.625rem 1rem;
+    font-size: 1rem;
+    gap: 0.5rem;
+  }
+  .legend-items {
+    gap: 0.625rem;
+    padding: 0.3rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+  }
+  .legend-item { gap: 0.25rem; }
+  .legend-symbol {
+    width: 0.9rem;
+    height: 0.9rem;
+    border-width: 1px;
+  }
+}
+
+/* Landscape phones */
+@media (max-width: 850px) and (orientation: landscape) {
+  .legend-header {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    gap: 0.5rem;
+  }
+  .legend-items {
+    gap: 0.625rem;
+    padding: 0.4rem;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+  }
+  .legend-item { gap: 0.3rem; }
+  .legend-symbol {
+    width: 0.85rem;
+    height: 0.85rem;
+    border-width: 1px;
+  }
+}
+
+/* Year control toggle with text character */
+.leaflet-control-layers-toggle {
+  background-image: none !important;
+  width: 32px;
+  height: 32px;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.leaflet-control-layers-toggle::before {
+  content: '▲▼';
+}
+
+.leaflet-control-layers-toggle:hover {
+  background-color: #f4f4f4;
+}
+
+.leaflet-control-layers-expanded {
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  min-width: 100px;
+}
+
+.leaflet-control-layers-base label {
+  display: block;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.leaflet-control-layers-base label:hover {
+  background-color: #f0f0f0;
+  border-radius: 2px;
+}
+
+@media (max-width: 768px) {
+  .leaflet-control-layers-toggle {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+}"
+  }
+
+  # Inject values into CSS template
+  # Order: border_top, header_padding, header_gap, header_font_size, legend_header_bg, legend_header_hover,
+  #        items_padding, items_gap, items_font_size, item_gap,
+  #        symbol_width, symbol_height, symbol_border, mobile_css
+  css_content <- sprintf(css_content,
+                         border_top, header_padding, header_gap, header_font_size,
+                         legend_header_bg, legend_header_hover,
+                         items_padding, items_gap, items_font_size, item_gap,
+                         symbol_width, symbol_height, symbol_border,
+                         mobile_css)
+
+  # Return CSS wrapped in style tags
+  return(sprintf("\n<style>\n%s\n</style>\n", css_content))
+}
+
 #' Load roller menu control from external files
 #'
 #' Reads HTML, CSS, and JavaScript from inst/controls/ directory
@@ -1149,231 +1336,8 @@ apply_custom_layout_in_html <- function(
   # Load banner CSS from external file
   banner_css <- load_banner_css(banner_colour, image_mode)
 
-  # Legend CSS (will be extracted in STEP 2)
-  # NOTE: All % signs must be escaped as %% for sprintf()
-  if (image_mode) {
-    # Image-optimized CSS with larger fonts and symbols for JPG clarity
-    legend_css <- "\n<style>
-  .legend {
-    background: #f8f9fa;
-    border-top: 3px solid #dee2e6;    /* Thicker border for images */
-    flex-shrink: 0;
-  }
-
-  .legend-header {
-    padding: 1.5rem 2rem;            /* Larger padding for images */
-    cursor: pointer;
-    user-select: none;
-    display: flex;
-    gap: 1rem;                       /* Larger gap */
-    align-items: center;
-    font-weight: bold;
-    font-size: 1.2rem;               /* Larger header font */
-    background: %s;
-  }
-
-  .legend-header:hover { background: %s; }
-
-      .legend-toggle {
-        transition: transform 0.3s ease;
-        font-size: 0.8em;
-      }
-
-    .legend.collapsed .legend-toggle { transform: rotate(-90deg); }
-
-    .legend-items {
-      padding: 1rem;                     /* Larger padding */
-      display: flex;
-      gap: 1rem;                         /* Larger gap between items */
-      justify-content: center;
-      flex-wrap: wrap;
-      font-size: 1rem;                   /* Larger legend text */
-      max-height: 18.75rem;
-      overflow: hidden;
-      transition: max-height 0.3s ease, padding 0.3s ease;
-    }
-
-    .legend.collapsed .legend-items {
-      max-height: 0;
-      padding: 0 0.25rem;
-    }
-
-    .legend-item { display: flex; align-items: center; gap: 1rem; }
-
-    .legend-symbol {
-      width: 1.3rem;                     /* Better proportioned symbols relative to text */
-      height: 1.3rem;
-      border-radius: 50%%;
-      border: 2px solid rgba(0,0,0,0.3);  /* Darker border for visibility */
-    }
-    </style>\n"
-  } else {
-    # Interactive CSS (original responsive design)
-    legend_css <- "\n<style>
-    .legend {
-      background: #f8f9fa;
-      border-top: 2px solid #dee2e6;
-      flex-shrink: 0;
-    }
-
-    .legend-header {
-      padding: 0.9375rem 1.25rem;
-      cursor: pointer;
-      user-select: none;
-      display: flex;
-      gap: 0.625rem;
-      align-items: center;
-      font-weight: bold;
-      background: %s;
-    }
-
-    .legend-header:hover { background: %s; }
-
-    .legend-toggle {
-      transition: transform 0.3s ease;
-      font-size: 0.8em;
-    }
-
-    .legend.collapsed .legend-toggle { transform: rotate(-90deg); }
-
-    .legend-items {
-      padding: 0.625rem;
-      display: flex;
-      gap: 0.625rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      max-height: 18.75rem;
-      overflow: hidden;
-      transition: max-height 0.3s ease, padding 0.3s ease;
-    }
-
-    .legend.collapsed .legend-items {
-      max-height: 0;
-      padding: 0 0.25rem;
-    }
-
-    .legend-item { display: flex; align-items: center; gap: 0.625rem; }
-
-    .legend-symbol {
-      width: 1.25rem;
-      height: 1.25rem;
-      border-radius: 50%%;
-      border: 2px solid rgba(0,0,0,0.2);
-    }
-
-    /* Small phones (320-374px) */
-    @media (max-width: 374px) {
-      .legend-header {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.9rem;
-        gap: 0.375rem;
-      }
-      .legend-items {
-        gap: 0.5rem;
-        padding: 0.2rem;
-        flex-wrap: wrap;
-        font-size: 0.7rem;
-      }
-      .legend-item { gap: 0.2rem; }
-      .legend-symbol {
-        width: 0.7rem;
-        height: 0.7rem;
-        border-width: 1px;
-      }
-    }
-    /* Standard phones (375-480px) */
-    @media (min-width: 375px) and (max-width: 480px) {
-      .legend-header {
-        padding: 0.625rem 1rem;
-        font-size: 1rem;
-        gap: 0.5rem;
-      }
-      .legend-items {
-        gap: 0.625rem;
-        padding: 0.3rem;
-        flex-wrap: wrap;
-        font-size: 0.85rem;
-      }
-      .legend-item { gap: 0.25rem; }
-      .legend-symbol {
-        width: 0.9rem;
-        height: 0.9rem;
-        border-width: 1px;
-      }
-    }
-    /* Landscape phones */
-    @media (max-width: 850px) and (orientation: landscape) {
-      .legend-header {
-        padding: 0.75rem 1rem;
-        font-size: 0.95rem;
-        gap: 0.5rem;
-      }
-      .legend-items {
-        gap: 0.625rem;
-        padding: 0.4rem;
-        flex-wrap: wrap;
-        font-size: 0.8rem;
-      }
-      .legend-item { gap: 0.3rem; }
-      .legend-symbol {
-        width: 0.85rem;
-        height: 0.85rem;
-        border-width: 1px;
-      }
-    }
-
-    /* Year control toggle with text character */
-    .leaflet-control-layers-toggle {
-      background-image: none !important;
-      width: 32px;
-      height: 32px;
-      background-color: white;
-      border-radius: 4px;
-      box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      text-decoration: none;
-    }
-
-    .leaflet-control-layers-toggle::before {
-      content: '▲▼';
-    }
-
-    .leaflet-control-layers-toggle:hover {
-      background-color: #f4f4f4;
-    }
-
-    .leaflet-control-layers-expanded {
-      padding: 10px;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 4px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      min-width: 100px;
-    }
-
-    .leaflet-control-layers-base label {
-      display: block;
-      padding: 4px 8px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .leaflet-control-layers-base label:hover {
-      background-color: #f0f0f0;
-      border-radius: 2px;
-    }
-
-    @media (max-width: 768px) {
-      .leaflet-control-layers-toggle {
-        width: 36px;
-        height: 36px;
-        font-size: 16px;
-      }
-    }
-    </style>\n"
-  }
+  # Load legend CSS from external file
+  legend_css <- load_legend_css(banner_colour, image_mode)
 
   # Combine banner and legend CSS
   custom_css <- paste0(banner_css, legend_css)
@@ -1432,14 +1396,6 @@ apply_custom_layout_in_html <- function(
       custom_css
     )
   }
-
-  # Calculate legend colors from banner_colour
-  legend_header_bg <- lighten_color(banner_colour, 85)  # Very light tint for legend header
-  legend_header_hover <- lighten_color(banner_colour, 75)  # Slightly darker for hover
-
-  # Insert legend colors into CSS (banner color already injected by load_banner_css())
-  # Order: legend_header_bg, legend_header_hover
-  custom_css <- sprintf(custom_css, legend_header_bg, legend_header_hover)
 
   # Insert viewport and CSS before </head>
   html_text <- sub(
