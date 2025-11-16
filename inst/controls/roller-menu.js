@@ -91,12 +91,16 @@
       return;
     }
 
-    // Hide play button if only one year (nothing to animate)
-    if (years.length <= 1 && playPauseButton) {
-      playPauseButton.classList.add('hidden');
-      console.log('Play button hidden - only', years.length, 'year(s) available');
+    // Handle single year UI - hide play button and arrow, disable expansion
+    if (years.length <= 1) {
+      if (playPauseButton) {
+        playPauseButton.classList.add('hidden');
+      }
+      // Hide arrow and mark as single-year mode
+      yearControl.classList.add('single-year');
+      console.log('Single year mode - play button and arrow hidden, expansion disabled');
     } else {
-      console.log('DEBUG: Not hiding play button - years.length =', years.length);
+      console.log('DEBUG: Multiple years - full controls enabled, years.length =', years.length);
     }
 
     // Find latest year (last in sorted array)
@@ -158,9 +162,15 @@
     selectedYearSpan.textContent = latestYear;
     currentIndex = years.indexOf(latestYear);
 
-    // Toggle menu on button click
+    // Toggle menu on button click (disabled in single-year mode)
     yearButton.addEventListener('click', function(e) {
       e.stopPropagation();
+
+      // Don't expand if single year
+      if (yearControl.classList.contains('single-year')) {
+        return;
+      }
+
       yearControl.classList.toggle('expanded');
       yearList.classList.toggle('show');
     });
