@@ -1,6 +1,6 @@
 /* Global reset and flexbox layout for banner/map/legend system */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%%%%%; font-family: Arial, sans-serif; overflow: hidden; }
+html, body { height: 100%%%%; font-family: Arial, sans-serif; overflow: hidden; }
 body { display: flex; flex-direction: column; }
 
 /* Banner styles */
