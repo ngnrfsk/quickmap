@@ -991,8 +991,13 @@ load_roller_menu_control <- function(banner_colour = "#2c3e50") {
   hover_tint <- lighten_color(banner_colour, 85)    # Very light tint for hover background
 
   # Inject banner_colour and accent into CSS template
-  # Order: button_bg, button_border, button_hover_bg, button_hover_border, menu_border, item_hover_bg, selected_bg, selected_hover_bg
-  css_content <- sprintf(css_content, banner_colour, banner_colour, accent_light, accent_light, banner_colour, hover_tint, accent_light, hover_tint)
+  # Order: play_bg, play_border, play_hover_bg, play_hover_border,
+  #        button_bg, button_border, button_hover_bg, button_hover_border,
+  #        menu_border, item_hover_bg, selected_bg, selected_hover_bg
+  css_content <- sprintf(css_content,
+                         banner_colour, banner_colour, accent_light, accent_light,  # Play button
+                         banner_colour, banner_colour, accent_light, accent_light,  # Year button
+                         banner_colour, hover_tint, accent_light, hover_tint)       # Menu items
 
   # Combine into single HTML string
   combined <- sprintf('
