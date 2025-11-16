@@ -65,6 +65,16 @@
   transform: rotate(180deg);
 }
 
+/* Hide arrow in single-year mode */
+#yearControl.single-year .arrow {
+  display: none;
+}
+
+/* Disable pointer cursor in single-year mode */
+#yearControl.single-year .year-button {
+  cursor: default;
+}
+
 .year-list {
   position: absolute;
   bottom: 3.25rem;
