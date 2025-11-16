@@ -257,13 +257,14 @@ get_temporal_data <- function(data, time_pattern = "\\d{4}") {
 #' Get maximum data value across all measurement layers
 #'
 #' Finds the highest pollutant value across all enabled temporal layers
-#' (dt_sites and bl_nodes) to determine what legend range to display
+#' (dt_sites and bl_nodes) for the specified years to determine what legend range to display
 #'
 #' @param measurement_layers Layer configuration from get_measurement_layers()
 #' @param pollutant Pollutant name (for bl_nodes data)
 #' @param data_env Environment containing data objects
-#' @return Single numeric value representing maximum across all layers, or NULL if no data
-get_data_maximum <- function(measurement_layers, pollutant, data_env) {
+#' @param years Character vector of year strings to include (e.g., c("2020", "2021"))
+#' @return Single numeric value representing maximum across specified years and layers, or NULL if no data
+get_data_maximum <- function(measurement_layers, pollutant, data_env, years = NULL) {
   max_values <- c()
 
   for (layer_name in names(measurement_layers)) {
@@ -285,6 +286,12 @@ get_data_maximum <- function(measurement_layers, pollutant, data_env) {
     )
 
     if (is.null(data) || nrow(data) == 0) next
+
+    # Filter by years if specified
+    if (!is.null(years) && "year_str" %in% names(data)) {
+      data <- data[data$year_str %in% years, ]
+      if (nrow(data) == 0) next
+    }
 
     # Determine which column contains pollutant values
     if (layer_config$layer_type == "dt_sites") {
@@ -310,7 +317,8 @@ get_data_maximum <- function(measurement_layers, pollutant, data_env) {
   # Return maximum across all layers, or NULL if none found
   if (length(max_values) > 0) {
     result <- max(max_values)
-    message("Legend trimming: data_max = ", round(result, 2))
+    message("Legend trimming: data_max = ", round(result, 2), " (from ",
+            ifelse(is.null(years), "all years", paste(length(years), "selected years")), ")")
     return(result)
   } else {
     message("Legend trimming: No data found, showing full legend")
@@ -2591,8 +2599,8 @@ create_pollution_map <- function(
     marker_labels
   )
 
-  # Calculate maximum data value for legend trimming
-  data_max <- get_data_maximum(measurement_layers, pollutant, environment())
+  # Calculate maximum data value for legend trimming (only from years being mapped)
+  data_max <- get_data_maximum(measurement_layers, pollutant, environment(), years)
 
   # SINGLE LOOP: add layers to the dyamic HTML map and export an image for each year
   for (yr in unique(years)) {
