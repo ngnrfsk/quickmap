@@ -1,4 +1,6 @@
 (function() {
+  console.log('Roller menu script loaded');
+
   var cachedMap = null;
 
   function getMapInstance() {
@@ -52,11 +54,16 @@
   }
 
   function initializeYearControl() {
+    console.log('initializeYearControl called, checking for layer cache...');
+
     // Wait for layer cache to be available
     if (!window.quickmapLayerCache) {
+      console.log('Layer cache not ready, polling again in 100ms...');
       setTimeout(initializeYearControl, 100);
       return;
     }
+
+    console.log('Layer cache found!', window.quickmapLayerCache);
 
     var yearControl = document.getElementById('yearControl');
     var yearButton = document.getElementById('yearButton');
@@ -224,9 +231,12 @@
   }
 
   // Start initialization when DOM is ready
+  console.log('Setting up initialization, document.readyState =', document.readyState);
   if (document.readyState === 'loading') {
+    console.log('Document still loading, adding DOMContentLoaded listener');
     document.addEventListener('DOMContentLoaded', initializeYearControl);
   } else {
+    console.log('Document ready, initializing immediately');
     initializeYearControl();
   }
 })();
