@@ -48,11 +48,15 @@
       });
       console.log("Year switched to", selectedYear, "- Added:", added, "Removed:", removed);
 
-      // Re-apply non-focusable to any newly added markers
+      // Re-apply non-focusable to any newly added map elements
       setTimeout(function() {
-        var markers = document.querySelectorAll('.leaflet-marker-icon, .leaflet-interactive');
-        markers.forEach(function(marker) {
-          marker.setAttribute('tabindex', '-1');
+        var elements = document.querySelectorAll(
+          '.leaflet-marker-icon, .leaflet-interactive, ' +
+          '.leaflet-control-zoom-in, .leaflet-control-zoom-out, ' +
+          '.leaflet-control a, .leaflet-control button'
+        );
+        elements.forEach(function(el) {
+          el.setAttribute('tabindex', '-1');
         });
       }, 100);
 
@@ -73,18 +77,22 @@
 
     console.log('Layer cache found!', window.quickmapLayerCache);
 
-    // Make all map markers non-focusable for better keyboard navigation
-    // This allows Tab to reach year controls without cycling through all markers
-    function removeMarkerFocus() {
-      var markers = document.querySelectorAll('.leaflet-marker-icon, .leaflet-interactive');
-      markers.forEach(function(marker) {
-        marker.setAttribute('tabindex', '-1');
+    // Make all map elements non-focusable for better keyboard navigation
+    // This allows Tab to reach year controls first
+    function removeMapFocus() {
+      var elements = document.querySelectorAll(
+        '.leaflet-marker-icon, .leaflet-interactive, ' +
+        '.leaflet-control-zoom-in, .leaflet-control-zoom-out, ' +
+        '.leaflet-control a, .leaflet-control button'
+      );
+      elements.forEach(function(el) {
+        el.setAttribute('tabindex', '-1');
       });
     }
 
     // Apply immediately and re-apply after layer changes
-    setTimeout(removeMarkerFocus, 100);
-    setTimeout(removeMarkerFocus, 500); // Catch late-loading markers
+    setTimeout(removeMapFocus, 100);
+    setTimeout(removeMapFocus, 500); // Catch late-loading markers
 
     var yearControl = document.getElementById('yearControl');
     var yearButton = document.getElementById('yearButton');
