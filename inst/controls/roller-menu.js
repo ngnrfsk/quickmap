@@ -253,6 +253,14 @@
       }
     });
 
+    // Close menu on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && yearControl.classList.contains('expanded')) {
+        yearControl.classList.remove('expanded');
+        yearList.classList.remove('show');
+      }
+    });
+
     // Advance to next year in sequence
     function advanceToNextYear() {
       // Increment index with loop wrapping
