@@ -6,10 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **QuickMap** is an R project for generating interactive air quality maps showing pollution data (NO2, PM2.5) overlaid with school locations and borough boundaries. It creates both interactive Leaflet HTML maps and static JPG exports for local government air quality reporting.
 
-### Current Version: 0.8.11
+### Current Version: 0.9.0.2
 
 -   **Production code**: `quickmap.R` (stable, 2,462 lines)
--   **Archived versions**: `versions/quickmap_0_8_5.R` through `versions/quickmap_0_8_11.R` (15 versions)
+-   **Archived versions**: `versions/quickmap_0_8_5.R` through `versions/quickmap_0_9_0_2.R`
 -   **Test scripts**: 14 test scripts in `tests/` directory
 -   **Utility scripts**: 6 scripts in `scripts/` directory
 
@@ -152,6 +152,14 @@ Each scale defines: - `colours`: Color palette (R names or hex) - `thresholds`: 
 -   **Flexbox layout**: Banner/map/legend components
 -   **Mobile optimized**: Responsive font sizes and padding
 
+### Year Control Menu
+
+-   **Touch-friendly**: Collapsible dropdown menu for year selection
+-   **Dynamic years**: Automatically populated from available data
+-   **Banner theming**: Colors derived from `banner_colour` parameter
+-   **Mobile responsive**: rem-based sizing for all screen sizes
+-   **Files**: `inst/controls/roller-menu.html`, `.css`, `.js`
+
 ## File Structure & Outputs
 
 ### Input Files
@@ -179,5 +187,8 @@ Core R packages (auto-installed): - `leaflet`: Interactive mapping - `sf`: Spati
 -   **v0.8.9**: Marker labels control (5-state `show_marker_labels` parameter, removed `use_data_labels`)
 -   **v0.8.10**: Fixed schools label behavior and OA data label fallback
 -   **v0.8.11**: Borough colour palettes (nested named lists) and `show_borough_colours()` helper
+-   **v0.9.0**: Parameter simplification following OpenAir design patterns (breaking changes)
+-   **v0.9.0.1**: UI fixes - year control positioning and behavior
+-   **v0.9.0.2**: Touch-friendly collapsible year menu with dynamic banner-based theming
 
 All archived versions are stored in `versions/` directory. Current stable version is always `quickmap.R`.
