@@ -146,11 +146,15 @@
       var yearItem = document.createElement('div');
       yearItem.className = 'year-item';
       yearItem.setAttribute('data-year', year);
+      yearItem.setAttribute('role', 'option');
       yearItem.textContent = year;
 
       // Mark latest year as selected initially
       if (year === latestYear) {
         yearItem.classList.add('selected');
+        yearItem.setAttribute('aria-selected', 'true');
+      } else {
+        yearItem.setAttribute('aria-selected', 'false');
       }
 
       // Add click handler for layer switching
@@ -176,10 +180,12 @@
         var allItems = yearList.querySelectorAll('.year-item');
         allItems.forEach(function(item) {
           item.classList.remove('selected');
+          item.setAttribute('aria-selected', 'false');
         });
 
         // Add selected class to clicked item
         this.classList.add('selected');
+        this.setAttribute('aria-selected', 'true');
 
         // Update selected year display
         selectedYearSpan.textContent = clickedYear;
@@ -335,8 +341,10 @@
           allItems.forEach(function(item, index) {
             if (index === currentIndex) {
               item.classList.add('selected');
+              item.setAttribute('aria-selected', 'true');
             } else {
               item.classList.remove('selected');
+              item.setAttribute('aria-selected', 'false');
             }
           });
 
@@ -361,9 +369,11 @@
             if (index === keyboardFocusIndex) {
               item.classList.add('selected');
               item.classList.remove('keyboard-focused');
+              item.setAttribute('aria-selected', 'true');
             } else {
               item.classList.remove('selected');
               item.classList.remove('keyboard-focused');
+              item.setAttribute('aria-selected', 'false');
             }
           });
 
@@ -396,8 +406,10 @@
       allItems.forEach(function(item) {
         if (item.getAttribute('data-year') === nextYear) {
           item.classList.add('selected');
+          item.setAttribute('aria-selected', 'true');
         } else {
           item.classList.remove('selected');
+          item.setAttribute('aria-selected', 'false');
         }
       });
 
