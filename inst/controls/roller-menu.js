@@ -161,6 +161,8 @@
         if (isPlaying) {
           isPlaying = false;
           playPauseButton.textContent = '▶';
+          playPauseButton.setAttribute('aria-label', 'Play animation');
+          playPauseButton.setAttribute('aria-pressed', 'false');
           if (playInterval) {
             clearInterval(playInterval);
             playInterval = null;
@@ -188,6 +190,7 @@
         // Close menu
         yearControl.classList.remove('expanded');
         yearList.classList.remove('show');
+        yearButton.setAttribute('aria-expanded', 'false');
       });
 
       yearList.appendChild(yearItem);
@@ -208,6 +211,10 @@
 
       yearControl.classList.toggle('expanded');
       yearList.classList.toggle('show');
+
+      // Update ARIA expanded state
+      var isExpanded = yearControl.classList.contains('expanded');
+      yearButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
 
       // Scroll to selected year when opening
       if (yearControl.classList.contains('expanded')) {
@@ -240,6 +247,10 @@
         yearControl.classList.toggle('expanded');
         yearList.classList.toggle('show');
 
+        // Update ARIA expanded state
+        var isExpanded = yearControl.classList.contains('expanded');
+        yearButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+
         // Scroll to selected year when opening
         if (yearControl.classList.contains('expanded')) {
           var selectedItem = yearList.querySelector('.year-item.selected');
@@ -258,6 +269,7 @@
       if (!yearControl.contains(e.target)) {
         yearControl.classList.remove('expanded');
         yearList.classList.remove('show');
+        yearButton.setAttribute('aria-expanded', 'false');
       }
     });
 
@@ -266,6 +278,7 @@
       if (e.key === 'Escape' && yearControl.classList.contains('expanded')) {
         yearControl.classList.remove('expanded');
         yearList.classList.remove('show');
+        yearButton.setAttribute('aria-expanded', 'false');
         keyboardFocusIndex = -1; // Reset keyboard focus
         yearButton.focus(); // Return focus to button
       }
@@ -360,6 +373,7 @@
           // Close dropdown
           yearControl.classList.remove('expanded');
           yearList.classList.remove('show');
+          yearButton.setAttribute('aria-expanded', 'false');
           keyboardFocusIndex = -1;
 
           // Return focus to year button
