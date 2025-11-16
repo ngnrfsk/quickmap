@@ -66,6 +66,9 @@
 
     // Play/pause state
     var isPlaying = false;
+    var playInterval = null;
+    var currentIndex = 0;
+    var playSpeed = 500; // milliseconds per year
 
     // Extract years from layer cache and sort
     var years = Object.keys(window.quickmapLayerCache).sort(function(a, b) {
@@ -121,6 +124,7 @@
 
     // Set initial selected year to latest
     selectedYearSpan.textContent = latestYear;
+    currentIndex = years.indexOf(latestYear);
 
     // Toggle menu on button click
     yearButton.addEventListener('click', function(e) {
@@ -137,10 +141,44 @@
       }
     });
 
+    // Advance to next year in sequence
+    function advanceToNextYear() {
+      // Increment index with loop wrapping
+      currentIndex = (currentIndex + 1) % years.length;
+      var nextYear = years[currentIndex];
+
+      // Update selected year display
+      selectedYearSpan.textContent = nextYear;
+
+      // Update dropdown selection highlight
+      var allItems = yearList.querySelectorAll('.year-item');
+      allItems.forEach(function(item) {
+        if (item.getAttribute('data-year') === nextYear) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+      });
+
+      // Switch map layers
+      switchToYear(nextYear, years);
+    }
+
     // Toggle play/pause
     function togglePlayPause() {
       isPlaying = !isPlaying;
       playPauseButton.textContent = isPlaying ? '⏸' : '▶';
+
+      if (isPlaying) {
+        // Start animation
+        playInterval = setInterval(advanceToNextYear, playSpeed);
+      } else {
+        // Stop animation
+        if (playInterval) {
+          clearInterval(playInterval);
+          playInterval = null;
+        }
+      }
     }
 
     // Play/pause button click handler
