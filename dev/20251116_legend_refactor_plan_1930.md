@@ -12,7 +12,7 @@ Refactor the legend system to:
 3. Redesign legend layout to display elements horizontally (inline with header text)
 4. Replace disk-and-text format with text-on-colored-background format using high-contrast text colors
 
-## Set out approach as follows: Take small, testable incremental steps towards goal
+## Approach: take small, testable incremental steps towards goal
 
 - Intermediate tasks will be executed one step at a time
 - At the end of each Step, push code, asks user to pull/download locally to test code
@@ -21,7 +21,7 @@ Refactor the legend system to:
 
 ## Scope
 
-**Must Include:** Work only on the code objectives stated in each Step, checking for errors or dependencies, but NO elaboration on instructions.
+- Work only on the code objectives stated in each Step, checking for errors or dependencies, but NO elaboration on instructions.
 
 ---
 
@@ -29,7 +29,7 @@ Refactor the legend system to:
 
 ### STEP 0: Starting Point
 
-- **Branch**: Create branch `claude/plan-legend-refactor-01QoKtrdVJRjTa456thkHXZh` from current commit `dfaee9f`
+- **Branch**: Create a branch claude/[branch name] from main commit `dfaee9f`
 - **Base code**:
   - Banner/legend CSS in `R/quickmap.R` lines 1076-1349 within `apply_custom_layout_in_html()` function
   - Legend HTML generation in `R/quickmap.R` lines 868-933 within `generate_legend_html()` function
@@ -141,7 +141,7 @@ Refactor the legend system to:
 
 **Scope**: Work only on the code objectives stated in this Step, checking for errors or dependencies, but NO elaboration on instructions.
 
-**Outcome**: Legend items display inline to the right of the legend header text, instead of below it
+**Outcome**: Legend items display inline to the right of the legend header text, instead of below it, with dyamic arrangement for laptop, tablet, mobile 
 
 **What must exist after this step:**
 - Modified `inst/legend/legend.html` structure to:
@@ -156,11 +156,9 @@ Refactor the legend system to:
 - Updated mobile responsive CSS to handle horizontal layout on small screens
 - Toggle arrow behavior preserved (rotates to indicate collapsed/expanded state)
 
-**What about dropdown behavior**: After implementation, present 3 options to user for collapsed state:
-1. **Option A**: Items hidden, header shows "Click to expand legend" message
-2. **Option B**: Items shrink to icons/color boxes only (no text), expand shows full text
-3. **Option C**: First N items visible, expand shows all items
-User will select preferred option for next step.
+**Dropdown behavior**
+- Case: **Laptop / tablet / mobile landscape mode**: First N items visible, expand shows all items
+- Case: **Mobile**: Items hidden, header shows "Click to expand legend" message
 
 **User will test**:
 - Legend displays horizontally across the bottom
@@ -192,7 +190,7 @@ User will select preferred option for next step.
 
 ---
 
-### STEP 7: Replace Disk Format with Text-on-Colored-Background Format
+### STEP 7: Replace Legend Disk+Text Format with Text-on-Colored-Background Format
 
 **Scope**: Work only on the code objectives stated in this Step, checking for errors or dependencies, but NO elaboration on instructions.
 
@@ -230,11 +228,11 @@ User will select preferred option for next step.
 
 **What must exist after this step:**
 - All old commented-out code removed from `R/quickmap.R`
-- Version number incremented to `0.9.1` in file header
+- Version number incremented to `0.9.0.3` in file header
 - Version history entry added describing legend refactoring
 - Updated `CLAUDE.md` to reflect new `inst/legend/` and `inst/banner/` structure
 - Updated `dev/PROJECT_STATUS.md` to mark legend refactoring as completed
-- File `versions/quickmap_0_9_1.R` created (archived copy)
+- File `versions/quickmap_0_9_0_3.R` created (archived copy)
 - All test scripts in `tests/` directory run successfully
 - Verification that maps generate correctly with all refactored components
 
@@ -249,8 +247,8 @@ User will select preferred option for next step.
 ## After Each Step
 
 1. Agent commits changes with descriptive message
-2. Agent pushes to `origin/claude/plan-legend-refactor-01QoKtrdVJRjTa456thkHXZh`
-3. Agent tells user: "Step X complete, pushed to origin/claude/plan-legend-refactor-01QoKtrdVJRjTa456thkHXZh"
+2. Agent pushes to `origin/claude/[branch name]`
+3. Agent tells user: "Step X complete, pushed to origin/claude/[branch name]"
 4. User pulls code locally, tests functionality, reports results
 5. If pass: user says "proceed to step X+1" or "next step"
 6. If fail: user describes issue, agent fixes in same chat before proceeding
