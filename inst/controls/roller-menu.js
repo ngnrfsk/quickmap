@@ -239,22 +239,40 @@
 
     // Pause animation when page becomes hidden (tab switch, minimize, etc.)
     // Resume when page becomes visible again
-    document.addEventListener('visibilitychange', function() {
-      if (document.hidden) {
-        // Page hidden - pause if playing
-        if (isPlaying && playInterval) {
-          clearInterval(playInterval);
-          playInterval = null;
-          console.log('Animation paused - page hidden');
+    // Cross-browser support with vendor prefixes
+    var hidden, visibilityChange;
+    if (typeof document.hidden !== "undefined") {
+      hidden = "hidden";
+      visibilityChange = "visibilitychange";
+    } else if (typeof document.webkitHidden !== "undefined") {
+      hidden = "webkitHidden";
+      visibilityChange = "webkitvisibilitychange";
+    } else if (typeof document.mozHidden !== "undefined") {
+      hidden = "mozHidden";
+      visibilityChange = "mozvisibilitychange";
+    } else if (typeof document.msHidden !== "undefined") {
+      hidden = "msHidden";
+      visibilityChange = "msvisibilitychange";
+    }
+
+    if (typeof document[hidden] !== "undefined") {
+      document.addEventListener(visibilityChange, function() {
+        if (document[hidden]) {
+          // Page hidden - pause if playing
+          if (isPlaying && playInterval) {
+            clearInterval(playInterval);
+            playInterval = null;
+            console.log('Animation paused - page hidden');
+          }
+        } else {
+          // Page visible - resume if was playing
+          if (isPlaying && !playInterval) {
+            playInterval = setInterval(advanceToNextYear, playSpeed);
+            console.log('Animation resumed - page visible');
+          }
         }
-      } else {
-        // Page visible - resume if was playing
-        if (isPlaying && !playInterval) {
-          playInterval = setInterval(advanceToNextYear, playSpeed);
-          console.log('Animation resumed - page visible');
-        }
-      }
-    });
+      });
+    }
 
     console.log('Year control initialized with years:', years);
   }
