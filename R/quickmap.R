@@ -967,13 +967,15 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE, data_max =
   # Filter legend items based on data maximum (if provided)
   if (!is.null(data_max) && !is.null(legend_scale$thresholds) && data_max > 0) {
     # Find which threshold index contains data_max
-    # thresholds define breaks: [0, 10, 20, 30, 40, Inf]
-    # If data_max = 35, it falls in range 30-40 (index 4)
+    # thresholds define breaks: [0, 10, 20, 30, 40, 50, 60, ...]
+    # If data_max = 45, which(45 < thresholds) = [F,F,F,F,F,T,...] -> first TRUE at index 6 (threshold=50)
+    # We want to show up to the range CONTAINING 45 (40-50), which is item 5, not item 6
     threshold_idx <- which(data_max < legend_scale$thresholds)[1]
 
     # Include all items up to and including the threshold containing data_max
+    # Subtract 1 because threshold_idx is the NEXT threshold after data_max
     # Always include at least 2 items (minimum viable legend)
-    num_items <- max(2, threshold_idx)
+    num_items <- max(2, threshold_idx - 1)
 
     # Ensure we don't exceed available items
     num_items <- min(num_items, length(legend_scale$colours))
