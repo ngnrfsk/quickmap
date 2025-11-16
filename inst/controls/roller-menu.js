@@ -62,6 +62,10 @@
     var yearButton = document.getElementById('yearButton');
     var yearList = document.getElementById('yearList');
     var selectedYearSpan = document.getElementById('selectedYear');
+    var playPauseButton = document.getElementById('playPauseButton');
+
+    // Play/pause state
+    var isPlaying = false;
 
     // Extract years from layer cache and sort
     var years = Object.keys(window.quickmapLayerCache).sort(function(a, b) {
@@ -131,6 +135,18 @@
         yearControl.classList.remove('expanded');
         yearList.classList.remove('show');
       }
+    });
+
+    // Toggle play/pause
+    function togglePlayPause() {
+      isPlaying = !isPlaying;
+      playPauseButton.textContent = isPlaying ? '⏸' : '▶';
+    }
+
+    // Play/pause button click handler
+    playPauseButton.addEventListener('click', function(e) {
+      e.stopPropagation();
+      togglePlayPause();
     });
 
     console.log('Year control initialized with years:', years);
