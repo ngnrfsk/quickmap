@@ -961,6 +961,79 @@ lighten_color <- function(color, amount = 15) {
   rgb(rgb_vals[1], rgb_vals[2], rgb_vals[3], maxColorValue = 255)
 }
 
+#' Load banner CSS from external file
+#'
+#' Reads banner CSS template from inst/banner/ directory and injects
+#' banner color and mode-specific styling values
+#'
+#' @param banner_colour Hex color for banner background (default "#2c3e50")
+#' @param image_mode Logical, if TRUE uses image-optimized styles, if FALSE uses interactive responsive styles
+#' @return Character string containing CSS wrapped in <style> tags
+load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
+  # Define path to banner CSS file
+  banner_dir <- system.file("banner", package = "quickmap")
+
+  # Fall back to local inst/banner if package not installed
+  if (banner_dir == "") {
+    banner_dir <- "inst/banner"
+  }
+
+  css_file <- file.path(banner_dir, "banner.css")
+
+  # Read CSS template
+  css_content <- paste(readLines(css_file, warn = FALSE), collapse = "\n")
+
+  # Determine values based on mode
+  if (image_mode) {
+    # Image-optimized: larger sizes for JPG clarity
+    padding <- "2rem"
+    font_size <- "1.8rem"
+    font_weight <- "font-weight: bold;"
+    mobile_css <- ""  # No mobile styles for static images
+  } else {
+    # Interactive: responsive design with mobile breakpoints
+    padding <- "1.25rem"
+    font_size <- "1.3rem"
+    font_weight <- ""  # No extra font-weight
+
+    # Mobile responsive CSS for banner
+    mobile_css <- "
+/* Small phones (320-374px) */
+@media (max-width: 374px) {
+  .banner {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.9rem;
+    line-height: 1.2em;
+  }
+}
+
+/* Standard phones (375-480px) */
+@media (min-width: 375px) and (max-width: 480px) {
+  .banner {
+    padding: 0.625rem 0.375rem;
+    font-size: 1rem;
+    line-height: 1.25em;
+  }
+}
+
+/* Landscape phones */
+@media (max-width: 850px) and (orientation: landscape) {
+  .banner {
+    padding: 0.75rem 0.5rem;
+    font-size: 1.1rem;
+    line-height: 1.3em;
+  }
+}"
+  }
+
+  # Inject values into CSS template
+  # Order: banner_colour, padding, font_size, font_weight, mobile_css
+  css_content <- sprintf(css_content, banner_colour, padding, font_size, font_weight, mobile_css)
+
+  # Return CSS wrapped in style tags
+  return(sprintf("\n<style>\n%s\n</style>\n", css_content))
+}
+
 #' Load roller menu control from external files
 #'
 #' Reads HTML, CSS, and JavaScript from inst/controls/ directory
@@ -1073,29 +1146,14 @@ apply_custom_layout_in_html <- function(
   # Viewport meta tag for mobile compatibility
   viewport_meta <- '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
 
-  # Custom CSS for banner/legend layout
+  # Load banner CSS from external file
+  banner_css <- load_banner_css(banner_colour, image_mode)
+
+  # Legend CSS (will be extracted in STEP 2)
   # NOTE: All % signs must be escaped as %% for sprintf()
   if (image_mode) {
     # Image-optimized CSS with larger fonts and symbols for JPG clarity
-    custom_css <- "\n<style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%%; font-family: Arial, sans-serif; overflow: hidden; }
-    body { display: flex; flex-direction: column; }
-
-  .banner {
-    background: %s;
-    color: white;
-    padding: 2rem;                /* Larger padding for images */
-    text-align: center;
-    font-size: 1.8rem;            /* Larger font for image clarity */
-    line-height: 1.3em;
-    flex-shrink: 0;
-    font-weight: bold;            /* Bold text for better visibility */
-  }
-
-  .map-container { flex: 1; position: relative; min-height: 0; }
-  .map-container > div:not(#yearControl) { height: 100%% !important; }
-
+    legend_css <- "\n<style>
   .legend {
     background: #f8f9fa;
     border-top: 3px solid #dee2e6;    /* Thicker border for images */
@@ -1151,24 +1209,7 @@ apply_custom_layout_in_html <- function(
     </style>\n"
   } else {
     # Interactive CSS (original responsive design)
-    custom_css <- "\n<style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%%; font-family: Arial, sans-serif; overflow: hidden; }
-    body { display: flex; flex-direction: column; }
-
-    .banner {
-      background: %s;
-      color: white;
-      padding: 1.25rem;
-      text-align: center;
-      font-size: 1.3rem;
-      line-height: 1.3em;
-      flex-shrink: 0;
-    }
-
-    .map-container { flex: 1; position: relative; min-height: 0; }
-    .map-container > div:not(#yearControl) { height: 100%% !important; }
-
+    legend_css <- "\n<style>
     .legend {
       background: #f8f9fa;
       border-top: 2px solid #dee2e6;
@@ -1222,11 +1263,6 @@ apply_custom_layout_in_html <- function(
 
     /* Small phones (320-374px) */
     @media (max-width: 374px) {
-      .banner {
-        padding: 0.5rem 0.25rem;
-        font-size: 0.9rem;
-        line-height: 1.2em;
-      }
       .legend-header {
         padding: 0.5rem 0.75rem;
         font-size: 0.9rem;
@@ -1247,11 +1283,6 @@ apply_custom_layout_in_html <- function(
     }
     /* Standard phones (375-480px) */
     @media (min-width: 375px) and (max-width: 480px) {
-      .banner {
-        padding: 0.625rem 0.375rem;
-        font-size: 1rem;
-        line-height: 1.25em;
-      }
       .legend-header {
         padding: 0.625rem 1rem;
         font-size: 1rem;
@@ -1272,11 +1303,6 @@ apply_custom_layout_in_html <- function(
     }
     /* Landscape phones */
     @media (max-width: 850px) and (orientation: landscape) {
-      .banner {
-        padding: 0.75rem 0.5rem;
-        font-size: 1.1rem;
-        line-height: 1.3em;
-      }
       .legend-header {
         padding: 0.75rem 1rem;
         font-size: 0.95rem;
@@ -1349,6 +1375,9 @@ apply_custom_layout_in_html <- function(
     </style>\n"
   }
 
+  # Combine banner and legend CSS
+  custom_css <- paste0(banner_css, legend_css)
+
   # quickmap_0_8_6_3.R uses new mobile sizes to be multiply adaptive
   # 0.8.6.x test a range of settings for mobile
 
@@ -1408,9 +1437,9 @@ apply_custom_layout_in_html <- function(
   legend_header_bg <- lighten_color(banner_colour, 85)  # Very light tint for legend header
   legend_header_hover <- lighten_color(banner_colour, 75)  # Slightly darker for hover
 
-  # Insert banner and legend colors into CSS
-  # Order: banner, legend_header_bg, legend_header_hover
-  custom_css <- sprintf(custom_css, banner_colour, legend_header_bg, legend_header_hover)
+  # Insert legend colors into CSS (banner color already injected by load_banner_css())
+  # Order: legend_header_bg, legend_header_hover
+  custom_css <- sprintf(custom_css, legend_header_bg, legend_header_hover)
 
   # Insert viewport and CSS before </head>
   html_text <- sub(
