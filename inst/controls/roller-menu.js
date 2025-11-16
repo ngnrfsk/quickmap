@@ -75,6 +75,10 @@
       return parseInt(a) - parseInt(b);
     });
 
+    console.log('DEBUG: Years found in layer cache:', years);
+    console.log('DEBUG: Years count:', years.length);
+    console.log('DEBUG: Play button element exists:', !!playPauseButton);
+
     if (years.length === 0) {
       console.warn('No years found in layer cache');
       return;
@@ -84,6 +88,8 @@
     if (years.length <= 1 && playPauseButton) {
       playPauseButton.classList.add('hidden');
       console.log('Play button hidden - only', years.length, 'year(s) available');
+    } else {
+      console.log('DEBUG: Not hiding play button - years.length =', years.length);
     }
 
     // Find latest year (last in sorted array)
