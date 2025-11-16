@@ -396,6 +396,10 @@
       isPlaying = !isPlaying;
       playPauseButton.textContent = isPlaying ? '⏸' : '▶';
 
+      // Update ARIA attributes for screen readers
+      playPauseButton.setAttribute('aria-label', isPlaying ? 'Pause animation' : 'Play animation');
+      playPauseButton.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
+
       if (isPlaying) {
         // Start animation
         playInterval = setInterval(advanceToNextYear, playSpeed);
