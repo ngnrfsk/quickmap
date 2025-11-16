@@ -1155,10 +1155,9 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   if (image_mode) {
     # Image-optimized: larger sizes for JPG clarity
     border_top <- "3px solid #dee2e6"
-    header_padding <- "1.5rem 2rem"
+    container_padding <- "1.5rem 2rem"
     header_gap <- "1rem"
     header_font_size <- "font-size: 1.2rem;"
-    items_padding <- "1rem"
     items_gap <- "1rem"
     items_font_size <- "font-size: 1rem;"
     item_gap <- "1rem"
@@ -1169,10 +1168,9 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   } else {
     # Interactive: responsive design with mobile breakpoints
     border_top <- "2px solid #dee2e6"
-    header_padding <- "0.9375rem 1.25rem"
+    container_padding <- "0.75rem 1rem"
     header_gap <- "0.625rem"
     header_font_size <- ""
-    items_padding <- "0.625rem"
     items_gap <- "0.625rem"
     items_font_size <- ""
     item_gap <- "0.625rem"
@@ -1180,68 +1178,60 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     symbol_height <- "1.25rem"
     symbol_border <- "2px solid rgba(0,0,0,0.2)"
 
-    # Mobile responsive CSS for legend
+    # Mobile responsive CSS for horizontal legend layout
     mobile_css <- "
-/* Small phones (320-374px) */
-@media (max-width: 374px) {
+/* Mobile: Stack vertically on small screens */
+@media (max-width: 480px) {
+  .legend-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
   .legend-header {
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;
     gap: 0.375rem;
   }
+
   .legend-items {
     gap: 0.5rem;
-    padding: 0.2rem;
-    flex-wrap: wrap;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
+
   .legend-item { gap: 0.2rem; }
+
   .legend-symbol {
-    width: 0.7rem;
-    height: 0.7rem;
+    width: 0.8rem;
+    height: 0.8rem;
     border-width: 1px;
   }
 }
 
-/* Standard phones (375-480px) */
-@media (min-width: 375px) and (max-width: 480px) {
+/* Tablet/Landscape: Keep horizontal but tighter spacing */
+@media (min-width: 481px) and (max-width: 850px) {
+  .legend-container {
+    gap: 0.75rem;
+    padding: 0.625rem;
+  }
+
   .legend-header {
-    padding: 0.625rem 1rem;
+    padding: 0.5rem 0.875rem;
     font-size: 1rem;
     gap: 0.5rem;
   }
+
   .legend-items {
     gap: 0.625rem;
-    padding: 0.3rem;
-    flex-wrap: wrap;
     font-size: 0.85rem;
   }
+
   .legend-item { gap: 0.25rem; }
+
   .legend-symbol {
     width: 0.9rem;
     height: 0.9rem;
-    border-width: 1px;
-  }
-}
-
-/* Landscape phones */
-@media (max-width: 850px) and (orientation: landscape) {
-  .legend-header {
-    padding: 0.75rem 1rem;
-    font-size: 0.95rem;
-    gap: 0.5rem;
-  }
-  .legend-items {
-    gap: 0.625rem;
-    padding: 0.4rem;
-    flex-wrap: wrap;
-    font-size: 0.8rem;
-  }
-  .legend-item { gap: 0.3rem; }
-  .legend-symbol {
-    width: 0.85rem;
-    height: 0.85rem;
-    border-width: 1px;
   }
 }
 
@@ -1298,13 +1288,12 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   }
 
   # Inject values into CSS template
-  # Order: border_top, header_padding, header_gap, header_font_size, legend_header_bg, legend_header_hover,
-  #        items_padding, items_gap, items_font_size, item_gap,
-  #        symbol_width, symbol_height, symbol_border, mobile_css
+  # Order: border_top, container_padding, header_gap, header_font_size, legend_header_bg, legend_header_hover,
+  #        items_gap, items_font_size, item_gap, symbol_width, symbol_height, symbol_border, mobile_css
   css_content <- sprintf(css_content,
-                         border_top, header_padding, header_gap, header_font_size,
+                         border_top, container_padding, header_gap, header_font_size,
                          legend_header_bg, legend_header_hover,
-                         items_padding, items_gap, items_font_size, item_gap,
+                         items_gap, items_font_size, item_gap,
                          symbol_width, symbol_height, symbol_border,
                          mobile_css)
 
