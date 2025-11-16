@@ -33,6 +33,11 @@
   border-color: %s;
 }
 
+.play-pause-button:focus-visible {
+  outline: 3px solid %s;
+  outline-offset: 2px;
+}
+
 .year-button {
   background: %s;
   border: 2px solid %s;
@@ -54,6 +59,11 @@
 .year-button:hover {
   background: %s;
   border-color: %s;
+}
+
+.year-button:focus-visible {
+  outline: 3px solid %s;
+  outline-offset: 2px;
 }
 
 .arrow {

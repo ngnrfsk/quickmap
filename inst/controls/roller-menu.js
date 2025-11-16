@@ -267,6 +267,7 @@
         yearControl.classList.remove('expanded');
         yearList.classList.remove('show');
         keyboardFocusIndex = -1; // Reset keyboard focus
+        yearButton.focus(); // Return focus to button
       }
     });
 
@@ -360,6 +361,9 @@
           yearControl.classList.remove('expanded');
           yearList.classList.remove('show');
           keyboardFocusIndex = -1;
+
+          // Return focus to year button
+          yearButton.focus();
         }
       }
     });
