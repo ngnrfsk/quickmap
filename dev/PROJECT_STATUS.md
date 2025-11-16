@@ -6,7 +6,7 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2025-10-28 **Current Working Version**: v0.9.0
+**Last Updated**: 2025-11-15 **Current Working Version**: v0.9.0.2
 
 --------------------------------------------------------------------------------
 
@@ -139,6 +139,35 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
 
 -   Reduced legend marker sizes relative to map markers
 -   Improved gaps and padding in legend layout
+
+#### Touch-Friendly Year Menu Control (2025-11-15, v0.9.0.2)
+
+**Implementation Details:**
+-   **Architecture**: Modular control system with external files (`inst/controls/`)
+    -   `roller-menu.html`: Collapsible button and year list structure
+    -   `roller-menu.css`: rem-based responsive styling with color placeholders
+    -   `roller-menu.js`: Dynamic year population and layer switching logic
+-   **Dynamic Color System**: Added `lighten_color()` utility function
+    -   Calculates lighter/darker shades from `banner_colour` parameter
+    -   Menu colors: Button/border/selected use banner color + 15% lighter shade
+    -   Hover effects: Very light tint (85% lighter) for subtle feedback
+    -   Legend header: Tinted with banner color for cohesive theming
+-   **Features**:
+    -   Touch/mobile friendly with large click targets and smooth animations
+    -   Years dynamically populated from `window.quickmapLayerCache`
+    -   Slide-in fade animation when opening menu
+    -   Selected year highlighted with accent color and white text
+    -   Scrollable list when >6 years (max-height: 15rem)
+    -   Click outside to close functionality
+-   **Integration**: Modified `apply_custom_layout_in_html()` and `load_roller_menu_control()`
+    -   Passes `banner_colour` through to control styling
+    -   8-color sprintf injection for complete theming
+    -   Positioned 2rem from bottom to clear Leaflet attribution
+
+**Files Modified:**
+-   `R/quickmap.R`: Added color utility, modified control loading
+-   `inst/controls/roller-menu.{html,css,js}`: New control files
+-   Version archived to `versions/quickmap_0_9_0_2.R`
 
 #### Unified Architecture
 
