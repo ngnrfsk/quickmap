@@ -912,26 +912,21 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE) {
     ''
   }
 
-  # Return complete legend HTML structure
-  sprintf(
-    '</div>
-<div class="legend" id="mapLegend">
-  <div class="legend-header" onclick="this.parentElement.classList.toggle(\'collapsed\')">
-    <span class="legend-toggle">▼</span>
-    <span>%s</span>
-  </div>
-  <div class="legend-items">
-%s
-  </div>
-</div>
-<script>
-%s
-</script>
-',
-    legend_scale$title,
-    legend_items_html,
-    mobile_script
-  )
+  # Load HTML template from external file
+  legend_dir <- system.file("legend", package = "quickmap")
+
+  # Fall back to local inst/legend if package not installed
+  if (legend_dir == "") {
+    legend_dir <- "inst/legend"
+  }
+
+  html_file <- file.path(legend_dir, "legend.html")
+
+  # Read template
+  html_template <- paste(readLines(html_file, warn = FALSE), collapse = "\n")
+
+  # Inject title, items, and script into template
+  sprintf(html_template, legend_scale$title, legend_items_html, mobile_script)
 }
 
 #' Lighten or darken a hex color
