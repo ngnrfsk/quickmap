@@ -24,6 +24,10 @@
   flex-shrink: 0;
 }
 
+.play-pause-button.hidden {
+  display: none !important;
+}
+
 .play-pause-button:hover {
   background: %s;
   border-color: %s;
