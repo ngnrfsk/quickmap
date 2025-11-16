@@ -189,6 +189,33 @@
       }
     });
 
+    // Year button keyboard handler (Space/Enter)
+    yearButton.addEventListener('keydown', function(e) {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault(); // Prevent page scroll on Space
+        e.stopPropagation();
+
+        // Don't expand if single year
+        if (yearControl.classList.contains('single-year')) {
+          return;
+        }
+
+        yearControl.classList.toggle('expanded');
+        yearList.classList.toggle('show');
+
+        // Scroll to selected year when opening
+        if (yearControl.classList.contains('expanded')) {
+          var selectedItem = yearList.querySelector('.year-item.selected');
+          if (selectedItem) {
+            // Use setTimeout to ensure menu is rendered before scrolling
+            setTimeout(function() {
+              selectedItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }, 50);
+          }
+        }
+      }
+    });
+
     // Close menu when clicking outside
     document.addEventListener('click', function(e) {
       if (!yearControl.contains(e.target)) {
@@ -241,6 +268,15 @@
     playPauseButton.addEventListener('click', function(e) {
       e.stopPropagation();
       togglePlayPause();
+    });
+
+    // Play/pause button keyboard handler (Space/Enter)
+    playPauseButton.addEventListener('keydown', function(e) {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault(); // Prevent page scroll on Space
+        e.stopPropagation();
+        togglePlayPause();
+      }
     });
 
     // Cleanup interval on page unload to prevent memory leaks
