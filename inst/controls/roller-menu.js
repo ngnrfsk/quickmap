@@ -80,6 +80,11 @@
       return;
     }
 
+    // Hide play button if only one year (nothing to animate)
+    if (years.length <= 1) {
+      playPauseButton.style.display = 'none';
+    }
+
     // Find latest year (last in sorted array)
     var latestYear = years[years.length - 1];
 
@@ -198,6 +203,14 @@
     playPauseButton.addEventListener('click', function(e) {
       e.stopPropagation();
       togglePlayPause();
+    });
+
+    // Cleanup interval on page unload to prevent memory leaks
+    window.addEventListener('beforeunload', function() {
+      if (playInterval) {
+        clearInterval(playInterval);
+        playInterval = null;
+      }
     });
 
     console.log('Year control initialized with years:', years);
