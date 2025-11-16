@@ -99,6 +99,19 @@
       yearItem.addEventListener('click', function() {
         var clickedYear = this.getAttribute('data-year');
 
+        // Pause animation if playing
+        if (isPlaying) {
+          isPlaying = false;
+          playPauseButton.textContent = '▶';
+          if (playInterval) {
+            clearInterval(playInterval);
+            playInterval = null;
+          }
+        }
+
+        // Update current index to match clicked year
+        currentIndex = years.indexOf(clickedYear);
+
         // Remove selected class from all items
         var allItems = yearList.querySelectorAll('.year-item');
         allItems.forEach(function(item) {
