@@ -81,8 +81,9 @@
     }
 
     // Hide play button if only one year (nothing to animate)
-    if (years.length <= 1) {
-      playPauseButton.style.display = 'none';
+    if (years.length <= 1 && playPauseButton) {
+      playPauseButton.classList.add('hidden');
+      console.log('Play button hidden - only', years.length, 'year(s) available');
     }
 
     // Find latest year (last in sorted array)
