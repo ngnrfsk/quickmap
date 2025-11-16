@@ -48,6 +48,14 @@
       });
       console.log("Year switched to", selectedYear, "- Added:", added, "Removed:", removed);
 
+      // Re-apply non-focusable to any newly added markers
+      setTimeout(function() {
+        var markers = document.querySelectorAll('.leaflet-marker-icon, .leaflet-interactive');
+        markers.forEach(function(marker) {
+          marker.setAttribute('tabindex', '-1');
+        });
+      }, 100);
+
     } catch(e) {
       console.error("Year control error:", e);
     }
@@ -64,6 +72,19 @@
     }
 
     console.log('Layer cache found!', window.quickmapLayerCache);
+
+    // Make all map markers non-focusable for better keyboard navigation
+    // This allows Tab to reach year controls without cycling through all markers
+    function removeMarkerFocus() {
+      var markers = document.querySelectorAll('.leaflet-marker-icon, .leaflet-interactive');
+      markers.forEach(function(marker) {
+        marker.setAttribute('tabindex', '-1');
+      });
+    }
+
+    // Apply immediately and re-apply after layer changes
+    setTimeout(removeMarkerFocus, 100);
+    setTimeout(removeMarkerFocus, 500); // Catch late-loading markers
 
     var yearControl = document.getElementById('yearControl');
     var yearButton = document.getElementById('yearButton');
