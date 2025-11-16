@@ -967,8 +967,10 @@ lighten_color <- function(color, amount = 15) {
 #' and combines them into a single HTML string for injection
 #'
 #' @param banner_colour Hex color for theming (default "#2c3e50")
+#' @param autoplay Logical, whether to start animation automatically on load
+#' @param play_speed Numeric, milliseconds per year during animation
 #' @return Character string containing combined HTML/CSS/JS
-load_roller_menu_control <- function(banner_colour = "#2c3e50") {
+load_roller_menu_control <- function(banner_colour = "#2c3e50", autoplay = FALSE, play_speed = 500) {
   # Define paths to control files
   controls_dir <- system.file("controls", package = "quickmap")
 
@@ -999,7 +1001,14 @@ load_roller_menu_control <- function(banner_colour = "#2c3e50") {
                          banner_colour, banner_colour, accent_light, accent_light,  # Year button
                          banner_colour, hover_tint, accent_light, hover_tint)       # Menu items
 
-  # Combine into single HTML string
+  # Create config script to inject settings into JavaScript
+  config_script <- sprintf(
+    'window.quickmapConfig = {autoplay: %s, playSpeed: %d};',
+    tolower(as.character(autoplay)),  # Convert TRUE/FALSE to true/false for JS
+    as.integer(play_speed)
+  )
+
+  # Combine into single HTML string (config script injected before main JS)
   combined <- sprintf('
 %s
 
@@ -1010,7 +1019,11 @@ load_roller_menu_control <- function(banner_colour = "#2c3e50") {
 <script>
 %s
 </script>
-', html_content, css_content, js_content)
+
+<script>
+%s
+</script>
+', html_content, css_content, config_script, js_content)
 
   return(combined)
 }
@@ -1042,7 +1055,9 @@ apply_custom_layout_in_html <- function(
   scale_name,
   collapsed_mobile = TRUE,
   image_mode = FALSE, # FALSE = interactive HTML, TRUE = static image export
-  image_dimensions = c(1200, 1200) # Image dimensions [width, height] for scaling
+  image_dimensions = c(1200, 1200), # Image dimensions [width, height] for scaling
+  autoplay = FALSE, # Start animation automatically on load
+  play_speed = 500 # Milliseconds per year during animation
 ) {
   # Validate file exists
   if (!file.exists(html_file)) {
@@ -1416,7 +1431,7 @@ apply_custom_layout_in_html <- function(
   html_text <- sub("(<body[^>]*>)", paste0("\\1\n", banner_html), html_text)
 
   # Load roller menu control from external files
-  roller_menu_html <- load_roller_menu_control(banner_colour)
+  roller_menu_html <- load_roller_menu_control(banner_colour, autoplay, play_speed)
 
   # Generate legend HTML (starts with </div> to close map-container)
   legend_html <- generate_legend_html(scale_name, collapsed_mobile)
@@ -2349,7 +2364,10 @@ create_pollution_map <- function(
   styling_type = "html", # "none" | "html" - controls HTML banner and legend display
   marker_labels = FALSE, # FALSE | TRUE | "values_on" | "labels" | "labels_on"
   banner_colour = borough_palettes$merton$purple, # show_borough_colours() to list all available
-  boundary_labels = FALSE
+  boundary_labels = FALSE,
+  # year control animation parameters
+  autoplay = FALSE, # Start animation automatically on load
+  play_speed = 500 # Milliseconds per year during animation
 ) {
   # initial setup
   # Unpack export_image parameter into internal variables
@@ -2583,7 +2601,9 @@ create_pollution_map <- function(
               scale_name = colour_scale,
               collapsed_mobile = FALSE, # Keep expanded for static images
               image_mode = TRUE, # Enable image optimization for static JPG export
-              image_dimensions = c(map_width_px, map_height_px)
+              image_dimensions = c(map_width_px, map_height_px),
+              autoplay = autoplay,
+              play_speed = play_speed
             )
           },
           error = function(e) {
@@ -2634,7 +2654,9 @@ create_pollution_map <- function(
             title = if (show_banner) title else NULL,
             banner_colour = banner_colour,
             scale_name = colour_scale,
-            collapsed_mobile = TRUE
+            collapsed_mobile = TRUE,
+            autoplay = autoplay,
+            play_speed = play_speed
           )
         },
         error = function(e) {

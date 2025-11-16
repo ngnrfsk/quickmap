@@ -75,7 +75,10 @@
     var isPlaying = false;
     var playInterval = null;
     var currentIndex = 0;
-    var playSpeed = 500; // milliseconds per year
+
+    // Read config from R (injected via window.quickmapConfig) or use defaults
+    var config = window.quickmapConfig || {autoplay: false, playSpeed: 500};
+    var playSpeed = config.playSpeed;
 
     // Extract years from layer cache and sort
     var years = Object.keys(window.quickmapLayerCache).sort(function(a, b) {
@@ -283,6 +286,12 @@
           }
         }
       });
+    }
+
+    // Start animation automatically if autoplay is enabled (and multiple years exist)
+    if (config.autoplay && years.length > 1 && !yearControl.classList.contains('single-year')) {
+      console.log('Autoplay enabled - starting animation');
+      togglePlayPause(); // This will start the animation
     }
 
     console.log('Year control initialized with years:', years);
