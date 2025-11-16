@@ -995,11 +995,13 @@ load_roller_menu_control <- function(banner_colour = "#2c3e50", autoplay = FALSE
   # Inject banner_colour and accent into CSS template
   # Order: play_bg, play_border, play_hover_bg, play_hover_border,
   #        button_bg, button_border, button_hover_bg, button_hover_border,
-  #        menu_border, item_hover_bg, selected_bg, selected_hover_bg
+  #        menu_border, item_hover_bg, selected_bg, selected_hover_bg,
+  #        keyboard_focused_bg, keyboard_focused_outline
   css_content <- sprintf(css_content,
                          banner_colour, banner_colour, accent_light, accent_light,  # Play button
                          banner_colour, banner_colour, accent_light, accent_light,  # Year button
-                         banner_colour, hover_tint, accent_light, hover_tint)       # Menu items
+                         banner_colour, hover_tint, accent_light, hover_tint,       # Menu items
+                         hover_tint, banner_colour)                                 # Keyboard focus
 
   # Create config script to inject settings into JavaScript
   config_script <- sprintf(
