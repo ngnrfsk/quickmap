@@ -1978,10 +1978,11 @@ add_map_controls <- function(
       options = options
     )
 
-  # Layer control: JavaScript-based (proof of concept for slider)
+  # Layer control: JavaScript-based (year menu control)
   # NOTE: addLayersControl() removed - it hides inactive groups before onRender,
   # making layers inaccessible to JavaScript caching
-  baseGroups <- if (interactive && length(years) > 1) years else NULL
+  # Always create layer cache (even for single year) so roller menu can initialize
+  baseGroups <- if (interactive && length(years) >= 1) years else NULL
   if (!is.null(baseGroups)) {
     # Cache all year layers while visible, then hide all except latest
     map <- map %>%
