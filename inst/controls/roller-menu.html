@@ -1,9 +1,10 @@
 <div id="yearControl">
-  <button id="yearButton" class="year-button">
+  <button id="playPauseButton" class="play-pause-button" aria-label="Play animation" aria-pressed="false">▶</button>
+  <button id="yearButton" class="year-button" aria-label="Select year" aria-expanded="false">
     <span id="selectedYear"></span>
     <span class="arrow">▼</span>
   </button>
-  <div id="yearList" class="year-list">
+  <div id="yearList" class="year-list" role="listbox">
     <!-- Years will be populated dynamically from layer cache -->
   </div>
 </div>

@@ -3,6 +3,39 @@
   bottom: 2rem;
   right: 1rem;
   z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.play-pause-button {
+  background: %s;
+  border: 2px solid %s;
+  border-radius: 50%%;
+  width: 2.5rem;
+  height: 2.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.play-pause-button.hidden {
+  display: none !important;
+}
+
+.play-pause-button:hover {
+  background: %s;
+  border-color: %s;
+}
+
+.play-pause-button:focus-visible {
+  outline: 3px solid %s;
+  outline-offset: 2px;
 }
 
 .year-button {
@@ -28,6 +61,11 @@
   border-color: %s;
 }
 
+.year-button:focus-visible {
+  outline: 3px solid %s;
+  outline-offset: 2px;
+}
+
 .arrow {
   font-size: 0.75rem;
   transition: transform 0.3s ease;
@@ -35,6 +73,16 @@
 
 #yearControl.expanded .arrow {
   transform: rotate(180deg);
+}
+
+/* Hide arrow in single-year mode */
+#yearControl.single-year .arrow {
+  display: none;
+}
+
+/* Disable pointer cursor in single-year mode */
+#yearControl.single-year .year-button {
+  cursor: default;
 }
 
 .year-list {
@@ -96,4 +144,10 @@
 
 .year-item.selected:hover {
   background: %s;
+}
+
+.year-item.keyboard-focused {
+  background: %s;
+  outline: 2px solid %s;
+  outline-offset: -2px;
 }
