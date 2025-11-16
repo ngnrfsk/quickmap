@@ -5,8 +5,16 @@
   flex-shrink: 0;
 }
 
-.legend-header {
+/* Horizontal container for header and items */
+.legend-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
   padding: %s;
+}
+
+.legend-header {
   cursor: pointer;
   user-select: none;
   display: flex;
@@ -15,6 +23,10 @@
   font-weight: bold;
   %s
   background: %s;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  flex-shrink: 0;
+  transition: background-color 0.3s ease;
 }
 
 .legend-header:hover { background: %s; }
@@ -27,29 +39,38 @@
 .legend.collapsed .legend-toggle { transform: rotate(-90deg); }
 
 .legend-items {
-  padding: %s;
   display: flex;
   gap: %s;
-  justify-content: center;
+  justify-content: flex-start;
   flex-wrap: wrap;
+  align-items: center;
   %s
-  max-height: 18.75rem;
+  flex: 1;
+  min-width: 0;
+  max-width: 100%%%%;
   overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s ease;
+  transition: max-width 0.3s ease, opacity 0.3s ease;
 }
 
 .legend.collapsed .legend-items {
-  max-height: 0;
-  padding: 0 0.25rem;
+  max-width: 0;
+  opacity: 0;
+  gap: 0;
 }
 
-.legend-item { display: flex; align-items: center; gap: %s; }
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: %s;
+  white-space: nowrap;
+}
 
 .legend-symbol {
   width: %s;
   height: %s;
   border-radius: 50%%%%;
   border: %s;
+  flex-shrink: 0;
 }
 
 /* Mobile responsive styles (interactive mode only) */

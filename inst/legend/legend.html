@@ -1,11 +1,13 @@
 </div>
 <div class="legend" id="mapLegend">
-  <div class="legend-header" onclick="this.parentElement.classList.toggle('collapsed')">
-    <span class="legend-toggle">▼</span>
-    <span>%s</span>
-  </div>
-  <div class="legend-items">
+  <div class="legend-container">
+    <div class="legend-header" onclick="this.parentElement.parentElement.classList.toggle('collapsed')">
+      <span class="legend-toggle">▼</span>
+      <span class="legend-title">%s</span>
+    </div>
+    <div class="legend-items">
 %s
+    </div>
   </div>
 </div>
 <script>
