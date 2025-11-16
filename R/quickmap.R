@@ -254,6 +254,63 @@ get_temporal_data <- function(data, time_pattern = "\\d{4}") {
     dplyr::select(-time_col)
 }
 
+#' Get maximum data value across all measurement layers
+#'
+#' Finds the highest pollutant value across all enabled temporal layers
+#' (dt_sites and bl_nodes) to determine what legend range to display
+#'
+#' @param measurement_layers Layer configuration from get_measurement_layers()
+#' @param pollutant Pollutant name (for bl_nodes data)
+#' @param data_env Environment containing data objects
+#' @return Single numeric value representing maximum across all layers, or 0 if no data
+get_data_maximum <- function(measurement_layers, pollutant, data_env) {
+  max_values <- c()
+
+  for (layer_name in names(measurement_layers)) {
+    layer_config <- measurement_layers[[layer_name]]
+
+    # Only process enabled temporal layers (pollution data)
+    if (!layer_config$enabled || !layer_config$temporal) next
+
+    # Skip schools layer (no pollution data)
+    if (layer_config$layer_type == "schools") next
+
+    # Get data from environment
+    data_source_name <- layer_config$data_source
+    if (!exists(data_source_name, envir = data_env)) next
+
+    data <- get(data_source_name, envir = data_env)
+    if (is.null(data) || nrow(data) == 0) next
+
+    # Determine which column contains pollutant values
+    if (layer_config$layer_type == "dt_sites") {
+      # Diffusion tubes use "no2" column (hardcoded in get_temporal_data)
+      pollutant_col <- "no2"
+    } else if (layer_config$layer_type == "bl_nodes") {
+      # Breathe London uses pollutant parameter column
+      pollutant_col <- pollutant
+    } else {
+      next
+    }
+
+    # Check column exists
+    if (!pollutant_col %in% names(data)) next
+
+    # Get maximum value, removing NAs
+    layer_max <- max(data[[pollutant_col]], na.rm = TRUE)
+    if (!is.infinite(layer_max)) {
+      max_values <- c(max_values, layer_max)
+    }
+  }
+
+  # Return maximum across all layers, or 0 if none found
+  if (length(max_values) > 0) {
+    max(max_values)
+  } else {
+    0
+  }
+}
+
 # import and prepares the data from csv files in wide format
 import_csv_data <- function(
   file_path,
@@ -857,15 +914,18 @@ convert_colors_to_hex <- function(color_vector) {
 #'
 #' Creates a collapsible legend with header, toggle arrow, and color-coded items.
 #' Mobile responsive: automatically collapses on screens < 480px if enabled.
+#' Optionally trims legend to show only ranges up to maximum data value.
 #'
 #' @param scale_name Name of scale in colour_scales list (e.g., "who_no2")
 #' @param collapsed_mobile Should legend start collapsed on mobile (default TRUE)
+#' @param data_max Optional maximum data value to trim legend (shows only ranges up to this value)
 #' @return Character string containing complete HTML legend structure
 #' @details Validates:
 #'   - Scale exists in colour_scales
 #'   - colours and labels arrays have matching lengths
 #'   Converts all colors to hex format for CSS compatibility
-generate_legend_html <- function(scale_name, collapsed_mobile = TRUE) {
+#'   If data_max provided, filters legend to show only relevant ranges (minimum 2 items)
+generate_legend_html <- function(scale_name, collapsed_mobile = TRUE, data_max = NULL) {
   # Validate scale exists
   if (!scale_name %in% names(colour_scales)) {
     stop(
@@ -887,6 +947,25 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE) {
       length(legend_scale$colours),
       length(legend_scale$labels)
     ))
+  }
+
+  # Filter legend items based on data maximum (if provided)
+  if (!is.null(data_max) && !is.null(legend_scale$thresholds) && data_max > 0) {
+    # Find which threshold index contains data_max
+    # thresholds define breaks: [0, 10, 20, 30, 40, Inf]
+    # If data_max = 35, it falls in range 30-40 (index 4)
+    threshold_idx <- which(data_max < legend_scale$thresholds)[1]
+
+    # Include all items up to and including the threshold containing data_max
+    # Always include at least 2 items (minimum viable legend)
+    num_items <- max(2, threshold_idx)
+
+    # Ensure we don't exceed available items
+    num_items <- min(num_items, length(legend_scale$colours))
+
+    # Filter colours and labels
+    legend_scale$colours <- legend_scale$colours[1:num_items]
+    legend_scale$labels <- legend_scale$labels[1:num_items]
   }
 
   # Convert all colors to hex codes
@@ -1299,6 +1378,7 @@ load_roller_menu_control <- function(banner_colour = "#2c3e50", autoplay = FALSE
 #' @param banner_colour Hex color for banner background (default "#2c3e50")
 #' @param scale_name Name of colour_scale to use for legend (e.g., "who_no2")
 #' @param collapsed_mobile Should legend start collapsed on mobile (default TRUE)
+#' @param data_max Optional maximum data value for legend trimming (default NULL shows full legend)
 #' @return Invisibly returns TRUE on success
 #' @details Uses flexbox layout:
 #'   - Banner: fixed height at top (optional)
@@ -1314,7 +1394,8 @@ apply_custom_layout_in_html <- function(
   image_mode = FALSE, # FALSE = interactive HTML, TRUE = static image export
   image_dimensions = c(1200, 1200), # Image dimensions [width, height] for scaling
   autoplay = FALSE, # Start animation automatically on load
-  play_speed = 500 # Milliseconds per year during animation
+  play_speed = 500, # Milliseconds per year during animation
+  data_max = NULL # Maximum data value for legend trimming
 ) {
   # Validate file exists
   if (!file.exists(html_file)) {
@@ -1416,7 +1497,7 @@ apply_custom_layout_in_html <- function(
   roller_menu_html <- load_roller_menu_control(banner_colour, autoplay, play_speed)
 
   # Generate legend HTML (starts with </div> to close map-container)
-  legend_html <- generate_legend_html(scale_name, collapsed_mobile)
+  legend_html <- generate_legend_html(scale_name, collapsed_mobile, data_max)
 
   # Insert control before legend (so it's inside map-container)
   combined_html <- paste0(roller_menu_html, "\n", legend_html)
@@ -2503,6 +2584,9 @@ create_pollution_map <- function(
     marker_labels
   )
 
+  # Calculate maximum data value for legend trimming
+  data_max <- get_data_maximum(measurement_layers, pollutant, environment())
+
   # SINGLE LOOP: add layers to the dyamic HTML map and export an image for each year
   for (yr in unique(years)) {
     # Add layers to HTML map (cumulative - builds interactive HTML map with year selection)
@@ -2585,7 +2669,8 @@ create_pollution_map <- function(
               image_mode = TRUE, # Enable image optimization for static JPG export
               image_dimensions = c(map_width_px, map_height_px),
               autoplay = autoplay,
-              play_speed = play_speed
+              play_speed = play_speed,
+              data_max = data_max
             )
           },
           error = function(e) {
@@ -2638,7 +2723,8 @@ create_pollution_map <- function(
             scale_name = colour_scale,
             collapsed_mobile = TRUE,
             autoplay = autoplay,
-            play_speed = play_speed
+            play_speed = play_speed,
+            data_max = data_max
           )
         },
         error = function(e) {
