@@ -173,6 +173,17 @@
 
       yearControl.classList.toggle('expanded');
       yearList.classList.toggle('show');
+
+      // Scroll to selected year when opening
+      if (yearControl.classList.contains('expanded')) {
+        var selectedItem = yearList.querySelector('.year-item.selected');
+        if (selectedItem) {
+          // Use setTimeout to ensure menu is rendered before scrolling
+          setTimeout(function() {
+            selectedItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }, 50);
+        }
+      }
     });
 
     // Close menu when clicking outside
