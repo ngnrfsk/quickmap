@@ -262,7 +262,7 @@ get_temporal_data <- function(data, time_pattern = "\\d{4}") {
 #' @param measurement_layers Layer configuration from get_measurement_layers()
 #' @param pollutant Pollutant name (for bl_nodes data)
 #' @param data_env Environment containing data objects
-#' @return Single numeric value representing maximum across all layers, or 0 if no data
+#' @return Single numeric value representing maximum across all layers, or NULL if no data
 get_data_maximum <- function(measurement_layers, pollutant, data_env) {
   max_values <- c()
 
@@ -277,9 +277,13 @@ get_data_maximum <- function(measurement_layers, pollutant, data_env) {
 
     # Get data from environment
     data_source_name <- layer_config$data_source
-    if (!exists(data_source_name, envir = data_env)) next
 
-    data <- get(data_source_name, envir = data_env)
+    # Try to get data - use safer approach
+    data <- tryCatch(
+      get(data_source_name, envir = data_env, inherits = FALSE),
+      error = function(e) NULL
+    )
+
     if (is.null(data) || nrow(data) == 0) next
 
     # Determine which column contains pollutant values
@@ -298,16 +302,19 @@ get_data_maximum <- function(measurement_layers, pollutant, data_env) {
 
     # Get maximum value, removing NAs
     layer_max <- max(data[[pollutant_col]], na.rm = TRUE)
-    if (!is.infinite(layer_max)) {
+    if (!is.infinite(layer_max) && !is.nan(layer_max)) {
       max_values <- c(max_values, layer_max)
     }
   }
 
-  # Return maximum across all layers, or 0 if none found
+  # Return maximum across all layers, or NULL if none found
   if (length(max_values) > 0) {
-    max(max_values)
+    result <- max(max_values)
+    message("Legend trimming: data_max = ", round(result, 2))
+    return(result)
   } else {
-    0
+    message("Legend trimming: No data found, showing full legend")
+    return(NULL)
   }
 }
 
