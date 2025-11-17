@@ -622,7 +622,7 @@ colour_scales <- list(
       "70-80: 7x WHO guideline",
       "80-90: 8x WHO guideline",
       "90-100: 9x WHO guideline",
-      "> 100µg/m3: Over 10x WHO guideline",
+      "> 100: Over 10x WHO guideline",
       "Insufficient data"
     ),
     title = "NO2 annual mean, µg/m3",
@@ -688,7 +688,7 @@ colour_scales <- list(
       "90-100: 9x WHO guideline",
       "Insufficient data"
     ),
-    title = "NO2 levels",
+    title = "NO2, µg/m³",
     shape = "circle"
   ),
   lbrut_no2 = list(
@@ -719,7 +719,7 @@ colour_scales <- list(
       "90-100: 9x WHO guideline",
       "Insufficient data"
     ),
-    title = "NO2 levels"
+    title = "NO2, µg/m³"
   ),
   lbw_no2 = list(
     colours = c(
@@ -749,7 +749,7 @@ colour_scales <- list(
       "90-100: 9x WHO guideline",
       "Insufficient data"
     ),
-    title = "NO2 levels"
+    title = "NO2, µg/m³"
   ),
   lbm_no2 = list(
     colours = c(
@@ -779,7 +779,7 @@ colour_scales <- list(
       "90-100: 9x WHO guideline",
       "Insufficient data"
     ),
-    title = "NO2 levels"
+    title = "NO2, µg/m³"
   ),
   gla_pm25 = list(
     colours = c(
