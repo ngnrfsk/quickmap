@@ -925,6 +925,73 @@ convert_colors_to_hex <- function(color_vector) {
   )
 }
 
+#' Parse legend label into range and description
+#'
+#' Splits label on first colon to extract numeric range and descriptive text
+#'
+#' @param label Character string like "< 10: WHO guideline" or "25-30"
+#' @return List with $range and $description (description is NULL if no colon)
+parse_legend_label <- function(label) {
+  # Split on first colon
+  parts <- strsplit(label, ":", fixed = TRUE)[[1]]
+
+  if (length(parts) >= 2) {
+    # Has description after colon
+    range <- trimws(parts[1])
+    description <- trimws(paste(parts[-1], collapse = ":"))  # Rejoin in case of multiple colons
+    return(list(range = range, description = description))
+  } else {
+    # No description (just a range or special label like "Insufficient data")
+    return(list(range = trimws(label), description = NULL))
+  }
+}
+
+#' Get footnote symbol for index
+#'
+#' Returns traditional footnote symbols in sequence
+#'
+#' @param index Integer index (1-based)
+#' @return Character symbol (†, ‡, §, ¶, etc.)
+get_symbol_for_index <- function(index) {
+  symbols <- c("†", "‡", "§", "¶", "*", "⁑", "◊", "※", "⁂", "⁕",
+               "∗", "∘", "•", "∙", "⋆", "★", "☆", "⊕", "⊗", "⊙")
+
+  if (index <= length(symbols)) {
+    return(symbols[index])
+  } else {
+    # Fallback for more than 20 items
+    return(paste0("(", index, ")"))
+  }
+}
+
+#' Calculate maximum range width for fixed-width legend blocks
+#'
+#' Finds the longest range text (before colon) to determine uniform block width
+#'
+#' @param labels Character vector of legend labels
+#' @return Integer number of characters for the longest range (including symbol space)
+calculate_max_range_width <- function(labels) {
+  max_width <- 0
+
+  for (label in labels) {
+    parsed <- parse_legend_label(label)
+    range_text <- parsed$range
+
+    # Add 2 chars if has description (space + symbol)
+    if (!is.null(parsed$description)) {
+      range_width <- nchar(range_text) + 2
+    } else {
+      range_width <- nchar(range_text)
+    }
+
+    if (range_width > max_width) {
+      max_width <- range_width
+    }
+  }
+
+  return(max_width)
+}
+
 #' Generate HTML legend structure from colour_scale
 #'
 #' Creates a collapsible legend with header, toggle arrow, and color-coded items.
@@ -988,20 +1055,51 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE, data_max =
   # Convert all colors to hex codes
   hex_colors <- convert_colors_to_hex(legend_scale$colours)
 
-  # Generate individual legend items with text-on-colored-background format
-  legend_items <- sapply(seq_along(hex_colors), function(i) {
-    # Get contrast color for text readability
+  # Calculate fixed width for uniform-width legend blocks
+  max_width <- calculate_max_range_width(legend_scale$labels)
+
+  # Parse labels and assign symbols
+  symbol_index <- 1
+  legend_items <- list()
+  symbol_key_items <- list()
+
+  for (i in seq_along(hex_colors)) {
+    parsed <- parse_legend_label(legend_scale$labels[i])
     text_color <- get_contrast_text_color(hex_colors[i])
 
-    sprintf(
-      '    <div class="legend-item"><span style="background: %s; color: %s; padding: 0.25rem 0.625rem; border-radius: 0.25rem;">%s</span></div>',
+    # Build range text with symbol (if has description)
+    if (!is.null(parsed$description)) {
+      symbol <- get_symbol_for_index(symbol_index)
+      range_with_symbol <- paste0(parsed$range, " ", symbol)
+      symbol_index <- symbol_index + 1
+
+      # Pad to fixed width
+      padded_range <- sprintf(paste0("%-", max_width, "s"), range_with_symbol)
+
+      # Create symbol key entry (colored background with description)
+      symbol_key_items[[length(symbol_key_items) + 1]] <- sprintf(
+        '      <span style="background: %s; color: %s; padding: 0.25rem 0.625rem; border-radius: 0.25rem; white-space: nowrap;">%s %s</span>',
+        hex_colors[i],
+        text_color,
+        symbol,
+        parsed$description
+      )
+    } else {
+      # No description, just show range (no symbol)
+      padded_range <- sprintf(paste0("%-", max_width, "s"), parsed$range)
+    }
+
+    # Create colored range block
+    legend_items[[i]] <- sprintf(
+      '      <div class="legend-item"><span style="background: %s; color: %s; padding: 0.25rem 0.625rem; border-radius: 0.25rem; font-family: monospace;">%s</span></div>',
       hex_colors[i],
       text_color,
-      legend_scale$labels[i]
+      padded_range
     )
-  })
+  }
 
   legend_items_html <- paste(legend_items, collapse = "\n")
+  symbol_key_html <- paste(symbol_key_items, collapse = "\n")
 
   # Optional mobile collapse script
   mobile_script <- if (collapsed_mobile) {
@@ -1025,8 +1123,8 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE, data_max =
   # Read template
   html_template <- paste(readLines(html_file, warn = FALSE), collapse = "\n")
 
-  # Inject title, items, and script into template
-  sprintf(html_template, legend_scale$title, legend_items_html, mobile_script)
+  # Inject title, items, symbol key, and script into template
+  sprintf(html_template, legend_scale$title, legend_items_html, symbol_key_html, mobile_script)
 }
 
 #' Lighten or darken a hex color
@@ -1176,6 +1274,7 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 
   # Calculate legend header colors from banner_colour
   legend_header_bg <- lighten_color(banner_colour, 85)  # Very light tint
+  legend_header_hover <- lighten_color(banner_colour, 75)  # Slightly darker for hover
 
   # Determine values based on mode
   if (image_mode) {
@@ -1186,6 +1285,7 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     header_font_size <- "font-size: 1.2rem;"
     items_gap <- "1rem"
     items_font_size <- "font-size: 1rem;"
+    symbol_key_gap <- "1rem"
     mobile_css <- ""  # No mobile styles for static images
   } else {
     # Interactive: responsive design with mobile breakpoints
@@ -1195,6 +1295,7 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     header_font_size <- ""
     items_gap <- "0.625rem"
     items_font_size <- ""
+    symbol_key_gap <- "0.625rem"
 
     # Mobile responsive CSS for horizontal legend layout
     mobile_css <- "
@@ -1217,6 +1318,12 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     gap: 0.5rem;
     font-size: 0.75rem;
   }
+
+  .legend-key {
+    gap: 0.5rem;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
 }
 
 /* Tablet/Landscape: Keep horizontal but tighter spacing */
@@ -1234,6 +1341,12 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 
   .legend-items {
     gap: 0.625rem;
+    font-size: 0.85rem;
+  }
+
+  .legend-key {
+    gap: 0.625rem;
+    padding: 0.5rem 0.75rem;
     font-size: 0.85rem;
   }
 }
@@ -1292,11 +1405,13 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 
   # Inject values into CSS template
   # Order: border_top, container_padding, header_gap, header_font_size,
-  #        legend_header_bg, items_gap, items_font_size, mobile_css
+  #        legend_header_bg, legend_header_hover, items_gap, items_font_size,
+  #        symbol_key_gap, mobile_css
   css_content <- sprintf(css_content,
                          border_top, container_padding, header_gap, header_font_size,
-                         legend_header_bg,
+                         legend_header_bg, legend_header_hover,
                          items_gap, items_font_size,
+                         symbol_key_gap,
                          mobile_css)
 
   # Return CSS wrapped in style tags
