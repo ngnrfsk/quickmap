@@ -1102,7 +1102,13 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE, data_max =
   }
 
   legend_items_html <- paste(legend_items, collapse = "\n")
-  symbol_key_html <- paste(symbol_key_items, collapse = "\n")
+
+  # Ensure symbol_key_html is always a string (even if empty)
+  if (length(symbol_key_items) > 0) {
+    symbol_key_html <- paste(symbol_key_items, collapse = "\n")
+  } else {
+    symbol_key_html <- ""
+  }
 
   # Optional mobile collapse script
   mobile_script <- if (collapsed_mobile) {
