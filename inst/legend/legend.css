@@ -15,7 +15,6 @@
 }
 
 .legend-header {
-  cursor: pointer;
   user-select: none;
   display: flex;
   gap: %s;
@@ -26,17 +25,7 @@
   padding: 0.5rem 1rem;
   border-radius: 0.25rem;
   flex-shrink: 0;
-  transition: background-color 0.3s ease;
 }
-
-.legend-header:hover { background: %s; }
-
-.legend-toggle {
-  transition: transform 0.3s ease;
-  font-size: 0.8em;
-}
-
-.legend.collapsed .legend-toggle { transform: rotate(-90deg); }
 
 .legend-items {
   display: flex;
@@ -47,30 +36,12 @@
   %s
   flex: 1;
   min-width: 0;
-  max-width: 100%%%%;
-  overflow: hidden;
-  transition: max-width 0.3s ease, opacity 0.3s ease;
-}
-
-.legend.collapsed .legend-items {
-  max-width: 0;
-  opacity: 0;
-  gap: 0;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: %s;
   white-space: nowrap;
-}
-
-.legend-symbol {
-  width: %s;
-  height: %s;
-  border-radius: 50%%%%;
-  border: %s;
-  flex-shrink: 0;
 }
 
 /* Mobile responsive styles (interactive mode only) */

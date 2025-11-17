@@ -988,11 +988,15 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE, data_max =
   # Convert all colors to hex codes
   hex_colors <- convert_colors_to_hex(legend_scale$colours)
 
-  # Generate individual legend items
+  # Generate individual legend items with text-on-colored-background format
   legend_items <- sapply(seq_along(hex_colors), function(i) {
+    # Get contrast color for text readability
+    text_color <- get_contrast_text_color(hex_colors[i])
+
     sprintf(
-      '    <div class="legend-item"><div class="legend-symbol" style="background: %s;"></div><span>%s</span></div>',
+      '    <div class="legend-item"><span style="background: %s; color: %s; padding: 0.25rem 0.625rem; border-radius: 0.25rem;">%s</span></div>',
       hex_colors[i],
+      text_color,
       legend_scale$labels[i]
     )
   })
@@ -1050,6 +1054,29 @@ lighten_color <- function(color, amount = 15) {
 
   # Convert back to hex
   rgb(rgb_vals[1], rgb_vals[2], rgb_vals[3], maxColorValue = 255)
+}
+
+#' Calculate contrast text color for background
+#'
+#' Determines whether white or black text should be used on a given
+#' background color for optimal readability using WCAG luminance formula
+#'
+#' @param color Background color (hex or R color name)
+#' @return "white" for dark backgrounds, "black" for light backgrounds
+get_contrast_text_color <- function(color) {
+  # Convert color to RGB values (0-255)
+  rgb_vals <- col2rgb(color)[, 1]
+
+  # Calculate relative luminance using standard formula
+  # https://www.w3.org/TR/WCAG20/#relativeluminancedef
+  luminance <- (0.299 * rgb_vals[1] + 0.587 * rgb_vals[2] + 0.114 * rgb_vals[3]) / 255
+
+  # Return white for dark backgrounds, black for light backgrounds
+  if (luminance < 0.5) {
+    return("white")
+  } else {
+    return("black")
+  }
 }
 
 #' Load banner CSS from external file
@@ -1149,7 +1176,6 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 
   # Calculate legend header colors from banner_colour
   legend_header_bg <- lighten_color(banner_colour, 85)  # Very light tint
-  legend_header_hover <- lighten_color(banner_colour, 75)  # Slightly darker for hover
 
   # Determine values based on mode
   if (image_mode) {
@@ -1160,10 +1186,6 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     header_font_size <- "font-size: 1.2rem;"
     items_gap <- "1rem"
     items_font_size <- "font-size: 1rem;"
-    item_gap <- "1rem"
-    symbol_width <- "1.3rem"
-    symbol_height <- "1.3rem"
-    symbol_border <- "2px solid rgba(0,0,0,0.3)"
     mobile_css <- ""  # No mobile styles for static images
   } else {
     # Interactive: responsive design with mobile breakpoints
@@ -1173,10 +1195,6 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     header_font_size <- ""
     items_gap <- "0.625rem"
     items_font_size <- ""
-    item_gap <- "0.625rem"
-    symbol_width <- "1.25rem"
-    symbol_height <- "1.25rem"
-    symbol_border <- "2px solid rgba(0,0,0,0.2)"
 
     # Mobile responsive CSS for horizontal legend layout
     mobile_css <- "
@@ -1199,14 +1217,6 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     gap: 0.5rem;
     font-size: 0.75rem;
   }
-
-  .legend-item { gap: 0.2rem; }
-
-  .legend-symbol {
-    width: 0.8rem;
-    height: 0.8rem;
-    border-width: 1px;
-  }
 }
 
 /* Tablet/Landscape: Keep horizontal but tighter spacing */
@@ -1225,13 +1235,6 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   .legend-items {
     gap: 0.625rem;
     font-size: 0.85rem;
-  }
-
-  .legend-item { gap: 0.25rem; }
-
-  .legend-symbol {
-    width: 0.9rem;
-    height: 0.9rem;
   }
 }
 
@@ -1288,13 +1291,12 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   }
 
   # Inject values into CSS template
-  # Order: border_top, container_padding, header_gap, header_font_size, legend_header_bg, legend_header_hover,
-  #        items_gap, items_font_size, item_gap, symbol_width, symbol_height, symbol_border, mobile_css
+  # Order: border_top, container_padding, header_gap, header_font_size,
+  #        legend_header_bg, items_gap, items_font_size, mobile_css
   css_content <- sprintf(css_content,
                          border_top, container_padding, header_gap, header_font_size,
-                         legend_header_bg, legend_header_hover,
-                         items_gap, items_font_size, item_gap,
-                         symbol_width, symbol_height, symbol_border,
+                         legend_header_bg,
+                         items_gap, items_font_size,
                          mobile_css)
 
   # Return CSS wrapped in style tags
