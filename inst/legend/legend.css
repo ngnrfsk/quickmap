@@ -15,6 +15,7 @@
 }
 
 .legend-header {
+  cursor: pointer;
   user-select: none;
   display: flex;
   gap: %s;
@@ -25,7 +26,17 @@
   padding: 0.5rem 1rem;
   border-radius: 0.25rem;
   flex-shrink: 0;
+  transition: background-color 0.3s ease;
 }
+
+.legend-header:hover { background: %s; }
+
+.legend-toggle {
+  transition: transform 0.3s ease;
+  font-size: 0.8em;
+}
+
+.legend.collapsed .legend-toggle { transform: rotate(-90deg); }
 
 .legend-items {
   display: flex;
@@ -42,6 +53,24 @@
   display: flex;
   align-items: center;
   white-space: nowrap;
+}
+
+.legend-key {
+  display: flex;
+  gap: %s;
+  flex-wrap: wrap;
+  padding: 0.5rem 1rem;
+  background: #f8f9fa;
+  max-height: 500px;
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+}
+
+.legend.collapsed .legend-key {
+  max-height: 0;
+  opacity: 0;
+  padding: 0 1rem;
 }
 
 /* Mobile responsive styles (interactive mode only) */
