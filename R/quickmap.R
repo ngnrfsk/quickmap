@@ -657,7 +657,7 @@ colour_scales <- list(
       "45-50",
       "Insufficient data"
     ),
-    title = "PM2.5 annual mean, µg/m3",
+    title = "PM<sub>2.5</sub>, µg/m³",
     shape = "circle"
   ),
   who_no2 = list(
@@ -805,7 +805,7 @@ colour_scales <- list(
       "> 25",
       "Insufficient data"
     ),
-    title = "PM2.5 annual ug/m3"
+    title = "PM<sub>2.5</sub>, µg/m³"
   ),
   deltas = list(
     colours = c(
