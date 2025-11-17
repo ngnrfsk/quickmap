@@ -61,6 +61,7 @@
   flex-wrap: wrap;
   padding: 0.5rem 1rem;
   background: #f8f9fa;
+  %s
   max-height: 500px;
   opacity: 1;
   overflow: hidden;

@@ -1284,8 +1284,9 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     header_gap <- "1rem"
     header_font_size <- "font-size: 1.2rem;"
     items_gap <- "1rem"
-    items_font_size <- "font-size: 1rem;"
+    items_font_size <- "font-size: 1.2rem;"  # Match header size
     symbol_key_gap <- "1rem"
+    symbol_key_font_size <- "font-size: 1rem;"  # Old items size
     mobile_css <- ""  # No mobile styles for static images
   } else {
     # Interactive: responsive design with mobile breakpoints
@@ -1294,8 +1295,9 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     header_gap <- "0.625rem"
     header_font_size <- ""
     items_gap <- "0.625rem"
-    items_font_size <- ""
+    items_font_size <- "font-size: 1rem;"  # Match header size
     symbol_key_gap <- "0.625rem"
+    symbol_key_font_size <- "font-size: 0.85rem;"  # Smaller than items
 
     # Mobile responsive CSS for horizontal legend layout
     mobile_css <- "
@@ -1316,7 +1318,7 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 
   .legend-items {
     gap: 0.5rem;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
   }
 
   .legend-key {
@@ -1341,7 +1343,7 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 
   .legend-items {
     gap: 0.625rem;
-    font-size: 0.85rem;
+    font-size: 1rem;
   }
 
   .legend-key {
@@ -1406,12 +1408,12 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   # Inject values into CSS template
   # Order: border_top, container_padding, header_gap, header_font_size,
   #        legend_header_bg, legend_header_hover, items_gap, items_font_size,
-  #        symbol_key_gap, mobile_css
+  #        symbol_key_gap, symbol_key_font_size, mobile_css
   css_content <- sprintf(css_content,
                          border_top, container_padding, header_gap, header_font_size,
                          legend_header_bg, legend_header_hover,
                          items_gap, items_font_size,
-                         symbol_key_gap,
+                         symbol_key_gap, symbol_key_font_size,
                          mobile_css)
 
   # Return CSS wrapped in style tags
