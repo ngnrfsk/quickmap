@@ -797,7 +797,7 @@ colour_scales <- list(
     labels = c(
       "< 5: WHO guideline",
       "5-7.5",
-      "7.5-10 Under GLA/WHO Interim 1 target",
+      "7.5-10: Under GLA/WHO Interim 1 target",
       "10-12.5",
       "12.5-15: Under WHO Interim 2 target",
       "15-20: Under UK target",
@@ -1077,21 +1077,24 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE, data_max =
       padded_range <- sprintf(paste0("%-", max_width, "s"), range_with_symbol)
 
       # Create symbol key entry (colored background with description)
+      # Use monospace and pad to fixed width for vertical alignment with legend items
+      symbol_text <- paste(symbol, parsed$description)
+      padded_symbol_text <- sprintf(paste0("%-", max_width + 10, "s"), symbol_text)  # Extra width for description
+
       symbol_key_items[[length(symbol_key_items) + 1]] <- sprintf(
-        '      <span style="background: %s; color: %s; padding: 0.25rem 0.625rem; border-radius: 0.25rem; white-space: nowrap;">%s %s</span>',
+        '      <span style="background: %s; color: %s; padding: 0.5rem 0.625rem; border-radius: 0.25rem; font-family: monospace; display: inline-block;">%s</span>',
         hex_colors[i],
         text_color,
-        symbol,
-        parsed$description
+        padded_symbol_text
       )
     } else {
       # No description, just show range (no symbol)
       padded_range <- sprintf(paste0("%-", max_width, "s"), parsed$range)
     }
 
-    # Create colored range block
+    # Create colored range block (matching header height with 0.5rem vertical padding)
     legend_items[[i]] <- sprintf(
-      '      <div class="legend-item"><span style="background: %s; color: %s; padding: 0.25rem 0.625rem; border-radius: 0.25rem; font-family: monospace;">%s</span></div>',
+      '      <div class="legend-item"><span style="background: %s; color: %s; padding: 0.5rem 0.625rem; border-radius: 0.25rem; font-family: monospace;">%s</span></div>',
       hex_colors[i],
       text_color,
       padded_range
@@ -1287,6 +1290,7 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     items_font_size <- "font-size: 1.2rem;"  # Match header size
     symbol_key_gap <- "1rem"
     symbol_key_font_size <- "font-size: 1rem;"  # Old items size
+    symbol_key_padding <- "0.5rem 2rem 0.5rem 12rem"  # Offset left to align with first item
     mobile_css <- ""  # No mobile styles for static images
   } else {
     # Interactive: responsive design with mobile breakpoints
@@ -1298,6 +1302,7 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     items_font_size <- "font-size: 1rem;"  # Match header size
     symbol_key_gap <- "0.625rem"
     symbol_key_font_size <- "font-size: 0.85rem;"  # Smaller than items
+    symbol_key_padding <- "0.5rem 1rem 0.5rem 10.5rem"  # Offset left to align with first item
 
     # Mobile responsive CSS for horizontal legend layout
     mobile_css <- "
@@ -1326,6 +1331,11 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     padding: 0.5rem;
     font-size: 0.75rem;
   }
+
+  /* On mobile, legend stacks vertically so align key to left edge */
+  .legend-key {
+    padding-left: 0.5rem;
+  }
 }
 
 /* Tablet/Landscape: Keep horizontal but tighter spacing */
@@ -1348,7 +1358,7 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 
   .legend-key {
     gap: 0.625rem;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.625rem 0.5rem 9.5rem;
     font-size: 0.85rem;
   }
 }
@@ -1408,12 +1418,12 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   # Inject values into CSS template
   # Order: border_top, container_padding, header_gap, header_font_size,
   #        legend_header_bg, legend_header_hover, items_gap, items_font_size,
-  #        symbol_key_gap, symbol_key_font_size, mobile_css
+  #        symbol_key_gap, symbol_key_padding, symbol_key_font_size, mobile_css
   css_content <- sprintf(css_content,
                          border_top, container_padding, header_gap, header_font_size,
                          legend_header_bg, legend_header_hover,
                          items_gap, items_font_size,
-                         symbol_key_gap, symbol_key_font_size,
+                         symbol_key_gap, symbol_key_padding, symbol_key_font_size,
                          mobile_css)
 
   # Return CSS wrapped in style tags
