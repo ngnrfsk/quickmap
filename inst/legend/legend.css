@@ -38,6 +38,14 @@
 
 .legend.collapsed .legend-toggle { transform: rotate(-90deg); }
 
+.legend-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
 .legend-items {
   display: flex;
   gap: %s;
@@ -45,8 +53,6 @@
   flex-wrap: wrap;
   align-items: center;
   %s
-  flex: 1;
-  min-width: 0;
 }
 
 .legend-item {
@@ -59,13 +65,11 @@
   display: flex;
   gap: %s;
   flex-wrap: wrap;
-  padding: %s;
-  background: #f8f9fa;
   %s
   max-height: 500px;
   opacity: 1;
   overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
 }
 
 .legend.collapsed .legend-key {
