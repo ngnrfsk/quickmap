@@ -38,6 +38,8 @@
 
 .legend.collapsed .legend-toggle { transform: rotate(-90deg); }
 
+.legend.collapsed .legend-content { gap: 0; }
+
 .legend-content {
   display: flex;
   flex-direction: column;
