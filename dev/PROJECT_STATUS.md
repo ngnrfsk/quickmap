@@ -6,7 +6,7 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2025-11-15 **Current Working Version**: v0.9.0.2
+**Last Updated**: 2025-11-18 **Current Working Version**: v0.9.0.3
 
 --------------------------------------------------------------------------------
 
@@ -168,6 +168,39 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
 -   `R/quickmap.R`: Added color utility, modified control loading
 -   `inst/controls/roller-menu.{html,css,js}`: New control files
 -   Version archived to `versions/quickmap_0_9_0_2.R`
+
+#### Legend Refactor with Symbol Keys (2025-11-18, v0.9.0.3)
+
+**Complete legend system refactor for improved readability:**
+-   **Symbol Key System**: Traditional footnote symbols (†‡§¶*) for explanations
+    -   Fixed-width colored blocks using monospace font
+    -   Separate collapsible key section for descriptions
+    -   Labels without descriptions (e.g., "50-60") render without symbols
+-   **Label Shortening**: 30-50% reduction focusing on key regulatory thresholds
+    -   "Interim" → "Int", "Under" → "<", "Over" → ">"
+    -   Removed multiplier references for extreme values (5x-10x WHO)
+    -   Borough-specific labels: "< LB Richmond", "< LB Wandsworth"
+-   **Flexbox Alignment**: Nested containers for perfect alignment
+    -   Eliminated fixed padding calculations
+    -   Symbol key naturally aligns with first numeric block
+    -   Works across all title lengths (NO2, PM<sub>2.5</sub>)
+-   **Visual Hierarchy**: Larger text for ranges (1rem), smaller for keys (0.85rem)
+-   **Mobile Responsive**: Collapsed default on ≤480px, vertical centering fix
+-   **External Templates**: Modular CSS/HTML in `inst/legend/` directory
+
+**New Functions:**
+-   `parse_legend_label()`: Extracts range and description from labels
+-   `get_symbol_for_index()`: Maps index to footnote symbols
+-   `calculate_max_range_width()`: Determines uniform block width
+-   `get_contrast_text_color()`: WCAG luminance-based text color selection
+
+**Files Modified:**
+-   `R/quickmap.R`: Added 4 utility functions, modified `generate_legend_html()`
+-   `inst/legend/legend.{html,css}`: New modular template system
+-   All 7 colour scales: Shortened labels across NO2 and PM2.5 scales
+-   Version archived to `versions/quickmap_0_9_0_3.R`
+
+**Detailed Documentation:** `dev/20251118_v0.9.0.3_legend_refactor_complete.md`
 
 #### Unified Architecture
 
