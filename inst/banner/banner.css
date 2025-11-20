@@ -1,0 +1,23 @@
+/* Global reset and flexbox layout for banner/map/legend system */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%%%%; font-family: Arial, sans-serif; overflow: hidden; }
+body { display: flex; flex-direction: column; }
+
+/* Banner styles */
+.banner {
+  background: %s;
+  color: white;
+  padding: %s;
+  text-align: center;
+  font-size: %s;
+  line-height: 1.3em;
+  flex-shrink: 0;
+  %s
+}
+
+/* Map container */
+.map-container { flex: 1; position: relative; min-height: 0; }
+.map-container > div:not(#yearControl) { height: 100%%%% !important; }
+
+/* Mobile responsive styles for banner (interactive mode only) */
+%s
