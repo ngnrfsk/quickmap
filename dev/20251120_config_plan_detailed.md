@@ -3,13 +3,12 @@
 **Date**: 2025-11-20
 **Based on**: dev/20251120_config_plan_outline.md
 **Status**: Planning Phase - Ready for Execution
-**Estimated Total Effort**: 12-15 hours
 
 ---
 
 ## Context
 
-QuickMap has inline CSS/JS code with fragile positional sprintf placeholders and hardcoded color scales in R. The roller menu control demonstrates a better pattern (external files in inst/controls/), but banner/legend CSS remains embedded inline with 14+ positional parameters.
+QuickMap has inline CSS/JS code with fragile positional sprintf placeholders and hardcoded color scales in R. The roller menu control demonstrates a better pattern (external files in inst/controls/), but banner/legend CSS remains embedded inline with 14+ positional parameters. The working files are in folder R/, dev/, inst/.
 
 ---
 
