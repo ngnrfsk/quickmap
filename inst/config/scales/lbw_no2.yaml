@@ -1,16 +1,7 @@
-colours:
-  - blue
-  - green
-  - yellow
-  - orange
-  - "#FF4500"
-  - "#8B0000"
-  - "#DA70D6"
-  - "#4B0082"
-  - "#696969"
-  - black
-  - white
-
+name: lbw_no2
+title: NO2, µg/m³
+pollutant: NO2
+shape: square
 thresholds:
   - 0
   - 10
@@ -23,7 +14,18 @@ thresholds:
   - 80
   - 90
   - .Inf
-
+colours:
+  - blue
+  - green
+  - yellow
+  - orange
+  - "#FF4500"
+  - "#8B0000"
+  - "#DA70D6"
+  - "#4B0082"
+  - "#696969"
+  - black
+  - white
 labels:
   - "< 10: WHO guideline"
   - "10-19: WHO Int 3"
@@ -36,5 +38,3 @@ labels:
   - "80-90"
   - "90-100"
   - "Insufficient data"
-
-title: "NO2, µg/m³"
