@@ -1,5 +1,5 @@
 # Working, stable production codebase for quickmap ####
-# Version 0.10.0
+# Version 0.9.0.4
 
 #2345678901234567890123456789012345678901234567890123456789012345678901234567890 Hollerith limit
 
@@ -30,7 +30,7 @@
 #   v0.9.0.1: UI fixes - Year control bottom-right, collapsed, defaults to latest year
 #   v0.9.0.2: Touch-friendly collapsible year menu with dynamic banner-based theming
 #   v0.9.0.3: Legend refactor with symbol keys, fixed-width blocks, shortened labels, flexbox alignment
-#   v0.10.0: Configuration system - YAML-based colour scales and themes
+#   v0.9.0.4: Configuration system - YAML-based colour scales and themes
 #           Externalized CSS/JS to inst/ directory structure:
 #           - inst/banner/, inst/legend/, inst/controls/ for UI components
 #           - inst/config/scales/ for YAML colour scale definitions
