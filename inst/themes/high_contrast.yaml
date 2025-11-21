@@ -1,0 +1,19 @@
+banner:
+  background: "#000000"
+  text_color: "#FFFF00"
+  title: "Air Quality Map - High Contrast"
+
+legend:
+  show: true
+  background: "#FFFFFF"
+
+map:
+  vignette: false
+  boundary_labels: true
+  marker_labels: "values_on"
+
+controls:
+  autoplay: false
+  play_speed: 500
+  background: "#000000"
+  text_color: "#FFFF00"
