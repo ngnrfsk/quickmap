@@ -39,4 +39,5 @@ labels:
   - "35-40"
   - "40-45"
   - "45-50"
+  - "> 50"
   - "Insufficient data"
