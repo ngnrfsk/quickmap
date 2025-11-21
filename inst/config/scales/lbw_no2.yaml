@@ -22,7 +22,7 @@ thresholds:
   - 70
   - 80
   - 90
-  - .inf
+  - .Inf
 
 labels:
   - "< 10: WHO guideline"
