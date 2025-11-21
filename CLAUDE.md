@@ -6,11 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **QuickMap** is an R project for generating interactive air quality maps showing pollution data (NO2, PM2.5) overlaid with school locations and borough boundaries. It creates both interactive Leaflet HTML maps and static JPG exports for local government air quality reporting.
 
-### Current Version: 0.9.0.3
+### Current Version: 0.9.0.4
 
--   **Production code**: `quickmap.R` (stable, ~2,500 lines)
+-   **Production code**: `quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/quickmap_0_8_5.R` through `versions/quickmap_0_9_0_3.R`
--   **Test scripts**: 14 test scripts in `tests/` directory
+-   **Test scripts**: 14 test scripts in `tests/` directory, 3 testthat files
 -   **Utility scripts**: 6 scripts in `scripts/` directory
 
 ## Core Architecture
@@ -131,11 +131,83 @@ Sys.setenv(SCRIPTS_PATH = "path/to/scripts")
 
 -   **Required columns**: `Easting`, `Northing`, `Level` (Primary/Secondary), `School`
 
-## Color Scale System
+## Configuration System (v0.10.0+)
 
-Pre-configured scales in `colour_scales` list: - **WHO-based**: `who_no2`, `stripes_no2`, `gla_pm25` - **Borough-specific**: `lbw_no2`, `lbrut_no2`, `lbm_no2` - **Special**: `deltas` (year-on-year change), `schools` (categorical)
+### Directory Structure
 
-Each scale defines: - `colours`: Color palette (R names or hex) - `thresholds`: Breakpoints for continuous data - `labels`: Legend text - `title`: Scale description
+External configuration files in `inst/` directory:
+- **`inst/banner/`**: Banner CSS template with {{placeholder}} substitution
+- **`inst/legend/`**: Legend CSS template with {{placeholder}} substitution
+- **`inst/controls/`**: Year control HTML/CSS/JS (roller menu)
+- **`inst/config/scales/`**: YAML colour scale definitions
+- **`inst/themes/`**: YAML theme configuration files
+
+### Colour Scale System
+
+YAML-based scales in `inst/config/scales/`:
+- **WHO-based**: `who_no2.yaml`, `stripes_no2.yaml`, `gla_pm25.yaml`
+- **Borough-specific**: `lbw_no2.yaml`, `lbrut_no2.yaml`, `lbm_no2.yaml`
+- **Special**: `deltas.yaml` (year-on-year change), `schools.yaml` (categorical)
+
+Each YAML scale defines:
+```yaml
+name: who_no2
+title: "NO2, µg/m³"
+pollutant: NO2
+shape: circle
+thresholds: [0, 10, 20, 40, .Inf]
+colours: ["green", "yellow", "orange", "red", "white"]
+labels: ["< 10: Good", "10-20: Fair", "20-40: Poor", "> 40: Bad", "Insufficient data"]
+```
+
+Loading: `load_colour_scale("who_no2")` returns R list with validation
+
+### Theme System
+
+Reusable theme files in `inst/themes/` for consistent borough styling:
+
+Example `merton_purple.yaml`:
+```yaml
+banner:
+  background: "#5F3E94"
+  text_color: "white"
+  title: "Merton Air Quality"
+legend:
+  show: true
+  background: "#DED4E9"
+map:
+  vignette: true
+  base_tiles: null  # null = default OSM, or "CartoDB.Positron"
+  zoom_level: null  # null = auto-fit
+  boundary_labels: false
+  marker_labels: false
+controls:
+  autoplay: false
+  play_speed: 500
+  background: "#5F3E94"
+  text_color: "white"
+```
+
+Usage in `create_pollution_map()`:
+```r
+create_pollution_map(
+  diffusion_tube_file = "data.csv",
+  boroughs = "Merton",
+  theme_file = "inst/themes/merton_purple.yaml",
+  # Explicit params override theme:
+  vignette = FALSE  # overrides theme's vignette: true
+)
+```
+
+Functions: `get_default_theme()`, `load_theme(theme_file)` with graceful fallback
+
+### Named Placeholder Pattern
+
+CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
+- Better readability than sprintf positional parameters
+- Self-documenting template structure
+- No parameter counting errors
+- Used in: `load_banner_css()`, `load_legend_css()`, `load_roller_menu_control()`
 
 ## UI Enhancement System
 
@@ -191,5 +263,6 @@ Core R packages (auto-installed): - `leaflet`: Interactive mapping - `sf`: Spati
 -   **v0.9.0.1**: UI fixes - year control positioning and behavior
 -   **v0.9.0.2**: Touch-friendly collapsible year menu with dynamic banner-based theming
 -   **v0.9.0.3**: Legend refactor with symbol keys, fixed-width blocks, shortened labels, flexbox alignment
+-   **v0.9.0.4**: Configuration system - YAML-based colour scales and themes, externalized CSS/JS to inst/, named placeholder pattern, theme_file parameter
 
 All archived versions are stored in `versions/` directory. Current stable version is always `quickmap.R`.

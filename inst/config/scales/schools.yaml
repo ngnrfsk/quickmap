@@ -1,0 +1,13 @@
+colours:
+  - "#1E90FF"
+  - "#32CD32"
+
+domain:
+  - Primary
+  - Secondary
+
+labels:
+  - Primary
+  - Secondary
+
+title: "School Level"

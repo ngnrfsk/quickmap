@@ -1,0 +1,40 @@
+name: deltas
+title: Fall in NO2 levels, µg/m3, year on year
+pollutant: NO2
+shape: square
+thresholds:
+  - .Inf
+  - 8
+  - 6
+  - 4
+  - 2
+  - 0
+  - -2
+  - -4
+  - -6
+  - -8
+  - -.Inf
+colours:
+  - "#084594"
+  - "#2171B5"
+  - "#4292C6"
+  - "#6BAED6"
+  - "#9ECAE1"
+  - "#FEE391"
+  - "#FEB24C"
+  - "#FB6A4A"
+  - "#DE2D26"
+  - "#A50F15"
+  - "white"
+labels:
+  - ">8"
+  - "6-8"
+  - "4-6"
+  - "2-4"
+  - "0-2"
+  - "Increase 0-2"
+  - "increase of 2-4"
+  - "increase of 4-6"
+  - "increase of 6-8"
+  - "increase over 8"
+  - "Site not in use"
