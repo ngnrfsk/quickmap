@@ -1,0 +1,42 @@
+name: stripes_pm25
+title: PM<sub>2.5</sub>, µg/m³
+pollutant: PM2.5
+shape: circle
+thresholds:
+  - 0
+  - 5
+  - 10
+  - 15
+  - 20
+  - 25
+  - 30
+  - 35
+  - 40
+  - 45
+  - 50
+  - .Inf
+colours:
+  - "#A4ffff"
+  - "#b0dae9"
+  - "#b0ceed"
+  - "#f9e047"
+  - "#f2c84b"
+  - "#f1a63f"
+  - "#e98725"
+  - "#af4553"
+  - "#863b47"
+  - "#462f30"
+  - "#252424"
+  - "white"
+labels:
+  - "< 5: WHO guideline"
+  - "5-10: < GLA/WHO Int 4"
+  - "10-15: WHO Int 3"
+  - "15-20: UK"
+  - "20-25: WHO Int 2"
+  - "25-30"
+  - "30-35: WHO Int 1"
+  - "35-40"
+  - "40-45"
+  - "45-50"
+  - "Insufficient data"

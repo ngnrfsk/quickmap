@@ -607,288 +607,40 @@ show_borough_colours <- function(borough = NULL) {
   )
 }
 
-# Unified colour scale definitions ####
-colour_scales <- list(
-  stripes_no2 = list(
-    colours = c(
-      "#A4ffff",
-      "#b0dae9",
-      "#b0ceed",
-      "#f9e047",
-      "#f2c84b",
-      "#f1a63f",
-      "#e98725",
-      "#af4553",
-      "#863b47",
-      "#462f30",
-      "#252424",
-      "white"
-    ),
-    thresholds = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, Inf),
-    labels = c(
-      "< 10: WHO guideline",
-      "10-19: WHO Int 3",
-      "20-29: WHO Int 2",
-      "30-39: UK/WHO Int 1",
-      "40-49: > UK",
-      "50-60",
-      "60-70",
-      "70-80",
-      "80-90",
-      "90-100",
-      "> 100",
-      "Insufficient data"
-    ),
-    title = "NO2 annual mean, µg/m3",
-    shape = "circle"
-  ),
-  stripes_pm25_ = list(
-    colours = c(
-      "#A4ffff",
-      "#b0dae9",
-      "#b0ceed",
-      "#f9e047",
-      "#f2c84b",
-      "#f1a63f",
-      "#e98725",
-      "#af4553",
-      "#863b47",
-      "#462f30",
-      "#252424",
-      "white"
-    ),
-    thresholds = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, Inf),
-    labels = c(
-      "< 5: WHO guideline",
-      "5-10: < GLA/WHO Int 4",
-      "10-15: WHO Int 3",
-      "15-20: UK",
-      "20-25: WHO Int 2",
-      "25-30",
-      "30-35: WHO Int 1",
-      "35-40",
-      "40-45",
-      "45-50",
-      "Insufficient data"
-    ),
-    title = "PM<sub>2.5</sub>, µg/m³",
-    shape = "circle"
-  ),
-  who_no2 = list(
-    colours = c(
-      "blue",
-      "green",
-      "yellow",
-      "orange",
-      "#FF4500",
-      "#8B0000",
-      "#DA70D6",
-      "#4B0082",
-      "#696969",
-      "black",
-      "white"
-    ),
-    thresholds = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, Inf),
-    labels = c(
-      "< 10: WHO guideline",
-      "10-19: WHO Int 3",
-      "20-29: WHO Int 2",
-      "30-39: UK/WHO Int 1",
-      "40-49: > UK",
-      "50-60",
-      "60-70",
-      "70-80",
-      "80-90",
-      "90-100",
-      "Insufficient data"
-    ),
-    title = "NO2, µg/m³",
-    shape = "circle"
-  ),
-  lbrut_no2 = list(
-    colours = c(
-      "blue",
-      "green",
-      "yellow",
-      "orange",
-      "#FF4500",
-      "#8B0000",
-      "#DA70D6",
-      "#4B0082",
-      "#696969",
-      "black",
-      "white"
-    ),
-    thresholds = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, Inf),
-    labels = c(
-      "< 10: WHO guideline",
-      "10-19: < LB Richmond",
-      "20-29: WHO Int 2",
-      "30-39: < UK",
-      "40-49: > UK",
-      "50-60",
-      "60-70",
-      "70-80",
-      "80-90",
-      "90-100",
-      "Insufficient data"
-    ),
-    title = "NO2, µg/m³"
-  ),
-  lbw_no2 = list(
-    colours = c(
-      "blue",
-      "green",
-      "yellow",
-      "orange",
-      "#FF4500",
-      "#8B0000",
-      "#DA70D6",
-      "#4B0082",
-      "#696969",
-      "black",
-      "white"
-    ),
-    thresholds = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, Inf),
-    labels = c(
-      "< 10: WHO guideline",
-      "10-19: WHO Int 3",
-      "20-29: < LB Wandsworth",
-      "30-39: < UK",
-      "40-49: > UK",
-      "50-60",
-      "60-70",
-      "70-80",
-      "80-90",
-      "90-100",
-      "Insufficient data"
-    ),
-    title = "NO2, µg/m³"
-  ),
-  lbm_no2 = list(
-    colours = c(
-      "blue",
-      "green",
-      "yellow",
-      "orange",
-      "#FF4500",
-      "#8B0000",
-      "#DA70D6",
-      "#4B0082",
-      "#696969",
-      "black",
-      "white"
-    ),
-    thresholds = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, Inf),
-    labels = c(
-      "< 10: WHO guideline",
-      "10-19: WHO Int 3",
-      "20-29: WHO Int 2",
-      "30-39: UK/WHO Int 1",
-      "40-49: > UK",
-      "50-60",
-      "60-70",
-      "70-80",
-      "80-90",
-      "90-100",
-      "Insufficient data"
-    ),
-    title = "NO2, µg/m³"
-  ),
-  gla_pm25 = list(
-    colours = c(
-      "darkblue", # 0–5
-      "blue", # 5–7.5
-      "lightgreen", # 7.5–10
-      "yellow", # 10–12.5
-      "orange", # 12.5–15
-      "darkorange", # 15–20
-      "red", # 20–25
-      "darkred", # 25–Inf
-      "white" # NA
-    ),
-    thresholds = c(0, 5, 7.5, 10, 12.5, 15, 20, 25, Inf),
-    labels = c(
-      "< 5: WHO guideline",
-      "5-7.5",
-      "7.5-10: < GLA/WHO Int 1",
-      "10-12.5",
-      "12.5-15: < WHO Int 2",
-      "15-20: < UK",
-      "20-25: < WHO Int 2",
-      "> 25",
-      "Insufficient data"
-    ),
-    title = "PM<sub>2.5</sub>, µg/m³"
-  ),
-  deltas = list(
-    colours = c(
-      "#084594",
-      "#2171B5",
-      "#4292C6",
-      "#6BAED6",
-      "#9ECAE1",
-      "#FEE391",
-      "#FEB24C",
-      "#FB6A4A",
-      "#DE2D26",
-      "#A50F15",
-      "white"
-    ),
-    thresholds = c(Inf, 8, 6, 4, 2, 0, -2, -4, -6, -8, -Inf),
-    labels = c(
-      ">8",
-      "6-8",
-      "4-6",
-      "2-4",
-      "0-2",
-      "Increase 0-2",
-      "increase of 2-4",
-      "increase of 4-6",
-      "increase of 6-8",
-      "increase over 8",
-      "Site not in use"
-    ),
-    title = "Fall in NO2 levels, µg/m3, year on year"
-  ),
-  schools = list(
-    colours = c("#1E90FF", "#32CD32"),
-    domain = c("Primary", "Secondary"),
-    labels = c("Primary", "Secondary"),
-    title = "School Level"
-  )
-)
-
-#' Load colour scale from YAML file or fallback to R list
+#' Load colour scale from YAML configuration file
 #' @param scale_name Character string, name of the colour scale (e.g., "who_no2")
 #' @return List containing colour scale definition
 load_colour_scale <- function(scale_name) {
-  yaml_available <- requireNamespace("yaml", quietly = TRUE)
-
-  if (yaml_available) {
-    scale_dir <- system.file("config/scales", package = "quickmap")
-    if (scale_dir == "") scale_dir <- "inst/config/scales"
-    yaml_file <- file.path(scale_dir, paste0(scale_name, ".yaml"))
-
-    if (file.exists(yaml_file)) {
-      tryCatch({
-        scale <- yaml::read_yaml(yaml_file)
-        # Ensure thresholds are numeric (yaml may parse .Inf as string/NA)
-        if (!is.null(scale$thresholds)) {
-          scale$thresholds <- as.numeric(scale$thresholds)
-        }
-        return(scale)
-      }, error = function(e) {
-        warning(sprintf("Failed to load '%s': %s. Using R list.", yaml_file, e$message))
-      })
-    }
+  if (!requireNamespace("yaml", quietly = TRUE)) {
+    stop("Package 'yaml' required for colour scales. Install with: install.packages('yaml')")
   }
 
-  if (!scale_name %in% names(colour_scales)) {
-    stop("Scale '", scale_name, "' not found. Available: ", paste(names(colour_scales), collapse = ", "))
+  scale_dir <- system.file("config/scales", package = "quickmap")
+  if (scale_dir == "") scale_dir <- "inst/config/scales"
+
+  if (!dir.exists(scale_dir)) {
+    stop("Scale directory not found: ", scale_dir)
   }
 
-  return(colour_scales[[scale_name]])
+  yaml_file <- file.path(scale_dir, paste0(scale_name, ".yaml"))
+
+  if (!file.exists(yaml_file)) {
+    available <- gsub("\\.yaml$", "", list.files(scale_dir, pattern = "\\.yaml$"))
+    stop("Scale '", scale_name, "' not found. Available: ", paste(available, collapse = ", "))
+  }
+
+  scale <- tryCatch({
+    yaml::read_yaml(yaml_file)
+  }, error = function(e) {
+    stop("Failed to load '", yaml_file, "': ", e$message)
+  })
+
+  # Ensure thresholds are numeric (.Inf converted correctly)
+  if (!is.null(scale$thresholds)) {
+    scale$thresholds <- as.numeric(scale$thresholds)
+  }
+
+  scale
 }
 
 # Get colour legend info from unified scale
