@@ -264,7 +264,12 @@ get_temporal_data <- function(data, time_pattern = "\\d{4}") {
 #' @param data_env Environment containing data objects
 #' @param years Character vector of year strings to include (e.g., c("2020", "2021"))
 #' @return Single numeric value representing maximum across specified years and layers, or NULL if no data
-get_data_maximum <- function(measurement_layers, pollutant, data_env, years = NULL) {
+get_data_maximum <- function(
+  measurement_layers,
+  pollutant,
+  data_env,
+  years = NULL
+) {
   max_values <- c()
 
   for (layer_name in names(measurement_layers)) {
@@ -317,8 +322,17 @@ get_data_maximum <- function(measurement_layers, pollutant, data_env, years = NU
   # Return maximum across all layers, or NULL if none found
   if (length(max_values) > 0) {
     result <- max(max_values)
-    message("Legend trimming: data_max = ", round(result, 2), " (from ",
-            ifelse(is.null(years), "all years", paste(length(years), "selected years")), ")")
+    message(
+      "Legend trimming: data_max = ",
+      round(result, 2),
+      " (from ",
+      ifelse(
+        is.null(years),
+        "all years",
+        paste(length(years), "selected years")
+      ),
+      ")"
+    )
     return(result)
   } else {
     message("Legend trimming: No data found, showing full legend")
@@ -938,7 +952,7 @@ parse_legend_label <- function(label) {
   if (length(parts) >= 2) {
     # Has description after colon
     range <- trimws(parts[1])
-    description <- trimws(paste(parts[-1], collapse = ":"))  # Rejoin in case of multiple colons
+    description <- trimws(paste(parts[-1], collapse = ":")) # Rejoin in case of multiple colons
     return(list(range = range, description = description))
   } else {
     # No description (just a range or special label like "Insufficient data")
@@ -953,8 +967,28 @@ parse_legend_label <- function(label) {
 #' @param index Integer index (1-based)
 #' @return Character symbol (†, ‡, §, ¶, etc.)
 get_symbol_for_index <- function(index) {
-  symbols <- c("†", "‡", "§", "¶", "*", "⁑", "◊", "※", "⁂", "⁕",
-               "∗", "∘", "•", "∙", "⋆", "★", "☆", "⊕", "⊗", "⊙")
+  symbols <- c(
+    "†",
+    "‡",
+    "§",
+    "¶",
+    "*",
+    "⁑",
+    "◊",
+    "※",
+    "⁂",
+    "⁕",
+    "∗",
+    "∘",
+    "•",
+    "∙",
+    "⋆",
+    "★",
+    "☆",
+    "⊕",
+    "⊗",
+    "⊙"
+  )
 
   if (index <= length(symbols)) {
     return(symbols[index])
@@ -1007,7 +1041,11 @@ calculate_max_range_width <- function(labels) {
 #'   - colours and labels arrays have matching lengths
 #'   Converts all colors to hex format for CSS compatibility
 #'   If data_max provided, filters legend to show only relevant ranges (minimum 2 items)
-generate_legend_html <- function(scale_name, collapsed_mobile = TRUE, data_max = NULL) {
+generate_legend_html <- function(
+  scale_name,
+  collapsed_mobile = TRUE,
+  data_max = NULL
+) {
   # Validate scale exists
   if (!scale_name %in% names(colour_scales)) {
     stop(
@@ -1079,7 +1117,10 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE, data_max =
       # Create symbol key entry (colored background with description)
       # Use monospace and pad to fixed width for vertical alignment with legend items
       symbol_text <- paste(symbol, parsed$description)
-      padded_symbol_text <- sprintf(paste0("%-", max_width + 10, "s"), symbol_text)  # Extra width for description
+      padded_symbol_text <- sprintf(
+        paste0("%-", max_width + 10, "s"),
+        symbol_text
+      ) # Extra width for description
 
       symbol_key_items[[length(symbol_key_items) + 1]] <- sprintf(
         '      <span style="background: %s; color: %s; padding: 0.5rem 0.625rem; border-radius: 0.25rem; font-family: monospace; display: inline-block;">%s</span>',
@@ -1133,7 +1174,13 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE, data_max =
   html_template <- paste(readLines(html_file, warn = FALSE), collapse = "\n")
 
   # Inject title, items, symbol key, and script into template
-  sprintf(html_template, legend_scale$title, legend_items_html, symbol_key_html, mobile_script)
+  sprintf(
+    html_template,
+    legend_scale$title,
+    legend_items_html,
+    symbol_key_html,
+    mobile_script
+  )
 }
 
 #' Lighten or darken a hex color
@@ -1176,7 +1223,11 @@ get_contrast_text_color <- function(color) {
 
   # Calculate relative luminance using standard formula
   # https://www.w3.org/TR/WCAG20/#relativeluminancedef
-  luminance <- (0.299 * rgb_vals[1] + 0.587 * rgb_vals[2] + 0.114 * rgb_vals[3]) / 255
+  luminance <- (0.299 *
+    rgb_vals[1] +
+    0.587 * rgb_vals[2] +
+    0.114 * rgb_vals[3]) /
+    255
 
   # Return white for dark backgrounds, black for light backgrounds
   if (luminance < 0.5) {
@@ -1225,12 +1276,12 @@ load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     padding <- "2rem"
     font_size <- "1.8rem"
     font_weight <- "font-weight: bold;"
-    mobile_css <- ""  # No mobile styles for static images
+    mobile_css <- "" # No mobile styles for static images
   } else {
     # Interactive: responsive design with mobile breakpoints
     padding <- "1.25rem"
     font_size <- "1.3rem"
-    font_weight <- ""  # No extra font-weight
+    font_weight <- "" # No extra font-weight
 
     # Mobile responsive CSS for banner
     mobile_css <- "
@@ -1296,8 +1347,8 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   css_content <- paste(readLines(css_file, warn = FALSE), collapse = "\n")
 
   # Calculate legend header colors from banner_colour
-  legend_header_bg <- lighten_color(banner_colour, 85)  # Very light tint
-  legend_header_hover <- lighten_color(banner_colour, 75)  # Slightly darker for hover
+  legend_header_bg <- lighten_color(banner_colour, 85) # Very light tint
+  legend_header_hover <- lighten_color(banner_colour, 75) # Slightly darker for hover
 
   # Determine values based on mode
   if (image_mode) {
@@ -1307,10 +1358,10 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     header_gap <- "1rem"
     header_font_size <- "font-size: 1.2rem;"
     items_gap <- "1rem"
-    items_font_size <- "font-size: 1.2rem;"  # Match header size
+    items_font_size <- "font-size: 1.2rem;" # Match header size
     symbol_key_gap <- "1rem"
-    symbol_key_font_size <- "font-size: 1rem;"  # Smaller than items
-    mobile_css <- ""  # No mobile styles for static images
+    symbol_key_font_size <- "font-size: 1rem;" # Smaller than items
+    mobile_css <- "" # No mobile styles for static images
   } else {
     # Interactive: responsive design with mobile breakpoints
     border_top <- "2px solid #dee2e6"
@@ -1318,9 +1369,9 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     header_gap <- "0.625rem"
     header_font_size <- ""
     items_gap <- "0.625rem"
-    items_font_size <- "font-size: 1rem;"  # Match header size
+    items_font_size <- "font-size: 1rem;" # Match header size
     symbol_key_gap <- "0.625rem"
-    symbol_key_font_size <- "font-size: 0.85rem;"  # Smaller than items
+    symbol_key_font_size <- "font-size: 0.85rem;" # Smaller than items
 
     # Mobile responsive CSS for horizontal legend layout
     mobile_css <- "
@@ -1430,12 +1481,20 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   # Order: border_top, container_padding, header_gap, header_font_size,
   #        legend_header_bg, legend_header_hover, items_gap, items_font_size,
   #        symbol_key_gap, symbol_key_font_size, mobile_css
-  css_content <- sprintf(css_content,
-                         border_top, container_padding, header_gap, header_font_size,
-                         legend_header_bg, legend_header_hover,
-                         items_gap, items_font_size,
-                         symbol_key_gap, symbol_key_font_size,
-                         mobile_css)
+  css_content <- sprintf(
+    css_content,
+    border_top,
+    container_padding,
+    header_gap,
+    header_font_size,
+    legend_header_bg,
+    legend_header_hover,
+    items_gap,
+    items_font_size,
+    symbol_key_gap,
+    symbol_key_font_size,
+    mobile_css
+  )
 
   # Return CSS wrapped in style tags
   return(sprintf("\n<style>\n%s\n</style>\n", css_content))
@@ -1450,7 +1509,11 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 #' @param autoplay Logical, whether to start animation automatically on load
 #' @param play_speed Numeric, milliseconds per year during animation
 #' @return Character string containing combined HTML/CSS/JS
-load_roller_menu_control <- function(banner_colour = "#2c3e50", autoplay = FALSE, play_speed = 500) {
+load_roller_menu_control <- function(
+  banner_colour = "#2c3e50",
+  autoplay = FALSE,
+  play_speed = 500
+) {
   # Define paths to control files
   controls_dir <- system.file("controls", package = "quickmap")
 
@@ -1469,29 +1532,44 @@ load_roller_menu_control <- function(banner_colour = "#2c3e50", autoplay = FALSE
   js_content <- paste(readLines(js_file, warn = FALSE), collapse = "\n")
 
   # Calculate accent colors from banner_colour
-  accent_light <- lighten_color(banner_colour, 15)  # Lighter shade for selected background
-  hover_tint <- lighten_color(banner_colour, 85)    # Very light tint for hover background
+  accent_light <- lighten_color(banner_colour, 15) # Lighter shade for selected background
+  hover_tint <- lighten_color(banner_colour, 85) # Very light tint for hover background
 
   # Inject banner_colour and accent into CSS template
   # Order: play_bg, play_border, play_hover_bg, play_hover_border, play_focus_outline,
   #        button_bg, button_border, button_hover_bg, button_hover_border, button_focus_outline,
   #        menu_border, item_hover_bg, selected_bg, selected_hover_bg,
   #        keyboard_focused_bg, keyboard_focused_outline
-  css_content <- sprintf(css_content,
-                         banner_colour, banner_colour, accent_light, accent_light, "#ffffff",  # Play button
-                         banner_colour, banner_colour, accent_light, accent_light, "#ffffff",  # Year button
-                         banner_colour, hover_tint, accent_light, hover_tint,                  # Menu items
-                         hover_tint, banner_colour)                                            # Keyboard focus
+  css_content <- sprintf(
+    css_content,
+    banner_colour,
+    banner_colour,
+    accent_light,
+    accent_light,
+    "#ffffff", # Play button
+    banner_colour,
+    banner_colour,
+    accent_light,
+    accent_light,
+    "#ffffff", # Year button
+    banner_colour,
+    hover_tint,
+    accent_light,
+    hover_tint, # Menu items
+    hover_tint,
+    banner_colour
+  ) # Keyboard focus
 
   # Create config script to inject settings into JavaScript
   config_script <- sprintf(
     'window.quickmapConfig = {autoplay: %s, playSpeed: %d};',
-    tolower(as.character(autoplay)),  # Convert TRUE/FALSE to true/false for JS
+    tolower(as.character(autoplay)), # Convert TRUE/FALSE to true/false for JS
     as.integer(play_speed)
   )
 
   # Combine into single HTML string (config script injected before main JS)
-  combined <- sprintf('
+  combined <- sprintf(
+    '
 %s
 
 <style>
@@ -1505,7 +1583,12 @@ load_roller_menu_control <- function(banner_colour = "#2c3e50", autoplay = FALSE
 <script>
 %s
 </script>
-', html_content, css_content, config_script, js_content)
+',
+    html_content,
+    css_content,
+    config_script,
+    js_content
+  )
 
   return(combined)
 }
@@ -1640,7 +1723,11 @@ apply_custom_layout_in_html <- function(
   html_text <- sub("(<body[^>]*>)", paste0("\\1\n", banner_html), html_text)
 
   # Load roller menu control from external files
-  roller_menu_html <- load_roller_menu_control(banner_colour, autoplay, play_speed)
+  roller_menu_html <- load_roller_menu_control(
+    banner_colour,
+    autoplay,
+    play_speed
+  )
 
   # Generate legend HTML (starts with </div> to close map-container)
   legend_html <- generate_legend_html(scale_name, collapsed_mobile, data_max)
@@ -2210,7 +2297,8 @@ add_map_controls <- function(
   if (!is.null(baseGroups)) {
     # Cache all year layers while visible, then hide all except latest
     map <- map %>%
-      htmlwidgets::onRender("
+      htmlwidgets::onRender(
+        "
         function(el, x) {
           var map = this;
           var layersByGroup = {};
@@ -2250,7 +2338,8 @@ add_map_controls <- function(
           }, {}));
           console.log('Default year visible:', latestYear);
         }
-      ")
+      "
+      )
   }
 
   # Leaflet legend and title controls removed - using HTML banner/legend system only
@@ -2578,10 +2667,15 @@ create_pollution_map <- function(
   autoplay = FALSE, # Start animation automatically on load
   play_speed = 500 # Milliseconds per year during animation
 ) {
-  # initial setup
+  ## Initial setup
+
   # Unpack export_image parameter into internal variables
   if (is.null(export_image)) {
     image_export <- FALSE
+    map_width_px <- 1920
+    map_height_px <- 1080
+  } else if (export_image == TRUE) {
+    image_export <- TRUE
     map_width_px <- 1920
     map_height_px <- 1080
   } else {
@@ -2731,7 +2825,12 @@ create_pollution_map <- function(
   )
 
   # Calculate maximum data value for legend trimming (only from years being mapped)
-  data_max <- get_data_maximum(measurement_layers, pollutant, environment(), years)
+  data_max <- get_data_maximum(
+    measurement_layers,
+    pollutant,
+    environment(),
+    years
+  )
 
   # SINGLE LOOP: add layers to the dyamic HTML map and export an image for each year
   for (yr in unique(years)) {
