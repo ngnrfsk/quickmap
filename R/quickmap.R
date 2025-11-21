@@ -1327,7 +1327,24 @@ load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 #' Load legend CSS from external file
 #'
 #' Reads legend CSS template from inst/legend/ directory and injects
-#' legend colors and mode-specific styling values
+#' legend colors and mode-specific styling values using named placeholders.
+#'
+#' Named placeholders used:
+#' - {{border_top}}: Legend border top style
+#' - {{container_padding}}: Legend container padding
+#' - {{header_gap}}: Gap between header elements
+#' - {{header_font_size}}: Header font size (bold for images, empty for interactive)
+#' - {{legend_header_bg}}: Legend header background color (calculated from banner_colour)
+#' - {{legend_header_hover}}: Legend header hover background color
+#' - {{items_gap}}: Gap between legend items
+#' - {{items_font_size}}: Font size for legend items
+#' - {{symbol_key_gap}}: Gap between symbol key items
+#' - {{symbol_key_font_size}}: Font size for symbol key
+#' - {{mobile_css}}: Mobile responsive CSS (empty for images, full breakpoints for interactive)
+#'
+#' Pattern: Uses gsub() with named placeholders ({{name}}) for self-documenting,
+#' maintainable code. Follows the roller menu control pattern established in
+#' load_roller_menu_control().
 #'
 #' @param banner_colour Hex color for banner (used to calculate legend header colors)
 #' @param image_mode Logical, if TRUE uses image-optimized styles, if FALSE uses interactive responsive styles
@@ -1477,24 +1494,18 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 }"
   }
 
-  # Inject values into CSS template
-  # Order: border_top, container_padding, header_gap, header_font_size,
-  #        legend_header_bg, legend_header_hover, items_gap, items_font_size,
-  #        symbol_key_gap, symbol_key_font_size, mobile_css
-  css_content <- sprintf(
-    css_content,
-    border_top,
-    container_padding,
-    header_gap,
-    header_font_size,
-    legend_header_bg,
-    legend_header_hover,
-    items_gap,
-    items_font_size,
-    symbol_key_gap,
-    symbol_key_font_size,
-    mobile_css
-  )
+  # Replace named placeholders with actual values using gsub()
+  css_content <- gsub("{{border_top}}", border_top, css_content, fixed = TRUE)
+  css_content <- gsub("{{container_padding}}", container_padding, css_content, fixed = TRUE)
+  css_content <- gsub("{{header_gap}}", header_gap, css_content, fixed = TRUE)
+  css_content <- gsub("{{header_font_size}}", header_font_size, css_content, fixed = TRUE)
+  css_content <- gsub("{{legend_header_bg}}", legend_header_bg, css_content, fixed = TRUE)
+  css_content <- gsub("{{legend_header_hover}}", legend_header_hover, css_content, fixed = TRUE)
+  css_content <- gsub("{{items_gap}}", items_gap, css_content, fixed = TRUE)
+  css_content <- gsub("{{items_font_size}}", items_font_size, css_content, fixed = TRUE)
+  css_content <- gsub("{{symbol_key_gap}}", symbol_key_gap, css_content, fixed = TRUE)
+  css_content <- gsub("{{symbol_key_font_size}}", symbol_key_font_size, css_content, fixed = TRUE)
+  css_content <- gsub("{{mobile_css}}", mobile_css, css_content, fixed = TRUE)
 
   # Return CSS wrapped in style tags
   return(sprintf("\n<style>\n%s\n</style>\n", css_content))
