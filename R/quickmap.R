@@ -2330,10 +2330,10 @@ generate_map_layers <- function(
 #' @param years Years to display on map. NULL uses all available years from data,
 #'   or specify a vector like c(2020, 2021, 2022).
 #' @param vignette If TRUE, adds vignette overlay around borough boundary to
-#'   darken areas outside the selected borough(s) for visual focus.
+#'   darken areas outside the selected borough(s) for visual focus. Default: NULL (uses theme, theme default: TRUE).
 #' @param colour_scale Color scale name for pollution values (default: "who_no2").
 #'   Options: "who_no2", "stripes_no2", "gla_pm25", "lbw_no2", "lbrut_no2", "lbm_no2", "deltas".
-#' @param marker_labels Control marker label visibility (default: FALSE).
+#' @param marker_labels Control marker label visibility. Default: NULL (uses theme, theme default: FALSE).
 #'   - FALSE: No labels shown on any markers
 #'   - TRUE: Show pollution values on hover (auto-hide, works on interactive maps only)
 #'   - "values_on": Show pollution values always visible (noHide=TRUE)
@@ -2342,16 +2342,16 @@ generate_map_layers <- function(
 #'   For CSV data: uses Label column if available, otherwise pollution values
 #'   For OA data: shows pollution values (no Label column in this data source)
 #'   For schools: always shows School column regardless of mode
-#' @param title Page title and banner text for HTML output (default: "Air Quality Map").
-#' @param styling_type Controls HTML banner and legend display (default: "none").
+#' @param title Page title and banner text for HTML output. Default: NULL (uses theme, theme default: "Air Quality Map").
+#' @param styling_type Controls HTML banner and legend display (default: "html").
 #'   - "none": No banner or legend
 #'   - "html": HTML banner above map with external HTML legend
-#' @param boundary_labels If TRUE, shows borough boundary labels on the map (default: FALSE).
+#' @param boundary_labels If TRUE, shows borough boundary labels on the map. Default: NULL (uses theme, theme default: FALSE).
 #'   Labels appear on borough polygons and are always visible when enabled.
-#' @param banner_colour Color for border and banner styling (default: "#078141" green).
+#' @param banner_colour Color for border and banner styling. Default: NULL (uses theme, theme default: Merton purple).
 #'   Also used for vignette overlay if vignette is TRUE.
-#' @param autoplay Logical, whether to start year animation automatically on load (default: FALSE).
-#' @param play_speed Numeric, milliseconds per year during animation (default: 500).
+#' @param autoplay Logical, whether to start year animation automatically on load. Default: NULL (uses theme, theme default: FALSE).
+#' @param play_speed Numeric, milliseconds per year during animation. Default: NULL (uses theme, theme default: 500).
 #' @param theme_file Path to YAML theme configuration file (default: NULL).
 #'   When provided, theme settings override function defaults but explicit parameters take precedence.
 #'   See inst/themes/ for example theme files (merton_purple.yaml, wandsworth_blue.yaml, high_contrast.yaml).
@@ -2510,17 +2510,17 @@ create_pollution_map <- function(
   pollutant = "no2",
   years = NULL,
   # titles
-  title = "Air Quality Map", # used for both browser tab and banner
+  title = NULL, # used for both browser tab and banner
   # styling parameters
-  vignette = TRUE,
+  vignette = NULL,
   colour_scale = "who_no2",
   styling_type = "html", # "none" | "html" - controls HTML banner and legend display
-  marker_labels = FALSE, # FALSE | TRUE | "values_on" | "labels" | "labels_on"
-  banner_colour = borough_palettes$merton$purple, # show_borough_colours() to list all available
-  boundary_labels = FALSE,
+  marker_labels = NULL, # FALSE | TRUE | "values_on" | "labels" | "labels_on"
+  banner_colour = NULL, # show_borough_colours() to list all available
+  boundary_labels = NULL,
   # year control animation parameters
-  autoplay = FALSE, # Start animation automatically on load
-  play_speed = 500, # Milliseconds per year during animation
+  autoplay = NULL, # Start animation automatically on load
+  play_speed = NULL, # Milliseconds per year during animation
   # theme configuration
   theme_file = NULL # Path to YAML theme file (NULL for defaults)
 ) {
@@ -2548,26 +2548,26 @@ create_pollution_map <- function(
   # Load theme and apply values (explicit parameters override theme) ####
   theme <- load_theme(theme_file)
 
-  # Apply theme values only if parameters are still at their defaults
-  if (identical(title, "Air Quality Map")) {
+  # Apply theme values only if parameters were not explicitly provided
+  if (is.null(title)) {
     title <- theme$banner$title
   }
-  if (identical(vignette, TRUE)) {
+  if (is.null(vignette)) {
     vignette <- theme$map$vignette
   }
-  if (identical(banner_colour, borough_palettes$merton$purple)) {
+  if (is.null(banner_colour)) {
     banner_colour <- theme$banner$background
   }
-  if (identical(boundary_labels, FALSE)) {
+  if (is.null(boundary_labels)) {
     boundary_labels <- theme$map$boundary_labels
   }
-  if (identical(marker_labels, FALSE)) {
+  if (is.null(marker_labels)) {
     marker_labels <- theme$map$marker_labels
   }
-  if (identical(autoplay, FALSE)) {
+  if (is.null(autoplay)) {
     autoplay <- theme$controls$autoplay
   }
-  if (identical(play_speed, 500)) {
+  if (is.null(play_speed)) {
     play_speed <- theme$controls$play_speed
   }
 
