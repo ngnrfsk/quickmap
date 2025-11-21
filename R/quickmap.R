@@ -2099,7 +2099,8 @@ add_map_controls <- function(
   bbox,
   interactive = TRUE,
   years,
-  boundary_labels = FALSE
+  boundary_labels = FALSE,
+  zoom_level = NULL
 ) {
   # Handle "static_only" case (no temporal layers - only schools) before validation
   # This happens when diffusion_tube_file == "none" && sensor_file == "none"
@@ -2131,6 +2132,13 @@ add_map_controls <- function(
       lat2 = unname(bbox["ymax"]),
       options = options
     )
+
+  # Override zoom level if specified
+  if (!is.null(zoom_level)) {
+    center_lng <- mean(c(unname(bbox["xmin"]), unname(bbox["xmax"])))
+    center_lat <- mean(c(unname(bbox["ymin"]), unname(bbox["ymax"])))
+    map <- map |> setView(lng = center_lng, lat = center_lat, zoom = zoom_level)
+  }
 
   # Layer control: JavaScript-based (year menu control)
   # NOTE: addLayersControl() removed - it hides inactive groups before onRender,
@@ -2342,7 +2350,11 @@ generate_map_layers <- function(
 #'   Labels appear on borough polygons and are always visible when enabled.
 #' @param banner_colour Color for border and banner styling (default: "#078141" green).
 #'   Also used for vignette overlay if vignette is TRUE.
-#' @param title Text to display in banner if show_banner is TRUE (default: "Air Quality Map").
+#' @param autoplay Logical, whether to start year animation automatically on load (default: FALSE).
+#' @param play_speed Numeric, milliseconds per year during animation (default: 500).
+#' @param theme_file Path to YAML theme configuration file (default: NULL).
+#'   When provided, theme settings override function defaults but explicit parameters take precedence.
+#'   See inst/themes/ for example theme files (merton_purple.yaml, wandsworth_blue.yaml, high_contrast.yaml).
 #'
 #' @return Invisible Leaflet map object. Side effects: Saves HTML file to
 #'   \code{aq_maps/} directory. If \code{image_export=TRUE}, also saves JPG
@@ -2508,7 +2520,9 @@ create_pollution_map <- function(
   boundary_labels = FALSE,
   # year control animation parameters
   autoplay = FALSE, # Start animation automatically on load
-  play_speed = 500 # Milliseconds per year during animation
+  play_speed = 500, # Milliseconds per year during animation
+  # theme configuration
+  theme_file = NULL # Path to YAML theme file (NULL for defaults)
 ) {
   ## Initial setup
 
@@ -2530,6 +2544,35 @@ create_pollution_map <- function(
   # Unpack styling_type parameter into internal variable
   # Only "html" or "none" - controls whether HTML banner/legend is applied
   show_banner <- (styling_type == "html")
+
+  # Load theme and apply values (explicit parameters override theme) ####
+  theme <- load_theme(theme_file)
+
+  # Apply theme values only if parameters are still at their defaults
+  if (identical(title, "Air Quality Map")) {
+    title <- theme$banner$title
+  }
+  if (identical(vignette, TRUE)) {
+    vignette <- theme$map$vignette
+  }
+  if (identical(banner_colour, borough_palettes$merton$purple)) {
+    banner_colour <- theme$banner$background
+  }
+  if (identical(boundary_labels, FALSE)) {
+    boundary_labels <- theme$map$boundary_labels
+  }
+  if (identical(marker_labels, FALSE)) {
+    marker_labels <- theme$map$marker_labels
+  }
+  if (identical(autoplay, FALSE)) {
+    autoplay <- theme$controls$autoplay
+  }
+  if (identical(play_speed, 500)) {
+    play_speed <- theme$controls$play_speed
+  }
+
+  # Extract base tiles setting from theme
+  base_tiles_provider <- theme$map$base_tiles
 
   # setup the bounding box and overlays, limited error traps  ####
 
@@ -2643,8 +2686,14 @@ create_pollution_map <- function(
     sf_data_wgs84,
     options = leafletOptions(zoomDelta = 0.5, zoomSnap = 0)
     # zoomSnap = 0 means that the zoom snaps to the nearest integer
-  ) %>%
-    addTiles()
+  )
+
+  # Add base tiles (theme-specified provider or default OSM)
+  if (!is.null(base_tiles_provider)) {
+    html_map <- html_map %>% addProviderTiles(base_tiles_provider)
+  } else {
+    html_map <- html_map %>% addTiles()
+  }
 
   if (image_export) {
     # Create fresh static map with same data initialization as HTML map
@@ -2655,8 +2704,14 @@ create_pollution_map <- function(
         zoomDelta = 0.5,
         zoomSnap = 0
       )
-    ) %>%
-      addTiles()
+    )
+
+    # Add base tiles (theme-specified provider or default OSM)
+    if (!is.null(base_tiles_provider)) {
+      static_map_template <- static_map_template %>% addProviderTiles(base_tiles_provider)
+    } else {
+      static_map_template <- static_map_template %>% addTiles()
+    }
   }
 
   # Get layer configuration
@@ -2729,7 +2784,8 @@ create_pollution_map <- function(
         bbox,
         interactive = FALSE,
         years = yr,
-        boundary_labels = boundary_labels
+        boundary_labels = boundary_labels,
+        zoom_level = theme$map$zoom_level
       )
 
       # Save static image
@@ -2785,7 +2841,8 @@ create_pollution_map <- function(
     bbox,
     interactive = TRUE,
     years = years,
-    boundary_labels = boundary_labels
+    boundary_labels = boundary_labels,
+    zoom_level = theme$map$zoom_level
   )
 
   # Save HTML map if required
