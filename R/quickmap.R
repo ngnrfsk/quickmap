@@ -872,7 +872,12 @@ load_colour_scale <- function(scale_name) {
 
     if (file.exists(yaml_file)) {
       tryCatch({
-        return(yaml::read_yaml(yaml_file))
+        scale <- yaml::read_yaml(yaml_file)
+        # Ensure thresholds are numeric (yaml may parse .Inf as string/NA)
+        if (!is.null(scale$thresholds)) {
+          scale$thresholds <- as.numeric(scale$thresholds)
+        }
+        return(scale)
       }, error = function(e) {
         warning(sprintf("Failed to load '%s': %s. Using R list.", yaml_file, e$message))
       })
