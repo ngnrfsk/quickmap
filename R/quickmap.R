@@ -860,58 +860,27 @@ colour_scales <- list(
 )
 
 #' Load colour scale from YAML file or fallback to R list
-#'
-#' Attempts to load colour scale from external YAML file in inst/config/scales/.
-#' If file doesn't exist or YAML package is unavailable, falls back to hardcoded
-#' R list in colour_scales.
-#'
-#' Pattern: Enables external configuration while maintaining 100% backward
-#' compatibility with existing R lists. Follows the configuration loader pattern
-#' established for CSS/JS files.
-#'
 #' @param scale_name Character string, name of the colour scale (e.g., "who_no2")
-#' @return List containing colour scale definition with elements: colours, thresholds, labels, title
+#' @return List containing colour scale definition
 load_colour_scale <- function(scale_name) {
-  # Check if yaml package is available
   yaml_available <- requireNamespace("yaml", quietly = TRUE)
 
   if (yaml_available) {
-    # Construct path to YAML file
     scale_dir <- system.file("config/scales", package = "quickmap")
-
-    # Fall back to local inst/config/scales if package not installed
-    if (scale_dir == "") {
-      scale_dir <- "inst/config/scales"
-    }
-
+    if (scale_dir == "") scale_dir <- "inst/config/scales"
     yaml_file <- file.path(scale_dir, paste0(scale_name, ".yaml"))
 
-    # Check if YAML file exists
     if (file.exists(yaml_file)) {
-      # Try to load YAML file
       tryCatch({
-        scale <- yaml::read_yaml(yaml_file)
-        return(scale)
+        return(yaml::read_yaml(yaml_file))
       }, error = function(e) {
-        # YAML file exists but is malformed - warn and fall back
-        warning(sprintf(
-          "Failed to load YAML file '%s': %s. Falling back to R list.",
-          yaml_file,
-          e$message
-        ))
+        warning(sprintf("Failed to load '%s': %s. Using R list.", yaml_file, e$message))
       })
     }
   }
 
-  # Fallback to hardcoded R list
   if (!scale_name %in% names(colour_scales)) {
-    stop(
-      "Scale '",
-      scale_name,
-      "' not found in colour_scales. ",
-      "Available scales: ",
-      paste(names(colour_scales), collapse = ", ")
-    )
+    stop("Scale '", scale_name, "' not found. Available: ", paste(names(colour_scales), collapse = ", "))
   }
 
   return(colour_scales[[scale_name]])
@@ -919,7 +888,6 @@ load_colour_scale <- function(scale_name) {
 
 # Get colour legend info from unified scale
 get_colour_legend <- function(scale = "lbrut_no2") {
-  # Load scale using loader (tries YAML first, falls back to R list)
   scale_data <- load_colour_scale(scale)
 
   list(
@@ -934,7 +902,6 @@ get_colour_legend <- function(scale = "lbrut_no2") {
 assign_colour <- function(value, scale = "lbrut_no2") {
   if (is.na(value) || !is.numeric(value)) return("white")
 
-  # Load scale using loader (tries YAML first, falls back to R list)
   scale_data <- load_colour_scale(scale)
 
   thresholds <- scale_data$thresholds
@@ -1103,7 +1070,6 @@ generate_legend_html <- function(
   collapsed_mobile = TRUE,
   data_max = NULL
 ) {
-  # Load scale using loader (tries YAML first, falls back to R list)
   legend_scale <- load_colour_scale(scale_name)
 
   # Validate structure integrity
