@@ -1,5 +1,5 @@
 # Working, stable production codebase for quickmap ####
-# Version 0.9.0.2
+# Version 0.9.0.4
 
 #2345678901234567890123456789012345678901234567890123456789012345678901234567890 Hollerith limit
 
@@ -29,6 +29,16 @@
 #          Removed 58 lines of code (2.3% reduction)
 #   v0.9.0.1: UI fixes - Year control bottom-right, collapsed, defaults to latest year
 #   v0.9.0.2: Touch-friendly collapsible year menu with dynamic banner-based theming
+#   v0.9.0.3: Legend refactor with symbol keys, fixed-width blocks, shortened labels, flexbox alignment
+#   v0.9.0.4: Configuration system - YAML-based colour scales and themes
+#           Externalized CSS/JS to inst/ directory structure:
+#           - inst/banner/, inst/legend/, inst/controls/ for UI components
+#           - inst/config/scales/ for YAML colour scale definitions
+#           - inst/themes/ for reusable theme configurations
+#           Named placeholder pattern ({{name}}) for CSS/JS template substitution
+#           Theme system with load_theme() supporting banner, legend, map, and control styling
+#           theme_file parameter for create_pollution_map() (explicit params override theme)
+#           Parameter defaults changed to NULL for theme compatibility (non-breaking)
 
 # Breaking Changes:
 #   v0.8.9: use_data_labels parameter removed (replaced by marker_labels)
@@ -264,7 +274,12 @@ get_temporal_data <- function(data, time_pattern = "\\d{4}") {
 #' @param data_env Environment containing data objects
 #' @param years Character vector of year strings to include (e.g., c("2020", "2021"))
 #' @return Single numeric value representing maximum across specified years and layers, or NULL if no data
-get_data_maximum <- function(measurement_layers, pollutant, data_env, years = NULL) {
+get_data_maximum <- function(
+  measurement_layers,
+  pollutant,
+  data_env,
+  years = NULL
+) {
   max_values <- c()
 
   for (layer_name in names(measurement_layers)) {
@@ -317,8 +332,17 @@ get_data_maximum <- function(measurement_layers, pollutant, data_env, years = NU
   # Return maximum across all layers, or NULL if none found
   if (length(max_values) > 0) {
     result <- max(max_values)
-    message("Legend trimming: data_max = ", round(result, 2), " (from ",
-            ifelse(is.null(years), "all years", paste(length(years), "selected years")), ")")
+    message(
+      "Legend trimming: data_max = ",
+      round(result, 2),
+      " (from ",
+      ifelse(
+        is.null(years),
+        "all years",
+        paste(length(years), "selected years")
+      ),
+      ")"
+    )
     return(result)
   } else {
     message("Legend trimming: No data found, showing full legend")
@@ -593,281 +617,124 @@ show_borough_colours <- function(borough = NULL) {
   )
 }
 
-# Unified colour scale definitions ####
-colour_scales <- list(
-  stripes_no2 = list(
-    colours = c(
-      "#A4ffff",
-      "#b0dae9",
-      "#b0ceed",
-      "#f9e047",
-      "#f2c84b",
-      "#f1a63f",
-      "#e98725",
-      "#af4553",
-      "#863b47",
-      "#462f30",
-      "#252424",
-      "white"
+#' Load colour scale from YAML configuration file
+#' @param scale_name Character string, name of the colour scale (e.g., "who_no2")
+#' @return List containing colour scale definition
+load_colour_scale <- function(scale_name) {
+  if (!requireNamespace("yaml", quietly = TRUE)) {
+    stop("Package 'yaml' required for colour scales. Install with: install.packages('yaml')")
+  }
+
+  scale_dir <- system.file("config/scales", package = "quickmap")
+  if (scale_dir == "") scale_dir <- "inst/config/scales"
+
+  if (!dir.exists(scale_dir)) {
+    stop("Scale directory not found: ", scale_dir)
+  }
+
+  yaml_file <- file.path(scale_dir, paste0(scale_name, ".yaml"))
+
+  if (!file.exists(yaml_file)) {
+    available <- gsub("\\.yaml$", "", list.files(scale_dir, pattern = "\\.yaml$"))
+    stop("Scale '", scale_name, "' not found. Available: ", paste(available, collapse = ", "))
+  }
+
+  scale <- tryCatch({
+    yaml::read_yaml(yaml_file)
+  }, error = function(e) {
+    stop("Failed to load '", yaml_file, "': ", e$message)
+  })
+
+  # Ensure thresholds are numeric (.Inf converted correctly)
+  if (!is.null(scale$thresholds)) {
+    scale$thresholds <- as.numeric(scale$thresholds)
+  }
+
+  scale
+}
+
+#' Get default theme settings
+#' @return List with default theme configuration
+get_default_theme <- function() {
+  list(
+    banner = list(
+      background = borough_palettes$merton$purple,
+      text_color = "white",
+      title = "Air Quality Map"
     ),
-    thresholds = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, Inf),
-    labels = c(
-      "< 10: WHO guideline",
-      "10-19: WHO Int 3",
-      "20-29: WHO Int 2",
-      "30-39: UK/WHO Int 1",
-      "40-49: > UK",
-      "50-60",
-      "60-70",
-      "70-80",
-      "80-90",
-      "90-100",
-      "> 100",
-      "Insufficient data"
+    legend = list(
+      show = TRUE,
+      background = "white"
     ),
-    title = "NO2 annual mean, µg/m3",
-    shape = "circle"
-  ),
-  stripes_pm25_ = list(
-    colours = c(
-      "#A4ffff",
-      "#b0dae9",
-      "#b0ceed",
-      "#f9e047",
-      "#f2c84b",
-      "#f1a63f",
-      "#e98725",
-      "#af4553",
-      "#863b47",
-      "#462f30",
-      "#252424",
-      "white"
+    map = list(
+      vignette = TRUE,
+      base_tiles = NULL,
+      zoom_level = NULL,
+      boundary_labels = FALSE,
+      marker_labels = FALSE
     ),
-    thresholds = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, Inf),
-    labels = c(
-      "< 5: WHO guideline",
-      "5-10: < GLA/WHO Int 4",
-      "10-15: WHO Int 3",
-      "15-20: UK",
-      "20-25: WHO Int 2",
-      "25-30",
-      "30-35: WHO Int 1",
-      "35-40",
-      "40-45",
-      "45-50",
-      "Insufficient data"
-    ),
-    title = "PM<sub>2.5</sub>, µg/m³",
-    shape = "circle"
-  ),
-  who_no2 = list(
-    colours = c(
-      "blue",
-      "green",
-      "yellow",
-      "orange",
-      "#FF4500",
-      "#8B0000",
-      "#DA70D6",
-      "#4B0082",
-      "#696969",
-      "black",
-      "white"
-    ),
-    thresholds = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, Inf),
-    labels = c(
-      "< 10: WHO guideline",
-      "10-19: WHO Int 3",
-      "20-29: WHO Int 2",
-      "30-39: UK/WHO Int 1",
-      "40-49: > UK",
-      "50-60",
-      "60-70",
-      "70-80",
-      "80-90",
-      "90-100",
-      "Insufficient data"
-    ),
-    title = "NO2, µg/m³",
-    shape = "circle"
-  ),
-  lbrut_no2 = list(
-    colours = c(
-      "blue",
-      "green",
-      "yellow",
-      "orange",
-      "#FF4500",
-      "#8B0000",
-      "#DA70D6",
-      "#4B0082",
-      "#696969",
-      "black",
-      "white"
-    ),
-    thresholds = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, Inf),
-    labels = c(
-      "< 10: WHO guideline",
-      "10-19: < LB Richmond",
-      "20-29: WHO Int 2",
-      "30-39: < UK",
-      "40-49: > UK",
-      "50-60",
-      "60-70",
-      "70-80",
-      "80-90",
-      "90-100",
-      "Insufficient data"
-    ),
-    title = "NO2, µg/m³"
-  ),
-  lbw_no2 = list(
-    colours = c(
-      "blue",
-      "green",
-      "yellow",
-      "orange",
-      "#FF4500",
-      "#8B0000",
-      "#DA70D6",
-      "#4B0082",
-      "#696969",
-      "black",
-      "white"
-    ),
-    thresholds = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, Inf),
-    labels = c(
-      "< 10: WHO guideline",
-      "10-19: WHO Int 3",
-      "20-29: < LB Wandsworth",
-      "30-39: < UK",
-      "40-49: > UK",
-      "50-60",
-      "60-70",
-      "70-80",
-      "80-90",
-      "90-100",
-      "Insufficient data"
-    ),
-    title = "NO2, µg/m³"
-  ),
-  lbm_no2 = list(
-    colours = c(
-      "blue",
-      "green",
-      "yellow",
-      "orange",
-      "#FF4500",
-      "#8B0000",
-      "#DA70D6",
-      "#4B0082",
-      "#696969",
-      "black",
-      "white"
-    ),
-    thresholds = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, Inf),
-    labels = c(
-      "< 10: WHO guideline",
-      "10-19: WHO Int 3",
-      "20-29: WHO Int 2",
-      "30-39: UK/WHO Int 1",
-      "40-49: > UK",
-      "50-60",
-      "60-70",
-      "70-80",
-      "80-90",
-      "90-100",
-      "Insufficient data"
-    ),
-    title = "NO2, µg/m³"
-  ),
-  gla_pm25 = list(
-    colours = c(
-      "darkblue", # 0–5
-      "blue", # 5–7.5
-      "lightgreen", # 7.5–10
-      "yellow", # 10–12.5
-      "orange", # 12.5–15
-      "darkorange", # 15–20
-      "red", # 20–25
-      "darkred", # 25–Inf
-      "white" # NA
-    ),
-    thresholds = c(0, 5, 7.5, 10, 12.5, 15, 20, 25, Inf),
-    labels = c(
-      "< 5: WHO guideline",
-      "5-7.5",
-      "7.5-10: < GLA/WHO Int 1",
-      "10-12.5",
-      "12.5-15: < WHO Int 2",
-      "15-20: < UK",
-      "20-25: < WHO Int 2",
-      "> 25",
-      "Insufficient data"
-    ),
-    title = "PM<sub>2.5</sub>, µg/m³"
-  ),
-  deltas = list(
-    colours = c(
-      "#084594",
-      "#2171B5",
-      "#4292C6",
-      "#6BAED6",
-      "#9ECAE1",
-      "#FEE391",
-      "#FEB24C",
-      "#FB6A4A",
-      "#DE2D26",
-      "#A50F15",
-      "white"
-    ),
-    thresholds = c(Inf, 8, 6, 4, 2, 0, -2, -4, -6, -8, -Inf),
-    labels = c(
-      ">8",
-      "6-8",
-      "4-6",
-      "2-4",
-      "0-2",
-      "Increase 0-2",
-      "increase of 2-4",
-      "increase of 4-6",
-      "increase of 6-8",
-      "increase over 8",
-      "Site not in use"
-    ),
-    title = "Fall in NO2 levels, µg/m3, year on year"
-  ),
-  schools = list(
-    colours = c("#1E90FF", "#32CD32"),
-    domain = c("Primary", "Secondary"),
-    labels = c("Primary", "Secondary"),
-    title = "School Level"
+    controls = list(
+      autoplay = FALSE,
+      play_speed = 500,
+      background = NULL,
+      text_color = NULL
+    )
   )
-)
+}
+
+#' Load theme from YAML file with fallback to defaults
+#' @param theme_file Path to YAML theme file (NULL for defaults)
+#' @return Complete theme list (merged with defaults)
+load_theme <- function(theme_file = NULL) {
+  defaults <- get_default_theme()
+
+  if (is.null(theme_file)) {
+    return(defaults)
+  }
+
+  if (!file.exists(theme_file)) {
+    warning("Theme file not found: ", theme_file, ". Using default theme.")
+    return(defaults)
+  }
+
+  if (!requireNamespace("yaml", quietly = TRUE)) {
+    stop("Package 'yaml' required for theme loading. Install with: install.packages('yaml')")
+  }
+
+  theme <- tryCatch({
+    yaml::read_yaml(theme_file)
+  }, error = function(e) {
+    warning("Failed to load theme file: ", e$message, ". Using default theme.")
+    return(NULL)
+  })
+
+  if (is.null(theme)) {
+    return(defaults)
+  }
+
+  modifyList(defaults, theme)
+}
 
 # Get colour legend info from unified scale
 get_colour_legend <- function(scale = "lbrut_no2") {
-  if (!scale %in% names(colour_scales)) {
-    stop("Unknown scale: ", scale)
-  }
-  with(
-    colour_scales[[scale]],
-    list(
-      colors = colours,
-      labels = labels,
-      title = title,
-      thresholds = thresholds
-    )
+  scale_data <- load_colour_scale(scale)
+
+  list(
+    colors = scale_data$colours,
+    labels = scale_data$labels,
+    title = scale_data$title,
+    thresholds = scale_data$thresholds
   )
 }
 
 # Assign colour to a value based on scale
 assign_colour <- function(value, scale = "lbrut_no2") {
   if (is.na(value) || !is.numeric(value)) return("white")
-  if (!scale %in% names(colour_scales)) stop("Invalid scale specified.")
 
-  thresholds <- colour_scales[[scale]]$thresholds
-  colours <- colour_scales[[scale]]$colours
+  scale_data <- load_colour_scale(scale)
+
+  thresholds <- scale_data$thresholds
+  colours <- scale_data$colours
   index <- findInterval(value, thresholds, left.open = FALSE)
   return(colours[index])
 }
@@ -938,7 +805,7 @@ parse_legend_label <- function(label) {
   if (length(parts) >= 2) {
     # Has description after colon
     range <- trimws(parts[1])
-    description <- trimws(paste(parts[-1], collapse = ":"))  # Rejoin in case of multiple colons
+    description <- trimws(paste(parts[-1], collapse = ":")) # Rejoin in case of multiple colons
     return(list(range = range, description = description))
   } else {
     # No description (just a range or special label like "Insufficient data")
@@ -953,8 +820,28 @@ parse_legend_label <- function(label) {
 #' @param index Integer index (1-based)
 #' @return Character symbol (†, ‡, §, ¶, etc.)
 get_symbol_for_index <- function(index) {
-  symbols <- c("†", "‡", "§", "¶", "*", "⁑", "◊", "※", "⁂", "⁕",
-               "∗", "∘", "•", "∙", "⋆", "★", "☆", "⊕", "⊗", "⊙")
+  symbols <- c(
+    "†",
+    "‡",
+    "§",
+    "¶",
+    "*",
+    "⁑",
+    "◊",
+    "※",
+    "⁂",
+    "⁕",
+    "∗",
+    "∘",
+    "•",
+    "∙",
+    "⋆",
+    "★",
+    "☆",
+    "⊕",
+    "⊗",
+    "⊙"
+  )
 
   if (index <= length(symbols)) {
     return(symbols[index])
@@ -1007,19 +894,12 @@ calculate_max_range_width <- function(labels) {
 #'   - colours and labels arrays have matching lengths
 #'   Converts all colors to hex format for CSS compatibility
 #'   If data_max provided, filters legend to show only relevant ranges (minimum 2 items)
-generate_legend_html <- function(scale_name, collapsed_mobile = TRUE, data_max = NULL) {
-  # Validate scale exists
-  if (!scale_name %in% names(colour_scales)) {
-    stop(
-      "Scale '",
-      scale_name,
-      "' not found in colour_scales. ",
-      "Available scales: ",
-      paste(names(colour_scales), collapse = ", ")
-    )
-  }
-
-  legend_scale <- colour_scales[[scale_name]]
+generate_legend_html <- function(
+  scale_name,
+  collapsed_mobile = TRUE,
+  data_max = NULL
+) {
+  legend_scale <- load_colour_scale(scale_name)
 
   # Validate structure integrity
   if (length(legend_scale$colours) != length(legend_scale$labels)) {
@@ -1079,7 +959,10 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE, data_max =
       # Create symbol key entry (colored background with description)
       # Use monospace and pad to fixed width for vertical alignment with legend items
       symbol_text <- paste(symbol, parsed$description)
-      padded_symbol_text <- sprintf(paste0("%-", max_width + 10, "s"), symbol_text)  # Extra width for description
+      padded_symbol_text <- sprintf(
+        paste0("%-", max_width + 10, "s"),
+        symbol_text
+      ) # Extra width for description
 
       symbol_key_items[[length(symbol_key_items) + 1]] <- sprintf(
         '      <span style="background: %s; color: %s; padding: 0.5rem 0.625rem; border-radius: 0.25rem; font-family: monospace; display: inline-block;">%s</span>',
@@ -1133,7 +1016,13 @@ generate_legend_html <- function(scale_name, collapsed_mobile = TRUE, data_max =
   html_template <- paste(readLines(html_file, warn = FALSE), collapse = "\n")
 
   # Inject title, items, symbol key, and script into template
-  sprintf(html_template, legend_scale$title, legend_items_html, symbol_key_html, mobile_script)
+  sprintf(
+    html_template,
+    legend_scale$title,
+    legend_items_html,
+    symbol_key_html,
+    mobile_script
+  )
 }
 
 #' Lighten or darken a hex color
@@ -1176,7 +1065,11 @@ get_contrast_text_color <- function(color) {
 
   # Calculate relative luminance using standard formula
   # https://www.w3.org/TR/WCAG20/#relativeluminancedef
-  luminance <- (0.299 * rgb_vals[1] + 0.587 * rgb_vals[2] + 0.114 * rgb_vals[3]) / 255
+  luminance <- (0.299 *
+    rgb_vals[1] +
+    0.587 * rgb_vals[2] +
+    0.114 * rgb_vals[3]) /
+    255
 
   # Return white for dark backgrounds, black for light backgrounds
   if (luminance < 0.5) {
@@ -1189,9 +1082,20 @@ get_contrast_text_color <- function(color) {
 #' Load banner CSS from external file
 #'
 #' Reads banner CSS template from inst/banner/ directory and injects
-#' banner color and mode-specific styling values
+#' banner color and mode-specific styling values using named placeholders.
 #'
-#' @param banner_colour Hex color for banner background (default "#2c3e50")
+#' Named placeholders used:
+#' - {{banner_bg}}: Banner background color
+#' - {{padding}}: Banner padding
+#' - {{font_size}}: Banner font size
+#' - {{font_weight}}: Banner font weight (bold for images, empty for interactive)
+#' - {{mobile_css}}: Mobile responsive CSS (empty for images, full breakpoints for interactive)
+#'
+#' Pattern: Uses gsub() with named placeholders ({{name}}) for self-documenting,
+#' maintainable code. Follows the roller menu control pattern established in
+#' load_roller_menu_control().
+#'
+#' @param banner_colour Hex color for banner background
 #' @param image_mode Logical, if TRUE uses image-optimized styles, if FALSE uses interactive responsive styles
 #' @return Character string containing CSS wrapped in <style> tags
 load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
@@ -1214,12 +1118,12 @@ load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     padding <- "2rem"
     font_size <- "1.8rem"
     font_weight <- "font-weight: bold;"
-    mobile_css <- ""  # No mobile styles for static images
+    mobile_css <- "" # No mobile styles for static images
   } else {
     # Interactive: responsive design with mobile breakpoints
     padding <- "1.25rem"
     font_size <- "1.3rem"
-    font_weight <- ""  # No extra font-weight
+    font_weight <- "" # No extra font-weight
 
     # Mobile responsive CSS for banner
     mobile_css <- "
@@ -1251,9 +1155,12 @@ load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 }"
   }
 
-  # Inject values into CSS template
-  # Order: banner_colour, padding, font_size, font_weight, mobile_css
-  css_content <- sprintf(css_content, banner_colour, padding, font_size, font_weight, mobile_css)
+  # Replace named placeholders with actual values using gsub()
+  css_content <- gsub("{{banner_bg}}", banner_colour, css_content, fixed = TRUE)
+  css_content <- gsub("{{padding}}", padding, css_content, fixed = TRUE)
+  css_content <- gsub("{{font_size}}", font_size, css_content, fixed = TRUE)
+  css_content <- gsub("{{font_weight}}", font_weight, css_content, fixed = TRUE)
+  css_content <- gsub("{{mobile_css}}", mobile_css, css_content, fixed = TRUE)
 
   # Return CSS wrapped in style tags
   return(sprintf("\n<style>\n%s\n</style>\n", css_content))
@@ -1262,7 +1169,24 @@ load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 #' Load legend CSS from external file
 #'
 #' Reads legend CSS template from inst/legend/ directory and injects
-#' legend colors and mode-specific styling values
+#' legend colors and mode-specific styling values using named placeholders.
+#'
+#' Named placeholders used:
+#' - {{border_top}}: Legend border top style
+#' - {{container_padding}}: Legend container padding
+#' - {{header_gap}}: Gap between header elements
+#' - {{header_font_size}}: Header font size (bold for images, empty for interactive)
+#' - {{legend_header_bg}}: Legend header background color (calculated from banner_colour)
+#' - {{legend_header_hover}}: Legend header hover background color
+#' - {{items_gap}}: Gap between legend items
+#' - {{items_font_size}}: Font size for legend items
+#' - {{symbol_key_gap}}: Gap between symbol key items
+#' - {{symbol_key_font_size}}: Font size for symbol key
+#' - {{mobile_css}}: Mobile responsive CSS (empty for images, full breakpoints for interactive)
+#'
+#' Pattern: Uses gsub() with named placeholders ({{name}}) for self-documenting,
+#' maintainable code. Follows the roller menu control pattern established in
+#' load_roller_menu_control().
 #'
 #' @param banner_colour Hex color for banner (used to calculate legend header colors)
 #' @param image_mode Logical, if TRUE uses image-optimized styles, if FALSE uses interactive responsive styles
@@ -1282,8 +1206,8 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   css_content <- paste(readLines(css_file, warn = FALSE), collapse = "\n")
 
   # Calculate legend header colors from banner_colour
-  legend_header_bg <- lighten_color(banner_colour, 85)  # Very light tint
-  legend_header_hover <- lighten_color(banner_colour, 75)  # Slightly darker for hover
+  legend_header_bg <- lighten_color(banner_colour, 85) # Very light tint
+  legend_header_hover <- lighten_color(banner_colour, 75) # Slightly darker for hover
 
   # Determine values based on mode
   if (image_mode) {
@@ -1293,10 +1217,10 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     header_gap <- "1rem"
     header_font_size <- "font-size: 1.2rem;"
     items_gap <- "1rem"
-    items_font_size <- "font-size: 1.2rem;"  # Match header size
+    items_font_size <- "font-size: 1.2rem;" # Match header size
     symbol_key_gap <- "1rem"
-    symbol_key_font_size <- "font-size: 1rem;"  # Smaller than items
-    mobile_css <- ""  # No mobile styles for static images
+    symbol_key_font_size <- "font-size: 1rem;" # Smaller than items
+    mobile_css <- "" # No mobile styles for static images
   } else {
     # Interactive: responsive design with mobile breakpoints
     border_top <- "2px solid #dee2e6"
@@ -1304,9 +1228,9 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
     header_gap <- "0.625rem"
     header_font_size <- ""
     items_gap <- "0.625rem"
-    items_font_size <- "font-size: 1rem;"  # Match header size
+    items_font_size <- "font-size: 1rem;" # Match header size
     symbol_key_gap <- "0.625rem"
-    symbol_key_font_size <- "font-size: 0.85rem;"  # Smaller than items
+    symbol_key_font_size <- "font-size: 0.85rem;" # Smaller than items
 
     # Mobile responsive CSS for horizontal legend layout
     mobile_css <- "
@@ -1412,16 +1336,18 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 }"
   }
 
-  # Inject values into CSS template
-  # Order: border_top, container_padding, header_gap, header_font_size,
-  #        legend_header_bg, legend_header_hover, items_gap, items_font_size,
-  #        symbol_key_gap, symbol_key_font_size, mobile_css
-  css_content <- sprintf(css_content,
-                         border_top, container_padding, header_gap, header_font_size,
-                         legend_header_bg, legend_header_hover,
-                         items_gap, items_font_size,
-                         symbol_key_gap, symbol_key_font_size,
-                         mobile_css)
+  # Replace named placeholders with actual values using gsub()
+  css_content <- gsub("{{border_top}}", border_top, css_content, fixed = TRUE)
+  css_content <- gsub("{{container_padding}}", container_padding, css_content, fixed = TRUE)
+  css_content <- gsub("{{header_gap}}", header_gap, css_content, fixed = TRUE)
+  css_content <- gsub("{{header_font_size}}", header_font_size, css_content, fixed = TRUE)
+  css_content <- gsub("{{legend_header_bg}}", legend_header_bg, css_content, fixed = TRUE)
+  css_content <- gsub("{{legend_header_hover}}", legend_header_hover, css_content, fixed = TRUE)
+  css_content <- gsub("{{items_gap}}", items_gap, css_content, fixed = TRUE)
+  css_content <- gsub("{{items_font_size}}", items_font_size, css_content, fixed = TRUE)
+  css_content <- gsub("{{symbol_key_gap}}", symbol_key_gap, css_content, fixed = TRUE)
+  css_content <- gsub("{{symbol_key_font_size}}", symbol_key_font_size, css_content, fixed = TRUE)
+  css_content <- gsub("{{mobile_css}}", mobile_css, css_content, fixed = TRUE)
 
   # Return CSS wrapped in style tags
   return(sprintf("\n<style>\n%s\n</style>\n", css_content))
@@ -1436,7 +1362,11 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 #' @param autoplay Logical, whether to start animation automatically on load
 #' @param play_speed Numeric, milliseconds per year during animation
 #' @return Character string containing combined HTML/CSS/JS
-load_roller_menu_control <- function(banner_colour = "#2c3e50", autoplay = FALSE, play_speed = 500) {
+load_roller_menu_control <- function(
+  banner_colour = "#2c3e50",
+  autoplay = FALSE,
+  play_speed = 500
+) {
   # Define paths to control files
   controls_dir <- system.file("controls", package = "quickmap")
 
@@ -1455,29 +1385,44 @@ load_roller_menu_control <- function(banner_colour = "#2c3e50", autoplay = FALSE
   js_content <- paste(readLines(js_file, warn = FALSE), collapse = "\n")
 
   # Calculate accent colors from banner_colour
-  accent_light <- lighten_color(banner_colour, 15)  # Lighter shade for selected background
-  hover_tint <- lighten_color(banner_colour, 85)    # Very light tint for hover background
+  accent_light <- lighten_color(banner_colour, 15) # Lighter shade for selected background
+  hover_tint <- lighten_color(banner_colour, 85) # Very light tint for hover background
 
   # Inject banner_colour and accent into CSS template
   # Order: play_bg, play_border, play_hover_bg, play_hover_border, play_focus_outline,
   #        button_bg, button_border, button_hover_bg, button_hover_border, button_focus_outline,
   #        menu_border, item_hover_bg, selected_bg, selected_hover_bg,
   #        keyboard_focused_bg, keyboard_focused_outline
-  css_content <- sprintf(css_content,
-                         banner_colour, banner_colour, accent_light, accent_light, "#ffffff",  # Play button
-                         banner_colour, banner_colour, accent_light, accent_light, "#ffffff",  # Year button
-                         banner_colour, hover_tint, accent_light, hover_tint,                  # Menu items
-                         hover_tint, banner_colour)                                            # Keyboard focus
+  css_content <- sprintf(
+    css_content,
+    banner_colour,
+    banner_colour,
+    accent_light,
+    accent_light,
+    "#ffffff", # Play button
+    banner_colour,
+    banner_colour,
+    accent_light,
+    accent_light,
+    "#ffffff", # Year button
+    banner_colour,
+    hover_tint,
+    accent_light,
+    hover_tint, # Menu items
+    hover_tint,
+    banner_colour
+  ) # Keyboard focus
 
   # Create config script to inject settings into JavaScript
   config_script <- sprintf(
     'window.quickmapConfig = {autoplay: %s, playSpeed: %d};',
-    tolower(as.character(autoplay)),  # Convert TRUE/FALSE to true/false for JS
+    tolower(as.character(autoplay)), # Convert TRUE/FALSE to true/false for JS
     as.integer(play_speed)
   )
 
   # Combine into single HTML string (config script injected before main JS)
-  combined <- sprintf('
+  combined <- sprintf(
+    '
 %s
 
 <style>
@@ -1491,7 +1436,12 @@ load_roller_menu_control <- function(banner_colour = "#2c3e50", autoplay = FALSE
 <script>
 %s
 </script>
-', html_content, css_content, config_script, js_content)
+',
+    html_content,
+    css_content,
+    config_script,
+    js_content
+  )
 
   return(combined)
 }
@@ -1626,7 +1576,11 @@ apply_custom_layout_in_html <- function(
   html_text <- sub("(<body[^>]*>)", paste0("\\1\n", banner_html), html_text)
 
   # Load roller menu control from external files
-  roller_menu_html <- load_roller_menu_control(banner_colour, autoplay, play_speed)
+  roller_menu_html <- load_roller_menu_control(
+    banner_colour,
+    autoplay,
+    play_speed
+  )
 
   # Generate legend HTML (starts with </div> to close map-container)
   legend_html <- generate_legend_html(scale_name, collapsed_mobile, data_max)
@@ -2155,7 +2109,8 @@ add_map_controls <- function(
   bbox,
   interactive = TRUE,
   years,
-  boundary_labels = FALSE
+  boundary_labels = FALSE,
+  zoom_level = NULL
 ) {
   # Handle "static_only" case (no temporal layers - only schools) before validation
   # This happens when diffusion_tube_file == "none" && sensor_file == "none"
@@ -2188,6 +2143,13 @@ add_map_controls <- function(
       options = options
     )
 
+  # Override zoom level if specified
+  if (!is.null(zoom_level)) {
+    center_lng <- mean(c(unname(bbox["xmin"]), unname(bbox["xmax"])))
+    center_lat <- mean(c(unname(bbox["ymin"]), unname(bbox["ymax"])))
+    map <- map |> setView(lng = center_lng, lat = center_lat, zoom = zoom_level)
+  }
+
   # Layer control: JavaScript-based (year menu control)
   # NOTE: addLayersControl() removed - it hides inactive groups before onRender,
   # making layers inaccessible to JavaScript caching
@@ -2196,7 +2158,8 @@ add_map_controls <- function(
   if (!is.null(baseGroups)) {
     # Cache all year layers while visible, then hide all except latest
     map <- map %>%
-      htmlwidgets::onRender("
+      htmlwidgets::onRender(
+        "
         function(el, x) {
           var map = this;
           var layersByGroup = {};
@@ -2236,7 +2199,8 @@ add_map_controls <- function(
           }, {}));
           console.log('Default year visible:', latestYear);
         }
-      ")
+      "
+      )
   }
 
   # Leaflet legend and title controls removed - using HTML banner/legend system only
@@ -2376,10 +2340,10 @@ generate_map_layers <- function(
 #' @param years Years to display on map. NULL uses all available years from data,
 #'   or specify a vector like c(2020, 2021, 2022).
 #' @param vignette If TRUE, adds vignette overlay around borough boundary to
-#'   darken areas outside the selected borough(s) for visual focus.
+#'   darken areas outside the selected borough(s) for visual focus. Default: NULL (uses theme, theme default: TRUE).
 #' @param colour_scale Color scale name for pollution values (default: "who_no2").
 #'   Options: "who_no2", "stripes_no2", "gla_pm25", "lbw_no2", "lbrut_no2", "lbm_no2", "deltas".
-#' @param marker_labels Control marker label visibility (default: FALSE).
+#' @param marker_labels Control marker label visibility. Default: NULL (uses theme, theme default: FALSE).
 #'   - FALSE: No labels shown on any markers
 #'   - TRUE: Show pollution values on hover (auto-hide, works on interactive maps only)
 #'   - "values_on": Show pollution values always visible (noHide=TRUE)
@@ -2388,15 +2352,19 @@ generate_map_layers <- function(
 #'   For CSV data: uses Label column if available, otherwise pollution values
 #'   For OA data: shows pollution values (no Label column in this data source)
 #'   For schools: always shows School column regardless of mode
-#' @param title Page title and banner text for HTML output (default: "Air Quality Map").
-#' @param styling_type Controls HTML banner and legend display (default: "none").
+#' @param title Page title and banner text for HTML output. Default: NULL (uses theme, theme default: "Air Quality Map").
+#' @param styling_type Controls HTML banner and legend display (default: "html").
 #'   - "none": No banner or legend
 #'   - "html": HTML banner above map with external HTML legend
-#' @param boundary_labels If TRUE, shows borough boundary labels on the map (default: FALSE).
+#' @param boundary_labels If TRUE, shows borough boundary labels on the map. Default: NULL (uses theme, theme default: FALSE).
 #'   Labels appear on borough polygons and are always visible when enabled.
-#' @param banner_colour Color for border and banner styling (default: "#078141" green).
+#' @param banner_colour Color for border and banner styling. Default: NULL (uses theme, theme default: Merton purple).
 #'   Also used for vignette overlay if vignette is TRUE.
-#' @param title Text to display in banner if show_banner is TRUE (default: "Air Quality Map").
+#' @param autoplay Logical, whether to start year animation automatically on load. Default: NULL (uses theme, theme default: FALSE).
+#' @param play_speed Numeric, milliseconds per year during animation. Default: NULL (uses theme, theme default: 500).
+#' @param theme_file Path to YAML theme configuration file (default: NULL).
+#'   When provided, theme settings override function defaults but explicit parameters take precedence.
+#'   See inst/themes/ for example theme files (merton_purple.yaml, wandsworth_blue.yaml, high_contrast.yaml).
 #'
 #' @return Invisible Leaflet map object. Side effects: Saves HTML file to
 #'   \code{aq_maps/} directory. If \code{image_export=TRUE}, also saves JPG
@@ -2552,22 +2520,29 @@ create_pollution_map <- function(
   pollutant = "no2",
   years = NULL,
   # titles
-  title = "Air Quality Map", # used for both browser tab and banner
+  title = NULL, # used for both browser tab and banner
   # styling parameters
-  vignette = TRUE,
+  vignette = NULL,
   colour_scale = "who_no2",
   styling_type = "html", # "none" | "html" - controls HTML banner and legend display
-  marker_labels = FALSE, # FALSE | TRUE | "values_on" | "labels" | "labels_on"
-  banner_colour = borough_palettes$merton$purple, # show_borough_colours() to list all available
-  boundary_labels = FALSE,
+  marker_labels = NULL, # FALSE | TRUE | "values_on" | "labels" | "labels_on"
+  banner_colour = NULL, # show_borough_colours() to list all available
+  boundary_labels = NULL,
   # year control animation parameters
-  autoplay = FALSE, # Start animation automatically on load
-  play_speed = 500 # Milliseconds per year during animation
+  autoplay = NULL, # Start animation automatically on load
+  play_speed = NULL, # Milliseconds per year during animation
+  # theme configuration
+  theme_file = NULL # Path to YAML theme file (NULL for defaults)
 ) {
-  # initial setup
+  ## Initial setup
+
   # Unpack export_image parameter into internal variables
   if (is.null(export_image)) {
     image_export <- FALSE
+    map_width_px <- 1920
+    map_height_px <- 1080
+  } else if (export_image == TRUE) {
+    image_export <- TRUE
     map_width_px <- 1920
     map_height_px <- 1080
   } else {
@@ -2579,6 +2554,35 @@ create_pollution_map <- function(
   # Unpack styling_type parameter into internal variable
   # Only "html" or "none" - controls whether HTML banner/legend is applied
   show_banner <- (styling_type == "html")
+
+  # Load theme and apply values (explicit parameters override theme) ####
+  theme <- load_theme(theme_file)
+
+  # Apply theme values only if parameters were not explicitly provided
+  if (is.null(title)) {
+    title <- theme$banner$title
+  }
+  if (is.null(vignette)) {
+    vignette <- theme$map$vignette
+  }
+  if (is.null(banner_colour)) {
+    banner_colour <- theme$banner$background
+  }
+  if (is.null(boundary_labels)) {
+    boundary_labels <- theme$map$boundary_labels
+  }
+  if (is.null(marker_labels)) {
+    marker_labels <- theme$map$marker_labels
+  }
+  if (is.null(autoplay)) {
+    autoplay <- theme$controls$autoplay
+  }
+  if (is.null(play_speed)) {
+    play_speed <- theme$controls$play_speed
+  }
+
+  # Extract base tiles setting from theme
+  base_tiles_provider <- theme$map$base_tiles
 
   # setup the bounding box and overlays, limited error traps  ####
 
@@ -2692,8 +2696,14 @@ create_pollution_map <- function(
     sf_data_wgs84,
     options = leafletOptions(zoomDelta = 0.5, zoomSnap = 0)
     # zoomSnap = 0 means that the zoom snaps to the nearest integer
-  ) %>%
-    addTiles()
+  )
+
+  # Add base tiles (theme-specified provider or default OSM)
+  if (!is.null(base_tiles_provider)) {
+    html_map <- html_map %>% addProviderTiles(base_tiles_provider)
+  } else {
+    html_map <- html_map %>% addTiles()
+  }
 
   if (image_export) {
     # Create fresh static map with same data initialization as HTML map
@@ -2704,8 +2714,14 @@ create_pollution_map <- function(
         zoomDelta = 0.5,
         zoomSnap = 0
       )
-    ) %>%
-      addTiles()
+    )
+
+    # Add base tiles (theme-specified provider or default OSM)
+    if (!is.null(base_tiles_provider)) {
+      static_map_template <- static_map_template %>% addProviderTiles(base_tiles_provider)
+    } else {
+      static_map_template <- static_map_template %>% addTiles()
+    }
   }
 
   # Get layer configuration
@@ -2717,7 +2733,12 @@ create_pollution_map <- function(
   )
 
   # Calculate maximum data value for legend trimming (only from years being mapped)
-  data_max <- get_data_maximum(measurement_layers, pollutant, environment(), years)
+  data_max <- get_data_maximum(
+    measurement_layers,
+    pollutant,
+    environment(),
+    years
+  )
 
   # SINGLE LOOP: add layers to the dyamic HTML map and export an image for each year
   for (yr in unique(years)) {
@@ -2773,7 +2794,8 @@ create_pollution_map <- function(
         bbox,
         interactive = FALSE,
         years = yr,
-        boundary_labels = boundary_labels
+        boundary_labels = boundary_labels,
+        zoom_level = theme$map$zoom_level
       )
 
       # Save static image
@@ -2829,7 +2851,8 @@ create_pollution_map <- function(
     bbox,
     interactive = TRUE,
     years = years,
-    boundary_labels = boundary_labels
+    boundary_labels = boundary_labels,
+    zoom_level = theme$map$zoom_level
   )
 
   # Save HTML map if required
