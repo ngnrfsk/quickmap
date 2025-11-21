@@ -1189,9 +1189,20 @@ get_contrast_text_color <- function(color) {
 #' Load banner CSS from external file
 #'
 #' Reads banner CSS template from inst/banner/ directory and injects
-#' banner color and mode-specific styling values
+#' banner color and mode-specific styling values using named placeholders.
 #'
-#' @param banner_colour Hex color for banner background (default "#2c3e50")
+#' Named placeholders used:
+#' - {{banner_bg}}: Banner background color
+#' - {{padding}}: Banner padding
+#' - {{font_size}}: Banner font size
+#' - {{font_weight}}: Banner font weight (bold for images, empty for interactive)
+#' - {{mobile_css}}: Mobile responsive CSS (empty for images, full breakpoints for interactive)
+#'
+#' Pattern: Uses gsub() with named placeholders ({{name}}) for self-documenting,
+#' maintainable code. Follows the roller menu control pattern established in
+#' load_roller_menu_control().
+#'
+#' @param banner_colour Hex color for banner background
 #' @param image_mode Logical, if TRUE uses image-optimized styles, if FALSE uses interactive responsive styles
 #' @return Character string containing CSS wrapped in <style> tags
 load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
@@ -1251,9 +1262,12 @@ load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 }"
   }
 
-  # Inject values into CSS template
-  # Order: banner_colour, padding, font_size, font_weight, mobile_css
-  css_content <- sprintf(css_content, banner_colour, padding, font_size, font_weight, mobile_css)
+  # Replace named placeholders with actual values using gsub()
+  css_content <- gsub("{{banner_bg}}", banner_colour, css_content, fixed = TRUE)
+  css_content <- gsub("{{padding}}", padding, css_content, fixed = TRUE)
+  css_content <- gsub("{{font_size}}", font_size, css_content, fixed = TRUE)
+  css_content <- gsub("{{font_weight}}", font_weight, css_content, fixed = TRUE)
+  css_content <- gsub("{{mobile_css}}", mobile_css, css_content, fixed = TRUE)
 
   # Return CSS wrapped in style tags
   return(sprintf("\n<style>\n%s\n</style>\n", css_content))
