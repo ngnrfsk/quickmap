@@ -1,7 +1,7 @@
 /* Legend styles */
 .legend {
   background: #f8f9fa;
-  border-top: %s;
+  border-top: {{border_top}};
   flex-shrink: 0;
 }
 
@@ -11,25 +11,25 @@
   flex-direction: row;
   align-items: center;
   gap: 1rem;
-  padding: %s;
+  padding: {{container_padding}};
 }
 
 .legend-header {
   cursor: pointer;
   user-select: none;
   display: flex;
-  gap: %s;
+  gap: {{header_gap}};
   align-items: center;
   font-weight: bold;
-  %s
-  background: %s;
+  {{header_font_size}}
+  background: {{legend_header_bg}};
   padding: 0.5rem 1rem;
   border-radius: 0.25rem;
   flex-shrink: 0;
   transition: background-color 0.3s ease;
 }
 
-.legend-header:hover { background: %s; }
+.legend-header:hover { background: {{legend_header_hover}}; }
 
 .legend-toggle {
   transition: transform 0.3s ease;
@@ -50,11 +50,11 @@
 
 .legend-items {
   display: flex;
-  gap: %s;
+  gap: {{items_gap}};
   justify-content: flex-start;
   flex-wrap: wrap;
   align-items: center;
-  %s
+  {{items_font_size}}
 }
 
 .legend-item {
@@ -65,9 +65,9 @@
 
 .legend-key {
   display: flex;
-  gap: %s;
+  gap: {{symbol_key_gap}};
   flex-wrap: wrap;
-  %s
+  {{symbol_key_font_size}}
   max-height: 500px;
   opacity: 1;
   overflow: hidden;
@@ -81,4 +81,4 @@
 }
 
 /* Mobile responsive styles (interactive mode only) */
-%s
+{{mobile_css}}
