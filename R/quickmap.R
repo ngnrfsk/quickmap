@@ -643,6 +643,68 @@ load_colour_scale <- function(scale_name) {
   scale
 }
 
+#' Get default theme settings
+#' @return List with default theme configuration
+get_default_theme <- function() {
+  list(
+    banner = list(
+      background = borough_palettes$merton$purple,
+      text_color = "white",
+      title = "Air Quality Map"
+    ),
+    legend = list(
+      show = TRUE,
+      background = "white"
+    ),
+    map = list(
+      vignette = TRUE,
+      base_tiles = NULL,
+      zoom_level = NULL,
+      boundary_labels = FALSE,
+      marker_labels = FALSE
+    ),
+    controls = list(
+      autoplay = FALSE,
+      play_speed = 500,
+      background = NULL,
+      text_color = NULL
+    )
+  )
+}
+
+#' Load theme from YAML file with fallback to defaults
+#' @param theme_file Path to YAML theme file (NULL for defaults)
+#' @return Complete theme list (merged with defaults)
+load_theme <- function(theme_file = NULL) {
+  defaults <- get_default_theme()
+
+  if (is.null(theme_file)) {
+    return(defaults)
+  }
+
+  if (!file.exists(theme_file)) {
+    warning("Theme file not found: ", theme_file, ". Using default theme.")
+    return(defaults)
+  }
+
+  if (!requireNamespace("yaml", quietly = TRUE)) {
+    stop("Package 'yaml' required for theme loading. Install with: install.packages('yaml')")
+  }
+
+  theme <- tryCatch({
+    yaml::read_yaml(theme_file)
+  }, error = function(e) {
+    warning("Failed to load theme file: ", e$message, ". Using default theme.")
+    return(NULL)
+  })
+
+  if (is.null(theme)) {
+    return(defaults)
+  }
+
+  modifyList(defaults, theme)
+}
+
 # Get colour legend info from unified scale
 get_colour_legend <- function(scale = "lbrut_no2") {
   scale_data <- load_colour_scale(scale)
