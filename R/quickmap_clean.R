@@ -149,72 +149,59 @@ get_temporal_data <- function(data, time_pattern = "\\d{4}") {
 }
 
 #' Get maximum data value across all measurement layers
-#'
-#' Finds the highest pollutant value across all enabled temporal layers
-#' (dt_sites and bl_nodes) for the specified years to determine what legend range to display
-#'
 #' @param measurement_layers Layer configuration from get_measurement_layers()
 #' @param pollutant Pollutant name (for bl_nodes data)
 #' @param data_env Environment containing data objects
-#' @param years Character vector of year strings to include (e.g., c("2020", "2021"))
-#' @return Single numeric value representing maximum across specified years and layers, or NULL if no data
+#' @param years Character vector of year strings to include
+#' @return Maximum value or NULL if no data
 #' @family layer
-get_data_maximum <- function(
-  measurement_layers,
-  pollutant,
-  data_env,
-  years = NULL
-) {
-  max_values <- c()
+get_data_maximum <- function(measurement_layers, pollutant, data_env, years = NULL) {
 
-  for (layer_name in names(measurement_layers)) {
-    layer_config <- measurement_layers[[layer_name]]
+  # Helper to extract pollutant column for a layer type
+  get_pollutant_col <- function(layer_type) {
+    switch(layer_type,
+           "dt_sites" = "no2",
+           "bl_nodes" = pollutant,
+           NULL)
+  }
 
-    if (!layer_config$enabled || !layer_config$temporal) next
-    if (layer_config$layer_type == "schools") next
+  # Collect max from each enabled temporal layer
+  layer_maxima <- lapply(measurement_layers, function(layer_config) {
+    # Filter: only enabled temporal non-school layers
+    if (!layer_config$enabled || !layer_config$temporal ||
+        layer_config$layer_type == "schools") {
+      return(NULL)
+    }
 
-    data_source_name <- layer_config$data_source
-
+    # Get data source
     data <- tryCatch(
-      get(data_source_name, envir = data_env, inherits = FALSE),
+      get(layer_config$data_source, envir = data_env, inherits = FALSE),
       error = function(e) NULL
     )
+    if (is.null(data) || nrow(data) == 0) return(NULL)
 
-    if (is.null(data) || nrow(data) == 0) next
-
+    # Filter by years if specified
     if (!is.null(years) && "year_str" %in% names(data)) {
       data <- data[data$year_str %in% years, ]
-      if (nrow(data) == 0) next
+      if (nrow(data) == 0) return(NULL)
     }
 
-    if (layer_config$layer_type == "dt_sites") {
-      pollutant_col <- "no2"
-    } else if (layer_config$layer_type == "bl_nodes") {
-      pollutant_col <- pollutant
-    } else {
-      next
-    }
+    # Get pollutant column and compute max
+    pollutant_col <- get_pollutant_col(layer_config$layer_type)
+    if (is.null(pollutant_col) || !pollutant_col %in% names(data)) return(NULL)
 
-    if (!pollutant_col %in% names(data)) next
+    max_val <- max(data[[pollutant_col]], na.rm = TRUE)
+    if (is.infinite(max_val) || is.nan(max_val)) NULL else max_val
+  })
 
-    layer_max <- max(data[[pollutant_col]], na.rm = TRUE)
-    if (!is.infinite(layer_max) && !is.nan(layer_max)) {
-      max_values <- c(max_values, layer_max)
-    }
-  }
+  # Remove NULLs and compute overall max
+  max_values <- unlist(Filter(Negate(is.null), layer_maxima))
 
   if (length(max_values) > 0) {
     result <- max(max_values)
     message(
-      "Legend trimming: data_max = ",
-      round(result, 2),
-      " (from ",
-      ifelse(
-        is.null(years),
-        "all years",
-        paste(length(years), "selected years")
-      ),
-      ")"
+      "Legend trimming: data_max = ", round(result, 2),
+      " (from ", if (is.null(years)) "all years" else paste(length(years), "selected years"), ")"
     )
     return(result)
   } else {
@@ -566,15 +553,8 @@ assign_colour <- function(value, scale = "lbrut_no2") {
 }
 
 #' Convert R color names to hex codes
-#'
-#' Handles both R color names (e.g., "blue") and existing hex codes.
-#' Invalid colors default to black with a warning.
-#'
 #' @param color_vector Character vector of R color names or hex codes
 #' @return Character vector of hex codes (uppercase format)
-#' @examples
-#' convert_colors_to_hex(c("blue", "red", "#FF0000"))
-#' # Returns: c("#0000FF", "#FF0000", "#FF0000")
 #' @family colour
 convert_colors_to_hex <- function(color_vector) {
   sapply(
@@ -605,9 +585,6 @@ convert_colors_to_hex <- function(color_vector) {
 }
 
 #' Parse legend label into range and description
-#'
-#' Splits label on first colon to extract numeric range and descriptive text
-#'
 #' @param label Character string like "< 10: WHO guideline" or "25-30"
 #' @return List with $range and $description (description is NULL if no colon)
 #' @family legend
@@ -624,9 +601,6 @@ parse_legend_label <- function(label) {
 }
 
 #' Get footnote symbol for index
-#'
-#' Returns traditional footnote symbols in sequence
-#'
 #' @param index Integer index (1-based)
 #' @return Character symbol (†, ‡, §, ¶, etc.)
 #' @family legend
@@ -662,9 +636,6 @@ get_symbol_for_index <- function(index) {
 }
 
 #' Calculate maximum range width for fixed-width legend blocks
-#'
-#' Finds the longest range text (before colon) to determine uniform block width
-#'
 #' @param labels Character vector of legend labels
 #' @return Integer number of characters for the longest range (including symbol space)
 #' @family legend
@@ -818,9 +789,6 @@ generate_legend_html <- function(
 }
 
 #' Lighten or darken a hex color
-#'
-#' Adjusts color brightness by a percentage
-#'
 #' @param color Hex color string (e.g., "#2c3e50")
 #' @param amount Percentage to lighten (positive) or darken (negative), range -100 to 100
 #' @return Hex color string
@@ -839,11 +807,7 @@ lighten_color <- function(color, amount = 15) {
   rgb(rgb_vals[1], rgb_vals[2], rgb_vals[3], maxColorValue = 255)
 }
 
-#' Calculate contrast text color for background
-#'
-#' Determines whether white or black text should be used on a given
-#' background color for optimal readability using WCAG luminance formula
-#'
+#' Calculate contrast text color for background using WCAG luminance formula
 #' @param color Background color (hex or R color name)
 #' @return "white" for dark backgrounds, "black" for light backgrounds
 #' @family colour
@@ -1434,10 +1398,9 @@ add_map_border <- function(
 }
 
 #' Create layer configuration for map generation
-#'
-#' Defines which layers to include based on data availability and their properties
-#'
-#' @param diffusion_tube_file,diffusion_tube_file,sensor_file,school_file Data file paths
+#' @param diffusion_tube_file Path to diffusion tube CSV file
+#' @param sensor_file Path to sensor RData file
+#' @param school_file Path to schools CSV file
 #' @param marker_labels Label display mode for all layers
 #' @return List of layer configurations with data sources and preparation functions
 #' @family layer
@@ -1641,10 +1604,7 @@ prepare_static_layer_data <- function(static_sf, marker_labels) {
   )
 }
 
-#' Get school labels from data
-#' @param data Data frame with School column
-#' @return Character vector of school names or empty strings
-#' @family labels
+#' @keywords internal
 get_school_labels <- function(data) {
   if ("School" %in% names(data)) {
     as.character(data$School)
@@ -1653,11 +1613,7 @@ get_school_labels <- function(data) {
   }
 }
 
-#' Get pollution value labels
-#' @param data Data frame with pollutant column
-#' @param pollutant Pollutant column name
-#' @return Character vector of formatted pollution values
-#' @family labels
+#' @keywords internal
 get_value_labels <- function(data, pollutant) {
   if (is.null(pollutant) || !pollutant %in% names(data)) {
     return(rep("", nrow(data)))
@@ -1670,13 +1626,7 @@ get_value_labels <- function(data, pollutant) {
   )
 }
 
-#' Get custom labels with fallback to values
-#' @param data Data frame
-#' @param pollutant Pollutant column name
-#' @param marker_labels Label mode for warnings
-#' @param layer_type Layer type for conditional warnings
-#' @return Character vector of custom labels or fallback values
-#' @family labels
+#' @keywords internal
 get_custom_labels_with_fallback <- function(data, pollutant, marker_labels, layer_type) {
   if ("Label" %in% names(data)) {
     return(as.character(data[["Label"]]))
@@ -1891,7 +1841,7 @@ add_map_controls <- function(
 #' @param base_map Leaflet map object to add layers to
 #' @param measurement_layers Layer configuration from get_measurement_layers()
 #' @param target_year Year to display (or "static_only" for static layers only)
-#' @param pollutant,pollutant Pollutant name for coloring markers
+#' @param pollutant Pollutant name for coloring markers
 #' @param colour_scale Color scale name
 #' @param data_env Environment containing data objects
 #' @param image_scale_factor Scale factor for marker sizing (1.0 for HTML, >1.0 for images)
