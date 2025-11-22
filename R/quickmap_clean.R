@@ -28,9 +28,9 @@ lapply(packages, library, character.only = TRUE)
 
 # Constants
 MISSING_DATA_THRESHOLD <- 20 # Percent - sites with more missing data are filtered
-REFERENCE_IMAGE_WIDTH <- 1200
-REFERENCE_IMAGE_HEIGHT <- 1200
-REFERENCE_IMAGE_AREA <- REFERENCE_IMAGE_WIDTH * REFERENCE_IMAGE_HEIGHT
+IMAGE_X <- 1200
+IMAGE_Y <- 1200
+IMAGE_AREA <- IMAGE_X * IMAGE_Y
 
 # Helper functions for DRY code patterns
 get_package_dir <- function(subdir) {
@@ -46,7 +46,12 @@ read_template_file <- function(filepath) {
 apply_template_replacements <- function(template, replacements) {
   result <- template
   for (placeholder in names(replacements)) {
-    result <- gsub(placeholder, replacements[[placeholder]], result, fixed = TRUE)
+    result <- gsub(
+      placeholder,
+      replacements[[placeholder]],
+      result,
+      fixed = TRUE
+    )
   }
   return(result)
 }
@@ -174,18 +179,22 @@ get_temporal_data <- function(data, time_pattern = "\\d{4}") {
 #' @param years Character vector of year strings to include
 #' @return Maximum value or NULL if no data
 #' @family layer
-get_data_maximum <- function(measurement_layers, pollutant, data_env, years = NULL) {
-
+get_data_maximum <- function(
+  measurement_layers,
+  pollutant,
+  data_env,
+  years = NULL
+) {
   get_pollutant_col <- function(layer_type) {
-    switch(layer_type,
-           "dt_sites" = "no2",
-           "bl_nodes" = pollutant,
-           NULL)
+    switch(layer_type, "dt_sites" = "no2", "bl_nodes" = pollutant, NULL)
   }
 
   layer_maxima <- lapply(measurement_layers, function(layer_config) {
-    if (!layer_config$enabled || !layer_config$temporal ||
-        layer_config$layer_type == "schools") {
+    if (
+      !layer_config$enabled ||
+        !layer_config$temporal ||
+        layer_config$layer_type == "schools"
+    ) {
       return(NULL)
     }
 
@@ -212,8 +221,12 @@ get_data_maximum <- function(measurement_layers, pollutant, data_env, years = NU
   if (length(max_values) > 0) {
     result <- max(max_values)
     message(
-      "Legend trimming: data_max = ", round(result, 2),
-      " (from ", if (is.null(years)) "all years" else paste(length(years), "selected years"), ")"
+      "Legend trimming: data_max = ",
+      round(result, 2),
+      " (from ",
+      if (is.null(years)) "all years" else
+        paste(length(years), "selected years"),
+      ")"
     )
     return(result)
   } else {
@@ -421,7 +434,9 @@ show_borough_colours <- function(borough = NULL) {
 #' @family config
 load_colour_scale <- function(scale_name) {
   if (!requireNamespace("yaml", quietly = TRUE)) {
-    stop("Package 'yaml' required for colour scales. Install with: install.packages('yaml')")
+    stop(
+      "Package 'yaml' required for colour scales. Install with: install.packages('yaml')"
+    )
   }
 
   scale_dir <- get_package_dir("config/scales")
@@ -433,15 +448,27 @@ load_colour_scale <- function(scale_name) {
   yaml_file <- file.path(scale_dir, paste0(scale_name, ".yaml"))
 
   if (!file.exists(yaml_file)) {
-    available <- gsub("\\.yaml$", "", list.files(scale_dir, pattern = "\\.yaml$"))
-    stop("Scale '", scale_name, "' not found. Available: ", paste(available, collapse = ", "))
+    available <- gsub(
+      "\\.yaml$",
+      "",
+      list.files(scale_dir, pattern = "\\.yaml$")
+    )
+    stop(
+      "Scale '",
+      scale_name,
+      "' not found. Available: ",
+      paste(available, collapse = ", ")
+    )
   }
 
-  scale <- tryCatch({
-    yaml::read_yaml(yaml_file)
-  }, error = function(e) {
-    stop("Failed to load '", yaml_file, "': ", e$message)
-  })
+  scale <- tryCatch(
+    {
+      yaml::read_yaml(yaml_file)
+    },
+    error = function(e) {
+      stop("Failed to load '", yaml_file, "': ", e$message)
+    }
+  )
 
   if (!is.null(scale$thresholds)) {
     scale$thresholds <- as.numeric(scale$thresholds)
@@ -468,11 +495,14 @@ load_config <- function(config_name) {
     stop("Config file '", config_name, ".yaml' not found in ", config_dir)
   }
 
-  tryCatch({
-    yaml::read_yaml(yaml_file)
-  }, error = function(e) {
-    stop("Failed to load '", yaml_file, "': ", e$message)
-  })
+  tryCatch(
+    {
+      yaml::read_yaml(yaml_file)
+    },
+    error = function(e) {
+      stop("Failed to load '", yaml_file, "': ", e$message)
+    }
+  )
 }
 
 #' Get default theme settings
@@ -522,15 +552,24 @@ load_theme <- function(theme_file = NULL) {
   }
 
   if (!requireNamespace("yaml", quietly = TRUE)) {
-    stop("Package 'yaml' required for theme loading. Install with: install.packages('yaml')")
+    stop(
+      "Package 'yaml' required for theme loading. Install with: install.packages('yaml')"
+    )
   }
 
-  theme <- tryCatch({
-    yaml::read_yaml(theme_file)
-  }, error = function(e) {
-    warning("Failed to load theme file: ", e$message, ". Using default theme.")
-    return(NULL)
-  })
+  theme <- tryCatch(
+    {
+      yaml::read_yaml(theme_file)
+    },
+    error = function(e) {
+      warning(
+        "Failed to load theme file: ",
+        e$message,
+        ". Using default theme."
+      )
+      return(NULL)
+    }
+  )
 
   if (is.null(theme)) {
     return(defaults)
@@ -900,13 +939,16 @@ load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 }"
   }
 
-  css_content <- apply_template_replacements(css_content, list(
-    "{{banner_bg}}" = banner_colour,
-    "{{padding}}" = padding,
-    "{{font_size}}" = font_size,
-    "{{font_weight}}" = font_weight,
-    "{{mobile_css}}" = mobile_css
-  ))
+  css_content <- apply_template_replacements(
+    css_content,
+    list(
+      "{{banner_bg}}" = banner_colour,
+      "{{padding}}" = padding,
+      "{{font_size}}" = font_size,
+      "{{font_weight}}" = font_weight,
+      "{{mobile_css}}" = mobile_css
+    )
+  )
 
   return(sprintf("\n<style>\n%s\n</style>\n", css_content))
 }
@@ -1070,19 +1112,22 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 }"
   }
 
-  css_content <- apply_template_replacements(css_content, list(
-    "{{border_top}}" = border_top,
-    "{{container_padding}}" = container_padding,
-    "{{header_gap}}" = header_gap,
-    "{{header_font_size}}" = header_font_size,
-    "{{legend_header_bg}}" = legend_header_bg,
-    "{{legend_header_hover}}" = legend_header_hover,
-    "{{items_gap}}" = items_gap,
-    "{{items_font_size}}" = items_font_size,
-    "{{symbol_key_gap}}" = symbol_key_gap,
-    "{{symbol_key_font_size}}" = symbol_key_font_size,
-    "{{mobile_css}}" = mobile_css
-  ))
+  css_content <- apply_template_replacements(
+    css_content,
+    list(
+      "{{border_top}}" = border_top,
+      "{{container_padding}}" = container_padding,
+      "{{header_gap}}" = header_gap,
+      "{{header_font_size}}" = header_font_size,
+      "{{legend_header_bg}}" = legend_header_bg,
+      "{{legend_header_hover}}" = legend_header_hover,
+      "{{items_gap}}" = items_gap,
+      "{{items_font_size}}" = items_font_size,
+      "{{symbol_key_gap}}" = symbol_key_gap,
+      "{{symbol_key_font_size}}" = symbol_key_font_size,
+      "{{mobile_css}}" = mobile_css
+    )
+  )
 
   return(sprintf("\n<style>\n%s\n</style>\n", css_content))
 }
@@ -1248,16 +1293,25 @@ apply_custom_layout_in_html <- function(
     header_padding <- 1.5 * scale_factor
     banner_padding <- 2.0 * scale_factor
 
-    custom_css <- apply_template_replacements(custom_css, list(
-      "1\\.8rem" = paste0(banner_font_size, "rem"),
-      "1\\.3rem" = paste0(symbol_size, "rem"),
-      "1\\.2rem" = paste0(header_font_size, "rem"),
-      "1rem" = paste0(legend_font_size, "rem"),
-      "18\\.75rem" = paste0(legend_max_height, "rem"),
-      "padding: 1\\.5rem 2rem" = paste0("padding: ", header_padding, "rem ", banner_padding, "rem"),
-      "padding: 1rem" = paste0("padding: ", legend_padding, "rem"),
-      "gap: 1rem" = paste0("gap: ", legend_gap, "rem")
-    ))
+    custom_css <- apply_template_replacements(
+      custom_css,
+      list(
+        "1\\.8rem" = paste0(banner_font_size, "rem"),
+        "1\\.3rem" = paste0(symbol_size, "rem"),
+        "1\\.2rem" = paste0(header_font_size, "rem"),
+        "1rem" = paste0(legend_font_size, "rem"),
+        "18\\.75rem" = paste0(legend_max_height, "rem"),
+        "padding: 1\\.5rem 2rem" = paste0(
+          "padding: ",
+          header_padding,
+          "rem ",
+          banner_padding,
+          "rem"
+        ),
+        "padding: 1rem" = paste0("padding: ", legend_padding, "rem"),
+        "gap: 1rem" = paste0("gap: ", legend_gap, "rem")
+      )
+    )
   }
 
   html_text <- sub(
@@ -1603,7 +1657,12 @@ get_value_labels <- function(data, pollutant) {
 }
 
 #' @keywords internal
-get_custom_labels_with_fallback <- function(data, pollutant, marker_labels, layer_type) {
+get_custom_labels_with_fallback <- function(
+  data,
+  pollutant,
+  marker_labels,
+  layer_type
+) {
   if ("Label" %in% names(data)) {
     return(as.character(data[["Label"]]))
   }
@@ -1611,14 +1670,16 @@ get_custom_labels_with_fallback <- function(data, pollutant, marker_labels, laye
   if (layer_type == "bl_nodes") {
     if (!is.null(pollutant) && pollutant %in% names(data)) {
       warning(
-        "marker_labels set to '", marker_labels,
+        "marker_labels set to '",
+        marker_labels,
         "' but no Label column found in bl_nodes data. Showing pollution values instead.",
         call. = FALSE
       )
       return(get_value_labels(data, pollutant))
     } else {
       warning(
-        "marker_labels set to '", marker_labels,
+        "marker_labels set to '",
+        marker_labels,
         "' but no Label column found in bl_nodes data. No labels will be shown.",
         call. = FALSE
       )
@@ -1653,7 +1714,12 @@ generate_marker_labels <- function(data, pollutant, marker_labels, layer_type) {
   }
 
   if (show_custom) {
-    return(get_custom_labels_with_fallback(data, pollutant, marker_labels, layer_type))
+    return(get_custom_labels_with_fallback(
+      data,
+      pollutant,
+      marker_labels,
+      layer_type
+    ))
   }
 
   if (show_values) {
@@ -1991,12 +2057,12 @@ create_pollution_map <- function(
 ) {
   if (is.null(export_image)) {
     image_export <- FALSE
-    map_width_px <- 1920
-    map_height_px <- 1080
+    map_width_px <- IMAGE_X
+    map_height_px <- IMAGE_Y
   } else if (export_image == TRUE) {
     image_export <- TRUE
-    map_width_px <- 1920
-    map_height_px <- 1080
+    map_width_px <- IMAGE_X
+    map_height_px <- IMAGE_Y
   } else {
     image_export <- TRUE
     map_width_px <- export_image[1]
@@ -2131,7 +2197,8 @@ create_pollution_map <- function(
     )
 
     if (!is.null(base_tiles_provider)) {
-      static_map_template <- static_map_template %>% addProviderTiles(base_tiles_provider)
+      static_map_template <- static_map_template %>%
+        addProviderTiles(base_tiles_provider)
     } else {
       static_map_template <- static_map_template %>% addTiles()
     }
