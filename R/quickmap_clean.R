@@ -11,7 +11,8 @@ packages <- c(
   "webshot2",
   "htmlwidgets",
   "htmltools",
-  "leaflet.extras"
+  "leaflet.extras",
+  "zeallot"
 )
 
 installed <- packages %in% rownames(installed.packages())
@@ -1793,24 +1794,20 @@ create_pollution_map <- function(
   play_speed = NULL,
   theme_file = NULL
 ) {
-  export_params <- parse_export_params(export_image)
-  image_export <- export_params$enabled
-  map_width_px <- export_params$width
-  map_height_px <- export_params$height
-
+  c(image_export, map_width_px, map_height_px) %<-% parse_export_params(export_image)
   show_banner <- (styling_type == "html")
-
   theme <- load_theme(theme_file)
-
-  # Apply theme defaults for NULL parameters
-  title <- title %||% theme$banner$title
-  vignette <- vignette %||% theme$map$vignette
-  banner_colour <- banner_colour %||% theme$banner$background
-  boundary_labels <- boundary_labels %||% theme$map$boundary_labels
-  marker_labels <- marker_labels %||% theme$map$marker_labels
-  autoplay <- autoplay %||% theme$controls$autoplay
-  play_speed <- play_speed %||% theme$controls$play_speed
-  base_tiles_provider <- theme$map$base_tiles
+  c(title, vignette, banner_colour, boundary_labels, marker_labels, autoplay, play_speed, base_tiles_provider) %<-%
+    list(
+      title %||% theme$banner$title,
+      vignette %||% theme$map$vignette,
+      banner_colour %||% theme$banner$background,
+      boundary_labels %||% theme$map$boundary_labels,
+      marker_labels %||% theme$map$marker_labels,
+      autoplay %||% theme$controls$autoplay,
+      play_speed %||% theme$controls$play_speed,
+      theme$map$base_tiles
+    )
 
   borough_sf <- tryCatch(
     get_boundary_sf(boroughs),
@@ -1821,23 +1818,11 @@ create_pollution_map <- function(
   )
 
   if (!dir.exists("aq_maps")) dir.create("aq_maps", showWarnings = TRUE)
-
-  spatial_data <- load_spatial_data_sources(
-    diffusion_tube_file, sensor_file, school_file, pollutant
-  )
-
+  spatial_data <- load_spatial_data_sources(diffusion_tube_file, sensor_file, school_file, pollutant)
   if (is.null(borough_sf)) return()
-
-  map_data <- determine_primary_data_and_years(
-    spatial_data, borough_sf, vignette, years
-  )
-
-  sf_data_wgs84 <- map_data$primary
-  bl_annual_means_sf <- map_data$sensor
+  c(sf_data_wgs84, bl_annual_means_sf, years, vignette_overlay, bbox) %<-%
+    determine_primary_data_and_years(spatial_data, borough_sf, vignette, years)
   sf_schools_wgs84 <- spatial_data$school
-  years <- map_data$years
-  vignette_overlay <- map_data$vignette_overlay
-  bbox <- map_data$bbox
   legend_info <- get_colour_legend(colour_scale)
 
   html_map <- create_base_map(sf_data_wgs84, TRUE, base_tiles_provider)

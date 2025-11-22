@@ -22,4 +22,5 @@ Imports:
     webshot2,
     htmlwidgets,
     htmltools,
-    leaflet.extras
+    leaflet.extras,
+    zeallot
