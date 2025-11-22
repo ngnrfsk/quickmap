@@ -1655,6 +1655,64 @@ prepare_static_layer_data <- function(static_sf, marker_labels) {
   )
 }
 
+#' Get school labels from data
+#' @param data Data frame with School column
+#' @return Character vector of school names or empty strings
+get_school_labels <- function(data) {
+  if ("School" %in% names(data)) {
+    as.character(data$School)
+  } else {
+    rep("", nrow(data))
+  }
+}
+
+#' Get pollution value labels
+#' @param data Data frame with pollutant column
+#' @param pollutant Pollutant column name
+#' @return Character vector of formatted pollution values
+get_value_labels <- function(data, pollutant) {
+  if (is.null(pollutant) || !pollutant %in% names(data)) {
+    return(rep("", nrow(data)))
+  }
+
+  ifelse(
+    is.na(data[[pollutant]]),
+    "",
+    paste(round(data[[pollutant]], 0), "ug/m3")
+  )
+}
+
+#' Get custom labels with fallback to values
+#' @param data Data frame
+#' @param pollutant Pollutant column name
+#' @param marker_labels Label mode for warnings
+#' @param layer_type Layer type for conditional warnings
+#' @return Character vector of custom labels or fallback values
+get_custom_labels_with_fallback <- function(data, pollutant, marker_labels, layer_type) {
+  if ("Label" %in% names(data)) {
+    return(as.character(data[["Label"]]))
+  }
+
+  if (layer_type == "bl_nodes") {
+    if (!is.null(pollutant) && pollutant %in% names(data)) {
+      warning(
+        "marker_labels set to '", marker_labels,
+        "' but no Label column found in bl_nodes data. Showing pollution values instead.",
+        call. = FALSE
+      )
+      return(get_value_labels(data, pollutant))
+    } else {
+      warning(
+        "marker_labels set to '", marker_labels,
+        "' but no Label column found in bl_nodes data. No labels will be shown.",
+        call. = FALSE
+      )
+    }
+  }
+
+  rep("", nrow(data))
+}
+
 #' Generate labels for markers based on marker_labels parameter
 #'
 #' Handles label generation for all data sources (CSV/DT sites, OA/BL nodes, schools)
@@ -1666,25 +1724,7 @@ prepare_static_layer_data <- function(static_sf, marker_labels) {
 #'        "values_on" (always), "labels" (hover), "labels_on" (always)
 #' @param layer_type Layer type: "bl_nodes" (OA data), "dt_sites" (CSV data), or "schools"
 #' @return Character vector of labels for markers
-#'
-#' @details
-#' Label behavior by data source:
-#' - Schools: Always uses School column regardless of mode
-#' - CSV/DT: Uses Label column if available, otherwise pollution values
-#' - OA/BL: Shows pollution values (no Label column available)
-#'
-#' Mode behavior:
-#' - FALSE: Returns empty labels
-#' - TRUE: Returns values for hover (auto-hide)
-#' - "values_on": Returns values always visible
-#' - "labels": Returns custom labels for hover (auto-hide)
-#' - "labels_on": Returns custom labels always visible
-generate_marker_labels <- function(
-  data,
-  pollutant,
-  marker_labels,
-  layer_type
-) {
+generate_marker_labels <- function(data, pollutant, marker_labels, layer_type) {
   show_values <- marker_labels %in% c(TRUE, "values_on")
   show_custom <- marker_labels %in% c("labels", "labels_on")
 
@@ -1692,60 +1732,19 @@ generate_marker_labels <- function(
     return(rep("", nrow(data)))
   }
 
-  # Schools don't have pollutant data, so they show school names in all modes (when enabled)
   if (layer_type == "schools") {
-    if ("School" %in% names(data)) {
-      return(as.character(data$School))
-    } else {
-      return(rep("", nrow(data)))
-    }
+    return(get_school_labels(data))
   }
 
   if (show_custom) {
-    if ("Label" %in% names(data)) {
-      return(as.character(data[["Label"]]))
-    } else {
-      if (layer_type == "bl_nodes") {
-        if (!is.null(pollutant) && pollutant %in% names(data)) {
-          warning(
-            "marker_labels set to '",
-            marker_labels,
-            "' but no Label column found in bl_nodes data. Showing pollution values instead.",
-            call. = FALSE
-          )
-          value_str <- ifelse(
-            is.na(data[[pollutant]]),
-            "",
-            paste(round(data[[pollutant]], 0), "ug/m3")
-          )
-          return(value_str)
-        } else {
-          warning(
-            "marker_labels set to '",
-            marker_labels,
-            "' but no Label column found in bl_nodes data. No labels will be shown.",
-            call. = FALSE
-          )
-          return(rep("", nrow(data)))
-        }
-      }
-      return(rep("", nrow(data)))
-    }
+    return(get_custom_labels_with_fallback(data, pollutant, marker_labels, layer_type))
   }
 
   if (show_values) {
-    if (is.null(pollutant) || !pollutant %in% names(data)) {
-      return(rep("", nrow(data)))
-    }
-    value_str <- ifelse(
-      is.na(data[[pollutant]]),
-      "",
-      paste(round(data[[pollutant]], 0), "ug/m3")
-    )
-    return(value_str)
+    return(get_value_labels(data, pollutant))
   }
 
-  return(rep("", nrow(data)))
+  rep("", nrow(data))
 }
 
 
