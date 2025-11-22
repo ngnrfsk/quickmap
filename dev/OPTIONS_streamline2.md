@@ -12,10 +12,10 @@ Four streamlining options ranging from conservative to aggressive, with potentia
 
 | Option | Lines Saved | Risk | Effort | When to Choose |
 |--------|-------------|------|--------|----------------|
-| **Option 1** | 244 (10.6%) | LOW | 4-6h | Want quick wins, modern R best practices, minimal testing |
-| **Option 2** | 295 (12.9%) | MEDIUM | 8-12h | Balanced approach, moderate testing available |
-| **Option 3** | 495 (21.6%) | MED-HIGH | 16-22h | Have good test coverage, want to externalize embedded content |
-| **Option 4** | 620-720 (27-31%) | HIGH | 30-40h | Long-term investment, comprehensive test suite exists |
+| **Option 1** | 264 (11.5%) | LOW | 4-6h | Want quick wins, adopt R package standards, minimal testing |
+| **Option 2** | 315 (13.7%) | MEDIUM | 8-12h | Balanced approach, moderate testing available |
+| **Option 3** | 515 (22.4%) | MED-HIGH | 16-22h | Have good test coverage, want to externalize embedded content |
+| **Option 4** | 640-740 (28-32%) | HIGH | 30-40h | Long-term investment, comprehensive test suite exists |
 
 **Key opportunities identified:**
 - Consolidate 3 CSS loaders into 1 (~150 lines)
@@ -53,11 +53,11 @@ These are trivial edits faster for user to complete manually:
 | Task | Location | Why Manual |
 |------|----------|------------|
 | O1.3: Remove dead code | Lines 1498-1502 | 5-line deletion, instant verification |
-| O3.7: Remove unused dependency (stringr) | Lines 11, 168 | Replace 1 stringr call + delete from dependencies |
-| **O1.5: Replace stringr usage** | **Line 168** | **One regex - replace with base R `sub()`** |
-| **O1.6: Standardize pipe operator** | **Global** | **Find/replace `%>%` → `|>` (test afterwards)** |
+| **O1.5: Remove package loading** | **Lines 4-23** | **Delete obsolete script-style library() calls (~20 lines)** |
+| O1.6: Replace stringr + remove from DESCRIPTION | Line 168, DESCRIPTION:20 | One regex replacement + dependency removal |
+| O1.7: Standardize pipe operator | Global | Find/replace `%>%` → `|>` (test afterwards) |
 
-**Combined effort:** <10 minutes
+**Combined effort:** <15 minutes
 
 ### 🤖 Claude Delegation Tasks (Complex Refactoring)
 These require code analysis, pattern extraction, or architectural design:
@@ -151,28 +151,37 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 - **Lines:** ~30 saved
 - **Why delegate:** Requires extracting pattern from 2 locations, determining correct parameter list, handling conditionals
 
-**5. Replace stringr with base R** 👤 **USER MANUAL TASK**
-- Line 168: Replace `stringr::str_extract(time_col, time_pattern)` with `sub("^.*(\\d{4}).*$", "\\1", time_col)`
-- Line 11: Remove "stringr" from package list
-- **Lines:** 0 saved, but removes 1 dependency
-- **Why manual:** Single line replacement, trivial regex
+**5. Adopt R Package Best Practice** 👤 **USER MANUAL TASK**
+- **Lines 4-23:** Delete entire manual package loading section
+- Code already uses `package::function()` notation throughout (19 instances)
+- Dependencies already properly declared in DESCRIPTION file
+- **Lines:** ~20 saved
+- **Why manual:** Delete obsolete script-style package loading block
+- **Rationale:** Proper R packages rely on DESCRIPTION Imports, not runtime library() calls
 
-**6. Standardize on native pipe** 👤 **USER MANUAL TASK**
+**6. Replace stringr with base R** 👤 **USER MANUAL TASK**
+- Line 168: Replace `stringr::str_extract(time_col, time_pattern)` with `sub("^.*(\\d{4}).*$", "\\1", time_col)`
+- DESCRIPTION: Remove "stringr" from Imports (line 20)
+- **Lines:** 0 saved, but removes 1 dependency
+- **Why manual:** Single line replacement + DESCRIPTION edit
+
+**7. Standardize on native pipe** 👤 **USER MANUAL TASK**
 - Find/replace all `%>%` with `|>` throughout file
 - **Lines:** 0 saved, improved consistency
 - **Why manual:** Simple find/replace, but must test afterwards
 - **Risk:** Some packages may have edge cases with native pipe
 
-**7. Add NULL coalesce operator** 🤖 **DELEGATE TO CLAUDE**
+**8. Add NULL coalesce operator** 🤖 **DELEGATE TO CLAUDE**
 - Define `%||%` operator: ``%||%` <- function(x, y) if (is.null(x)) y else x`
 - Replace lines 2076-2096 with compact NULL defaults
 - **Lines:** ~14 saved
 - **Why delegate:** Multiple replacements across parameter initialization section
 
 ### Impact
-- **Code reduction:** 2,295 → 2,051 lines (10.6% reduction)
+- **Code reduction:** 2,295 → 2,031 lines (11.5% reduction)
 - **Functions removed:** 4
 - **Dependencies removed:** 1 (stringr)
+- **Package loading:** Removed script-style library() calls, adopts R package standard
 - **Risk level:** LOW - pure refactoring, no behavior change
 - **User testing needed:** Run existing test suite
 
@@ -242,6 +251,7 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 - **Why flexible:** Simple pattern extraction (user could do), but touches multiple functions (Claude more efficient)
 
 **10. Extract Inline CSS to External Files** 🤖 **DELEGATE TO CLAUDE**
+
 - Move `mobile_css` strings from R code to external CSS files (lines 913-939, 1012-1112)
 - Banner mobile CSS: 27 lines inline → `inst/banner/mobile.css`
 - Legend mobile CSS: 101 lines inline → `inst/legend/mobile.css`
