@@ -50,14 +50,15 @@ Four streamlining options ranging from conservative to aggressive, with potentia
 ### 👤 User Manual Tasks (Quick Wins)
 These are trivial edits faster for user to complete manually:
 
-| Task | Location | Why Manual |
-|------|----------|------------|
-| O1.3: Remove dead code | Lines 1498-1502 | 5-line deletion, instant verification |
-| **O1.5: Remove package loading** | **Lines 4-23** | **Delete obsolete script-style library() calls (~20 lines)** |
-| O1.6: Replace stringr + remove from DESCRIPTION | Line 168, DESCRIPTION:20 | One regex replacement + dependency removal |
-| O1.7: Standardize pipe operator | Global | Find/replace `%>%` → `|>` (test afterwards) |
+| Task | Location | Status | Why Manual |
+|------|----------|--------|------------|
+| O1.3: Remove dead code | Lines 1498-1502 | ✅ **DONE** | 5-line deletion |
+| O1.5: Remove package loading | Lines 4-23 | ⏸️ **DEFERRED** | Keep for script development, remove when packaging |
+| O1.6: Replace stringr + DESCRIPTION | Line 168, DESCRIPTION:20 | ✅ **DONE** | Regex + dependency removal |
+| O1.7: Standardize pipe operator | Global | ✅ **DONE** | Find/replace `%>%` → `\|>` |
 
-**Combined effort:** <15 minutes
+**Completed:** 3/4 tasks (~5 minutes)
+**Deferred:** O1.5 until post-development packaging
 
 ### 🤖 Claude Delegation Tasks (Complex Refactoring)
 These require code analysis, pattern extraction, or architectural design:
@@ -178,10 +179,13 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 - **Why delegate:** Multiple replacements across parameter initialization section
 
 ### Impact
-- **Code reduction:** 2,295 → 2,031 lines (11.5% reduction)
+- **Code reduction:** 2,295 → 2,051 lines (10.6% reduction)
+  - User completed: O1.3 (-5), O1.6 (0), O1.7 (0) = -5 lines actual
+  - Remaining: O1.1 (-150), O1.2 (-35), O1.4 (-30), O1.8 (-14) = -229 lines
+  - Deferred: O1.5 (-20) for packaging phase
 - **Functions removed:** 4
-- **Dependencies removed:** 1 (stringr)
-- **Package loading:** Removed script-style library() calls, adopts R package standard
+- **Dependencies removed:** 1 (stringr) ✅ DONE
+- **Code modernization:** Native pipe standardized ✅ DONE
 - **Risk level:** LOW - pure refactoring, no behavior change
 - **User testing needed:** Run existing test suite
 
