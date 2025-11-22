@@ -1,6 +1,6 @@
 # Source the main script
 Sys.setenv(DATA_PATH = "~/Coding/Library/data")
-source("R/quickmap.R")
+source("R/quickmap_clean.R")
 
 # ==============================================================================
 # MAP 1: Merton NO2 (CSV + BL data with schools) 2018-2024
@@ -30,12 +30,14 @@ map1_merton_pm25 <- create_pollution_map(
   colour_scale = "gla_pm25",
   output_file = "debug_merton_pm25_2018_2024_dt_bl.html",
   title = "debug 6 LB Merton Annual Mean PM2.5. ✖ Schools. Sensors: ◆ Breathe London.",
-  theme_file = "inst/themes/wandsworth_blue.yaml",
+  theme_file = "inst/themes/wandsworth.yaml",
   styling_type = "html", # HTML banner + legend
   # vignette = TRUE,
   marker_labels = TRUE, # Auto-hide labels
   boundary_labels = FALSE
 )
+
+theme <- load_theme("inst/themes/wandsworth.yaml")
 
 map1_merton_no2 <- create_pollution_map(
   diffusion_tube_file = "merton_dt_2018_2024.csv",
@@ -51,7 +53,7 @@ map1_merton_no2 <- create_pollution_map(
   vignette = TRUE,
   export_image = TRUE,
   marker_labels = TRUE, # Auto-hide labels
-  banner_colour = borough_palettes$merton$purple,
+  banner_colour = theme$palette$green,
   boundary_labels = FALSE
 )
 

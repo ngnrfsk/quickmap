@@ -1,5 +1,5 @@
 # quickmap - Air Quality Mapping for R
-# Version 0.9.0.4
+# Version 0.9.0.4  2025/11/22, 15:50
 
 packages <- c(
   "leaflet",
@@ -8,7 +8,6 @@ packages <- c(
   "leaflegend",
   "tidyr",
   "lubridate",
-  "stringr",
   "webshot2",
   "htmlwidgets",
   "htmltools",
@@ -25,6 +24,9 @@ lapply(packages, library, character.only = TRUE)
 # Note: Linter warnings for package functions are false positives.
 # All required packages are loaded via lapply() above.
 # Functions from dplyr, sf, leaflet, leaflegend, and other packages are available at runtime.
+
+# NULL coalescing operator - returns y if x is NULL, otherwise x
+`%||%` <- function(x, y) if (is.null(x)) y else x
 
 # Constants
 MISSING_DATA_THRESHOLD <- 20 # Percent - sites with more missing data are filtered
@@ -154,22 +156,25 @@ load_rdata_file <- function(file_path, pollutant) {
   return(process_oa_data(dataOAformat, pollutant))
 }
 
-get_temporal_data <- function(data, time_pattern = "\\d{4}") {
+get_temporal_data <- function(
+  #
+  data,
+  time_pattern = "\\d{4}",
+  pollutant = "no2"
+) {
   temporal_cols <- names(data)[grepl(time_pattern, names(data))]
 
   data |>
-    tidyr::pivot_longer(
+    pivot_longer(
       cols = all_of(temporal_cols),
       names_to = "time_col",
-      values_to = "no2"
+      values_to = pollutant
     ) |>
     dplyr::mutate(
-      year = lubridate::as_datetime(paste0(
-        stringr::str_extract(time_col, time_pattern),
-        "-01-01"
-      ))
+      year_str = gsub("^.*(\\d{4}).*$", "\\1", time_col), # extract the year
+      year = as_date(paste0(year_str, "-01-01")) # do rest with lubridate
     ) |>
-    dplyr::select(-time_col)
+    dplyr::select(-time_col, -year_str)
 }
 
 #' Get maximum data value across all measurement layers
@@ -270,7 +275,7 @@ import_csv_data <- function(
 
 # TODO (see dev/FUTURE_ENHANCEMENTS.md #2): Add boundary_names validation
 get_boundary_sf <- function(boundary_names, crs = 4326) {
-  config <- load_config("boundaries")
+  config <- load_yaml_config("boundaries")
 
   load(file.path(Sys.getenv("DATA_PATH"), config$data_file))
   boundary_data <- get(config$data_object)
@@ -302,11 +307,11 @@ get_boundary_sf <- function(boundary_names, crs = 4326) {
     ))
   }
 
-  boundary_data %>%
+  boundary_data |>
     filter(
       tolower(.data[[config$name_column]]) %in%
         tolower(corrected_names)
-    ) %>%
+    ) |>
     st_transform(crs = crs)
 }
 
@@ -362,20 +367,6 @@ create_vignette_overlay <- function(spatial_feature) {
     }
   )
 }
-
-
-LEGEND_STYLE <- list(
-  title = "font-size: 12px; font-weight:bold; margin: 2px 0; line-height: 1.4;",
-  labels = "font-size: 12px; margin: 2px 0; line-height: 1.4; vertical-align: middle;",
-  symbol_size = list(width = 15, height = 15),
-  display_size = list(width = 12, height = 12)
-)
-
-TITLE_STYLES <- list(
-  base = "background-color: rgba(255,255,255,0.8); padding: 2px 2px; border-radius: 3px; text-align: center; margin-top: 4px; line-height: 0.9; margin-left: auto; margin-right: auto;",
-  interactive_width = "50vw",
-  static_width = "95vw"
-)
 
 show_borough_colours <- function(borough = NULL) {
   themes_dir <- get_package_dir("themes")
@@ -433,43 +424,13 @@ show_borough_colours <- function(borough = NULL) {
 #' @return List containing colour scale definition
 #' @family config
 load_colour_scale <- function(scale_name) {
-  if (!requireNamespace("yaml", quietly = TRUE)) {
-    stop(
-      "Package 'yaml' required for colour scales. Install with: install.packages('yaml')"
-    )
-  }
-
-  scale_dir <- get_package_dir("config/scales")
-
-  if (!dir.exists(scale_dir)) {
-    stop("Scale directory not found: ", scale_dir)
-  }
-
-  yaml_file <- file.path(scale_dir, paste0(scale_name, ".yaml"))
-
-  if (!file.exists(yaml_file)) {
-    available <- gsub(
-      "\\.yaml$",
-      "",
-      list.files(scale_dir, pattern = "\\.yaml$")
-    )
-    stop(
-      "Scale '",
-      scale_name,
-      "' not found. Available: ",
-      paste(available, collapse = ", ")
-    )
-  }
-
-  scale <- tryCatch(
-    {
-      yaml::read_yaml(yaml_file)
-    },
-    error = function(e) {
-      stop("Failed to load '", yaml_file, "': ", e$message)
-    }
+  scale <- load_yaml_config(
+    scale_name,
+    subdirectory = "scales",
+    list_available = TRUE
   )
 
+  # Convert thresholds to numeric if present
   if (!is.null(scale$thresholds)) {
     scale$thresholds <- as.numeric(scale$thresholds)
   }
@@ -478,36 +439,56 @@ load_colour_scale <- function(scale_name) {
 }
 
 
-#' Load configuration from YAML file
-#' @param config_name Name of config file (e.g., "boundaries", "boundary-styles")
-#' @return List containing configuration
-#' @family config
-load_config <- function(config_name) {
+#' @keywords internal
+load_yaml_config <- function(
+  name,
+  subdirectory = NULL,
+  list_available = FALSE
+) {
   if (!requireNamespace("yaml", quietly = TRUE)) {
     stop("Package 'yaml' required. Install with: install.packages('yaml')")
   }
 
-  config_dir <- get_package_dir("config")
+  config_base <- get_package_dir("config")
+  config_dir <- if (is.null(subdirectory)) {
+    config_base
+  } else {
+    file.path(config_base, subdirectory)
+  }
 
-  yaml_file <- file.path(config_dir, paste0(config_name, ".yaml"))
+  if (!dir.exists(config_dir)) {
+    stop("Config directory not found: ", config_dir)
+  }
+
+  yaml_file <- file.path(config_dir, paste0(name, ".yaml"))
 
   if (!file.exists(yaml_file)) {
-    stop("Config file '", config_name, ".yaml' not found in ", config_dir)
+    if (list_available) {
+      available <- gsub(
+        "\\.yaml$",
+        "",
+        list.files(config_dir, pattern = "\\.yaml$")
+      )
+      stop(
+        "Config '",
+        name,
+        "' not found. Available: ",
+        paste(available, collapse = ", ")
+      )
+    } else {
+      stop("Config file '", name, ".yaml' not found in ", config_dir)
+    }
   }
 
   tryCatch(
-    {
-      yaml::read_yaml(yaml_file)
-    },
+    yaml::read_yaml(yaml_file),
     error = function(e) {
       stop("Failed to load '", yaml_file, "': ", e$message)
     }
   )
 }
 
-#' Get default theme settings
-#' @return List with default theme configuration
-#' @family config
+#' @keywords internal
 get_default_theme <- function() {
   list(
     banner = list(
@@ -784,7 +765,7 @@ generate_legend_html <- function(
       )
 
       symbol_key_items[[length(symbol_key_items) + 1]] <- sprintf(
-        '      <span style="background: %s; color: %s; padding: 0.5rem 0.625rem; border-radius: 0.25rem; font-family: monospace; display: inline-block;">%s</span>',
+        '      <span style="background: %s; color: %s;">%s</span>',
         hex_colors[i],
         text_color,
         padded_symbol_text
@@ -794,7 +775,7 @@ generate_legend_html <- function(
     }
 
     legend_items[[i]] <- sprintf(
-      '      <div class="legend-item"><span style="background: %s; color: %s; padding: 0.5rem 0.625rem; border-radius: 0.25rem; font-family: monospace;">%s</span></div>',
+      '      <div class="legend-item"><span style="background: %s; color: %s;">%s</span></div>',
       hex_colors[i],
       text_color,
       padded_range
@@ -873,275 +854,89 @@ get_contrast_text_color <- function(color) {
   }
 }
 
-#' Load banner CSS from external file
-#'
-#' Reads banner CSS template from inst/banner/ directory and injects
-#' banner color and mode-specific styling values using named placeholders.
-#'
-#' Named placeholders used:
-#' - {{banner_bg}}: Banner background color
-#' - {{padding}}: Banner padding
-#' - {{font_size}}: Banner font size
-#' - {{font_weight}}: Banner font weight (bold for images, empty for interactive)
-#' - {{mobile_css}}: Mobile responsive CSS (empty for images, full breakpoints for interactive)
-#'
-#' Pattern: Uses gsub() with named placeholders ({{name}}) for self-documenting,
-#' maintainable code. Follows the roller menu control pattern established in
-#' load_roller_menu_control().
-#'
-#' @param banner_colour Hex color for banner background
-#' @param image_mode Logical, if TRUE uses image-optimized styles, if FALSE uses interactive responsive styles
-#' @return Character string containing CSS wrapped in <style> tags
-#' @family css
+#' @keywords internal
 load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   banner_dir <- get_package_dir("banner")
-
-  css_file <- file.path(banner_dir, "banner.css")
-
+  css_variant <- if (image_mode) "banner-image.css" else "banner-interactive.css"
+  css_file <- file.path(banner_dir, css_variant)
   css_content <- read_template_file(css_file)
 
-  if (image_mode) {
-    padding <- "2rem"
-    font_size <- "1.8rem"
-    font_weight <- "font-weight: bold;"
-    mobile_css <- ""
-  } else {
-    padding <- "1.25rem"
-    font_size <- "1.3rem"
-    font_weight <- ""
+  replacements <- list("{{banner_bg}}" = banner_colour)
 
-    mobile_css <- "
-/* Small phones (320-374px) */
-@media (max-width: 374px) {
-  .banner {
-    padding: 0.5rem 0.25rem;
-    font-size: 0.9rem;
-    line-height: 1.2em;
+  if (!image_mode) {
+    mobile_file <- file.path(banner_dir, "mobile.css")
+    replacements[["{{mobile_css}}"]] <- read_template_file(mobile_file)
   }
+
+  css_content <- apply_template_replacements(css_content, replacements)
+  sprintf("\n<style>\n%s\n</style>\n", css_content)
 }
 
-/* Standard phones (375-480px) */
-@media (min-width: 375px) and (max-width: 480px) {
-  .banner {
-    padding: 0.625rem 0.375rem;
-    font-size: 1rem;
-    line-height: 1.25em;
-  }
-}
-
-/* Landscape phones */
-@media (max-width: 850px) and (orientation: landscape) {
-  .banner {
-    padding: 0.75rem 0.5rem;
-    font-size: 1.1rem;
-    line-height: 1.3em;
-  }
-}"
-  }
-
-  css_content <- apply_template_replacements(
-    css_content,
-    list(
-      "{{banner_bg}}" = banner_colour,
-      "{{padding}}" = padding,
-      "{{font_size}}" = font_size,
-      "{{font_weight}}" = font_weight,
-      "{{mobile_css}}" = mobile_css
-    )
-  )
-
-  return(sprintf("\n<style>\n%s\n</style>\n", css_content))
-}
-
-#' Load legend CSS from external file
-#'
-#' Reads legend CSS template from inst/legend/ directory and injects
-#' legend colors and mode-specific styling values using named placeholders.
-#'
-#' Named placeholders used:
-#' - {{border_top}}: Legend border top style
-#' - {{container_padding}}: Legend container padding
-#' - {{header_gap}}: Gap between header elements
-#' - {{header_font_size}}: Header font size (bold for images, empty for interactive)
-#' - {{legend_header_bg}}: Legend header background color (calculated from banner_colour)
-#' - {{legend_header_hover}}: Legend header hover background color
-#' - {{items_gap}}: Gap between legend items
-#' - {{items_font_size}}: Font size for legend items
-#' - {{symbol_key_gap}}: Gap between symbol key items
-#' - {{symbol_key_font_size}}: Font size for symbol key
-#' - {{mobile_css}}: Mobile responsive CSS (empty for images, full breakpoints for interactive)
-#'
-#' Pattern: Uses gsub() with named placeholders ({{name}}) for self-documenting,
-#' maintainable code. Follows the roller menu control pattern established in
-#' load_roller_menu_control().
-#'
-#' @param banner_colour Hex color for banner (used to calculate legend header colors)
-#' @param image_mode Logical, if TRUE uses image-optimized styles, if FALSE uses interactive responsive styles
-#' @return Character string containing CSS wrapped in <style> tags
-#' @family css
+#' @keywords internal
 load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   legend_dir <- get_package_dir("legend")
-
-  css_file <- file.path(legend_dir, "legend.css")
-
+  css_variant <- if (image_mode) "legend-image.css" else "legend-interactive.css"
+  css_file <- file.path(legend_dir, css_variant)
   css_content <- read_template_file(css_file)
 
   legend_header_bg <- lighten_color(banner_colour, 85)
   legend_header_hover <- lighten_color(banner_colour, 75)
 
-  if (image_mode) {
-    border_top <- "3px solid #dee2e6"
-    container_padding <- "1.5rem 2rem"
-    header_gap <- "1rem"
-    header_font_size <- "font-size: 1.2rem;"
-    items_gap <- "1rem"
-    items_font_size <- "font-size: 1.2rem;"
-    symbol_key_gap <- "1rem"
-    symbol_key_font_size <- "font-size: 1rem;"
-    mobile_css <- ""
-  } else {
-    border_top <- "2px solid #dee2e6"
-    container_padding <- "0.75rem 1rem"
-    header_gap <- "0.625rem"
-    header_font_size <- ""
-    items_gap <- "0.625rem"
-    items_font_size <- "font-size: 1rem;"
-    symbol_key_gap <- "0.625rem"
-    symbol_key_font_size <- "font-size: 0.85rem;"
-
-    mobile_css <- "
-/* Mobile: Stack vertically on small screens */
-@media (max-width: 480px) {
-  .legend-container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-    padding: 0.5rem;
-  }
-
-  .legend-header {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.9rem;
-    gap: 0.375rem;
-  }
-
-  .legend-items {
-    gap: 0.5rem;
-    font-size: 0.9rem;
-  }
-
-  .legend-key {
-    gap: 0.5rem;
-    font-size: 0.75rem;
-  }
-}
-
-/* Tablet/Landscape: Keep horizontal but tighter spacing */
-@media (min-width: 481px) and (max-width: 850px) {
-  .legend-container {
-    gap: 0.75rem;
-    padding: 0.625rem;
-  }
-
-  .legend-header {
-    padding: 0.5rem 0.875rem;
-    font-size: 1rem;
-    gap: 0.5rem;
-  }
-
-  .legend-items {
-    gap: 0.625rem;
-    font-size: 1rem;
-  }
-
-  .legend-key {
-    gap: 0.625rem;
-    font-size: 0.85rem;
-  }
-}
-
-/* Year control toggle with text character */
-.leaflet-control-layers-toggle {
-  background-image: none !important;
-  width: 32px;
-  height: 32px;
-  background-color: white;
-  border-radius: 4px;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  text-decoration: none;
-}
-
-.leaflet-control-layers-toggle::before {
-  content: '▲▼';
-}
-
-.leaflet-control-layers-toggle:hover {
-  background-color: #f4f4f4;
-}
-
-.leaflet-control-layers-expanded {
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  min-width: 100px;
-}
-
-.leaflet-control-layers-base label {
-  display: block;
-  padding: 4px 8px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.leaflet-control-layers-base label:hover {
-  background-color: #f0f0f0;
-  border-radius: 2px;
-}
-
-@media (max-width: 768px) {
-  .leaflet-control-layers-toggle {
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
-  }
-}"
-  }
-
-  css_content <- apply_template_replacements(
-    css_content,
-    list(
-      "{{border_top}}" = border_top,
-      "{{container_padding}}" = container_padding,
-      "{{header_gap}}" = header_gap,
-      "{{header_font_size}}" = header_font_size,
-      "{{legend_header_bg}}" = legend_header_bg,
-      "{{legend_header_hover}}" = legend_header_hover,
-      "{{items_gap}}" = items_gap,
-      "{{items_font_size}}" = items_font_size,
-      "{{symbol_key_gap}}" = symbol_key_gap,
-      "{{symbol_key_font_size}}" = symbol_key_font_size,
-      "{{mobile_css}}" = mobile_css
-    )
+  replacements <- list(
+    "{{legend_header_bg}}" = legend_header_bg,
+    "{{legend_header_hover}}" = legend_header_hover
   )
 
-  return(sprintf("\n<style>\n%s\n</style>\n", css_content))
+  if (!image_mode) {
+    mobile_file <- file.path(legend_dir, "mobile.css")
+    replacements[["{{mobile_css}}"]] <- read_template_file(mobile_file)
+  }
+
+  css_content <- apply_template_replacements(css_content, replacements)
+  sprintf("\n<style>\n%s\n</style>\n", css_content)
 }
 
-#' Load roller menu control from external files
-#'
-#' Reads HTML, CSS, and JavaScript from inst/controls/ directory
-#' and combines them into a single HTML string for injection
-#'
-#' @param banner_colour Hex color for theming (default "#2c3e50")
-#' @param autoplay Logical, whether to start animation automatically on load
-#' @param play_speed Numeric, milliseconds per year during animation
-#' @return Character string containing combined HTML/CSS/JS
-#' @family css
+#' @keywords internal
+save_styled_map <- function(map, html_file, title, styling_type, show_banner,
+                            banner_colour, colour_scale, collapsed_mobile,
+                            image_mode, image_dimensions, autoplay, play_speed,
+                            data_max) {
+  htmlwidgets::saveWidget(
+    map,
+    file = html_file,
+    selfcontained = TRUE,
+    title = title
+  )
+
+  if (styling_type == "html") {
+    tryCatch(
+      {
+        apply_custom_layout_in_html(
+          html_file = html_file,
+          title = if (show_banner) title else NULL,
+          banner_colour = banner_colour,
+          scale_name = colour_scale,
+          collapsed_mobile = collapsed_mobile,
+          image_mode = image_mode,
+          image_dimensions = image_dimensions,
+          autoplay = autoplay,
+          play_speed = play_speed,
+          data_max = data_max
+        )
+      },
+      error = function(e) {
+        warning("Failed to apply layout: ", e$message)
+      }
+    )
+  }
+
+  files_folder <- paste0(tools::file_path_sans_ext(html_file), "_files")
+  if (dir.exists(files_folder)) {
+    unlink(files_folder, recursive = TRUE)
+  }
+}
+
+#' @keywords internal
 load_roller_menu_control <- function(
   banner_colour = "#2c3e50",
   autoplay = FALSE,
@@ -1211,12 +1006,7 @@ load_roller_menu_control <- function(
   return(combined)
 }
 
-#' Load layer cache JavaScript for year control
-#'
-#' Loads external JavaScript file for caching and managing map layers by year
-#'
-#' @return Character string containing JavaScript function for htmlwidgets::onRender()
-#' @family css
+#' @keywords internal
 load_layer_cache_js <- function() {
   controls_dir <- get_package_dir("controls")
 
@@ -1253,7 +1043,7 @@ apply_custom_layout_in_html <- function(
   scale_name,
   collapsed_mobile = TRUE,
   image_mode = FALSE,
-  image_dimensions = c(1200, 1200),
+  image_dimensions = c(IMAGE_X, IMAGE_Y),
   autoplay = FALSE,
   play_speed = 500,
   data_max = NULL
@@ -1278,7 +1068,7 @@ apply_custom_layout_in_html <- function(
     height <- image_dimensions[2]
 
     # Calculate scale factor (1200px = baseline) using geometric mean for balanced scaling
-    scale_factor <- sqrt((width * height) / (1200 * 1200))
+    scale_factor <- sqrt((width * height) / (IMAGE_X * IMAGE_Y))
     # For 1920x1080: sqrt((1920*1080)/(1200*1200)) = sqrt(1.44) = 1.2 (balanced scaling)
     # For 800x600: sqrt((800*600)/(1200*1200)) = sqrt(0.33) = 0.58 (proportional reduction)
 
@@ -1400,33 +1190,6 @@ create_generic_icons <- function(
   )
 }
 
-add_map_border <- function(
-  map,
-  banner_colour = "#078141",
-  border_width = "5px",
-  border_radius = "8px",
-  padding = "10px"
-) {
-  styled_map <- tags$div(
-    style = sprintf(
-      "
-      border: %s solid %s;
-      border-radius: %s;
-      padding: %s;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      overflow: hidden;
-    ",
-      border_width,
-      banner_colour,
-      border_radius,
-      padding
-    ),
-    map
-  )
-
-  return(styled_map)
-}
-
 #' Create layer configuration for map generation
 #' @param diffusion_tube_file Path to diffusion tube CSV file
 #' @param sensor_file Path to sensor RData file
@@ -1468,53 +1231,6 @@ get_measurement_layers <- function(
   )
 }
 
-prepare_bl_layer_data <- function(
-  oa_subset,
-  pollutant,
-  colour_scale,
-  marker_labels
-) {
-  if (nrow(oa_subset) == 0) return(NULL)
-
-  labels <- generate_marker_labels(
-    oa_subset,
-    pollutant,
-    marker_labels,
-    "bl_nodes"
-  )
-
-  list(
-    data = oa_subset,
-    labels = labels
-  )
-}
-
-prepare_dt_layer_data <- function(
-  subset_data,
-  pollutant,
-  colour_scale,
-  marker_labels
-) {
-  colors <- sapply(
-    subset_data[[pollutant]],
-    assign_colour,
-    scale = colour_scale
-  )
-
-  labels <- generate_marker_labels(
-    subset_data,
-    pollutant,
-    marker_labels,
-    "dt_sites"
-  )
-
-  list(
-    data = subset_data,
-    colors = colors,
-    labels = labels
-  )
-}
-
 prepare_generic_layer_data <- function(
   layer_config,
   year_data,
@@ -1527,13 +1243,17 @@ prepare_generic_layer_data <- function(
   switch(
     layer_config$layer_type,
     "bl_nodes" = {
-      prepare_bl_layer_data(year_data, pollutant, colour_scale, show_labels)
+      if (nrow(year_data) == 0) return(NULL)
+      labels <- generate_marker_labels(year_data, pollutant, show_labels, "bl_nodes")
+      list(data = year_data, labels = labels)
     },
     "dt_sites" = {
-      prepare_dt_layer_data(year_data, pollutant, colour_scale, show_labels)
+      labels <- generate_marker_labels(year_data, pollutant, show_labels, "dt_sites")
+      list(data = year_data, labels = labels)
     },
     "schools" = {
-      prepare_static_layer_data(year_data, show_labels)
+      labels <- generate_marker_labels(year_data, NULL, show_labels, "schools")
+      list(data = year_data, labels = labels, layer_type = "schools")
     },
     stop("Unknown layer type: ", layer_config$layer_type)
   )
@@ -1611,96 +1331,7 @@ add_layer <- function(
 }
 
 
-#' Prepare static layer data (schools)
-#'
-#' Prepares schools data for mapping with label generation
-#'
-#' @param static_sf Schools spatial data frame
-#' @param marker_labels Label visibility control parameter
-#' @return List with data, labels, and layer_type for schools
-#' @family layer
-prepare_static_layer_data <- function(static_sf, marker_labels) {
-  labels <- generate_marker_labels(
-    static_sf,
-    pollutant = NULL,
-    marker_labels,
-    "schools"
-  )
-
-  list(
-    data = static_sf,
-    labels = labels,
-    layer_type = "schools"
-  )
-}
-
 #' @keywords internal
-get_school_labels <- function(data) {
-  if ("School" %in% names(data)) {
-    as.character(data$School)
-  } else {
-    rep("", nrow(data))
-  }
-}
-
-#' @keywords internal
-get_value_labels <- function(data, pollutant) {
-  if (is.null(pollutant) || !pollutant %in% names(data)) {
-    return(rep("", nrow(data)))
-  }
-
-  ifelse(
-    is.na(data[[pollutant]]),
-    "",
-    paste(round(data[[pollutant]], 0), "ug/m3")
-  )
-}
-
-#' @keywords internal
-get_custom_labels_with_fallback <- function(
-  data,
-  pollutant,
-  marker_labels,
-  layer_type
-) {
-  if ("Label" %in% names(data)) {
-    return(as.character(data[["Label"]]))
-  }
-
-  if (layer_type == "bl_nodes") {
-    if (!is.null(pollutant) && pollutant %in% names(data)) {
-      warning(
-        "marker_labels set to '",
-        marker_labels,
-        "' but no Label column found in bl_nodes data. Showing pollution values instead.",
-        call. = FALSE
-      )
-      return(get_value_labels(data, pollutant))
-    } else {
-      warning(
-        "marker_labels set to '",
-        marker_labels,
-        "' but no Label column found in bl_nodes data. No labels will be shown.",
-        call. = FALSE
-      )
-    }
-  }
-
-  rep("", nrow(data))
-}
-
-#' Generate labels for markers based on marker_labels parameter
-#'
-#' Handles label generation for all data sources (CSV/DT sites, OA/BL nodes, schools)
-#' with different behavior depending on data availability and layer type.
-#'
-#' @param data Data frame with spatial data
-#' @param pollutant Pollutant column name (e.g., "no2", "pm25"). NULL for schools.
-#' @param marker_labels Control parameter: FALSE (none), TRUE (hover),
-#'        "values_on" (always), "labels" (hover), "labels_on" (always)
-#' @param layer_type Layer type: "bl_nodes" (OA data), "dt_sites" (CSV data), or "schools"
-#' @return Character vector of labels for markers
-#' @family labels
 generate_marker_labels <- function(data, pollutant, marker_labels, layer_type) {
   show_values <- marker_labels %in% c(TRUE, "values_on")
   show_custom <- marker_labels %in% c("labels", "labels_on")
@@ -1709,21 +1340,41 @@ generate_marker_labels <- function(data, pollutant, marker_labels, layer_type) {
     return(rep("", nrow(data)))
   }
 
+  # Schools: show School column
   if (layer_type == "schools") {
-    return(get_school_labels(data))
+    if ("School" %in% names(data)) {
+      return(as.character(data$School))
+    }
+    return(rep("", nrow(data)))
   }
 
+  # Custom labels (Label column)
   if (show_custom) {
-    return(get_custom_labels_with_fallback(
-      data,
-      pollutant,
-      marker_labels,
-      layer_type
-    ))
+    if ("Label" %in% names(data)) {
+      return(as.character(data$Label))
+    }
+    # Fallback for bl_nodes only
+    if (layer_type == "bl_nodes") {
+      if (!is.null(pollutant) && pollutant %in% names(data)) {
+        warning(
+          "marker_labels set to '", marker_labels,
+          "' but no Label column found in bl_nodes data. Showing pollution values instead.",
+          call. = FALSE
+        )
+        return(ifelse(is.na(data[[pollutant]]), "", paste(round(data[[pollutant]], 0), "ug/m3")))
+      }
+      warning(
+        "marker_labels set to '", marker_labels,
+        "' but no Label column found in bl_nodes data. No labels will be shown.",
+        call. = FALSE
+      )
+    }
+    return(rep("", nrow(data)))
   }
 
-  if (show_values) {
-    return(get_value_labels(data, pollutant))
+  # Pollution values
+  if (show_values && !is.null(pollutant) && pollutant %in% names(data)) {
+    return(ifelse(is.na(data[[pollutant]]), "", paste(round(data[[pollutant]], 0), "ug/m3")))
   }
 
   rep("", nrow(data))
@@ -1741,22 +1392,6 @@ get_layer_year_data <- function(data_source_name, year, data_environment) {
 }
 
 
-add_title <- function(map, text, interactive) {
-  width <- if (interactive) TITLE_STYLES$interactive_width else
-    TITLE_STYLES$static_width
-
-  map |>
-    addControl(
-      html = htmltools::HTML(sprintf(
-        '<div style="%s width: %s;">%s</div>',
-        TITLE_STYLES$base,
-        width,
-        text
-      )),
-      position = "topright"
-    )
-}
-
 #' Add boundary polygons to map
 #'
 #' Adds borough boundary polygons with optional labels
@@ -1773,7 +1408,7 @@ add_boundary_polygons <- function(
   interactive,
   show_labels = FALSE
 ) {
-  styles <- load_config("boundary-styles")
+  styles <- load_yaml_config("boundary-styles")
   style <- styles[[if (interactive) "interactive" else "static"]]
 
   if (show_labels) {
@@ -1857,12 +1492,12 @@ add_map_controls <- function(
   # making layers inaccessible to JavaScript caching
   baseGroups <- if (interactive && length(years) >= 1) years else NULL
   if (!is.null(baseGroups)) {
-    map <- map %>%
+    map <- map |>
       htmlwidgets::onRender(load_layer_cache_js())
   }
 
   if (vignette && !is.null(vignette_overlay)) {
-    vignette_style <- load_config("vignette-style")
+    vignette_style <- load_yaml_config("vignette-style")
     map <- map |>
       addPolygons(
         data = vignette_overlay,
@@ -1959,7 +1594,7 @@ generate_map_layers <- function(
       )
     }
   }
-  base_map <- base_map %>%
+  base_map <- base_map |>
     showGroup(layer_name)
   return(base_map)
 }
@@ -2073,28 +1708,14 @@ create_pollution_map <- function(
 
   theme <- load_theme(theme_file)
 
-  if (is.null(title)) {
-    title <- theme$banner$title
-  }
-  if (is.null(vignette)) {
-    vignette <- theme$map$vignette
-  }
-  if (is.null(banner_colour)) {
-    banner_colour <- theme$banner$background
-  }
-  if (is.null(boundary_labels)) {
-    boundary_labels <- theme$map$boundary_labels
-  }
-  if (is.null(marker_labels)) {
-    marker_labels <- theme$map$marker_labels
-  }
-  if (is.null(autoplay)) {
-    autoplay <- theme$controls$autoplay
-  }
-  if (is.null(play_speed)) {
-    play_speed <- theme$controls$play_speed
-  }
-
+  # Apply theme defaults for NULL parameters
+  title <- title %||% theme$banner$title
+  vignette <- vignette %||% theme$map$vignette
+  banner_colour <- banner_colour %||% theme$banner$background
+  boundary_labels <- boundary_labels %||% theme$map$boundary_labels
+  marker_labels <- marker_labels %||% theme$map$marker_labels
+  autoplay <- autoplay %||% theme$controls$autoplay
+  play_speed <- play_speed %||% theme$controls$play_speed
   base_tiles_provider <- theme$map$base_tiles
 
   borough_sf <- tryCatch(
@@ -2181,9 +1802,9 @@ create_pollution_map <- function(
   )
 
   if (!is.null(base_tiles_provider)) {
-    html_map <- html_map %>% addProviderTiles(base_tiles_provider)
+    html_map <- html_map |> addProviderTiles(base_tiles_provider)
   } else {
-    html_map <- html_map %>% addTiles()
+    html_map <- html_map |> addTiles()
   }
 
   if (image_export) {
@@ -2197,10 +1818,10 @@ create_pollution_map <- function(
     )
 
     if (!is.null(base_tiles_provider)) {
-      static_map_template <- static_map_template %>%
+      static_map_template <- static_map_template |>
         addProviderTiles(base_tiles_provider)
     } else {
-      static_map_template <- static_map_template %>% addTiles()
+      static_map_template <- static_map_template |> addTiles()
     }
   }
 
@@ -2272,34 +1893,11 @@ create_pollution_map <- function(
       html_file <- file.path("aq_maps", paste0(file_parts, "_", yr, ".html"))
       img_file <- file.path("aq_maps", paste0(file_parts, "_", yr, ".jpg"))
 
-      saveWidget(
-        static_map,
-        file = html_file,
-        selfcontained = TRUE,
-        title = title
+      save_styled_map(
+        static_map, html_file, title, styling_type, show_banner,
+        banner_colour, colour_scale, FALSE, TRUE,
+        c(map_width_px, map_height_px), autoplay, play_speed, data_max
       )
-
-      if (styling_type == "html") {
-        tryCatch(
-          {
-            apply_custom_layout_in_html(
-              html_file = html_file,
-              title = if (show_banner) title else NULL,
-              banner_colour = banner_colour,
-              scale_name = colour_scale,
-              collapsed_mobile = FALSE,
-              image_mode = TRUE,
-              image_dimensions = c(map_width_px, map_height_px),
-              autoplay = autoplay,
-              play_speed = play_speed,
-              data_max = data_max
-            )
-          },
-          error = function(e) {
-            warning("Failed to apply static image layout: ", e$message)
-          }
-        )
-      }
 
       webshot2::webshot(
         url = html_file,
@@ -2307,6 +1905,8 @@ create_pollution_map <- function(
         vwidth = map_width_px,
         vheight = map_height_px
       )
+
+      unlink(html_file)
     }
   }
 
@@ -2325,37 +1925,11 @@ create_pollution_map <- function(
   if (!is.null(output_file)) {
     html_file <- file.path("aq_maps", output_file)
 
-    htmlwidgets::saveWidget(
-      html_map,
-      file = html_file,
-      selfcontained = TRUE,
-      title = title
+    save_styled_map(
+      html_map, html_file, title, styling_type, show_banner,
+      banner_colour, colour_scale, TRUE, FALSE, NULL,
+      autoplay, play_speed, data_max
     )
-
-    if (styling_type == "html") {
-      tryCatch(
-        {
-          apply_custom_layout_in_html(
-            html_file = html_file,
-            title = if (show_banner) title else NULL,
-            banner_colour = banner_colour,
-            scale_name = colour_scale,
-            collapsed_mobile = TRUE,
-            autoplay = autoplay,
-            play_speed = play_speed,
-            data_max = data_max
-          )
-        },
-        error = function(e) {
-          warning("Failed to apply custom layout: ", e$message)
-        }
-      )
-    }
-
-    files_folder <- paste0(tools::file_path_sans_ext(html_file), "_files")
-    if (dir.exists(files_folder)) {
-      unlink(files_folder, recursive = TRUE)
-    }
   }
 
   return(invisible(html_map))
