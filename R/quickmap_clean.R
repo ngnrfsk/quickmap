@@ -158,6 +158,7 @@ get_temporal_data <- function(data, time_pattern = "\\d{4}") {
 #' @param data_env Environment containing data objects
 #' @param years Character vector of year strings to include (e.g., c("2020", "2021"))
 #' @return Single numeric value representing maximum across specified years and layers, or NULL if no data
+#' @family layer
 get_data_maximum <- function(
   measurement_layers,
   pollutant,
@@ -411,6 +412,7 @@ show_borough_colours <- function(borough = NULL) {
 #' Load colour scale from YAML configuration file
 #' @param scale_name Character string, name of the colour scale (e.g., "who_no2")
 #' @return List containing colour scale definition
+#' @family config
 load_colour_scale <- function(scale_name) {
   if (!requireNamespace("yaml", quietly = TRUE)) {
     stop("Package 'yaml' required for colour scales. Install with: install.packages('yaml')")
@@ -446,6 +448,7 @@ load_colour_scale <- function(scale_name) {
 #' Load borough colour palette from YAML configuration file
 #' @param borough Character string, name of the borough (e.g., "merton", "wandsworth")
 #' @return Named list of colour values
+#' @family config
 load_borough_palette <- function(borough) {
   if (!requireNamespace("yaml", quietly = TRUE)) {
     stop("Package 'yaml' required for palettes. Install with: install.packages('yaml')")
@@ -477,6 +480,7 @@ load_borough_palette <- function(borough) {
 #' Load configuration from YAML file
 #' @param config_name Name of config file (e.g., "boundaries", "boundary-styles")
 #' @return List containing configuration
+#' @family config
 load_config <- function(config_name) {
   if (!requireNamespace("yaml", quietly = TRUE)) {
     stop("Package 'yaml' required. Install with: install.packages('yaml')")
@@ -500,6 +504,7 @@ load_config <- function(config_name) {
 
 #' Get default theme settings
 #' @return List with default theme configuration
+#' @family config
 get_default_theme <- function() {
   list(
     banner = list(
@@ -530,6 +535,7 @@ get_default_theme <- function() {
 #' Load theme from YAML file with fallback to defaults
 #' @param theme_file Path to YAML theme file (NULL for defaults)
 #' @return Complete theme list (merged with defaults)
+#' @family config
 load_theme <- function(theme_file = NULL) {
   defaults <- get_default_theme()
 
@@ -592,6 +598,7 @@ assign_colour <- function(value, scale = "lbrut_no2") {
 #' @examples
 #' convert_colors_to_hex(c("blue", "red", "#FF0000"))
 #' # Returns: c("#0000FF", "#FF0000", "#FF0000")
+#' @family colour
 convert_colors_to_hex <- function(color_vector) {
   sapply(
     color_vector,
@@ -626,6 +633,7 @@ convert_colors_to_hex <- function(color_vector) {
 #'
 #' @param label Character string like "< 10: WHO guideline" or "25-30"
 #' @return List with $range and $description (description is NULL if no colon)
+#' @family legend
 parse_legend_label <- function(label) {
   parts <- strsplit(label, ":", fixed = TRUE)[[1]]
 
@@ -644,6 +652,7 @@ parse_legend_label <- function(label) {
 #'
 #' @param index Integer index (1-based)
 #' @return Character symbol (†, ‡, §, ¶, etc.)
+#' @family legend
 get_symbol_for_index <- function(index) {
   symbols <- c(
     "†",
@@ -681,6 +690,7 @@ get_symbol_for_index <- function(index) {
 #'
 #' @param labels Character vector of legend labels
 #' @return Integer number of characters for the longest range (including symbol space)
+#' @family legend
 calculate_max_range_width <- function(labels) {
   max_width <- 0
 
@@ -717,6 +727,7 @@ calculate_max_range_width <- function(labels) {
 #'   - colours and labels arrays have matching lengths
 #'   Converts all colors to hex format for CSS compatibility
 #'   If data_max provided, filters legend to show only relevant ranges (minimum 2 items)
+#' @family legend
 generate_legend_html <- function(
   scale_name,
   collapsed_mobile = TRUE,
@@ -836,6 +847,7 @@ generate_legend_html <- function(
 #' @param color Hex color string (e.g., "#2c3e50")
 #' @param amount Percentage to lighten (positive) or darken (negative), range -100 to 100
 #' @return Hex color string
+#' @family colour
 lighten_color <- function(color, amount = 15) {
   rgb_vals <- col2rgb(color)[, 1]
 
@@ -857,6 +869,7 @@ lighten_color <- function(color, amount = 15) {
 #'
 #' @param color Background color (hex or R color name)
 #' @return "white" for dark backgrounds, "black" for light backgrounds
+#' @family colour
 get_contrast_text_color <- function(color) {
   rgb_vals <- col2rgb(color)[, 1]
 
@@ -894,6 +907,7 @@ get_contrast_text_color <- function(color) {
 #' @param banner_colour Hex color for banner background
 #' @param image_mode Logical, if TRUE uses image-optimized styles, if FALSE uses interactive responsive styles
 #' @return Character string containing CSS wrapped in <style> tags
+#' @family css
 load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   banner_dir <- system.file("banner", package = "quickmap")
 
@@ -978,6 +992,7 @@ load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 #' @param banner_colour Hex color for banner (used to calculate legend header colors)
 #' @param image_mode Logical, if TRUE uses image-optimized styles, if FALSE uses interactive responsive styles
 #' @return Character string containing CSS wrapped in <style> tags
+#' @family css
 load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   legend_dir <- system.file("legend", package = "quickmap")
 
@@ -1139,6 +1154,7 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 #' @param autoplay Logical, whether to start animation automatically on load
 #' @param play_speed Numeric, milliseconds per year during animation
 #' @return Character string containing combined HTML/CSS/JS
+#' @family css
 load_roller_menu_control <- function(
   banner_colour = "#2c3e50",
   autoplay = FALSE,
@@ -1217,6 +1233,7 @@ load_roller_menu_control <- function(
 #' Loads external JavaScript file for caching and managing map layers by year
 #'
 #' @return Character string containing JavaScript function for htmlwidgets::onRender()
+#' @family css
 load_layer_cache_js <- function() {
   controls_dir <- system.file("controls", package = "quickmap")
 
@@ -1251,6 +1268,7 @@ load_layer_cache_js <- function() {
 #'   - Map: flex: 1 (fills remaining space)
 #'   - Legend: fixed height at bottom (collapsible)
 #'   Layout is 100vh total height with no scrollbars
+#' @family layout
 apply_custom_layout_in_html <- function(
   html_file,
   title = NULL,
@@ -1445,6 +1463,7 @@ add_map_border <- function(
 #' @param diffusion_tube_file,diffusion_tube_file,sensor_file,school_file Data file paths
 #' @param marker_labels Label display mode for all layers
 #' @return List of layer configurations with data sources and preparation functions
+#' @family layer
 get_measurement_layers <- function(
   diffusion_tube_file,
   sensor_file,
@@ -1562,6 +1581,7 @@ prepare_generic_layer_data <- function(
 #' @param colour_scale The scale to use for icons
 #' @param label_sizing Scaling factor for label size (default 1.0)
 #' @return Updated map object with new layer
+#' @family map
 add_layer <- function(
   map,
   layer_data,
@@ -1628,6 +1648,7 @@ add_layer <- function(
 #' @param static_sf Schools spatial data frame
 #' @param marker_labels Label visibility control parameter
 #' @return List with data, labels, and layer_type for schools
+#' @family layer
 prepare_static_layer_data <- function(static_sf, marker_labels) {
   labels <- generate_marker_labels(
     static_sf,
@@ -1646,6 +1667,7 @@ prepare_static_layer_data <- function(static_sf, marker_labels) {
 #' Get school labels from data
 #' @param data Data frame with School column
 #' @return Character vector of school names or empty strings
+#' @family labels
 get_school_labels <- function(data) {
   if ("School" %in% names(data)) {
     as.character(data$School)
@@ -1658,6 +1680,7 @@ get_school_labels <- function(data) {
 #' @param data Data frame with pollutant column
 #' @param pollutant Pollutant column name
 #' @return Character vector of formatted pollution values
+#' @family labels
 get_value_labels <- function(data, pollutant) {
   if (is.null(pollutant) || !pollutant %in% names(data)) {
     return(rep("", nrow(data)))
@@ -1676,6 +1699,7 @@ get_value_labels <- function(data, pollutant) {
 #' @param marker_labels Label mode for warnings
 #' @param layer_type Layer type for conditional warnings
 #' @return Character vector of custom labels or fallback values
+#' @family labels
 get_custom_labels_with_fallback <- function(data, pollutant, marker_labels, layer_type) {
   if ("Label" %in% names(data)) {
     return(as.character(data[["Label"]]))
@@ -1712,6 +1736,7 @@ get_custom_labels_with_fallback <- function(data, pollutant, marker_labels, laye
 #'        "values_on" (always), "labels" (hover), "labels_on" (always)
 #' @param layer_type Layer type: "bl_nodes" (OA data), "dt_sites" (CSV data), or "schools"
 #' @return Character vector of labels for markers
+#' @family labels
 generate_marker_labels <- function(data, pollutant, marker_labels, layer_type) {
   show_values <- marker_labels %in% c(TRUE, "values_on")
   show_custom <- marker_labels %in% c("labels", "labels_on")
@@ -1772,6 +1797,7 @@ add_title <- function(map, text, interactive) {
 #' @param interactive If TRUE, for interactive HTML map; if FALSE, for static export
 #' @param show_labels If TRUE, show borough labels on the map
 #' @return Modified map with boundary polygons
+#' @family map
 add_boundary_polygons <- function(
   map,
   borough_sf,
@@ -1893,6 +1919,7 @@ add_map_controls <- function(
 #' @param data_env Environment containing data objects
 #' @param image_scale_factor Scale factor for marker sizing (1.0 for HTML, >1.0 for images)
 #' @return Map with all layers added
+#' @family map
 generate_map_layers <- function(
   base_map,
   measurement_layers,
@@ -2039,6 +2066,7 @@ generate_map_layers <- function(
 #'   \item Use \code{show_borough_colours()} to list available borough palettes
 #' }
 #'
+#' @family map
 create_pollution_map <- function(
   diffusion_tube_file = "none",
   sensor_file = "none",
