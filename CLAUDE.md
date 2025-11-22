@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **QuickMap** is an R project for generating interactive air quality maps showing pollution data (NO2, PM2.5) overlaid with school locations and borough boundaries. It creates both interactive Leaflet HTML maps and static JPG exports for local government air quality reporting.
 
-### Current Version: 0.9.0.4
+### Current Version: 0.9.1
 
 -   **Production code**: `quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/quickmap_0_8_5.R` through `versions/quickmap_0_9_0_3.R`
@@ -264,5 +264,6 @@ Core R packages (auto-installed): - `leaflet`: Interactive mapping - `sf`: Spati
 -   **v0.9.0.2**: Touch-friendly collapsible year menu with dynamic banner-based theming
 -   **v0.9.0.3**: Legend refactor with symbol keys, fixed-width blocks, shortened labels, flexbox alignment
 -   **v0.9.0.4**: Configuration system - YAML-based colour scales and themes, externalized CSS/JS to inst/, named placeholder pattern, theme_file parameter
+-   **v0.9.1**: Streamlined create_pollution_map() with helper function extraction and zeallot multiple assignment (main function: 185→111 lines, -40%)
 
 All archived versions are stored in `versions/` directory. Current stable version is always `quickmap.R`.
