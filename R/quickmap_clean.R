@@ -1703,6 +1703,16 @@ generate_map_layers <- function(
 #' }
 #'
 #' @family map
+parse_export_params <- function(export_image) {
+  if (is.null(export_image)) {
+    list(enabled = FALSE, width = IMAGE_X, height = IMAGE_Y)
+  } else if (isTRUE(export_image)) {
+    list(enabled = TRUE, width = IMAGE_X, height = IMAGE_Y)
+  } else {
+    list(enabled = TRUE, width = export_image[1], height = export_image[2])
+  }
+}
+
 create_pollution_map <- function(
   diffusion_tube_file = "none",
   sensor_file = "none",
@@ -1723,19 +1733,10 @@ create_pollution_map <- function(
   play_speed = NULL,
   theme_file = NULL
 ) {
-  if (is.null(export_image)) {
-    image_export <- FALSE
-    map_width_px <- IMAGE_X
-    map_height_px <- IMAGE_Y
-  } else if (export_image == TRUE) {
-    image_export <- TRUE
-    map_width_px <- IMAGE_X
-    map_height_px <- IMAGE_Y
-  } else {
-    image_export <- TRUE
-    map_width_px <- export_image[1]
-    map_height_px <- export_image[2]
-  }
+  export_params <- parse_export_params(export_image)
+  image_export <- export_params$enabled
+  map_width_px <- export_params$width
+  map_height_px <- export_params$height
 
   show_banner <- (styling_type == "html")
 
