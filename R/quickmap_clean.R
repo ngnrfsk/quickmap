@@ -897,6 +897,16 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 }
 
 #' @keywords internal
+build_static_map_for_year <- function(template, year, measurement_layers,
+                                      pollutant, colour_scale, data_env,
+                                      scale_factor) {
+  template |>
+    generate_map_layers(measurement_layers, year, pollutant,
+                       colour_scale, data_env, scale_factor) |>
+    generate_map_layers(measurement_layers, "static_only", pollutant,
+                       colour_scale, data_env, scale_factor)
+}
+
 finalize_and_save_map <- function(map, html_file, borough_sf, vignette_overlay,
                                   vignette, bbox, interactive, years, boundary_labels,
                                   zoom_level, title, styling_type, show_banner,
@@ -1850,43 +1860,19 @@ create_pollution_map <- function(
     marker_labels
   )
 
-  data_max <- get_data_maximum(
-    measurement_layers,
-    pollutant,
-    environment(),
-    years
-  )
+  data_max <- get_data_maximum(measurement_layers, pollutant, environment(), years)
+
+  marker_scale_factor <- if (image_export) {
+    sqrt((map_width_px * map_height_px) / (1200 * 1200))
+  } else NULL
 
   for (yr in unique(years)) {
-    html_map <- generate_map_layers(
-      html_map,
-      measurement_layers,
-      yr,
-      pollutant,
-      colour_scale,
-      environment(),
-      1.0
-    )
+    html_map <- generate_map_layers(html_map, measurement_layers, yr,
+                                     pollutant, colour_scale, environment(), 1.0)
 
     if (image_export) {
-      marker_scale_factor <- sqrt(
-        (map_width_px * map_height_px) / (1200 * 1200)
-      )
-
-      static_map <- static_map_template
-
-      static_map <- generate_map_layers(
-        static_map,
-        measurement_layers,
-        yr,
-        pollutant,
-        colour_scale,
-        environment(),
-        marker_scale_factor
-      )
-
-      static_map <- generate_map_layers(
-        static_map, measurement_layers, "static_only",
+      static_map <- build_static_map_for_year(
+        static_map_template, yr, measurement_layers,
         pollutant, colour_scale, environment(), marker_scale_factor
       )
 
