@@ -1524,6 +1524,20 @@ add_map_controls <- function(
 #' @param image_scale_factor Scale factor for marker sizing (1.0 for HTML, >1.0 for images)
 #' @return Map with all layers added
 #' @family map
+create_base_map <- function(data, interactive = TRUE, base_tiles = NULL) {
+  map <- leaflet(data, options = leafletOptions(
+    zoomControl = interactive,
+    zoomDelta = 0.5,
+    zoomSnap = 0
+  ))
+
+  if (!is.null(base_tiles)) {
+    map |> addProviderTiles(base_tiles)
+  } else {
+    map |> addTiles()
+  }
+}
+
 generate_map_layers <- function(
   base_map,
   measurement_layers,
@@ -1796,33 +1810,10 @@ create_pollution_map <- function(
     }
   }
 
-  html_map <- leaflet(
-    sf_data_wgs84,
-    options = leafletOptions(zoomDelta = 0.5, zoomSnap = 0)
-  )
-
-  if (!is.null(base_tiles_provider)) {
-    html_map <- html_map |> addProviderTiles(base_tiles_provider)
-  } else {
-    html_map <- html_map |> addTiles()
-  }
+  html_map <- create_base_map(sf_data_wgs84, TRUE, base_tiles_provider)
 
   if (image_export) {
-    static_map_template <- leaflet(
-      sf_data_wgs84,
-      options = leafletOptions(
-        zoomControl = FALSE,
-        zoomDelta = 0.5,
-        zoomSnap = 0
-      )
-    )
-
-    if (!is.null(base_tiles_provider)) {
-      static_map_template <- static_map_template |>
-        addProviderTiles(base_tiles_provider)
-    } else {
-      static_map_template <- static_map_template |> addTiles()
-    }
+    static_map_template <- create_base_map(sf_data_wgs84, FALSE, base_tiles_provider)
   }
 
   measurement_layers <- get_measurement_layers(
