@@ -1,0 +1,29 @@
+banner:
+  background: "#5F3E94"
+  text_color: "white"
+  title: "Merton Air Quality"
+
+legend:
+  show: true
+  background: "#DED4E9"
+
+map:
+  vignette: true
+  boundary_labels: false
+  marker_labels: false
+
+controls:
+  autoplay: false
+  play_speed: 500
+  background: "#5F3E94"
+  text_color: "white"
+
+palette:
+  purple: "#5F3E94"
+  green: "#078141"
+  black: "#000000"
+  white: "#ffffff"
+  cream: "#f5f7e3"
+  lavender: "#DED4E9"
+  lime: "#39b54a"
+  pink: "#b94090"
