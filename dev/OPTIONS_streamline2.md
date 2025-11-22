@@ -6,7 +6,93 @@
 
 ---
 
-## HTML/IMAGE Loop Analysis (Separate Assessment)
+## Executive Summary
+
+Four streamlining options ranging from conservative to aggressive, with potential reductions of 9.6% to 30%.
+
+| Option | Lines Saved | Risk | Effort | When to Choose |
+|--------|-------------|------|--------|----------------|
+| **Option 1** | 220 (9.6%) | LOW | 4-6h | Want quick wins, minimal testing burden |
+| **Option 2** | 275 (12%) | MEDIUM | 8-12h | Balanced approach, moderate testing available |
+| **Option 3** | 475 (20.7%) | MED-HIGH | 16-22h | Have good test coverage, want to externalize embedded content |
+| **Option 4** | 600-700 (26-30%) | HIGH | 30-40h | Long-term investment, comprehensive test suite exists |
+
+**Key opportunities identified:**
+- Consolidate 3 CSS loaders into 1 (~150 lines)
+- Extract 128 lines of inline CSS to external files
+- Merge 2 YAML loaders (~35 lines)
+- Inline 3 layer preparation functions (~35 lines)
+- Extract map finalization helper (~30 lines)
+
+---
+
+## Recommendations
+
+### Conservative Path (Recommended)
+1. **Start with Option 1** - Safe wins, 4-6 hours, minimal risk
+2. **User completes manual tasks first** - Remove dead code (O1.3), remove unused dependency (O3.7) - <5 minutes
+3. **Assess code stability** after Option 1 completion
+4. **Proceed to Option 2** if tests pass and stability confirmed
+5. **Re-evaluate before Option 3+** - requires good test coverage
+
+### Aggressive Path (Requires Preparation)
+1. **Pause feature development**
+2. **Build comprehensive test suite** (testthat coverage >80%)
+3. **Implement Option 1-2 as warmup** - validate approach
+4. **Branch for Option 4** - parallel development
+5. **Parallel testing over 2-4 weeks**
+
+---
+
+## Task Assignment Summary
+
+### 👤 User Manual Tasks (Quick Wins)
+These are trivial edits faster for user to complete manually:
+
+| Task | Location | Why Manual |
+|------|----------|------------|
+| O1.3: Remove dead code | Lines 1498-1502 | 5-line deletion, instant verification |
+| O3.7: Remove unused dependency | Line 11 | Grep for stringr usage + delete 1 line |
+
+**Combined effort:** <5 minutes
+
+### 🤖 Claude Delegation Tasks (Complex Refactoring)
+These require code analysis, pattern extraction, or architectural design:
+
+| Task | Complexity | Lines Saved | Risk |
+|------|------------|-------------|------|
+| O1.1: Consolidate CSS loaders | Medium | ~150 | Low |
+| O1.2: Merge YAML loaders | Medium | ~35 | Low |
+| O1.4: Extract map finalization | Medium | ~30 | Low |
+| O2.5: Inline layer prep functions | Medium | ~35 | Medium |
+| O2.6: Simplify label hierarchy | High | ~20 | Medium |
+| O3.8: Restructure map pipeline | High | ~35 | Med-High |
+| **O3.10: Extract inline CSS to files** | **Medium** | **~130** | **Medium** |
+| O3.11: Extract inline HTML | Medium | ~15 | Low |
+| O4.13-16: Architectural patterns | Very High | ~200 | High |
+
+### ⚖️ Flexible Tasks (User Choice)
+| Task | If User Does | If Claude Does |
+|------|--------------|----------------|
+| O3.9: Parameterize image mode | Simple find/replace in 3 functions | Automated extraction + testing |
+| O3.12: Consolidate sprintf/paste0 | Manual refactoring of 40+ calls | Pattern-based automation |
+
+---
+
+## Next Steps
+
+1. **Choose option** based on risk tolerance and available testing resources
+2. **Complete user manual tasks first** (O1.3, O3.7) - takes <5 minutes
+3. **Delegate complex tasks to Claude** with clear acceptance criteria
+4. **If Option 1-2:** Create feature branch `streamline2` and proceed
+5. **If Option 3-4:** First create comprehensive test suite, then proceed
+6. **Update STREAMLINE_SUMMARY.md** after completion with actual metrics
+
+---
+
+# Detailed Analysis
+
+## HTML/IMAGE Loop Analysis
 
 ### Current Structure
 
@@ -25,7 +111,7 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 - Map finalization logic can be extracted to helper function
 - Full loop merge would require restructuring temporal layer handling
 
-**Recommendation:** Extract `finalize_map()` helper rather than full merge (see Option 1)
+**Recommendation:** Extract `finalize_map()` helper rather than full merge (see Option 1.4)
 
 ---
 
@@ -105,9 +191,9 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 ## Option 3: Dependency Cleanup + Pattern Extraction (Moderate-Aggressive)
 
 **Target:** Remove technical debt and establish reusable patterns
-**Effort:** 12-16 hours
+**Effort:** 16-22 hours
 **Testing:** Comprehensive - affects core rendering flow
-**Lines Saved:** ~310 lines (13.5% reduction)
+**Lines Saved:** ~475 lines (20.7% reduction)
 
 ### Changes
 
@@ -137,9 +223,11 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 - Move `mobile_css` strings from R code to external CSS files (lines 913-939, 1012-1112)
 - Banner mobile CSS: 27 lines inline → `inst/banner/mobile.css`
 - Legend mobile CSS: 101 lines inline → `inst/legend/mobile.css`
-- Create conditional file loader: `load_mobile_css(component, enabled)`
+- **Approach:** Direct CSS extraction (NOT YAML config - CSS is already a config language)
+- Create conditional file loader: `load_mobile_css_file(component, enabled)` that reads CSS file
 - **Lines:** ~130 saved
-- **Why delegate:** Requires extracting CSS, creating new files, updating template system
+- **Why delegate:** Requires extracting CSS blocks, creating new files, updating template system
+- **Why CSS not YAML:** Mobile breakpoints are presentation rules, not user settings; CSS syntax highlighting/linting; standard web practice
 
 **11. Extract Inline HTML Snippets** 🤖 **DELEGATE TO CLAUDE**
 - Move HTML string literals to external templates
@@ -158,6 +246,7 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 ### Impact
 - **Code reduction:** 2,295 → 1,820 lines (~20.7% reduction)
 - **Functions removed:** 9, new helpers: 2-4
+- **External files created:** 2 CSS files (mobile.css), HTML template fragments
 - **Risk level:** MEDIUM-HIGH - changes core rendering pipeline, externalizes embedded content
 - **User testing needed:** Full regression testing - all map types, both HTML and image export, all themes, mobile responsive behavior
 
@@ -166,9 +255,9 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 ## Option 4: Architectural Refactoring (Aggressive)
 
 **Target:** Major simplification through design patterns
-**Effort:** 20-30 hours
+**Effort:** 30-40 hours
 **Testing:** Extensive - requires comprehensive test coverage first
-**Lines Saved:** ~400-500 lines (17-22% reduction)
+**Lines Saved:** ~600-700 lines (26-30% reduction)
 
 ### Changes
 
@@ -218,34 +307,6 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 
 ---
 
-## Recommendation Matrix
-
-| Option | Lines Saved | Risk | Effort | When to Choose |
-|--------|-------------|------|--------|----------------|
-| **Option 1** | 220 (9.6%) | LOW | 4-6h | Want quick wins, minimal testing burden |
-| **Option 2** | 275 (12%) | MEDIUM | 8-12h | Balanced approach, moderate testing available |
-| **Option 3** | 475 (20.7%) | MED-HIGH | 16-22h | Have good test coverage, want to externalize embedded content |
-| **Option 4** | 600-700 (26-30%) | HIGH | 30-40h | Long-term investment, comprehensive test suite exists |
-
----
-
-## Implementation Path
-
-### Conservative Path (Recommended for current state)
-1. Start with **Option 1** (safe wins)
-2. Assess test coverage and code stability
-3. If successful, proceed to **Option 2**
-4. Re-evaluate before Option 3+
-
-### Aggressive Path (Requires preparation)
-1. Pause feature development
-2. Build comprehensive test suite (testthat coverage >80%)
-3. Implement **Option 1-2** as warmup
-4. Branch for **Option 4** development
-5. Parallel testing over 2-4 weeks
-
----
-
 ## Detailed Function Analysis
 
 ### Functions Targeted for Removal/Consolidation
@@ -272,6 +333,7 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 | O1 | `load_yaml_config()` | Generic YAML loader for scales/configs | ~30 |
 | O1 | `finalize_map()` | Deduplicate saveWidget + layout + webshot | ~25 |
 | O3 | `build_map_pipeline()` | Unified HTML/static generation flow | ~40 |
+| O3 | `load_mobile_css_file()` | Load mobile CSS from external files | ~10 |
 | O3 | `get_sizing_params()` | Extract image_mode sizing config | ~15 |
 | O4 | `MapBuilder` (R6 class) | Builder pattern for map construction | ~120 |
 | O4 | `*LayerStrategy` (R6 classes) | Strategy pattern for layer types | ~80 |
@@ -279,46 +341,37 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 
 ---
 
-## Task Assignment Summary
+## CSS Extraction Design Decision
 
-### 👤 User Manual Tasks (Quick Wins)
-These are trivial edits faster for user to complete manually:
+**Question:** Should mobile CSS be extracted to CSS files or YAML config?
 
-| Task | Location | Why Manual |
-|------|----------|------------|
-| O1.3: Remove dead code | Lines 1498-1502 | 5-line deletion, instant verification |
-| O3.7: Remove unused dependency | Line 11 | Grep for stringr usage + delete 1 line |
+**Decision:** Extract to CSS files (NOT YAML)
 
-**Combined effort:** <5 minutes
+**Rationale:**
+1. **CSS is already a config language** - no need to wrap it in YAML
+2. **Fewer lines of R code** - simple file load (~10 lines) vs generation logic (~50-80 lines)
+3. **Standard practice** - separating CSS from application code is normal web development
+4. **Not actually user configuration** - these are presentation rules, not customizable settings
+5. **Maintainability** - web developers can edit CSS directly with syntax highlighting
+6. **Debugging** - browser dev tools show actual CSS, not generated output
 
-### 🤖 Claude Delegation Tasks (Complex Refactoring)
-These require code analysis, pattern extraction, or architectural design:
+**When YAML config makes sense:**
+- Theme settings (colors, titles) ✅ Currently using
+- Scale definitions (thresholds, labels) ✅ Currently using
+- Data source paths ✅ Currently using
+- **CSS styling rules** ❌ Should stay as CSS
 
-| Task | Complexity | Lines Saved | Risk |
-|------|------------|-------------|------|
-| O1.1: Consolidate CSS loaders | Medium | ~150 | Low |
-| O1.2: Merge YAML loaders | Medium | ~35 | Low |
-| O1.4: Extract map finalization | Medium | ~30 | Low |
-| O2.5: Inline layer prep functions | Medium | ~35 | Medium |
-| O2.6: Simplify label hierarchy | High | ~20 | Medium |
-| O3.8: Restructure map pipeline | High | ~35 | Med-High |
-| **O3.10: Extract inline CSS** | **Medium** | **~130** | **Medium** |
-| **O3.11: Extract inline HTML** | **Medium** | **~15** | **Low** |
-| O4.13-16: Architectural patterns | Very High | ~200 | High |
+**Implementation:**
+```r
+load_mobile_css_file <- function(component, enabled) {
+  if (!enabled) return("")
 
-### ⚖️ Flexible Tasks (User Choice)
-| Task | If User Does | If Claude Does |
-|------|--------------|----------------|
-| O3.9: Parameterize image mode | Simple find/replace in 3 functions | Automated extraction + testing |
-| O3.12: Consolidate sprintf/paste0 | Manual refactoring of 40+ calls | Pattern-based automation |
+  css_dir <- get_package_dir(component)
+  css_file <- file.path(css_dir, "mobile.css")
 
----
-
-## Next Steps
-
-1. **Choose option** based on risk tolerance and available testing resources
-2. **Complete user manual tasks first** (O1.3, O3.7) - takes <5 minutes
-3. **Delegate complex tasks to Claude** with clear acceptance criteria
-4. **If Option 1-2:** Create feature branch `streamline2` and proceed
-5. **If Option 3-4:** First create comprehensive test suite, then proceed
-6. **Update STREAMLINE_SUMMARY.md** after completion with actual metrics
+  if (file.exists(css_file)) {
+    return(read_template_file(css_file))
+  }
+  return("")
+}
+```
