@@ -400,64 +400,44 @@ TITLE_STYLES <- list(
   static_width = "95vw"
 )
 
-borough_palettes <- list(
-  merton = list(
-    purple = "#5F3E94",
-    green = "#078141",
-    black = "#000000",
-    white = "#ffffff",
-    cream = "#f5f7e3",
-    lavender = "#DED4E9",
-    lime = "#39b54a",
-    pink = "#b94090"
-  ),
-  wandsworth = list(
-    blue = "#01a7f5",
-    white = "#ffffff",
-    black = "#000000",
-    navy = "#306cb2",
-    orange = "#ff9c30",
-    green = "#159b48",
-    lime = "#83c44c"
-  ),
-  richmond = list(
-    blue = "#005794",
-    green = "#9bcc66",
-    white = "#ffffff",
-    black = "#000000",
-    grey = "#e6e7e8"
-  )
-)
-
 show_borough_colours <- function(borough = NULL) {
+  palette_dir <- system.file("config/palettes", package = "quickmap")
+  if (palette_dir == "") palette_dir <- "inst/config/palettes"
+
+  if (!dir.exists(palette_dir)) {
+    stop("Palette directory not found: ", palette_dir)
+  }
+
+  available <- gsub("\\.yaml$", "", list.files(palette_dir, pattern = "\\.yaml$"))
+
   if (is.null(borough)) {
     cat(
       "Available boroughs:",
-      paste(names(borough_palettes), collapse = ", "),
+      paste(available, collapse = ", "),
       "\n"
     )
     cat("Usage: show_borough_colours('merton')\n")
     return(invisible(NULL))
   }
 
-  if (!borough %in% names(borough_palettes)) {
+  if (!tolower(borough) %in% available) {
     stop(
       "Borough '",
       borough,
       "' not found. Available: ",
-      paste(names(borough_palettes), collapse = ", ")
+      paste(available, collapse = ", ")
     )
   }
 
-  colours <- borough_palettes[[borough]]
+  colours <- load_borough_palette(borough)
   cat("Colours for", borough, ":\n")
   for (name in names(colours)) {
     cat("  ", name, ": ", colours[[name]], "\n", sep = "")
   }
   cat(
-    "\nUsage: borough_palettes$",
+    "\nUsage: load_borough_palette('",
     borough,
-    "$",
+    "')$",
     names(colours)[1],
     "\n",
     sep = ""
@@ -497,6 +477,37 @@ load_colour_scale <- function(scale_name) {
   }
 
   scale
+}
+
+#' Load borough colour palette from YAML configuration file
+#' @param borough Character string, name of the borough (e.g., "merton", "wandsworth")
+#' @return Named list of colour values
+load_borough_palette <- function(borough) {
+  if (!requireNamespace("yaml", quietly = TRUE)) {
+    stop("Package 'yaml' required for palettes. Install with: install.packages('yaml')")
+  }
+
+  palette_dir <- system.file("config/palettes", package = "quickmap")
+  if (palette_dir == "") palette_dir <- "inst/config/palettes"
+
+  if (!dir.exists(palette_dir)) {
+    stop("Palette directory not found: ", palette_dir)
+  }
+
+  yaml_file <- file.path(palette_dir, paste0(tolower(borough), ".yaml"))
+
+  if (!file.exists(yaml_file)) {
+    available <- gsub("\\.yaml$", "", list.files(palette_dir, pattern = "\\.yaml$"))
+    stop("Borough palette '", borough, "' not found. Available: ", paste(available, collapse = ", "))
+  }
+
+  palette <- tryCatch({
+    yaml::read_yaml(yaml_file)
+  }, error = function(e) {
+    stop("Failed to load '", yaml_file, "': ", e$message)
+  })
+
+  palette
 }
 
 #' Get default theme settings
