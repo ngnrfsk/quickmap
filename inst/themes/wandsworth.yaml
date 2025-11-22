@@ -1,0 +1,28 @@
+banner:
+  background: "#01a7f5"
+  text_color: "white"
+  title: "Wandsworth Air Quality"
+
+legend:
+  show: true
+  background: "white"
+
+map:
+  vignette: false
+  boundary_labels: true
+  marker_labels: "values_on"
+
+controls:
+  autoplay: true
+  play_speed: 1000
+  background: "#01a7f5"
+  text_color: "white"
+
+palette:
+  blue: "#01a7f5"
+  white: "#ffffff"
+  black: "#000000"
+  navy: "#306cb2"
+  orange: "#ff9c30"
+  green: "#159b48"
+  lime: "#83c44c"

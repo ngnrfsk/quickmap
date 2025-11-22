@@ -1,0 +1,20 @@
+/* Global reset and flexbox layout for banner/map/legend system */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; font-family: Arial, sans-serif; overflow: hidden; }
+body { display: flex; flex-direction: column; }
+
+/* Banner styles - Image mode */
+.banner {
+  background: {{banner_bg}};
+  color: white;
+  padding: 2rem;
+  text-align: center;
+  font-size: 1.8rem;
+  line-height: 1.3em;
+  flex-shrink: 0;
+  font-weight: bold;
+}
+
+/* Map container */
+.map-container { flex: 1; position: relative; min-height: 0; }
+.map-container > div:not(#yearControl) { height: 100% !important; }
