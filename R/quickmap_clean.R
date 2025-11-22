@@ -1,5 +1,5 @@
 # quickmap - Air Quality Mapping for R
-# Version 0.9.0.4  2025/11/22, 15:50
+# Version 0.9.1  2025/11/22, 22:25
 
 packages <- c(
   "leaflet",
@@ -1713,27 +1713,25 @@ determine_primary_data_and_years <- function(spatial_data, borough_sf, vignette,
 #' @param sensor_file RData file with 'dataOAformat' object (or "none"). Prepends DATA_PATH if set.
 #' @param school_file CSV file with Easting/Northing/Level/School columns (or "none"). Prepends DATA_PATH if set.
 #' @param output_file Output filename (without extension). Saved to 'aq_maps/' directory.
-#' @param image_export If TRUE, generates static JPG exports in addition to interactive HTML.
-#' @param map_width_px Width in pixels for JPG exports (default: 1200).
-#' @param map_height_px Height in pixels for JPG exports (default: 1200).
+#' @param export_image NULL (no export), TRUE (export 1200x1200), or c(width, height) vector for custom dimensions.
 #' @param boroughs Borough name(s) for boundary display and data filtering (required).
 #' @param pollutant Pollutant type: "no2" or "pm25" (default: "no2").
 #' @param years Years to display. NULL uses all available years from data.
+#' @param title Page title and banner text. Default: NULL (uses theme).
 #' @param vignette If TRUE, darkens areas outside borough(s). Default: NULL (uses theme).
 #' @param colour_scale Color scale name (default: "who_no2"). See \code{load_colour_scale()} for options.
+#' @param styling_type Controls banner/legend display: "html" (default) or "none".
 #' @param marker_labels Control label visibility. Options: FALSE (no labels), TRUE (values on hover),
 #'   "values_on" (values always visible), "labels" (custom labels on hover), "labels_on" (custom labels always visible).
 #'   Default: NULL (uses theme).
-#' @param title Page title and banner text. Default: NULL (uses theme).
-#' @param styling_type Controls banner/legend display: "html" (default) or "none".
-#' @param boundary_labels If TRUE, shows borough boundary labels. Default: NULL (uses theme).
 #' @param banner_colour Color for banner and vignette. Default: NULL (uses theme).
+#' @param boundary_labels If TRUE, shows borough boundary labels. Default: NULL (uses theme).
 #' @param autoplay Auto-start year animation on load. Default: NULL (uses theme).
 #' @param play_speed Milliseconds per year during animation. Default: NULL (uses theme).
 #' @param theme_file Path to YAML theme file (default: NULL). See inst/themes/ for examples.
 #'
 #' @return Invisible Leaflet map object. Side effects: Saves HTML to \code{aq_maps/}.
-#'   If \code{image_export=TRUE}, also saves JPG files (one per year).
+#'   If \code{export_image} is not NULL, also saves JPG files (one per year).
 #'
 #' @details
 #' \strong{Data Sources:} Diffusion tubes (CSV), Breathe London sensors (RData), Schools (CSV)
@@ -1760,7 +1758,7 @@ determine_primary_data_and_years <- function(spatial_data, borough_sf, vignette,
 #'   diffusion_tube_file = "data.csv",
 #'   boroughs = "Merton",
 #'   years = 2024,
-#'   image_export = TRUE,
+#'   export_image = TRUE,
 #'   theme_file = "inst/themes/merton_purple.yaml",
 #'   output_file = "merton_2024"
 #' )
