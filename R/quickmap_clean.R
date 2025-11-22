@@ -1713,6 +1713,33 @@ parse_export_params <- function(export_image) {
   }
 }
 
+load_spatial_data_sources <- function(dt_file, sensor_file, school_file, pollutant) {
+  dt_data <- if (dt_file != "none") {
+    result <- load_data_file(dt_file, "csv", c("Easting", "Northing"))
+    if (!is.null(result)) {
+      get_temporal_data(result$data) |> transform_to_wgs84()
+    }
+  }
+
+  sensor_data <- if (sensor_file != "none") {
+    load_data_file(sensor_file, "rdata", pollutant = pollutant)
+  }
+
+  school_data <- if (school_file != "none") {
+    result <- load_data_file(school_file, "csv", c("Easting", "Northing"))
+    if (!is.null(result)) result$data |> transform_to_wgs84()
+  }
+
+  list(
+    dt = dt_data,
+    sensor = sensor_data,
+    school = school_data,
+    dt_enabled = !is.null(dt_data),
+    sensor_enabled = !is.null(sensor_data),
+    school_enabled = !is.null(school_data)
+  )
+}
+
 create_pollution_map <- function(
   diffusion_tube_file = "none",
   sensor_file = "none",
@@ -1762,44 +1789,13 @@ create_pollution_map <- function(
 
   if (!dir.exists("aq_maps")) dir.create("aq_maps", showWarnings = TRUE)
 
-  if (diffusion_tube_file != "none") {
-    csv_result <- load_data_file(
-      diffusion_tube_file,
-      "csv",
-      c("Easting", "Northing")
-    )
-    if (!is.null(csv_result)) {
-      sf_data_wgs84 <- get_temporal_data(csv_result$data) |>
-        transform_to_wgs84()
-    } else {
-      diffusion_tube_file <- "none"
-    }
-  }
+  spatial_data <- load_spatial_data_sources(
+    diffusion_tube_file, sensor_file, school_file, pollutant
+  )
 
-  if (school_file != "none") {
-    school_result <- load_data_file(
-      school_file,
-      "csv",
-      c("Easting", "Northing")
-    )
-    if (!is.null(school_result)) {
-      sf_schools_wgs84 <- school_result$data |> transform_to_wgs84()
-    } else {
-      school_file <- "none"
-    }
-  }
-
-  bl_annual_means_sf <- NULL
-  if (sensor_file != "none") {
-    bl_annual_means_sf <- load_data_file(
-      sensor_file,
-      "rdata",
-      pollutant = pollutant
-    )
-    if (is.null(bl_annual_means_sf)) {
-      sensor_file <- "none"
-    }
-  }
+  sf_data_wgs84 <- spatial_data$dt
+  bl_annual_means_sf <- spatial_data$sensor
+  sf_schools_wgs84 <- spatial_data$school
 
   if (diffusion_tube_file == "none" && !is.null(bl_annual_means_sf)) {
     sf_data_wgs84 <- bl_annual_means_sf
