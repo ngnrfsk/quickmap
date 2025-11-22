@@ -258,13 +258,15 @@ import_csv_data <- function(
 # TODO: Add input validation for boundary_names parameter to handle NULL, missing,
 # or invalid input gracefully. Currently assumes input is always valid.
 get_boundary_sf <- function(boundary_names, crs = 4326) {
-  load(file.path(Sys.getenv("DATA_PATH"), BOUNDARY_CONFIG$data_file))
-  boundary_data <- get(BOUNDARY_CONFIG$data_object)
+  config <- load_config("boundaries")
+
+  load(file.path(Sys.getenv("DATA_PATH"), config$data_file))
+  boundary_data <- get(config$data_object)
 
   input_names <- tools::toTitleCase(tolower(boundary_names))
   corrected_names <- ifelse(
-    input_names %in% names(BOUNDARY_CONFIG$name_corrections),
-    BOUNDARY_CONFIG$name_corrections[input_names],
+    input_names %in% names(config$name_corrections),
+    config$name_corrections[input_names],
     input_names
   )
 
@@ -272,11 +274,11 @@ get_boundary_sf <- function(boundary_names, crs = 4326) {
     return(st_transform(boundary_data, crs = crs))
   }
 
-  valid_names <- unique(tolower(boundary_data[[BOUNDARY_CONFIG$name_column]]))
+  valid_names <- unique(tolower(boundary_data[[config$name_column]]))
   invalid_names <- corrected_names[!tolower(corrected_names) %in% valid_names]
 
   if (length(invalid_names) > 0) {
-    all_names <- sort(unique(boundary_data[[BOUNDARY_CONFIG$name_column]]))
+    all_names <- sort(unique(boundary_data[[config$name_column]]))
     stop(paste(
       "Error: Boundary name(s) not found:",
       paste(invalid_names, collapse = ", "),
@@ -290,7 +292,7 @@ get_boundary_sf <- function(boundary_names, crs = 4326) {
 
   boundary_data %>%
     filter(
-      tolower(.data[[BOUNDARY_CONFIG$name_column]]) %in%
+      tolower(.data[[config$name_column]]) %in%
         tolower(corrected_names)
     ) %>%
     st_transform(crs = crs)
@@ -349,43 +351,6 @@ create_vignette_overlay <- function(spatial_feature) {
   )
 }
 
-BOUNDARY_CONFIG <- list(
-  data_file = "ward_boundaries.Rdata",
-  data_object = "wardBoundaries",
-  name_column = "DISTRICT",
-  name_corrections = c(
-    "The City" = "City and County of the City of London",
-    "Westminster" = "City of Westminster",
-    "Kingston" = "Kingston upon Thames",
-    "Richmond" = "Richmond upon Thames"
-  )
-)
-
-BOUNDARY_STYLES <- list(
-  interactive = list(
-    color = "#078141",
-    weight = 2.5,
-    dashArray = "5, 10",
-    opacity = 0.75,
-    fillColor = "transparent",
-    fillOpacity = 0.1
-  ),
-  static = list(
-    color = "#078141",
-    weight = 2.5,
-    dashArray = NULL,
-    opacity = 1,
-    fillColor = "transparent",
-    fillOpacity = 0
-  )
-)
-
-VIGNETTE_STYLE <- list(
-  fillColor = "grey",
-  fillOpacity = 0.4,
-  color = "transparent",
-  weight = 0
-)
 
 LEGEND_STYLE <- list(
   title = "font-size: 12px; font-weight:bold; margin: 2px 0; line-height: 1.4;",
@@ -508,6 +473,30 @@ load_borough_palette <- function(borough) {
   })
 
   palette
+}
+
+#' Load configuration from YAML file
+#' @param config_name Name of config file (e.g., "boundaries", "boundary-styles")
+#' @return List containing configuration
+load_config <- function(config_name) {
+  if (!requireNamespace("yaml", quietly = TRUE)) {
+    stop("Package 'yaml' required. Install with: install.packages('yaml')")
+  }
+
+  config_dir <- system.file("config", package = "quickmap")
+  if (config_dir == "") config_dir <- "inst/config"
+
+  yaml_file <- file.path(config_dir, paste0(config_name, ".yaml"))
+
+  if (!file.exists(yaml_file)) {
+    stop("Config file '", config_name, ".yaml' not found in ", config_dir)
+  }
+
+  tryCatch({
+    yaml::read_yaml(yaml_file)
+  }, error = function(e) {
+    stop("Failed to load '", yaml_file, "': ", e$message)
+  })
 }
 
 #' Get default theme settings
@@ -1790,7 +1779,8 @@ add_boundary_polygons <- function(
   interactive,
   show_labels = FALSE
 ) {
-  style <- BOUNDARY_STYLES[[if (interactive) "interactive" else "static"]]
+  styles <- load_config("boundary-styles")
+  style <- styles[[if (interactive) "interactive" else "static"]]
 
   if (show_labels) {
     label <- ~NAME
@@ -1878,13 +1868,14 @@ add_map_controls <- function(
   }
 
   if (vignette && !is.null(vignette_overlay)) {
+    vignette_style <- load_config("vignette-style")
     map <- map |>
       addPolygons(
         data = vignette_overlay,
-        fillColor = VIGNETTE_STYLE$fillColor,
-        fillOpacity = VIGNETTE_STYLE$fillOpacity,
-        color = VIGNETTE_STYLE$color,
-        weight = VIGNETTE_STYLE$weight
+        fillColor = vignette_style$fillColor,
+        fillOpacity = vignette_style$fillOpacity,
+        color = vignette_style$color,
+        weight = vignette_style$weight
       )
   }
 
