@@ -133,11 +133,33 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 - **Lines:** ~0 saved, but improves maintainability
 - **Why flexible:** Simple pattern extraction (user could do), but touches multiple functions (Claude more efficient)
 
+**10. Extract Inline CSS to External Files** 🤖 **DELEGATE TO CLAUDE**
+- Move `mobile_css` strings from R code to external CSS files (lines 913-939, 1012-1112)
+- Banner mobile CSS: 27 lines inline → `inst/banner/mobile.css`
+- Legend mobile CSS: 101 lines inline → `inst/legend/mobile.css`
+- Create conditional file loader: `load_mobile_css(component, enabled)`
+- **Lines:** ~130 saved
+- **Why delegate:** Requires extracting CSS, creating new files, updating template system
+
+**11. Extract Inline HTML Snippets** 🤖 **DELEGATE TO CLAUDE**
+- Move HTML string literals to external templates
+- Banner container HTML (lines 1324-1330) → `inst/banner/container.html`
+- Other inline HTML fragments throughout
+- **Lines:** ~15 saved
+- **Why delegate:** Need to identify all HTML strings, extract patterns, update callers
+
+**12. Consolidate sprintf/paste0 Multi-line Patterns** ⚖️ **USER OR CLAUDE**
+- 40+ sprintf/paste0 calls, some with complex formatting
+- Extract reusable HTML/CSS builders: `build_html_tag(tag, content, attrs)`
+- Especially for repeated patterns like sprintf('<div class="%s">%s</div>', ...)
+- **Lines:** ~20 saved
+- **Why flexible:** Pattern is simple but widespread - user judgment call on value
+
 ### Impact
-- **Code reduction:** 2,295 → 1,985 lines
-- **Functions removed:** 9, new helpers: 2
-- **Risk level:** MEDIUM-HIGH - changes core rendering pipeline
-- **User testing needed:** Full regression testing - all map types, both HTML and image export, all themes
+- **Code reduction:** 2,295 → 1,820 lines (~20.7% reduction)
+- **Functions removed:** 9, new helpers: 2-4
+- **Risk level:** MEDIUM-HIGH - changes core rendering pipeline, externalizes embedded content
+- **User testing needed:** Full regression testing - all map types, both HTML and image export, all themes, mobile responsive behavior
 
 ---
 
@@ -152,28 +174,28 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 
 **All Option 3 changes PLUS:**
 
-**10. Introduce Map Builder Pattern** 🤖 **DELEGATE TO CLAUDE**
+**13. Introduce Map Builder Pattern** 🤖 **DELEGATE TO CLAUDE**
 - Replace procedural layer accumulation with builder: `MapBuilder$new()$add_layers()$add_controls()$render()`
 - Encapsulates HTML vs static differences in builder methods
 - Eliminates separate template creation and conditional branches
 - **Lines:** ~80 saved
 - **Why delegate:** Major architectural change requiring R6 class design, extensive refactoring
 
-**11. Strategy Pattern for Layer Types** 🤖 **DELEGATE TO CLAUDE**
+**14. Strategy Pattern for Layer Types** 🤖 **DELEGATE TO CLAUDE**
 - Create layer strategy classes: `BLLayerStrategy`, `DTLayerStrategy`, `SchoolLayerStrategy`
 - Each implements `prepare_data()`, `create_icons()`, `generate_labels()`
 - Replace switch statements in `prepare_generic_layer_data()` and related functions
 - **Lines:** ~40 saved (net - adds structure but removes duplication)
 - **Why delegate:** Design pattern implementation, requires creating multiple R6 classes and refactoring callers
 
-**12. Template Engine Consolidation** 🤖 **DELEGATE TO CLAUDE**
+**15. Template Engine Consolidation** 🤖 **DELEGATE TO CLAUDE**
 - Unify all template replacement logic into single engine
 - Replace multiple `apply_template_replacements()` calls with template registry
 - Currently: banner, legend, roller-menu each handle own templates
 - **Lines:** ~30 saved
 - **Why delegate:** Complex abstraction design, affects multiple subsystems
 
-**13. Configuration Registry** 🤖 **DELEGATE TO CLAUDE**
+**16. Configuration Registry** 🤖 **DELEGATE TO CLAUDE**
 - Centralize all `load_*()` functions into single registry pattern
 - `ConfigRegistry$get("theme", "merton")`, `ConfigRegistry$get("scale", "who_no2")`
 - Eliminates 5+ separate loader functions
@@ -181,9 +203,10 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 - **Why delegate:** Architectural pattern requiring R6 class, caching logic, error handling
 
 ### Impact
-- **Code reduction:** 2,295 → 1,795-1,895 lines
+- **Code reduction:** 2,295 → 1,595-1,695 lines (~26-30% reduction)
 - **Functions removed:** ~15
 - **New architecture:** Builder + Strategy + Registry patterns
+- **External files created:** Mobile CSS files, HTML template fragments
 - **Risk level:** HIGH - fundamental architectural change
 - **User testing needed:** Complete rewrite of test suite, extensive manual testing of all features, parallel development with feature freeze
 
@@ -201,8 +224,8 @@ The year loop (lines 2221-2311) processes HTML and IMAGE exports differently:
 |--------|-------------|------|--------|----------------|
 | **Option 1** | 220 (9.6%) | LOW | 4-6h | Want quick wins, minimal testing burden |
 | **Option 2** | 275 (12%) | MEDIUM | 8-12h | Balanced approach, moderate testing available |
-| **Option 3** | 310 (13.5%) | MED-HIGH | 12-16h | Have good test coverage, want architectural improvements |
-| **Option 4** | 400-500 (17-22%) | HIGH | 20-30h | Long-term investment, comprehensive test suite exists |
+| **Option 3** | 475 (20.7%) | MED-HIGH | 16-22h | Have good test coverage, want to externalize embedded content |
+| **Option 4** | 600-700 (26-30%) | HIGH | 30-40h | Long-term investment, comprehensive test suite exists |
 
 ---
 
@@ -279,12 +302,15 @@ These require code analysis, pattern extraction, or architectural design:
 | O2.5: Inline layer prep functions | Medium | ~35 | Medium |
 | O2.6: Simplify label hierarchy | High | ~20 | Medium |
 | O3.8: Restructure map pipeline | High | ~35 | Med-High |
-| O4.10-13: Architectural patterns | Very High | ~200 | High |
+| **O3.10: Extract inline CSS** | **Medium** | **~130** | **Medium** |
+| **O3.11: Extract inline HTML** | **Medium** | **~15** | **Low** |
+| O4.13-16: Architectural patterns | Very High | ~200 | High |
 
 ### ⚖️ Flexible Tasks (User Choice)
 | Task | If User Does | If Claude Does |
 |------|--------------|----------------|
 | O3.9: Parameterize image mode | Simple find/replace in 3 functions | Automated extraction + testing |
+| O3.12: Consolidate sprintf/paste0 | Manual refactoring of 40+ calls | Pattern-based automation |
 
 ---
 
