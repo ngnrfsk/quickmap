@@ -897,6 +897,33 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 }
 
 #' @keywords internal
+finalize_and_save_map <- function(map, html_file, borough_sf, vignette_overlay,
+                                  vignette, bbox, interactive, years, boundary_labels,
+                                  zoom_level, title, styling_type, show_banner,
+                                  banner_colour, colour_scale, autoplay, play_speed,
+                                  data_max, image_dimensions = NULL) {
+  map <- add_map_controls(
+    map, borough_sf, vignette_overlay, vignette, bbox,
+    interactive, years, boundary_labels, zoom_level
+  )
+
+  save_styled_map(
+    map, html_file, title, styling_type, show_banner,
+    banner_colour, colour_scale, !interactive, !interactive,
+    image_dimensions, autoplay, play_speed, data_max
+  )
+
+  if (!is.null(image_dimensions)) {
+    img_file <- sub("\\.html$", ".jpg", html_file)
+    webshot2::webshot(html_file, img_file,
+                     vwidth = image_dimensions[1],
+                     vheight = image_dimensions[2])
+    unlink(html_file)
+  }
+
+  return(map)
+}
+
 save_styled_map <- function(map, html_file, title, styling_type, show_banner,
                             banner_colour, colour_scale, collapsed_mobile,
                             image_mode, image_dimensions, autoplay, play_speed,
@@ -1859,67 +1886,35 @@ create_pollution_map <- function(
       )
 
       static_map <- generate_map_layers(
-        static_map,
-        measurement_layers,
-        "static_only",
-        pollutant,
-        colour_scale,
-        environment(),
-        marker_scale_factor
-      )
-
-      static_map <- add_map_controls(
-        static_map,
-        borough_sf,
-        vignette_overlay,
-        vignette,
-        bbox,
-        interactive = FALSE,
-        years = yr,
-        boundary_labels = boundary_labels,
-        zoom_level = theme$map$zoom_level
+        static_map, measurement_layers, "static_only",
+        pollutant, colour_scale, environment(), marker_scale_factor
       )
 
       file_parts <- tools::file_path_sans_ext(basename(output_file))
       html_file <- file.path("aq_maps", paste0(file_parts, "_", yr, ".html"))
-      img_file <- file.path("aq_maps", paste0(file_parts, "_", yr, ".jpg"))
 
-      save_styled_map(
-        static_map, html_file, title, styling_type, show_banner,
-        banner_colour, colour_scale, FALSE, TRUE,
-        c(map_width_px, map_height_px), autoplay, play_speed, data_max
+      finalize_and_save_map(
+        static_map, html_file, borough_sf, vignette_overlay,
+        vignette, bbox, FALSE, yr, boundary_labels, theme$map$zoom_level,
+        title, styling_type, show_banner, banner_colour, colour_scale,
+        autoplay, play_speed, data_max, c(map_width_px, map_height_px)
       )
-
-      webshot2::webshot(
-        url = html_file,
-        file = img_file,
-        vwidth = map_width_px,
-        vheight = map_height_px
-      )
-
-      unlink(html_file)
     }
   }
-
-  html_map <- add_map_controls(
-    html_map,
-    borough_sf,
-    vignette_overlay,
-    vignette,
-    bbox,
-    interactive = TRUE,
-    years = years,
-    boundary_labels = boundary_labels,
-    zoom_level = theme$map$zoom_level
-  )
 
   if (!is.null(output_file)) {
     html_file <- file.path("aq_maps", output_file)
 
-    save_styled_map(
-      html_map, html_file, title, styling_type, show_banner,
-      banner_colour, colour_scale, TRUE, FALSE, NULL,
-      autoplay, play_speed, data_max
+    html_map <- finalize_and_save_map(
+      html_map, html_file, borough_sf, vignette_overlay,
+      vignette, bbox, TRUE, years, boundary_labels, theme$map$zoom_level,
+      title, styling_type, show_banner, banner_colour, colour_scale,
+      autoplay, play_speed, data_max, NULL
+    )
+  } else {
+    html_map <- add_map_controls(
+      html_map, borough_sf, vignette_overlay, vignette, bbox,
+      TRUE, years, boundary_labels, theme$map$zoom_level
     )
   }
 
