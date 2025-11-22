@@ -1198,22 +1198,12 @@ create_generic_icons <- function(
     size = round(base_shape_config$size * image_scale_factor)
   )
 
-  colors <- switch(
-    layer_type,
-    "schools" = {
-      pal <- colorFactor(
-        palette = c("#1E90FF", "#32CD32"),
-        domain = unique(data$Level)
-      )
-      pal(data$Level)
-    },
-    "dt_sites" = {
-      sapply(data[[pollutant]], assign_colour, scale = colour_scale)
-    },
-    "bl_nodes" = {
-      sapply(data[[pollutant]], assign_colour, scale = colour_scale)
-    }
-  )
+  colors <- if (layer_type == "schools") {
+    pal <- colorFactor(c("#1E90FF", "#32CD32"), unique(data$Level))
+    pal(data$Level)
+  } else {
+    sapply(data[[pollutant]], assign_colour, scale = colour_scale)
+  }
 
   makeSymbolsSize(
     values = rep(1, length(colors)),
@@ -1227,13 +1217,7 @@ create_generic_icons <- function(
   )
 }
 
-#' Create layer configuration for map generation
-#' @param diffusion_tube_file Path to diffusion tube CSV file
-#' @param sensor_file Path to sensor RData file
-#' @param school_file Path to schools CSV file
-#' @param marker_labels Label display mode for all layers
-#' @return List of layer configurations with data sources and preparation functions
-#' @family layer
+#' @keywords internal
 get_measurement_layers <- function(
   diffusion_tube_file,
   sensor_file,
@@ -1246,7 +1230,6 @@ get_measurement_layers <- function(
       data_source = "bl_annual_means_sf",
       layer_type = "bl_nodes",
       temporal = TRUE,
-      prepare_function = "prepare_bl_layer_data",
       options = list(marker_labels = marker_labels)
     ),
     dt_sites = list(
@@ -1254,7 +1237,6 @@ get_measurement_layers <- function(
       data_source = "sf_data_wgs84",
       layer_type = "dt_sites",
       temporal = TRUE,
-      prepare_function = "prepare_dt_layer_data",
       options = list(marker_labels = marker_labels)
     ),
     schools = list(
@@ -1262,7 +1244,6 @@ get_measurement_layers <- function(
       data_source = "sf_schools_wgs84",
       layer_type = "schools",
       temporal = FALSE,
-      prepare_function = "prepare_static_layer_data",
       options = list(marker_labels = marker_labels)
     )
   )
@@ -1293,18 +1274,7 @@ prepare_generic_layer_data <- function(
 }
 
 
-#' Add a layer to the map with unified parameter handling
-#'
-#' @param map The leaflet map object
-#' @param layer_data The data for the layer including points and labels
-#' @param layer_config Configuration object containing layer_type and other
-#'   settings
-#' @param year The year for temporal layers (NULL for static layers)
-#' @param pollutant The pollutant type for relevant layers
-#' @param colour_scale The scale to use for icons
-#' @param label_sizing Scaling factor for label size (default 1.0)
-#' @return Updated map object with new layer
-#' @family map
+#' @keywords internal
 add_layer <- function(
   map,
   layer_data,
@@ -1544,19 +1514,7 @@ add_map_controls <- function(
   return(map)
 }
 
-#' Generate map layers for interactive or static maps
-#'
-#' Processes all configured layers (temporal and static) and adds them to the map
-#'
-#' @param base_map Leaflet map object to add layers to
-#' @param measurement_layers Layer configuration from get_measurement_layers()
-#' @param target_year Year to display (or "static_only" for static layers only)
-#' @param pollutant Pollutant name for coloring markers
-#' @param colour_scale Color scale name
-#' @param data_env Environment containing data objects
-#' @param image_scale_factor Scale factor for marker sizing (1.0 for HTML, >1.0 for images)
-#' @return Map with all layers added
-#' @family map
+#' @keywords internal
 create_base_map <- function(data, interactive = TRUE, base_tiles = NULL) {
   map <- leaflet(data, options = leafletOptions(
     zoomControl = interactive,
@@ -1571,6 +1529,7 @@ create_base_map <- function(data, interactive = TRUE, base_tiles = NULL) {
   }
 }
 
+#' @keywords internal
 generate_map_layers <- function(
   base_map,
   measurement_layers,
