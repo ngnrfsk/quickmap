@@ -1759,7 +1759,7 @@ determine_primary_data_and_years <- function(spatial_data, borough_sf, vignette,
 #'   boroughs = "Merton",
 #'   years = 2024,
 #'   export_image = TRUE,
-#'   theme_file = "inst/themes/merton_purple.yaml",
+#'   theme_file = "inst/themes/merton.yaml",
 #'   output_file = "merton_2024"
 #' )
 #'
