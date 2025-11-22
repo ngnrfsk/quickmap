@@ -19,7 +19,8 @@
       "WebFetch(domain:www.cssscript.com)",
       "WebFetch(domain:refreshless.com)",
       "WebFetch(domain:fdossena.com)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
