@@ -18,7 +18,8 @@
       "WebFetch(domain:codepen.io)",
       "WebFetch(domain:www.cssscript.com)",
       "WebFetch(domain:refreshless.com)",
-      "WebFetch(domain:fdossena.com)"
+      "WebFetch(domain:fdossena.com)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
