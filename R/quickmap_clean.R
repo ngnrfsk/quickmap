@@ -48,7 +48,7 @@ validate_oa_data <- function(data, pollutant) {
 process_oa_data <- function(data, pollutant) {
   validate_oa_data(data, pollutant)
 
-  # NOTE: Future enhancement - could display these as white disks with "Insufficient data" labels
+  # Future enhancement (see dev/FUTURE_ENHANCEMENTS.md #1): insufficient data markers
   missing_col <- paste0("missing_", pollutant)
   if (missing_col %in% names(data)) {
     n_before <- nrow(data)
@@ -255,8 +255,7 @@ import_csv_data <- function(
 }
 
 
-# TODO: Add input validation for boundary_names parameter to handle NULL, missing,
-# or invalid input gracefully. Currently assumes input is always valid.
+# TODO (see dev/FUTURE_ENHANCEMENTS.md #2): Add boundary_names validation
 get_boundary_sf <- function(boundary_names, crs = 4326) {
   config <- load_config("boundaries")
 
