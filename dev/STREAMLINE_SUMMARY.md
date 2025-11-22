@@ -30,17 +30,18 @@ Complete refactoring of `quickmap.R` to improve maintainability, reduce complexi
 - JavaScript now testable, debuggable, and syntax-highlighted
 - Reduction: 43 lines
 
-### Priority 2: Move Borough Palettes to YAML ✓
+### Priority 2: Integrate Palettes into Themes ✓
 **Impact:** High consistency improvement
 
-- Externalized 3 borough palettes to YAML files:
-  - `inst/config/palettes/merton.yaml`
-  - `inst/config/palettes/wandsworth.yaml`
-  - `inst/config/palettes/richmond.yaml`
-- Created `load_borough_palette()` function
-- Updated `show_borough_colours()` to use dynamic loading
-- Consistent with colour scales architecture
-- Net change: +4 lines (31 loader - 27 data)
+- Integrated borough palettes into existing theme files (not separate config)
+- Added `palette` section to 3 theme files:
+  - `inst/themes/merton_purple.yaml` (8 colors)
+  - `inst/themes/wandsworth_blue.yaml` (7 colors)
+  - `inst/themes/richmond_blue.yaml` (5 colors) - new theme created
+- Updated `show_borough_colours()` to read from theme files
+- Removed redundant `load_borough_palette()` function
+- Palettes now part of complete theme definitions (banner + legend + map + controls + palette)
+- Net change: -23 lines (removed separate palette system)
 
 ### Priority 3: Reduce Documentation Verbosity ✓
 **Impact:** High readability improvement
@@ -113,16 +114,12 @@ Complete refactoring of `quickmap.R` to improve maintainability, reduce complexi
 
 ## File Organization
 
-### New External Configuration (15 YAML files)
+### New External Configuration (12 YAML files)
 ```
 inst/config/
 ├── boundaries.yaml          # Boundary data config
 ├── boundary-styles.yaml     # Interactive/static styles
 ├── vignette-style.yaml      # Overlay styling
-├── palettes/
-│   ├── merton.yaml
-│   ├── richmond.yaml
-│   └── wandsworth.yaml
 └── scales/
     ├── deltas.yaml
     ├── gla_pm25.yaml
@@ -141,6 +138,17 @@ inst/controls/
 └── layer-cache.js          # Layer caching logic
 ```
 
+### Theme System Enhanced
+
+Extended existing 2 themes + created 1 new theme with palette sections:
+```
+inst/themes/
+├── high_contrast.yaml       # Existing
+├── merton_purple.yaml       # Extended with palette
+├── wandsworth_blue.yaml     # Extended with palette
+└── richmond_blue.yaml       # New theme with palette
+```
+
 ### Documentation
 ```
 dev/
@@ -153,7 +161,8 @@ dev/
 ## Code Quality Improvements
 
 ### Maintainability
-- **Configuration externalized:** All color scales, palettes, and styling in YAML
+- **Configuration externalized:** All color scales, boundaries, and styling in YAML
+- **Palettes integrated with themes:** Single source of truth for borough branding
 - **JavaScript extracted:** Testable, debuggable external files
 - **Generic loaders:** Consistent `load_*()` pattern throughout
 - **Reduced duplication:** DRY principle applied to data structures
