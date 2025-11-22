@@ -17,3 +17,12 @@ controls:
   play_speed: 1000
   background: "#01a7f5"
   text_color: "white"
+
+palette:
+  blue: "#01a7f5"
+  white: "#ffffff"
+  black: "#000000"
+  navy: "#306cb2"
+  orange: "#ff9c30"
+  green: "#159b48"
+  lime: "#83c44c"

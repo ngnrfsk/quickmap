@@ -20,7 +20,8 @@
       "WebFetch(domain:refreshless.com)",
       "WebFetch(domain:fdossena.com)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

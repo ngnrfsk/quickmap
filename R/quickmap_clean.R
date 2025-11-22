@@ -366,44 +366,52 @@ TITLE_STYLES <- list(
 )
 
 show_borough_colours <- function(borough = NULL) {
-  palette_dir <- system.file("config/palettes", package = "quickmap")
-  if (palette_dir == "") palette_dir <- "inst/config/palettes"
+  themes_dir <- system.file("themes", package = "quickmap")
+  if (themes_dir == "") themes_dir <- "inst/themes"
 
-  if (!dir.exists(palette_dir)) {
-    stop("Palette directory not found: ", palette_dir)
+  if (!dir.exists(themes_dir)) {
+    stop("Themes directory not found: ", themes_dir)
   }
 
-  available <- gsub("\\.yaml$", "", list.files(palette_dir, pattern = "\\.yaml$"))
+  available_files <- list.files(themes_dir, pattern = "\\.yaml$")
+  available <- gsub("\\.yaml$", "", available_files)
 
   if (is.null(borough)) {
     cat(
-      "Available boroughs:",
+      "Available borough themes:",
       paste(available, collapse = ", "),
       "\n"
     )
-    cat("Usage: show_borough_colours('merton')\n")
+    cat("Usage: show_borough_colours('merton_purple')\n")
     return(invisible(NULL))
   }
 
-  if (!tolower(borough) %in% available) {
+  theme_file <- file.path(themes_dir, paste0(borough, ".yaml"))
+  if (!file.exists(theme_file)) {
     stop(
-      "Borough '",
+      "Theme '",
       borough,
       "' not found. Available: ",
       paste(available, collapse = ", ")
     )
   }
 
-  colours <- load_borough_palette(borough)
+  theme <- yaml::read_yaml(theme_file)
+
+  if (is.null(theme$palette)) {
+    cat("Theme '", borough, "' has no palette section\n", sep = "")
+    return(invisible(NULL))
+  }
+
   cat("Colours for", borough, ":\n")
-  for (name in names(colours)) {
-    cat("  ", name, ": ", colours[[name]], "\n", sep = "")
+  for (name in names(theme$palette)) {
+    cat("  ", name, ": ", theme$palette[[name]], "\n", sep = "")
   }
   cat(
-    "\nUsage: load_borough_palette('",
+    "\nUsage: load_theme('inst/themes/",
     borough,
-    "')$",
-    names(colours)[1],
+    ".yaml')$palette$",
+    names(theme$palette)[1],
     "\n",
     sep = ""
   )
@@ -445,37 +453,6 @@ load_colour_scale <- function(scale_name) {
   scale
 }
 
-#' Load borough colour palette from YAML configuration file
-#' @param borough Character string, name of the borough (e.g., "merton", "wandsworth")
-#' @return Named list of colour values
-#' @family config
-load_borough_palette <- function(borough) {
-  if (!requireNamespace("yaml", quietly = TRUE)) {
-    stop("Package 'yaml' required for palettes. Install with: install.packages('yaml')")
-  }
-
-  palette_dir <- system.file("config/palettes", package = "quickmap")
-  if (palette_dir == "") palette_dir <- "inst/config/palettes"
-
-  if (!dir.exists(palette_dir)) {
-    stop("Palette directory not found: ", palette_dir)
-  }
-
-  yaml_file <- file.path(palette_dir, paste0(tolower(borough), ".yaml"))
-
-  if (!file.exists(yaml_file)) {
-    available <- gsub("\\.yaml$", "", list.files(palette_dir, pattern = "\\.yaml$"))
-    stop("Borough palette '", borough, "' not found. Available: ", paste(available, collapse = ", "))
-  }
-
-  palette <- tryCatch({
-    yaml::read_yaml(yaml_file)
-  }, error = function(e) {
-    stop("Failed to load '", yaml_file, "': ", e$message)
-  })
-
-  palette
-}
 
 #' Load configuration from YAML file
 #' @param config_name Name of config file (e.g., "boundaries", "boundary-styles")
@@ -508,7 +485,7 @@ load_config <- function(config_name) {
 get_default_theme <- function() {
   list(
     banner = list(
-      background = borough_palettes$merton$purple,
+      background = "#5F3E94",
       text_color = "white",
       title = "Air Quality Map"
     ),
