@@ -1740,6 +1740,40 @@ load_spatial_data_sources <- function(dt_file, sensor_file, school_file, polluta
   )
 }
 
+determine_primary_data_and_years <- function(spatial_data, borough_sf, vignette, requested_years) {
+  dt_data <- spatial_data$dt
+  sensor_data <- spatial_data$sensor
+
+  primary_data <- dt_data %||% sensor_data
+
+  if (!is.null(sensor_data) && !is.null(borough_sf) && vignette) {
+    sensor_data <- sensor_data |> st_filter(borough_sf, .predicate = st_intersects)
+  }
+
+  vignette_overlay <- if (vignette) create_vignette_overlay(borough_sf)
+  bbox <- st_bbox(borough_sf)
+
+  if (is.null(primary_data)) {
+    years <- requested_years %||% "static_only"
+    primary_data <- borough_sf
+  } else {
+    available_years <- unique(primary_data$year_str)
+    years <- if (is.null(requested_years)) {
+      available_years
+    } else {
+      intersect(requested_years, available_years)
+    }
+  }
+
+  list(
+    primary = primary_data,
+    sensor = sensor_data,
+    years = years,
+    vignette_overlay = vignette_overlay,
+    bbox = bbox
+  )
+}
+
 create_pollution_map <- function(
   diffusion_tube_file = "none",
   sensor_file = "none",
@@ -1793,38 +1827,19 @@ create_pollution_map <- function(
     diffusion_tube_file, sensor_file, school_file, pollutant
   )
 
-  sf_data_wgs84 <- spatial_data$dt
-  bl_annual_means_sf <- spatial_data$sensor
-  sf_schools_wgs84 <- spatial_data$school
-
-  if (diffusion_tube_file == "none" && !is.null(bl_annual_means_sf)) {
-    sf_data_wgs84 <- bl_annual_means_sf
-  }
-
-  if (sensor_file != "none" && !is.null(borough_sf) && vignette) {
-    bl_annual_means_sf <- bl_annual_means_sf |>
-      st_filter(borough_sf, .predicate = st_intersects)
-  }
-
   if (is.null(borough_sf)) return()
-  if (vignette) vignette_overlay <- create_vignette_overlay(borough_sf)
-  bbox <- st_bbox(borough_sf)
+
+  map_data <- determine_primary_data_and_years(
+    spatial_data, borough_sf, vignette, years
+  )
+
+  sf_data_wgs84 <- map_data$primary
+  bl_annual_means_sf <- map_data$sensor
+  sf_schools_wgs84 <- spatial_data$school
+  years <- map_data$years
+  vignette_overlay <- map_data$vignette_overlay
+  bbox <- map_data$bbox
   legend_info <- get_colour_legend(colour_scale)
-
-  if (diffusion_tube_file == "none") sf_data_wgs84 <- bl_annual_means_sf
-
-  if (diffusion_tube_file == "none" && sensor_file == "none") {
-    if (is.null(years)) {
-      years <- "static_only"
-    }
-    sf_data_wgs84 <- borough_sf
-  } else {
-    if (is.null(years)) {
-      years <- unique(sf_data_wgs84$year_str)
-    } else {
-      years <- intersect(years, unique(sf_data_wgs84$year_str))
-    }
-  }
 
   html_map <- create_base_map(sf_data_wgs84, TRUE, base_tiles_provider)
 
