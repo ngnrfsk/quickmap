@@ -1,7 +1,5 @@
-# Working, stable production codebase for quickmap ####
+# quickmap - Air Quality Mapping for R
 # Version 0.9.0.4
-
-#2345678901234567890123456789012345678901234567890123456789012345678901234567890 Hollerith limit
 
 packages <- c(
   "leaflet",
@@ -28,9 +26,30 @@ lapply(packages, library, character.only = TRUE)
 # All required packages are loaded via lapply() above.
 # Functions from dplyr, sf, leaflet, leaflegend, and other packages are available at runtime.
 
-# Sites with more than this percentage of missing data will be filtered out
-# Used by process_oa_data() to remove low-quality site-years
-MISSING_DATA_THRESHOLD <- 20 # Percent
+# Constants
+MISSING_DATA_THRESHOLD <- 20 # Percent - sites with more missing data are filtered
+REFERENCE_IMAGE_WIDTH <- 1200
+REFERENCE_IMAGE_HEIGHT <- 1200
+REFERENCE_IMAGE_AREA <- REFERENCE_IMAGE_WIDTH * REFERENCE_IMAGE_HEIGHT
+
+# Helper functions for DRY code patterns
+get_package_dir <- function(subdir) {
+  dir <- system.file(subdir, package = "quickmap")
+  if (dir == "") dir <- file.path("inst", subdir)
+  return(dir)
+}
+
+read_template_file <- function(filepath) {
+  paste(readLines(filepath, warn = FALSE), collapse = "\n")
+}
+
+apply_template_replacements <- function(template, replacements) {
+  result <- template
+  for (placeholder in names(replacements)) {
+    result <- gsub(placeholder, replacements[[placeholder]], result, fixed = TRUE)
+  }
+  return(result)
+}
 
 validate_oa_data <- function(data, pollutant) {
   required_cols <- c("siteCode", "year", pollutant, "lat", "lon")
@@ -157,7 +176,6 @@ get_temporal_data <- function(data, time_pattern = "\\d{4}") {
 #' @family layer
 get_data_maximum <- function(measurement_layers, pollutant, data_env, years = NULL) {
 
-  # Helper to extract pollutant column for a layer type
   get_pollutant_col <- function(layer_type) {
     switch(layer_type,
            "dt_sites" = "no2",
@@ -165,28 +183,23 @@ get_data_maximum <- function(measurement_layers, pollutant, data_env, years = NU
            NULL)
   }
 
-  # Collect max from each enabled temporal layer
   layer_maxima <- lapply(measurement_layers, function(layer_config) {
-    # Filter: only enabled temporal non-school layers
     if (!layer_config$enabled || !layer_config$temporal ||
         layer_config$layer_type == "schools") {
       return(NULL)
     }
 
-    # Get data source
     data <- tryCatch(
       get(layer_config$data_source, envir = data_env, inherits = FALSE),
       error = function(e) NULL
     )
     if (is.null(data) || nrow(data) == 0) return(NULL)
 
-    # Filter by years if specified
     if (!is.null(years) && "year_str" %in% names(data)) {
       data <- data[data$year_str %in% years, ]
       if (nrow(data) == 0) return(NULL)
     }
 
-    # Get pollutant column and compute max
     pollutant_col <- get_pollutant_col(layer_config$layer_type)
     if (is.null(pollutant_col) || !pollutant_col %in% names(data)) return(NULL)
 
@@ -194,7 +207,6 @@ get_data_maximum <- function(measurement_layers, pollutant, data_env, years = NU
     if (is.infinite(max_val) || is.nan(max_val)) NULL else max_val
   })
 
-  # Remove NULLs and compute overall max
   max_values <- unlist(Filter(Negate(is.null), layer_maxima))
 
   if (length(max_values) > 0) {
@@ -214,7 +226,7 @@ import_csv_data <- function(
   file_path,
   required_cols = c("Easting", "Northing")
 ) {
-  # If path is relative (doesn't start with / or ~), prepend DATA_PATH
+  # Prepend DATA_PATH if relative
   if (!grepl("^[/~]", file_path)) {
     file_path <- file.path(Sys.getenv("DATA_PATH"), file_path)
   }
@@ -353,8 +365,7 @@ TITLE_STYLES <- list(
 )
 
 show_borough_colours <- function(borough = NULL) {
-  themes_dir <- system.file("themes", package = "quickmap")
-  if (themes_dir == "") themes_dir <- "inst/themes"
+  themes_dir <- get_package_dir("themes")
 
   if (!dir.exists(themes_dir)) {
     stop("Themes directory not found: ", themes_dir)
@@ -413,8 +424,7 @@ load_colour_scale <- function(scale_name) {
     stop("Package 'yaml' required for colour scales. Install with: install.packages('yaml')")
   }
 
-  scale_dir <- system.file("config/scales", package = "quickmap")
-  if (scale_dir == "") scale_dir <- "inst/config/scales"
+  scale_dir <- get_package_dir("config/scales")
 
   if (!dir.exists(scale_dir)) {
     stop("Scale directory not found: ", scale_dir)
@@ -450,8 +460,7 @@ load_config <- function(config_name) {
     stop("Package 'yaml' required. Install with: install.packages('yaml')")
   }
 
-  config_dir <- system.file("config", package = "quickmap")
-  if (config_dir == "") config_dir <- "inst/config"
+  config_dir <- get_package_dir("config")
 
   yaml_file <- file.path(config_dir, paste0(config_name, ".yaml"))
 
@@ -769,15 +778,11 @@ generate_legend_html <- function(
     ''
   }
 
-  legend_dir <- system.file("legend", package = "quickmap")
-
-  if (legend_dir == "") {
-    legend_dir <- "inst/legend"
-  }
+  legend_dir <- get_package_dir("legend")
 
   html_file <- file.path(legend_dir, "legend.html")
 
-  html_template <- paste(readLines(html_file, warn = FALSE), collapse = "\n")
+  html_template <- read_template_file(html_file)
 
   sprintf(
     html_template,
@@ -850,15 +855,11 @@ get_contrast_text_color <- function(color) {
 #' @return Character string containing CSS wrapped in <style> tags
 #' @family css
 load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
-  banner_dir <- system.file("banner", package = "quickmap")
-
-  if (banner_dir == "") {
-    banner_dir <- "inst/banner"
-  }
+  banner_dir <- get_package_dir("banner")
 
   css_file <- file.path(banner_dir, "banner.css")
 
-  css_content <- paste(readLines(css_file, warn = FALSE), collapse = "\n")
+  css_content <- read_template_file(css_file)
 
   if (image_mode) {
     padding <- "2rem"
@@ -899,11 +900,13 @@ load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 }"
   }
 
-  css_content <- gsub("{{banner_bg}}", banner_colour, css_content, fixed = TRUE)
-  css_content <- gsub("{{padding}}", padding, css_content, fixed = TRUE)
-  css_content <- gsub("{{font_size}}", font_size, css_content, fixed = TRUE)
-  css_content <- gsub("{{font_weight}}", font_weight, css_content, fixed = TRUE)
-  css_content <- gsub("{{mobile_css}}", mobile_css, css_content, fixed = TRUE)
+  css_content <- apply_template_replacements(css_content, list(
+    "{{banner_bg}}" = banner_colour,
+    "{{padding}}" = padding,
+    "{{font_size}}" = font_size,
+    "{{font_weight}}" = font_weight,
+    "{{mobile_css}}" = mobile_css
+  ))
 
   return(sprintf("\n<style>\n%s\n</style>\n", css_content))
 }
@@ -935,15 +938,11 @@ load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 #' @return Character string containing CSS wrapped in <style> tags
 #' @family css
 load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
-  legend_dir <- system.file("legend", package = "quickmap")
-
-  if (legend_dir == "") {
-    legend_dir <- "inst/legend"
-  }
+  legend_dir <- get_package_dir("legend")
 
   css_file <- file.path(legend_dir, "legend.css")
 
-  css_content <- paste(readLines(css_file, warn = FALSE), collapse = "\n")
+  css_content <- read_template_file(css_file)
 
   legend_header_bg <- lighten_color(banner_colour, 85)
   legend_header_hover <- lighten_color(banner_colour, 75)
@@ -1071,17 +1070,19 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 }"
   }
 
-  css_content <- gsub("{{border_top}}", border_top, css_content, fixed = TRUE)
-  css_content <- gsub("{{container_padding}}", container_padding, css_content, fixed = TRUE)
-  css_content <- gsub("{{header_gap}}", header_gap, css_content, fixed = TRUE)
-  css_content <- gsub("{{header_font_size}}", header_font_size, css_content, fixed = TRUE)
-  css_content <- gsub("{{legend_header_bg}}", legend_header_bg, css_content, fixed = TRUE)
-  css_content <- gsub("{{legend_header_hover}}", legend_header_hover, css_content, fixed = TRUE)
-  css_content <- gsub("{{items_gap}}", items_gap, css_content, fixed = TRUE)
-  css_content <- gsub("{{items_font_size}}", items_font_size, css_content, fixed = TRUE)
-  css_content <- gsub("{{symbol_key_gap}}", symbol_key_gap, css_content, fixed = TRUE)
-  css_content <- gsub("{{symbol_key_font_size}}", symbol_key_font_size, css_content, fixed = TRUE)
-  css_content <- gsub("{{mobile_css}}", mobile_css, css_content, fixed = TRUE)
+  css_content <- apply_template_replacements(css_content, list(
+    "{{border_top}}" = border_top,
+    "{{container_padding}}" = container_padding,
+    "{{header_gap}}" = header_gap,
+    "{{header_font_size}}" = header_font_size,
+    "{{legend_header_bg}}" = legend_header_bg,
+    "{{legend_header_hover}}" = legend_header_hover,
+    "{{items_gap}}" = items_gap,
+    "{{items_font_size}}" = items_font_size,
+    "{{symbol_key_gap}}" = symbol_key_gap,
+    "{{symbol_key_font_size}}" = symbol_key_font_size,
+    "{{mobile_css}}" = mobile_css
+  ))
 
   return(sprintf("\n<style>\n%s\n</style>\n", css_content))
 }
@@ -1101,19 +1102,15 @@ load_roller_menu_control <- function(
   autoplay = FALSE,
   play_speed = 500
 ) {
-  controls_dir <- system.file("controls", package = "quickmap")
-
-  if (controls_dir == "") {
-    controls_dir <- "inst/controls"
-  }
+  controls_dir <- get_package_dir("controls")
 
   html_file <- file.path(controls_dir, "roller-menu.html")
   css_file <- file.path(controls_dir, "roller-menu.css")
   js_file <- file.path(controls_dir, "roller-menu.js")
 
-  html_content <- paste(readLines(html_file, warn = FALSE), collapse = "\n")
-  css_content <- paste(readLines(css_file, warn = FALSE), collapse = "\n")
-  js_content <- paste(readLines(js_file, warn = FALSE), collapse = "\n")
+  html_content <- read_template_file(html_file)
+  css_content <- read_template_file(css_file)
+  js_content <- read_template_file(js_file)
 
   accent_light <- lighten_color(banner_colour, 15)
   hover_tint <- lighten_color(banner_colour, 85)
@@ -1176,16 +1173,10 @@ load_roller_menu_control <- function(
 #' @return Character string containing JavaScript function for htmlwidgets::onRender()
 #' @family css
 load_layer_cache_js <- function() {
-  controls_dir <- system.file("controls", package = "quickmap")
-
-  if (controls_dir == "") {
-    controls_dir <- "inst/controls"
-  }
+  controls_dir <- get_package_dir("controls")
 
   js_file <- file.path(controls_dir, "layer-cache.js")
-  js_content <- paste(readLines(js_file, warn = FALSE), collapse = "\n")
-
-  return(js_content)
+  return(read_template_file(js_file))
 }
 
 #' Post-process saved HTML to add banner and external legend
@@ -1257,31 +1248,16 @@ apply_custom_layout_in_html <- function(
     header_padding <- 1.5 * scale_factor
     banner_padding <- 2.0 * scale_factor
 
-    custom_css <- gsub("1\\.8rem", paste0(banner_font_size, "rem"), custom_css)
-    custom_css <- gsub("1\\.3rem", paste0(symbol_size, "rem"), custom_css)
-    custom_css <- gsub("1\\.2rem", paste0(header_font_size, "rem"), custom_css)
-    custom_css <- gsub("1rem", paste0(legend_font_size, "rem"), custom_css)
-
-    custom_css <- gsub(
-      "18\\.75rem",
-      paste0(legend_max_height, "rem"),
-      custom_css
-    )
-    custom_css <- gsub(
-      "padding: 1\\.5rem 2rem",
-      paste0("padding: ", header_padding, "rem ", banner_padding, "rem"),
-      custom_css
-    )
-    custom_css <- gsub(
-      "padding: 1rem",
-      paste0("padding: ", legend_padding, "rem"),
-      custom_css
-    )
-    custom_css <- gsub(
-      "gap: 1rem",
-      paste0("gap: ", legend_gap, "rem"),
-      custom_css
-    )
+    custom_css <- apply_template_replacements(custom_css, list(
+      "1\\.8rem" = paste0(banner_font_size, "rem"),
+      "1\\.3rem" = paste0(symbol_size, "rem"),
+      "1\\.2rem" = paste0(header_font_size, "rem"),
+      "1rem" = paste0(legend_font_size, "rem"),
+      "18\\.75rem" = paste0(legend_max_height, "rem"),
+      "padding: 1\\.5rem 2rem" = paste0("padding: ", header_padding, "rem ", banner_padding, "rem"),
+      "padding: 1rem" = paste0("padding: ", legend_padding, "rem"),
+      "gap: 1rem" = paste0("gap: ", legend_gap, "rem")
+    ))
   }
 
   html_text <- sub(
@@ -1547,7 +1523,7 @@ add_layer <- function(
 
   label_text_size <- as.character(12 * label_sizing)
 
-  # "values_on" and "labels_on" make labels always visible, others use auto-hide
+  # Always-visible labels for values_on/labels_on
   no_hide <- marker_labels %in% c("values_on", "labels_on")
 
   label_opts <- labelOptions(
@@ -1917,7 +1893,6 @@ generate_map_layers <- function(
       )
     }
   }
-  print(paste("Setting visible layer:", layer_name))
   base_map <- base_map %>%
     showGroup(layer_name)
   return(base_map)
@@ -2087,9 +2062,7 @@ create_pollution_map <- function(
       c("Easting", "Northing")
     )
     if (!is.null(school_result)) {
-      # nolint start: object_usage_linter
       sf_schools_wgs84 <- school_result$data |> transform_to_wgs84()
-      # nolint end
     } else {
       school_file <- "none"
     }
