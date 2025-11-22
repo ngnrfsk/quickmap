@@ -1213,6 +1213,24 @@ load_roller_menu_control <- function(
   return(combined)
 }
 
+#' Load layer cache JavaScript for year control
+#'
+#' Loads external JavaScript file for caching and managing map layers by year
+#'
+#' @return Character string containing JavaScript function for htmlwidgets::onRender()
+load_layer_cache_js <- function() {
+  controls_dir <- system.file("controls", package = "quickmap")
+
+  if (controls_dir == "") {
+    controls_dir <- "inst/controls"
+  }
+
+  js_file <- file.path(controls_dir, "layer-cache.js")
+  js_content <- paste(readLines(js_file, warn = FALSE), collapse = "\n")
+
+  return(js_content)
+}
+
 #' Post-process saved HTML to add banner and external legend
 #'
 #' Modifies an existing HTML file in place to add:
@@ -1846,49 +1864,7 @@ add_map_controls <- function(
   baseGroups <- if (interactive && length(years) >= 1) years else NULL
   if (!is.null(baseGroups)) {
     map <- map %>%
-      htmlwidgets::onRender(
-        "
-        function(el, x) {
-          var map = this;
-          var layersByGroup = {};
-          var latestYear = null;
-
-          // STAGE 1: Cache all layers by group (all visible at this point)
-          map.eachLayer(function(layer) {
-            if (layer.options && layer.options.group) {
-              var group = String(layer.options.group);
-              if (!layersByGroup[group]) {
-                layersByGroup[group] = [];
-              }
-              layersByGroup[group].push(layer);
-
-              // Track latest year
-              if (!latestYear || parseInt(group) > parseInt(latestYear)) {
-                latestYear = group;
-              }
-            }
-          });
-
-          // Store globally for slider access
-          window.quickmapLayerCache = layersByGroup;
-
-          // STAGE 2: Hide all years except latest
-          Object.keys(layersByGroup).forEach(function(yr) {
-            if (yr !== latestYear) {
-              layersByGroup[yr].forEach(function(layer) {
-                map.removeLayer(layer);
-              });
-            }
-          });
-
-          console.log('Layer cache initialized:', Object.keys(layersByGroup).reduce(function(acc, k) {
-            acc[k] = layersByGroup[k].length;
-            return acc;
-          }, {}));
-          console.log('Default year visible:', latestYear);
-        }
-      "
-      )
+      htmlwidgets::onRender(load_layer_cache_js())
   }
 
   if (vignette && !is.null(vignette_overlay)) {
