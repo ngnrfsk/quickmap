@@ -1632,77 +1632,6 @@ generate_map_layers <- function(
   return(base_map)
 }
 
-
-#' Create interactive and/or static pollution maps
-#'
-#' Main function to create Leaflet maps showing air pollution data with optional
-#' schools overlay. Generates both interactive HTML maps and static JPG exports.
-#'
-#' @param diffusion_tube_file CSV file with Easting/Northing columns and year columns (or "none"). Prepends DATA_PATH if set.
-#' @param sensor_file RData file with 'dataOAformat' object (or "none"). Prepends DATA_PATH if set.
-#' @param school_file CSV file with Easting/Northing/Level/School columns (or "none"). Prepends DATA_PATH if set.
-#' @param output_file Output filename (without extension). Saved to 'aq_maps/' directory.
-#' @param image_export If TRUE, generates static JPG exports in addition to interactive HTML.
-#' @param map_width_px Width in pixels for JPG exports (default: 1200).
-#' @param map_height_px Height in pixels for JPG exports (default: 1200).
-#' @param boroughs Borough name(s) for boundary display and data filtering (required).
-#' @param pollutant Pollutant type: "no2" or "pm25" (default: "no2").
-#' @param years Years to display. NULL uses all available years from data.
-#' @param vignette If TRUE, darkens areas outside borough(s). Default: NULL (uses theme).
-#' @param colour_scale Color scale name (default: "who_no2"). See \code{load_colour_scale()} for options.
-#' @param marker_labels Control label visibility. Options: FALSE (no labels), TRUE (values on hover),
-#'   "values_on" (values always visible), "labels" (custom labels on hover), "labels_on" (custom labels always visible).
-#'   Default: NULL (uses theme).
-#' @param title Page title and banner text. Default: NULL (uses theme).
-#' @param styling_type Controls banner/legend display: "html" (default) or "none".
-#' @param boundary_labels If TRUE, shows borough boundary labels. Default: NULL (uses theme).
-#' @param banner_colour Color for banner and vignette. Default: NULL (uses theme).
-#' @param autoplay Auto-start year animation on load. Default: NULL (uses theme).
-#' @param play_speed Milliseconds per year during animation. Default: NULL (uses theme).
-#' @param theme_file Path to YAML theme file (default: NULL). See inst/themes/ for examples.
-#'
-#' @return Invisible Leaflet map object. Side effects: Saves HTML to \code{aq_maps/}.
-#'   If \code{image_export=TRUE}, also saves JPG files (one per year).
-#'
-#' @details
-#' \strong{Data Sources:} Diffusion tubes (CSV), Breathe London sensors (RData), Schools (CSV)
-#'
-#' \strong{Coordinate Systems:} Input uses British National Grid (EPSG:27700), output WGS84 (EPSG:4326)
-#'
-#' \strong{Setup:} Set \code{Sys.setenv(DATA_PATH = "~/path/to/data")} before use
-#'
-#' \strong{Markers:} Circles (DT sites), diamonds (BL nodes), crosses (schools). Automatically scaled for static exports.
-#'
-#' @examples
-#' # Basic interactive map
-#' Sys.setenv(DATA_PATH = "~/data")
-#' create_pollution_map(
-#'   diffusion_tube_file = "wandsworth_2017_2024.csv",
-#'   school_file = "schools_Wandsworth.csv",
-#'   boroughs = "Wandsworth",
-#'   years = 2024,
-#'   output_file = "wandsworth_2024.html"
-#' )
-#'
-#' # Static JPG export with theme
-#' create_pollution_map(
-#'   diffusion_tube_file = "data.csv",
-#'   boroughs = "Merton",
-#'   years = 2024,
-#'   image_export = TRUE,
-#'   theme_file = "inst/themes/merton_purple.yaml",
-#'   output_file = "merton_2024"
-#' )
-#'
-#' @note
-#' \itemize{
-#'   \item Set \code{DATA_PATH} environment variable before use
-#'   \item Year columns in CSV: YYYY format (e.g., "2024")
-#'   \item Static JPG exports require Chrome/Chromium for webshot2
-#'   \item Use \code{show_borough_colours()} to list available borough palettes
-#' }
-#'
-#' @family map
 parse_export_params <- function(export_image) {
   if (is.null(export_image)) {
     list(enabled = FALSE, width = IMAGE_X, height = IMAGE_Y)
@@ -1774,6 +1703,76 @@ determine_primary_data_and_years <- function(spatial_data, borough_sf, vignette,
   )
 }
 
+#' Create interactive and/or static pollution maps
+#'
+#' Main function to create Leaflet maps showing air pollution data with optional
+#' schools overlay. Generates both interactive HTML maps and static JPG exports.
+#'
+#' @param diffusion_tube_file CSV file with Easting/Northing columns and year columns (or "none"). Prepends DATA_PATH if set.
+#' @param sensor_file RData file with 'dataOAformat' object (or "none"). Prepends DATA_PATH if set.
+#' @param school_file CSV file with Easting/Northing/Level/School columns (or "none"). Prepends DATA_PATH if set.
+#' @param output_file Output filename (without extension). Saved to 'aq_maps/' directory.
+#' @param image_export If TRUE, generates static JPG exports in addition to interactive HTML.
+#' @param map_width_px Width in pixels for JPG exports (default: 1200).
+#' @param map_height_px Height in pixels for JPG exports (default: 1200).
+#' @param boroughs Borough name(s) for boundary display and data filtering (required).
+#' @param pollutant Pollutant type: "no2" or "pm25" (default: "no2").
+#' @param years Years to display. NULL uses all available years from data.
+#' @param vignette If TRUE, darkens areas outside borough(s). Default: NULL (uses theme).
+#' @param colour_scale Color scale name (default: "who_no2"). See \code{load_colour_scale()} for options.
+#' @param marker_labels Control label visibility. Options: FALSE (no labels), TRUE (values on hover),
+#'   "values_on" (values always visible), "labels" (custom labels on hover), "labels_on" (custom labels always visible).
+#'   Default: NULL (uses theme).
+#' @param title Page title and banner text. Default: NULL (uses theme).
+#' @param styling_type Controls banner/legend display: "html" (default) or "none".
+#' @param boundary_labels If TRUE, shows borough boundary labels. Default: NULL (uses theme).
+#' @param banner_colour Color for banner and vignette. Default: NULL (uses theme).
+#' @param autoplay Auto-start year animation on load. Default: NULL (uses theme).
+#' @param play_speed Milliseconds per year during animation. Default: NULL (uses theme).
+#' @param theme_file Path to YAML theme file (default: NULL). See inst/themes/ for examples.
+#'
+#' @return Invisible Leaflet map object. Side effects: Saves HTML to \code{aq_maps/}.
+#'   If \code{image_export=TRUE}, also saves JPG files (one per year).
+#'
+#' @details
+#' \strong{Data Sources:} Diffusion tubes (CSV), Breathe London sensors (RData), Schools (CSV)
+#'
+#' \strong{Coordinate Systems:} Input uses British National Grid (EPSG:27700), output WGS84 (EPSG:4326)
+#'
+#' \strong{Setup:} Set \code{Sys.setenv(DATA_PATH = "~/path/to/data")} before use
+#'
+#' \strong{Markers:} Circles (DT sites), diamonds (BL nodes), crosses (schools). Automatically scaled for static exports.
+#'
+#' @examples
+#' # Basic interactive map
+#' Sys.setenv(DATA_PATH = "~/data")
+#' create_pollution_map(
+#'   diffusion_tube_file = "wandsworth_2017_2024.csv",
+#'   school_file = "schools_Wandsworth.csv",
+#'   boroughs = "Wandsworth",
+#'   years = 2024,
+#'   output_file = "wandsworth_2024.html"
+#' )
+#'
+#' # Static JPG export with theme
+#' create_pollution_map(
+#'   diffusion_tube_file = "data.csv",
+#'   boroughs = "Merton",
+#'   years = 2024,
+#'   image_export = TRUE,
+#'   theme_file = "inst/themes/merton_purple.yaml",
+#'   output_file = "merton_2024"
+#' )
+#'
+#' @note
+#' \itemize{
+#'   \item Set \code{DATA_PATH} environment variable before use
+#'   \item Year columns in CSV: YYYY format (e.g., "2024")
+#'   \item Static JPG exports require Chrome/Chromium for webshot2
+#'   \item Use \code{show_borough_colours()} to list available borough palettes
+#' }
+#'
+#' @family map
 create_pollution_map <- function(
   diffusion_tube_file = "none",
   sensor_file = "none",
