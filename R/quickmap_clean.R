@@ -920,7 +920,7 @@ finalize_and_save_map <- function(map, html_file, borough_sf, vignette_overlay,
   save_styled_map(
     map, html_file, title, styling_type, show_banner,
     banner_colour, colour_scale, !interactive, !interactive,
-    image_dimensions, autoplay, play_speed, data_max
+    image_dimensions, autoplay, play_speed, data_max, years
   )
 
   if (!is.null(image_dimensions)) {
@@ -937,7 +937,7 @@ finalize_and_save_map <- function(map, html_file, borough_sf, vignette_overlay,
 save_styled_map <- function(map, html_file, title, styling_type, show_banner,
                             banner_colour, colour_scale, collapsed_mobile,
                             image_mode, image_dimensions, autoplay, play_speed,
-                            data_max) {
+                            data_max, years = NULL) {
   htmlwidgets::saveWidget(
     map,
     file = html_file,
@@ -958,7 +958,8 @@ save_styled_map <- function(map, html_file, title, styling_type, show_banner,
           image_dimensions = image_dimensions,
           autoplay = autoplay,
           play_speed = play_speed,
-          data_max = data_max
+          data_max = data_max,
+          years = years
         )
       },
       error = function(e) {
@@ -977,7 +978,9 @@ save_styled_map <- function(map, html_file, title, styling_type, show_banner,
 load_roller_menu_control <- function(
   banner_colour = "#2c3e50",
   autoplay = FALSE,
-  play_speed = 500
+  play_speed = 500,
+  image_mode = FALSE,
+  years = NULL
 ) {
   controls_dir <- get_package_dir("controls")
 
@@ -988,6 +991,27 @@ load_roller_menu_control <- function(
   html_content <- read_template_file(html_file)
   css_content <- read_template_file(css_file)
   js_content <- read_template_file(js_file)
+
+  if (image_mode) {
+    html_content <- gsub(
+      '<button id="playPauseButton"[^>]*>.*?</button>',
+      '',
+      html_content
+    )
+    html_content <- gsub(
+      '<span class="arrow">▼</span>',
+      '',
+      html_content
+    )
+    if (!is.null(years) && length(years) > 0) {
+      year_text <- as.character(years[1])
+      html_content <- gsub(
+        '<span id="selectedYear"></span>',
+        sprintf('<span id="selectedYear">%s</span>', year_text),
+        html_content
+      )
+    }
+  }
 
   accent_light <- lighten_color(banner_colour, 15)
   hover_tint <- lighten_color(banner_colour, 85)
@@ -1083,7 +1107,8 @@ apply_custom_layout_in_html <- function(
   image_dimensions = c(IMAGE_X, IMAGE_Y),
   autoplay = FALSE,
   play_speed = 500,
-  data_max = NULL
+  data_max = NULL,
+  years = NULL
 ) {
   if (!file.exists(html_file)) {
     stop("HTML file not found: ", html_file)
@@ -1161,7 +1186,9 @@ apply_custom_layout_in_html <- function(
   roller_menu_html <- load_roller_menu_control(
     banner_colour,
     autoplay,
-    play_speed
+    play_speed,
+    image_mode,
+    years
   )
 
   legend_html <- generate_legend_html(scale_name, collapsed_mobile, data_max)
