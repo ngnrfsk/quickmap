@@ -1,22 +1,20 @@
 # QuickMap Theme System Guide
 
-**Date:** 2025-01-22
-**Version:** 0.9.0.4+
-**Feature:** YAML-based theme configuration system
+**Date:** 2025-01-22 **Version:** 0.9.0.4+ **Feature:** YAML-based theme configuration system
 
----
+------------------------------------------------------------------------
 
 ## Summary
 
 The theme system provides centralized configuration for map styling via YAML files in `inst/themes/`. Each theme file contains 5 sections controlling all visual aspects of pollution maps, with an optional `palette` section for borough brand colors.
 
----
+------------------------------------------------------------------------
 
 ## Theme File Structure
 
 Each YAML theme file contains these sections:
 
-```yaml
+``` yaml
 banner:                    # Top banner styling
   background: "#5F3E94"
   text_color: "white"
@@ -46,20 +44,20 @@ palette:                   # Borough brand colors (optional)
   # ... additional colors
 ```
 
----
+------------------------------------------------------------------------
 
 ## Available Themes
 
 Current themes in `inst/themes/`:
 
-| Theme File | Borough | Primary Color | Palette Colors |
-|------------|---------|---------------|----------------|
-| `merton_purple.yaml` | Merton | Purple #5F3E94 | 8 colors |
-| `wandsworth_blue.yaml` | Wandsworth | Blue #01a7f5 | 7 colors |
-| `richmond_blue.yaml` | Richmond | Blue #005794 | 5 colors |
-| `high_contrast.yaml` | Accessibility | Purple #5F3E94 | None |
+| Theme File           | Borough       | Primary Color  | Palette Colors |
+|----------------------|---------------|----------------|----------------|
+| `merton.yaml`        | Merton        | Purple #5F3E94 | 8 colors       |
+| `wandsworth.yaml`    | Wandsworth    | Blue #01a7f5   | 7 colors       |
+| `richmond.yaml`      | Richmond      | Blue #005794   | 5 colors       |
+| `high_contrast.yaml` | Accessibility | Purple #5F3E94 | None           |
 
----
+------------------------------------------------------------------------
 
 ## Usage Patterns
 
@@ -67,16 +65,16 @@ Current themes in `inst/themes/`:
 
 List available themes and view their colors:
 
-```r
+``` r
 # List all available themes
 show_borough_colours()
-# Output: Available borough themes: high_contrast, merton_purple,
-#         richmond_blue, wandsworth_blue
+# Output: Available borough themes: high_contrast, merton,
+#         richmond, wandsworth
 
 # View a specific theme's palette
-show_borough_colours("merton_purple")
+show_borough_colours("merton")
 # Output:
-# Colours for merton_purple:
+# Colours for merton:
 #   purple: #5F3E94
 #   green: #078141
 #   black: #000000
@@ -86,16 +84,16 @@ show_borough_colours("merton_purple")
 #   lime: #39b54a
 #   pink: #b94090
 #
-# Usage: load_theme('inst/themes/merton_purple.yaml')$palette$purple
+# Usage: load_theme('inst/themes/merton.yaml')$palette$purple
 ```
 
 ### Pattern 2: Load Theme Data
 
 Access theme settings programmatically:
 
-```r
+``` r
 # Load entire theme
-theme <- load_theme("inst/themes/merton_purple.yaml")
+theme <- load_theme("inst/themes/merton.yaml")
 
 # Access theme components
 theme$banner$background     # "#5F3E94"
@@ -110,11 +108,11 @@ theme$controls$autoplay     # FALSE
 
 Apply all theme settings to a map:
 
-```r
+``` r
 create_pollution_map(
   diffusion_tube_file = "data.csv",
   boroughs = "Merton",
-  theme_file = "inst/themes/merton_purple.yaml"
+  theme_file = "inst/themes/merton.yaml"
   # All styling automatically applied from theme:
   #   - banner background/text/title
   #   - legend visibility/background
@@ -128,13 +126,13 @@ create_pollution_map(
 
 Use theme with parameter overrides:
 
-```r
-theme <- load_theme("inst/themes/merton_purple.yaml")
+``` r
+theme <- load_theme("inst/themes/merton.yaml")
 
 create_pollution_map(
   diffusion_tube_file = "data.csv",
   boroughs = "Merton",
-  theme_file = "inst/themes/merton_purple.yaml",
+  theme_file = "inst/themes/merton.yaml",
   banner_colour = theme$palette$green,  # Override to green
   vignette = FALSE,                      # Override vignette
   autoplay = TRUE                        # Override autoplay
@@ -145,8 +143,8 @@ create_pollution_map(
 
 Use palette colors without applying full theme:
 
-```r
-theme <- load_theme("inst/themes/wandsworth_blue.yaml")
+``` r
+theme <- load_theme("inst/themes/wandsworth.yaml")
 
 create_pollution_map(
   diffusion_tube_file = "data.csv",
@@ -163,8 +161,8 @@ create_pollution_map(
 
 Use palette colors in ggplot2:
 
-```r
-theme <- load_theme("inst/themes/merton_purple.yaml")
+``` r
+theme <- load_theme("inst/themes/merton.yaml")
 
 ggplot(data, aes(x = year, y = no2)) +
   geom_line(color = theme$palette$purple) +
@@ -175,21 +173,21 @@ ggplot(data, aes(x = year, y = no2)) +
   )
 ```
 
----
+------------------------------------------------------------------------
 
 ## Parameter Override Priority
 
 When calling `create_pollution_map()`, parameters are resolved in this order:
 
-1. **Explicit parameters** (highest) - values passed directly to function
-2. **Theme file values** (medium) - values from YAML if `theme_file` specified
-3. **Function defaults** (lowest) - hardcoded fallback values
+1.  **Explicit parameters** (highest) - values passed directly to function
+2.  **Theme file values** (medium) - values from YAML if `theme_file` specified
+3.  **Function defaults** (lowest) - hardcoded fallback values
 
 **Example:**
 
-```r
+``` r
 create_pollution_map(
-  theme_file = "inst/themes/merton_purple.yaml",  # Sets banner_colour = "#5F3E94"
+  theme_file = "inst/themes/merton.yaml",  # Sets banner_colour = "#5F3E94"
   banner_colour = "#078141"                        # OVERRIDES to green
 )
 # Result: banner is GREEN (explicit parameter wins)
@@ -197,7 +195,7 @@ create_pollution_map(
 
 **Implementation** (R/quickmap_clean.R:2008-2030):
 
-```r
+``` r
 theme <- load_theme(theme_file)
 
 if (is.null(banner_colour)) {
@@ -209,17 +207,17 @@ if (is.null(vignette)) {
 # ... similar logic for all theme-controlled parameters
 ```
 
----
+------------------------------------------------------------------------
 
 ## Key Functions
 
 | Function | Purpose | Returns |
-|----------|---------|---------|
+|--------------------------|-----------------------|-----------------------|
 | `load_theme(path)` | Load complete theme from YAML file | List with 5 sections (banner, legend, map, controls, palette) |
 | `get_default_theme()` | Get hardcoded fallback defaults | Default theme list |
 | `show_borough_colours(name)` | Display palette colors interactively | Prints to console with usage examples |
 
----
+------------------------------------------------------------------------
 
 ## Creating a New Theme
 
@@ -227,13 +225,13 @@ To create a custom borough theme:
 
 **Step 1:** Copy existing theme template
 
-```bash
-cp inst/themes/merton_purple.yaml inst/themes/my_borough.yaml
+``` bash
+cp inst/themes/merton.yaml inst/themes/my_borough.yaml
 ```
 
 **Step 2:** Edit the 5 required sections
 
-```yaml
+``` yaml
 banner:
   background: "#YOUR_PRIMARY_COLOR"
   text_color: "white"
@@ -265,7 +263,7 @@ palette:
 
 **Step 3:** Test the theme
 
-```r
+``` r
 # Verify it loads
 theme <- load_theme("inst/themes/my_borough.yaml")
 print(theme)
@@ -281,7 +279,7 @@ create_pollution_map(
 )
 ```
 
----
+------------------------------------------------------------------------
 
 ## Migration from v0.9.0.3
 
@@ -289,7 +287,7 @@ The palette system replaced the old `borough_palettes` nested list in v0.9.0.4.
 
 ### Before (v0.9.0.3)
 
-```r
+``` r
 # Hardcoded nested list in R code
 borough_palettes <- list(
   merton = list(
@@ -304,34 +302,34 @@ banner_colour <- borough_palettes[["merton"]][["purple"]]
 
 ### After (v0.9.0.4+)
 
-```r
-# YAML theme file: inst/themes/merton_purple.yaml
+``` r
+# YAML theme file: inst/themes/merton.yaml
 # palette:
 #   purple: "#5F3E94"
 #   green: "#078141"
 
 # Access colors
-theme <- load_theme("inst/themes/merton_purple.yaml")
+theme <- load_theme("inst/themes/merton.yaml")
 banner_colour <- theme$palette$purple
 ```
 
 ### Why the Change?
 
 | Benefit | Description |
-|---------|-------------|
+|------------------------------|------------------------------------------|
 | **Single source of truth** | Palette is part of complete theme (banner + legend + map + palette) |
 | **Consistency** | All styling in one YAML file, not split across R code |
 | **Discoverability** | `show_borough_colours()` lists themes and shows usage |
 | **Maintainability** | YAML files easier to edit than nested R lists |
 | **Extensibility** | Add new themes without modifying code |
 
----
+------------------------------------------------------------------------
 
 ## Advanced: Programmatic Access
 
 For scripts that process multiple themes:
 
-```r
+``` r
 # Get all theme files
 themes_dir <- system.file("themes", package = "quickmap")
 if (themes_dir == "") themes_dir <- "inst/themes"
@@ -342,8 +340,8 @@ all_themes <- lapply(theme_files, load_theme)
 names(all_themes) <- gsub("\\.yaml$", "", basename(theme_files))
 
 # Access specific theme
-merton_colors <- all_themes$merton_purple$palette
-wandsworth_banner <- all_themes$wandsworth_blue$banner$background
+merton_colors <- all_themes$merton$palette
+wandsworth_banner <- all_themes$wandsworth$banner$background
 
 # Generate maps for all themes
 for (theme_name in names(all_themes)) {
@@ -357,13 +355,13 @@ for (theme_name in names(all_themes)) {
 }
 ```
 
----
+------------------------------------------------------------------------
 
 ## Troubleshooting
 
 ### Theme file not found
 
-```r
+``` r
 # Check if file exists
 file.exists("inst/themes/my_theme.yaml")
 
@@ -376,7 +374,7 @@ show_borough_colours()
 
 ### Palette section missing
 
-```r
+``` r
 theme <- load_theme("inst/themes/high_contrast.yaml")
 
 if (is.null(theme$palette)) {
@@ -388,22 +386,22 @@ if (is.null(theme$palette)) {
 
 ### Color not applying to map
 
-```r
+``` r
 # Verify theme loads correctly
-theme <- load_theme("inst/themes/merton_purple.yaml")
+theme <- load_theme("inst/themes/merton.yaml")
 print(theme$banner$background)  # Should print hex color like "#5F3E94"
 
 # Check parameter override order
 # Explicit parameters ALWAYS override theme values
 create_pollution_map(
-  theme_file = "inst/themes/merton_purple.yaml",  # Sets purple banner
+  theme_file = "inst/themes/merton.yaml",  # Sets purple banner
   banner_colour = "#FF0000"                        # OVERRIDES to red
 )
 ```
 
 ### Invalid YAML syntax
 
-```r
+``` r
 # If load_theme() returns defaults with warning, check YAML syntax
 theme <- load_theme("inst/themes/my_theme.yaml")
 # Warning: Failed to load theme file: <error details>
@@ -413,10 +411,10 @@ yaml::read_yaml("inst/themes/my_theme.yaml")
 # Fix indentation, colons, quotes, etc.
 ```
 
----
+------------------------------------------------------------------------
 
 ## See Also
 
-- `vignettes/v0.9.0_parameter_changes.md` - Parameter simplification in v0.9.0
-- `dev/STREAMLINE_SUMMARY.md` - Complete refactoring summary (streamline branch)
-- `inst/config/scales/` - YAML color scale definitions for pollution thresholds
+-   `vignettes/v0.9.0_parameter_changes.md` - Parameter simplification in v0.9.0
+-   `dev/STREAMLINE_SUMMARY.md` - Complete refactoring summary (streamline branch)
+-   `inst/config/scales/` - YAML color scale definitions for pollution thresholds
