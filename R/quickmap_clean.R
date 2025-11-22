@@ -1274,26 +1274,22 @@ prepare_generic_layer_data <- function(
   pollutant = NULL,
   colour_scale = NULL
 ) {
+  if (nrow(year_data) == 0) return(NULL)
+
   show_labels <- if (!is.null(layer_config$options))
     layer_config$options$marker_labels else FALSE
 
-  switch(
-    layer_config$layer_type,
-    "bl_nodes" = {
-      if (nrow(year_data) == 0) return(NULL)
-      labels <- generate_marker_labels(year_data, pollutant, show_labels, "bl_nodes")
-      list(data = year_data, labels = labels)
-    },
-    "dt_sites" = {
-      labels <- generate_marker_labels(year_data, pollutant, show_labels, "dt_sites")
-      list(data = year_data, labels = labels)
-    },
-    "schools" = {
-      labels <- generate_marker_labels(year_data, NULL, show_labels, "schools")
-      list(data = year_data, labels = labels, layer_type = "schools")
-    },
-    stop("Unknown layer type: ", layer_config$layer_type)
+  layer_type <- layer_config$layer_type
+  use_pollutant <- if (layer_type == "schools") NULL else pollutant
+
+  result <- list(
+    data = year_data,
+    labels = generate_marker_labels(year_data, use_pollutant, show_labels, layer_type)
   )
+
+  if (layer_type == "schools") result$layer_type <- "schools"
+
+  result
 }
 
 
