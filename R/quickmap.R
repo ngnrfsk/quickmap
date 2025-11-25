@@ -199,7 +199,7 @@ get_data_maximum <- function(
     if (
       !layer_config$enabled ||
         !layer_config$temporal ||
-        layer_config$layer_type == "schools"
+        layer_config$id == "schools"
     ) {
       return(NULL)
     }
@@ -215,7 +215,7 @@ get_data_maximum <- function(
       if (nrow(data) == 0) return(NULL)
     }
 
-    pollutant_col <- get_pollutant_col(layer_config$layer_type)
+    pollutant_col <- get_pollutant_col(layer_config$id)
     if (is.null(pollutant_col) || !pollutant_col %in% names(data)) return(NULL)
 
     max_val <- max(data[[pollutant_col]], na.rm = TRUE)
