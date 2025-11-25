@@ -1184,13 +1184,18 @@ apply_custom_layout_in_html <- function(
 
   html_text <- sub("(<body[^>]*>)", paste0("\\1\n", banner_html), html_text)
 
-  roller_menu_html <- load_roller_menu_control(
-    banner_colour,
-    autoplay,
-    play_speed,
-    image_mode,
-    years
-  )
+  # Only add year control if we have temporal data
+  if (!identical(years, "static_only")) {
+    roller_menu_html <- load_roller_menu_control(
+      banner_colour,
+      autoplay,
+      play_speed,
+      image_mode,
+      years
+    )
+  } else {
+    roller_menu_html <- ""
+  }
 
   legend_html <- generate_legend_html(scale_name, collapsed_mobile, data_max)
 
