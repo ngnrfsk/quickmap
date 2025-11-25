@@ -1247,34 +1247,38 @@ create_generic_icons <- function(
 
 #' @keywords internal
 get_measurement_layers <- function(
-  diffusion_tube_file,
-  sensor_file,
-  school_file,
+  spatial_data,
+  data_configs,
   marker_labels
 ) {
-  list(
-    bl_nodes = list(
-      enabled = (sensor_file != "none"),
-      data_source = "bl_annual_means_sf",
-      layer_type = "bl_nodes",
-      temporal = TRUE,
-      options = list(marker_labels = marker_labels)
-    ),
-    dt_sites = list(
-      enabled = (diffusion_tube_file != "none"),
-      data_source = "sf_data_wgs84",
-      layer_type = "dt_sites",
-      temporal = TRUE,
-      options = list(marker_labels = marker_labels)
-    ),
-    schools = list(
-      enabled = (school_file != "none"),
-      data_source = "sf_schools_wgs84",
-      layer_type = "schools",
-      temporal = FALSE,
+  layers <- list()
+
+  for (config_name in data_configs) {
+    data_obj <- spatial_data$all_data[[config_name]]
+    enabled <- !is.null(data_obj)
+
+    # Map config names to data source variable names for backward compatibility
+    data_source_name <- switch(
+      config_name,
+      "dt_sites" = "sf_data_wgs84",
+      "bl_nodes" = "bl_annual_means_sf",
+      "schools" = "sf_schools_wgs84",
+      config_name  # Use config_name as fallback
+    )
+
+    # Determine if layer is temporal (has year data)
+    temporal <- if (config_name == "schools") FALSE else TRUE
+
+    layers[[config_name]] <- list(
+      enabled = enabled,
+      data_source = data_source_name,
+      layer_type = config_name,
+      temporal = temporal,
       options = list(marker_labels = marker_labels)
     )
-  )
+  }
+
+  layers
 }
 
 prepare_generic_layer_data <- function(
@@ -1643,30 +1647,46 @@ parse_export_params <- function(export_image) {
   }
 }
 
-load_spatial_data_sources <- function(dt_file, sensor_file, school_file, pollutant) {
-  dt_data <- if (dt_file != "none") {
-    result <- load_data_file(dt_file, "csv", c("Easting", "Northing"))
-    if (!is.null(result)) {
-      get_temporal_data(result$data) |> transform_to_wgs84()
+load_spatial_data_sources <- function(data_sources, data_configs, pollutant) {
+  loaded_data <- list()
+
+  for (i in seq_along(data_sources)) {
+    data_src <- data_sources[[i]]
+    config_name <- data_configs[i]
+
+    # Handle both file paths (strings) and sf objects
+    if (inherits(data_src, "sf")) {
+      loaded_data[[config_name]] <- data_src
+    } else {
+      # File path - determine type and load
+      if (config_name == "bl_nodes") {
+        loaded_data[[config_name]] <- load_data_file(data_src, "rdata", pollutant = pollutant)
+      } else if (config_name == "dt_sites") {
+        result <- load_data_file(data_src, "csv", c("Easting", "Northing"))
+        if (!is.null(result)) {
+          loaded_data[[config_name]] <- get_temporal_data(result$data) |> transform_to_wgs84()
+        }
+      } else if (config_name == "schools") {
+        result <- load_data_file(data_src, "csv", c("Easting", "Northing"))
+        if (!is.null(result)) {
+          loaded_data[[config_name]] <- result$data |> transform_to_wgs84()
+        }
+      } else {
+        warning("Unknown config_name: ", config_name, ". Skipping.")
+      }
     }
   }
 
-  sensor_data <- if (sensor_file != "none") {
-    load_data_file(sensor_file, "rdata", pollutant = pollutant)
-  }
-
-  school_data <- if (school_file != "none") {
-    result <- load_data_file(school_file, "csv", c("Easting", "Northing"))
-    if (!is.null(result)) result$data |> transform_to_wgs84()
-  }
-
+  # Maintain backward compatibility with expected names
   list(
-    dt = dt_data,
-    sensor = sensor_data,
-    school = school_data,
-    dt_enabled = !is.null(dt_data),
-    sensor_enabled = !is.null(sensor_data),
-    school_enabled = !is.null(school_data)
+    dt = loaded_data[["dt_sites"]],
+    sensor = loaded_data[["bl_nodes"]],
+    school = loaded_data[["schools"]],
+    dt_enabled = !is.null(loaded_data[["dt_sites"]]),
+    sensor_enabled = !is.null(loaded_data[["bl_nodes"]]),
+    school_enabled = !is.null(loaded_data[["schools"]]),
+    all_data = loaded_data,
+    configs = data_configs
   )
 }
 
@@ -1776,6 +1796,8 @@ create_pollution_map <- function(
   diffusion_tube_file = "none",
   sensor_file = "none",
   school_file = "none",
+  data_sources = NULL,
+  data_configs = NULL,
   output_file = "pollution_map.html",
   export_image = NULL,
   boroughs,
@@ -1792,6 +1814,25 @@ create_pollution_map <- function(
   play_speed = NULL,
   theme_file = NULL
 ) {
+  # Backward compatibility: convert old API to new API
+  if (is.null(data_sources)) {
+    data_sources <- list()
+    data_configs <- character(0)
+
+    if (diffusion_tube_file != "none") {
+      data_sources <- c(data_sources, list(diffusion_tube_file))
+      data_configs <- c(data_configs, "dt_sites")
+    }
+    if (sensor_file != "none") {
+      data_sources <- c(data_sources, list(sensor_file))
+      data_configs <- c(data_configs, "bl_nodes")
+    }
+    if (school_file != "none") {
+      data_sources <- c(data_sources, list(school_file))
+      data_configs <- c(data_configs, "schools")
+    }
+  }
+
   c(image_export, map_width_px, map_height_px) %<-% parse_export_params(export_image)
   show_banner <- (styling_type == "html")
   theme <- load_theme(theme_file)
@@ -1816,7 +1857,7 @@ create_pollution_map <- function(
   )
 
   if (!dir.exists("aq_maps")) dir.create("aq_maps", showWarnings = TRUE)
-  spatial_data <- load_spatial_data_sources(diffusion_tube_file, sensor_file, school_file, pollutant)
+  spatial_data <- load_spatial_data_sources(data_sources, data_configs, pollutant)
   if (is.null(borough_sf)) return()
   c(sf_data_wgs84, bl_annual_means_sf, years, vignette_overlay, bbox) %<-%
     determine_primary_data_and_years(spatial_data, borough_sf, vignette, years)
@@ -1830,9 +1871,8 @@ create_pollution_map <- function(
   }
 
   measurement_layers <- get_measurement_layers(
-    diffusion_tube_file,
-    sensor_file,
-    school_file,
+    spatial_data,
+    data_configs,
     marker_labels
   )
 
