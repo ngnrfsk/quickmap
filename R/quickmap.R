@@ -1293,12 +1293,16 @@ apply_custom_layout_in_html <- function(
 get_icon_shape_config <- function(shape_name) {
   # Data-driven shape mapping
   # Maps shape names to leaflegend icon parameters
+  # Note: leaflegend uses "rect" not "square"
   shape_definitions <- list(
     "circle" = list(shape = "circle", base_size = 20),
     "diamond" = list(shape = "diamond", base_size = 20),
     "cross" = list(shape = "cross", base_size = 12),
-    "square" = list(shape = "square", base_size = 20),
-    "triangle" = list(shape = "triangle", base_size = 20)
+    "square" = list(shape = "rect", base_size = 20),  # leaflegend uses "rect"
+    "rect" = list(shape = "rect", base_size = 20),
+    "triangle" = list(shape = "triangle", base_size = 20),
+    "star" = list(shape = "star", base_size = 20),
+    "plus" = list(shape = "plus", base_size = 12)
   )
 
   config <- shape_definitions[[shape_name]]
