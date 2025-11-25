@@ -1317,7 +1317,6 @@ get_measurement_layers <- function(
     layers[[config_name]] <- list(
       enabled = enabled,
       data_source = data_source_name,
-      layer_type = config_name,
       id = config_name,
       temporal = temporal,
       pollutant_col = pollutant_col,
@@ -1340,15 +1339,15 @@ prepare_generic_layer_data <- function(
   show_labels <- if (!is.null(layer_config$options))
     layer_config$options$marker_labels else FALSE
 
-  layer_type <- layer_config$layer_type
-  use_pollutant <- if (layer_type == "schools") NULL else pollutant
+  layer_id <- layer_config$id
+  use_pollutant <- if (layer_id == "schools") NULL else pollutant
 
   result <- list(
     data = year_data,
-    labels = generate_marker_labels(year_data, use_pollutant, show_labels, layer_type)
+    labels = generate_marker_labels(year_data, use_pollutant, show_labels, layer_id)
   )
 
-  if (layer_type == "schools") result$layer_type <- "schools"
+  if (layer_id == "schools") result$layer_type <- "schools"
 
   result
 }
@@ -1368,11 +1367,11 @@ add_layer <- function(
 ) {
   if (is.null(layer_data)) return(map)
 
-  layer_type <- layer_config$layer_type
+  layer_id <- layer_config$id
 
   icons <- create_generic_icons(
     layer_data$data,
-    layer_type,
+    layer_id,
     pollutant,
     colour_scale,
     image_scale_factor
