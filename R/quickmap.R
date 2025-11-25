@@ -1207,6 +1207,26 @@ apply_custom_layout_in_html <- function(
   return(invisible(TRUE))
 }
 
+#' @keywords internal
+get_icon_shape_config <- function(shape_name) {
+  # Data-driven shape mapping
+  # Maps shape names to leaflegend icon parameters
+  shape_definitions <- list(
+    "circle" = list(shape = "circle", base_size = 20),
+    "diamond" = list(shape = "diamond", base_size = 20),
+    "cross" = list(shape = "cross", base_size = 12),
+    "square" = list(shape = "square", base_size = 20),
+    "triangle" = list(shape = "triangle", base_size = 20)
+  )
+
+  config <- shape_definitions[[shape_name]]
+  if (is.null(config)) {
+    stop("Unknown icon shape: ", shape_name,
+         ". Available shapes: ", paste(names(shape_definitions), collapse = ", "))
+  }
+  return(config)
+}
+
 create_generic_icons <- function(
   data,
   layer_type,
@@ -1218,17 +1238,22 @@ create_generic_icons <- function(
   # For other sizes: scale = sqrt((width × height) / (1200 × 1200))
   # HTML maps: image_scale_factor = 1.0 (no scaling)
   # Static maps: image_scale_factor calculated from dimensions
-  base_shape_config <- switch(
+
+  # Map layer_type to shape name (temporary - will be from config in Step 4)
+  shape_name <- switch(
     layer_type,
-    "schools" = list(shape = 'cross', size = 12),
-    "dt_sites" = list(shape = 'circle', size = 20),
-    "bl_nodes" = list(shape = 'diamond', size = 20),
+    "schools" = "cross",
+    "dt_sites" = "circle",
+    "bl_nodes" = "diamond",
     stop("Unknown layer type: ", layer_type)
   )
 
+  # Get shape config from data-driven lookup
+  base_shape_config <- get_icon_shape_config(shape_name)
+
   shape_config <- list(
     shape = base_shape_config$shape,
-    size = round(base_shape_config$size * image_scale_factor)
+    size = round(base_shape_config$base_size * image_scale_factor)
   )
 
   colors <- if (layer_type == "schools") {
