@@ -16,8 +16,8 @@ map1_richmond_no2 <- create_pollution_map(
   pollutant = "no2",
   #  years = (2022:2024),
   colour_scale = "stripes_no2",
-  output_file = "debug_0924_richmond_dt_bl.html",
-  title = "debug_0924 - Richmond full data (New API)",
+  output_file = "debug_0925_richmond_dt_bl.html",
+  title = "debug_0925 - Richmond full data (New API)",
   styling_type = "html", # HTML banner + legend
   vignette = TRUE,
   marker_labels = TRUE, # Auto-hide labels
@@ -34,8 +34,8 @@ map2_merton_pm25 <- create_pollution_map(
   pollutant = "pm25",
   years = (2022:2024),
   colour_scale = "gla_pm25",
-  output_file = "debug_0924_merton_pm25_2018_2024_dt_bl.html",
-  title = "debug_0924 LB Merton Annual Mean PM2.5 (New API)",
+  output_file = "debug_0925_merton_pm25_2018_2024_dt_bl.html",
+  title = "debug_0925 LB Merton Annual Mean PM2.5 (New API)",
   theme_file = "inst/themes/wandsworth.yaml",
   styling_type = "html", # HTML banner + legend
   # vignette = TRUE,
@@ -56,8 +56,8 @@ map3_merton_no2_image <- create_pollution_map(
   pollutant = "no2",
   years = (2020),
   colour_scale = "who_no2",
-  output_file = "debug_0924_image_merton_no2_2018_2024_dt_bl.html",
-  title = "debug_0924 LB Merton Annual Mean NO2 with Image Export (New API)",
+  output_file = "debug_0925_image_merton_no2_2018_2024_dt_bl.html",
+  title = "debug_0925 LB Merton Annual Mean NO2 with Image Export (New API)",
   styling_type = "html", # HTML banner + legend
   vignette = TRUE,
   export_image = TRUE,
