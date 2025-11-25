@@ -1,0 +1,10 @@
+# Diffusion Tube Sites Configuration
+# Monitoring network: Passive diffusion tubes for NO2 measurement
+
+id: dt_sites
+label: "Diffusion Tubes"
+icon_shape: circle
+pollutant_col: no2
+temporal: true
+data_source_var: sf_data_wgs84
+description: "Passive diffusion tube monitoring sites for nitrogen dioxide (NO2) measurement"

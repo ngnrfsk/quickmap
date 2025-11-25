@@ -1,0 +1,10 @@
+# Breathe London Sensor Nodes Configuration
+# Monitoring network: Breathe London continuous monitoring sensors
+
+id: bl_nodes
+label: "Breathe London Sensors"
+icon_shape: diamond
+pollutant_col: no2
+temporal: true
+data_source_var: bl_annual_means_sf
+description: "Breathe London continuous monitoring sensor network for NO2 and PM2.5"

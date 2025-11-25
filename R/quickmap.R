@@ -439,6 +439,30 @@ load_colour_scale <- function(scale_name) {
   scale
 }
 
+#' Load data source configuration from YAML file
+#' @param source_name Character string, name of the data source (e.g., "dt_sites", "bl_nodes", "schools")
+#' @return List containing data source configuration with fields: id, label, icon_shape, pollutant_col, temporal, data_source_var
+#' @family config
+load_data_source_config <- function(source_name) {
+  config <- load_yaml_config(
+    source_name,
+    subdirectory = "data_sources",
+    list_available = TRUE
+  )
+
+  # Validate required fields
+  required_fields <- c("id", "icon_shape", "temporal", "data_source_var")
+  missing_fields <- setdiff(required_fields, names(config))
+  if (length(missing_fields) > 0) {
+    stop(
+      "Data source config '", source_name, "' missing required fields: ",
+      paste(missing_fields, collapse = ", ")
+    )
+  }
+
+  config
+}
+
 
 #' @keywords internal
 load_yaml_config <- function(
@@ -1284,43 +1308,19 @@ get_measurement_layers <- function(
   layers <- list()
 
   for (config_name in data_configs) {
+    # Load config from YAML
+    yaml_config <- load_data_source_config(config_name)
+
     data_obj <- spatial_data$all_data[[config_name]]
     enabled <- !is.null(data_obj)
 
-    # Map config names to data source variable names for backward compatibility
-    data_source_name <- switch(
-      config_name,
-      "dt_sites" = "sf_data_wgs84",
-      "bl_nodes" = "bl_annual_means_sf",
-      "schools" = "sf_schools_wgs84",
-      config_name  # Use config_name as fallback
-    )
-
-    # Determine if layer is temporal (has year data)
-    temporal <- if (config_name == "schools") FALSE else TRUE
-
-    # Map config names to pollutant column and icon shape
-    pollutant_col <- switch(
-      config_name,
-      "schools" = NULL,  # Schools don't have pollution data
-      "no2"  # Default for dt_sites and bl_nodes
-    )
-
-    icon_shape <- switch(
-      config_name,
-      "dt_sites" = "circle",
-      "bl_nodes" = "diamond",
-      "schools" = "cross",
-      "circle"  # Default fallback
-    )
-
     layers[[config_name]] <- list(
       enabled = enabled,
-      data_source = data_source_name,
-      id = config_name,
-      temporal = temporal,
-      pollutant_col = pollutant_col,
-      icon_shape = icon_shape,
+      data_source = yaml_config$data_source_var,
+      id = yaml_config$id,
+      temporal = yaml_config$temporal,
+      pollutant_col = yaml_config$pollutant_col,
+      icon_shape = yaml_config$icon_shape,
       options = list(marker_labels = marker_labels)
     )
   }

@@ -1,0 +1,10 @@
+# Schools Configuration
+# Static layer: School locations (Primary and Secondary)
+
+id: schools
+label: "Schools"
+icon_shape: cross
+pollutant_col: null
+temporal: false
+data_source_var: sf_schools_wgs84
+description: "School locations showing Primary and Secondary educational facilities"
