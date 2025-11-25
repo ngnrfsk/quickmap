@@ -1299,11 +1299,29 @@ get_measurement_layers <- function(
     # Determine if layer is temporal (has year data)
     temporal <- if (config_name == "schools") FALSE else TRUE
 
+    # Map config names to pollutant column and icon shape
+    pollutant_col <- switch(
+      config_name,
+      "schools" = NULL,  # Schools don't have pollution data
+      "no2"  # Default for dt_sites and bl_nodes
+    )
+
+    icon_shape <- switch(
+      config_name,
+      "dt_sites" = "circle",
+      "bl_nodes" = "diamond",
+      "schools" = "cross",
+      "circle"  # Default fallback
+    )
+
     layers[[config_name]] <- list(
       enabled = enabled,
       data_source = data_source_name,
       layer_type = config_name,
+      id = config_name,
       temporal = temporal,
+      pollutant_col = pollutant_col,
+      icon_shape = icon_shape,
       options = list(marker_labels = marker_labels)
     )
   }
@@ -1388,7 +1406,8 @@ add_layer <- function(
     labelOptions = label_opts
   )
 
-  if (layer_type != "schools") {
+  # Use temporal flag from config instead of hardcoded layer type check
+  if (layer_config$temporal) {
     marker_params$group <- year
   }
 
@@ -1614,7 +1633,8 @@ generate_map_layers <- function(
         )
         if (nrow(year_data) == 0) next
 
-        if (layer_config$layer_type %in% c("dt_sites", "bl_nodes")) {
+        # Filter missing data using config's pollutant_col (if specified)
+        if (!is.null(layer_config$pollutant_col)) {
           year_data <- dplyr::filter(year_data, !is.na(.data[[pollutant]]))
           if (nrow(year_data) == 0) next
         }
