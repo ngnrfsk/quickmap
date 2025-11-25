@@ -6,20 +6,45 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2025-11-18 **Current Working Version**: v0.9.0.3
+**Last Updated**: 2025-11-25 **Current Working Version**: v0.9.1 **In Progress**: v0.9.2 Layer Generalization
+
+--------------------------------------------------------------------------------
+
+## v0.9.2 Layer Generalization (In Progress)
+
+**Status**: Planning complete, ready for implementation
+**Branch**: `feature/v092-layer-generalization` (from commit 90c0b83)
+**Implementation Plan**: `dev/Implementation_v092_Layer_Generalization.md`
+**High-Level Roadmap**: `dev/Plan_v091_to_v095.md`
+
+**Key Changes**:
+- New API: `data_sources` (files/sf objects) + `data_configs` (YAML config names) as parallel vectors
+- YAML-based network configs in `inst/config/networks/` (dt_sites.yaml, bl_nodes.yaml, schools.yaml)
+- Removed hardcoded layer_type switches, generic config iteration
+- Icon shapes data-driven (circle, diamond, cross, square, triangle)
+- Icon colors remain dynamic (from colour_scale parameter, not configs)
+- Backward compatible: old 3-file API still works
+
+**Success Criteria**:
+- 4th network (mock AURN) added via YAML config only
+- All 14 existing test scripts pass unchanged
+- Visual regression: v0.9.1 vs v0.9.2 identical
+
+**Lessons from Planning Session (2025-11-25)**:
+1. **Avoid prescriptive plans**: Describe outcomes, not implementation (no function signatures in plans)
+2. **Color logic clarity**: Icon colors are dynamic (colour_scale), not fixed in configs—must be explicit
+3. **Parallel vectors pattern**: Cleaner than nested lists for data+config association
+4. **Problem-oriented beats step-by-step for early planning**: Let engineer discover solutions
+5. **Test API realism**: Step 6 tests production API, not throwaway test code
+6. **Parameter naming**: `years` → defer to v0.9.4 (temporal resolution change)
 
 --------------------------------------------------------------------------------
 
 ### FUTURE REFACTORING TASKS
 
-#### Refactor-2: Database Import and Modular Architecture
+#### Refactor-2: Database Import and Modular Architecture (Deferred)
 
-**Category**: Architecture **Description**: Enhance codebase with modern R
-practices - Add database import using duckdb - Divide code into standalone
-modules: IO, data processing, map layer generation, map rendering, utility
-functions - Replace existing hardcoded layer creation with new generic layer
-system - Rebuild create_pollution_map() function as a wrapper using new system
-**Expected Effort**: 12-16 hours **Complexity**: High
+**Category**: Architecture **Description**: Add database import using duckdb. Note: Layer generalization (v0.9.2) addresses generic layer system without full modular rewrite. **Expected Effort**: 12-16 hours **Complexity**: High
 
 #### Minor Bugs to Fix and Features to Consider
 

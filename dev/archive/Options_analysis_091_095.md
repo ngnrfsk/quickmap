@@ -1,0 +1,30 @@
+# Options Analysis: QuickMap v0.9.1 → v0.9.5
+## OpenAir Integration Strategy
+
+### Context
+
+QuickMap v0.9.1 is a functional, well-structured monolithic codebase generating dynamic HTML+JPG maps from air quality data. Current architecture: `create_pollution_map()` (111 lines) orchestrates data loading (CSV diffusion tubes, RData Breathe London sensors, school locations), spatial processing (BNG→WGS84 via sf), unified layer generation, and dual-output rendering. The codebase already processes Breathe London RData files that follow OpenAir's date+pollutant convention. Target: by v0.9.5, enable workflows like `importAURN() → timeAverage() → quickmap()` while maintaining extensibility for broader R spatial ecosystem integration and eventual standalone library release at v1.0.
+
+### Option 1: Thin Conversion Layer (Minimal Architecture Change)
+
+Create `convertOpenAirToSpatial()` helper that transforms OpenAir format (date-indexed data.frame with site/pollutant columns) to sf objects matching quickmap's current sensor_file expectations. Function would join temporal data with site coordinates, aggregate by year using `timeAverage("year")`, and return sf objects that existing `load_data_file()` and `process_oa_data()` functions already handle. Advantages: fastest implementation (single new 50-line function), tests OpenAir integration immediately with minimal risk, preserves stable v0.9.1 architecture. Disadvantages: requires users to handle coordinate lookups manually, duplicates aggregation logic OpenAir already provides, doesn't position quickmap for broader extensibility. Recommended first step: implement converter, test with `importAURN()` output, validate end-to-end workflow by v0.9.2.
+
+### Option 2: Data Abstraction Layer (Moderate Refactoring)
+
+Extract data loading into modular system: `load_pollution_data()` becomes dispatcher calling format-specific loaders (`load_csv_diffusion_tubes()`, `load_rdata_sensors()`, `load_openair_temporal()`). New OpenAir loader accepts data.frame with required 'date' column, validates using OpenAir's `checkPrep()`, spatially joins coordinates, returns standardized sf objects. All loaders return consistent structure: list(data=sf, years=vector, metadata=list). Main function `create_pollution_map()` remains unchanged beyond swapping `load_data_file()` call. Advantages: clean separation enabling future format additions (terra, stars), explicit validation layer, testable modules. Disadvantages: requires refactoring ~200 lines of existing loaders, more complex initial implementation. Positions codebase well for sf-centric extensibility while adding OpenAir as one supported input among several.
+
+### Option 3: Hybrid Pipeline with Early OpenAir Testing (Recommended)
+
+Implement Option 1's converter immediately (v0.9.2) to enable OpenAir testing, then refactor toward Option 2's abstraction layer (v0.9.3-0.9.4) using lessons from real-world usage. Phased approach: (1) Add `convertOpenAirToSpatial()` with coordinate lookup from CSV/existing datasets; (2) Test workflow `importAURN() → selectByDate() → timeAverage() → convertOpenAirToSpatial() → create_pollution_map()`; (3) Extract modular loaders once OpenAir patterns validated; (4) By v0.9.5, consolidated architecture where sf is confirmed intermediate format and OpenAir ingestion proven. Advantages: immediate testing with minimal risk, architecture decisions informed by real usage, incremental validation maintains stability. Creates pathway to standalone library where quickmap works naturally with OpenAir, sf, and domain CSV formats through standardized sf intermediate representation.
+
+### Option 4: OpenAir-Native Dual Pipeline
+
+Maintain existing spatial pipeline unchanged; add parallel temporal-first pipeline where `create_pollution_map()` accepts OpenAir-format data.frame directly. New parameter `mydata = NULL` triggers OpenAir pathway: validates date column, uses `cutData(type="year")` for temporal grouping, joins coordinates late in process, renders using same layer generation. Two pipelines converge at layer creation stage. Advantages: preserves v0.9.1 architecture completely, positions quickmap as true OpenAir extension following package conventions, avoids forcing temporal data through spatial-first workflow. Disadvantages: maintains two code paths requiring parallel maintenance, doesn't address extensibility to other formats, risks divergence between pipelines. Best if OpenAir integration is primary goal over broader spatial ecosystem compatibility.
+
+### Option 5: Extract to `quickmap()` Core Function Now
+
+Implement v1.0 vision immediately: extract `quickmap(sf_data, pollutant, years, colour_scale, ...)` as minimal core function accepting only sf objects. Wrapper `create_pollution_map()` handles all file loading/preprocessing, calls `quickmap()` for rendering. Add `quickmapFromOpenAir(mydata, site.data, ...)` wrapper handling OpenAir-specific preprocessing. Advantages: forces clean architecture immediately, clear separation between data acquisition and visualization, modular functions independently testable. Disadvantages: aggressive refactoring risks breaking current workflows, may be premature optimization before OpenAir patterns proven, extends beyond v0.9.5 timeline into v1.0 territory. Defers to v0.10+ unless rapid architecture transformation preferred over conservative evolution.
+
+### Recommended Next Steps
+
+**Immediate (v0.9.2)**: Implement Option 3's converter function; test end-to-end with `importAURN()` downloading AURN sites, filtering to London boroughs, aggregating to annual means, rendering with quickmap. Document workflow in vignette. **Near-term (v0.9.3-0.9.4)**: Refactor data loaders into modular architecture based on OpenAir testing insights, confirming sf as universal intermediate format. **By v0.9.5**: Stable OpenAir ingestion with helper functions, modular data loading architecture supporting CSV/RData/OpenAir inputs, all returning sf objects. Maintains UI stability, tests real-world OpenAir workflows early, positions codebase for v1.0 standalone library with proven extensibility to both OpenAir ecosystem and broader R spatial tools.
