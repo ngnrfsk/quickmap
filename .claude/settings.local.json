@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(comm:*)"
+      "Bash(comm:*)",
+      "WebSearch",
+      "WebFetch(domain:openair-project.github.io)",
+      "WebFetch(domain:cran.r-project.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:r-spatial.r-universe.dev)"
     ],
     "deny": [],
     "ask": []
