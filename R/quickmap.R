@@ -1311,34 +1311,27 @@ get_icon_shape_config <- function(shape_name) {
 
 create_generic_icons <- function(
   data,
-  layer_type,
+  icon_shape,
   pollutant = NULL,
   colour_scale = NULL,
-  image_scale_factor = 1.0
+  image_scale_factor = 1.0,
+  layer_id = NULL
 ) {
   # Base sizes are for 1200x1200px reference images
   # For other sizes: scale = sqrt((width × height) / (1200 × 1200))
   # HTML maps: image_scale_factor = 1.0 (no scaling)
   # Static maps: image_scale_factor calculated from dimensions
 
-  # Map layer_type to shape name (temporary - will be from config in Step 4)
-  shape_name <- switch(
-    layer_type,
-    "schools" = "cross",
-    "dt_sites" = "circle",
-    "bl_nodes" = "diamond",
-    stop("Unknown layer type: ", layer_type)
-  )
-
-  # Get shape config from data-driven lookup
-  base_shape_config <- get_icon_shape_config(shape_name)
+  # Get shape config from data-driven lookup (icon_shape now passed from config)
+  base_shape_config <- get_icon_shape_config(icon_shape)
 
   shape_config <- list(
     shape = base_shape_config$shape,
     size = round(base_shape_config$base_size * image_scale_factor)
   )
 
-  colors <- if (layer_type == "schools") {
+  # Color assignment: schools use categorical colors, others use pollution scale
+  colors <- if (!is.null(layer_id) && layer_id == "schools") {
     pal <- colorFactor(c("#1E90FF", "#32CD32"), unique(data$Level))
     pal(data$Level)
   } else {
@@ -1429,10 +1422,11 @@ add_layer <- function(
 
   icons <- create_generic_icons(
     layer_data$data,
-    layer_id,
+    icon_shape = layer_config$icon_shape,
     pollutant,
     colour_scale,
-    image_scale_factor
+    image_scale_factor,
+    layer_id = layer_id
   )
 
   label_text_size <- as.character(12 * label_sizing)
