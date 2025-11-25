@@ -113,7 +113,7 @@ Refactor layer system to data-driven configuration where adding a new data sourc
 
 **Outcome:** Demonstrate extensibility by adding mock AURN network via new `data_sources`/`data_configs` API.
 
-**What must exist:** - Test script `tests/test_4network_mock.R` that: - Loads existing diffusion tube + BL sensor + school files - Creates mock AURN data (5 sites, 3 years) matching bl_annual_means_sf structure (columns: siteCode, year, no2, geometry) - Creates AURN config YAML: `aurn.yaml` with square icon, pollutant_col="no2", temporal=TRUE - Calls `create_pollution_map()` using new API with 4 networks - Map renders with 4 distinct icon shapes - NO changes to core rendering code
+**What must exist:** - Test script `tests/test_4network_mock.R` that: - Loads existing diffusion tube + BL sensor + school files - Creates mock AURN data (50 random sites inside the boundaries, random values 0 to 49, 3 years) matching bl_annual_means_sf structure (columns: siteCode, year, no2, geometry) - write_data_source_config() function that writes a new data source config file to inst/config/data_sources in the required format based on a set of passed parameters - Creates AURN config YAML: `aurn.yaml` with square icon, pollutant_col="no2", temporal=TRUE - Calls `create_pollution_map()` using new API with 4 networks - Map renders with 4 distinct icon shapes - NO changes to core rendering code
 
 **Why:** Validates production API supports unlimited networks via config, not code modification.
 

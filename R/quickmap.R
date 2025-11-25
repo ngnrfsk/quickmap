@@ -463,6 +463,64 @@ load_data_source_config <- function(source_name) {
   config
 }
 
+#' Write data source configuration to YAML file
+#' @param id Character string, unique identifier (e.g., "aurn")
+#' @param label Character string, human-readable name (e.g., "AURN Network")
+#' @param icon_shape Character string, one of: "circle", "diamond", "cross", "square", "triangle"
+#' @param pollutant_col Character string or NULL, column name for pollutant data (NULL for non-pollution layers)
+#' @param temporal Logical, TRUE if layer has year data, FALSE for static layers
+#' @param data_source_var Character string, R variable name for the data source
+#' @param description Character string, optional description of the data source
+#' @param output_dir Character string, directory to write YAML file (default: "inst/config/data_sources")
+#' @return Invisible path to written YAML file
+#' @family config
+write_data_source_config <- function(
+  id,
+  label,
+  icon_shape,
+  pollutant_col = "no2",
+  temporal = TRUE,
+  data_source_var,
+  description = "",
+  output_dir = "inst/config/data_sources"
+) {
+  if (!requireNamespace("yaml", quietly = TRUE)) {
+    stop("Package 'yaml' required. Install with: install.packages('yaml')")
+  }
+
+  # Validate icon_shape
+  valid_shapes <- c("circle", "diamond", "cross", "square", "triangle")
+  if (!icon_shape %in% valid_shapes) {
+    stop(
+      "Invalid icon_shape: ", icon_shape,
+      ". Must be one of: ", paste(valid_shapes, collapse = ", ")
+    )
+  }
+
+  # Create config list
+  config <- list(
+    id = id,
+    label = label,
+    icon_shape = icon_shape,
+    pollutant_col = pollutant_col,
+    temporal = temporal,
+    data_source_var = data_source_var,
+    description = description
+  )
+
+  # Ensure output directory exists
+  if (!dir.exists(output_dir)) {
+    dir.create(output_dir, recursive = TRUE)
+  }
+
+  # Write YAML file
+  output_file <- file.path(output_dir, paste0(id, ".yaml"))
+  yaml::write_yaml(config, output_file)
+
+  cat("Data source config written to:", output_file, "\n")
+  invisible(output_file)
+}
+
 
 #' @keywords internal
 load_yaml_config <- function(
