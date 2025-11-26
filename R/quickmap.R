@@ -59,6 +59,109 @@ apply_template_replacements <- function(template, replacements) {
   return(result)
 }
 
+# OpenAir Metadata Cache System
+# Session-level cache for site coordinates from importMeta()
+# Used as fallback when data lacks coordinates (e.g., legacy importAURN/importKCL)
+.openair_metadata_cache <- new.env(parent = emptyenv())
+
+#' Get OpenAir site metadata with caching
+#'
+#' Fetches site metadata (coordinates, site_type) from OpenAir's importMeta()
+#' function with session-level caching to avoid redundant API calls.
+#'
+#' @param source Character. Network source: "aurn", "kcl", "aqe", "saqn", "waqn", "ni"
+#' @return data.frame with columns: source, site, code, latitude, longitude, site_type
+#' @family openair
+#' @examples
+#' \dontrun{
+#' # First call fetches from API
+#' meta <- get_openair_metadata("aurn")
+#' # Second call uses cache
+#' meta <- get_openair_metadata("aurn")
+#' }
+get_openair_metadata <- function(source) {
+  if (!requireNamespace("openair", quietly = TRUE)) {
+    stop(
+      "Package 'openair' is required for this function. ",
+      "Install with: install.packages('openair')",
+      call. = FALSE
+    )
+  }
+
+  # Check cache first
+  if (exists(source, envir = .openair_metadata_cache)) {
+    message("Using cached metadata for source: ", source)
+    return(get(source, envir = .openair_metadata_cache))
+  }
+
+  # Fetch from OpenAir API
+  message("Fetching metadata for source: ", source)
+  tryCatch(
+    {
+      metadata <- openair::importMeta(source = source)
+
+      if (is.null(metadata) || nrow(metadata) == 0) {
+        stop(
+          "No metadata returned for source '", source, "'. ",
+          "Check that the source name is valid.",
+          call. = FALSE
+        )
+      }
+
+      # Cache the result
+      assign(source, metadata, envir = .openair_metadata_cache)
+
+      message(
+        "Cached metadata for ",
+        nrow(metadata),
+        " sites from source: ",
+        source
+      )
+
+      return(metadata)
+    },
+    error = function(e) {
+      stop(
+        "Failed to fetch metadata for source '", source, "': ",
+        e$message,
+        call. = FALSE
+      )
+    }
+  )
+}
+
+#' Clear OpenAir metadata cache
+#'
+#' Removes all cached metadata, forcing fresh API calls on next request.
+#' Useful if metadata needs to be refreshed during a session.
+#'
+#' @param source Character (optional). Specific source to clear, or NULL to clear all
+#' @return Invisible NULL
+#' @family openair
+#' @examples
+#' \dontrun{
+#' # Clear specific source
+#' clear_openair_metadata_cache("aurn")
+#' # Clear all cached metadata
+#' clear_openair_metadata_cache()
+#' }
+clear_openair_metadata_cache <- function(source = NULL) {
+  if (is.null(source)) {
+    # Clear entire cache
+    rm(list = ls(envir = .openair_metadata_cache), envir = .openair_metadata_cache)
+    message("Cleared all OpenAir metadata cache")
+  } else {
+    # Clear specific source
+    if (exists(source, envir = .openair_metadata_cache)) {
+      rm(list = source, envir = .openair_metadata_cache)
+      message("Cleared metadata cache for source: ", source)
+    } else {
+      message("No cached metadata for source: ", source)
+    }
+  }
+  invisible(NULL)
+}
+
 validate_oa_data <- function(data, pollutant) {
   required_cols <- c("siteCode", "year", pollutant, "lat", "lon")
   missing_cols <- setdiff(required_cols, names(data))
