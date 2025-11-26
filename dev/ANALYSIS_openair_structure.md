@@ -3,29 +3,50 @@
 **Date:** 2025-11-26
 **Purpose:** Document OpenAir API, data structures, and integration requirements for spatial converter
 
-## OpenAir Package Version
+## OpenAir Ecosystem
 
-- **Installed version:** Latest from CRAN
-- **Key functions:** `importAURN()`, `importKCL()`, `importMeta()`, `timeAverage()`
+### Packages
+- **openair** v2.18.2: Core air quality data import and analysis
+- **openairmaps** v0.9.1: Spatial mapping functions (leaflet-based)
+- **worldmet** v0.9.8: Meteorological data companion
+- **deweather** v0.7.2: Weather normalization
+
+### Key Functions for v0.9.3
+- **`importUKAQ()`**: **PRIMARY** - Unified UK air quality data import (supersedes importAURN/importKCL)
+- **`importMeta()`**: Site metadata with coordinates
+- **`timeAverage()`**: Temporal aggregation
+- **`selectByDate()`**: Date range filtering
+- **`cutData()`**: Temporal categorization (seasons, etc.)
+- **`searchNetwork()`** (openairmaps): Spatial site search by lat/lng
 
 ## 1. OpenAir Import Functions
 
 ### Available Import Functions
 ```r
-importAURN()   # Automatic Urban and Rural Network
-importKCL()    # King's College London (LAQN)
+importUKAQ()   # UK Air Quality archive (UNIFIED - recommended)
+importAURN()   # Automatic Urban and Rural Network (legacy)
+importKCL()    # King's College London LAQN (legacy)
 importAQE()    # Air Quality England
 importSAQN()   # Scottish Air Quality Network
 importWAQN()   # Welsh Air Quality Network
 importNI()     # Northern Ireland
 importEurope() # European monitoring
-importUKAQ()   # UK Air Quality archive (alternative)
 ```
 
-### Primary Functions for v0.9.3
-- **`importAURN()`**: AURN network data
-- **`importKCL()`**: LAQN (London) network data
-- **`importMeta()`**: Site metadata with coordinates
+### Network Coverage via importMeta()
+- **AURN**: 318 sites
+- **AQE**: 411 sites
+- **SAQN**: 152 sites
+- **WAQN**: 88 sites
+- **KCL (LAQN)**: 1068 sites
+
+### Recommended Approach: importUKAQ()
+**importUKAQ() is a unified interface that supersedes network-specific functions:**
+- Single function supports all UK networks via `source` parameter
+- Sources: `"aurn"`, `"kcl"`, `"aqe"`, `"saqn"`, `"waqn"`, `"ni"`, `"local"`
+- Optional `meta=TRUE` embeds coordinates directly in data (eliminates separate join)
+- Consistent output format across all networks
+- Additional parameters: `data_type`, `pollutant`, `ratified`, `meteo`
 
 ## 2. Data Structure: importAURN()
 
@@ -55,6 +76,62 @@ importUKAQ()   # UK Air Quality archive (alternative)
 2 aurn   London M...   MY1   2023-01-01 01:00:00 0.314  50.5  27.5
 3 aurn   London M...   MY1   2023-01-01 02:00:00 0.279  40.0  23.5
 ```
+
+## 2b. Data Structure: importUKAQ() - RECOMMENDED
+
+### Function Signature
+```r
+importUKAQ(
+  site = "my1",
+  year = 2022,
+  source = "aurn",          # "aurn", "kcl", "aqe", "saqn", "waqn", "ni", "local"
+  data_type = "hourly",     # "hourly", "daily", "monthly", "annual"
+  pollutant = "all",        # "all" or specific pollutant
+  hc = FALSE,               # hydrocarbons
+  meta = FALSE,             # **KEY**: embed metadata in data
+  meteo = TRUE,             # meteorological variables
+  ratified = FALSE,         # ratified data only
+  to_narrow = FALSE,        # long format
+  verbose = FALSE,
+  progress = TRUE
+)
+```
+
+### Key Advantage: meta = TRUE
+**When `meta = TRUE`, coordinates are embedded directly in data:**
+
+```r
+# Without meta parameter:
+data <- importUKAQ(site = "my1", year = 2023, source = "aurn")
+# Columns: source, site, code, date, pollutants...
+# Need separate: metadata <- importMeta(source = "aurn")
+
+# With meta=TRUE:
+data <- importUKAQ(site = "my1", year = 2023, source = "aurn", meta = TRUE)
+# Columns: source, site, code, date, pollutants..., latitude, longitude, site_type
+# NO separate metadata fetch needed!
+```
+
+### Output Format with meta=TRUE
+- **Class:** `tbl_df`, `tbl`, `data.frame` (tibble)
+- **Additional columns:**
+  - `latitude`: Numeric (decimal degrees, WGS84)
+  - `longitude`: Numeric (decimal degrees, WGS84)
+  - `site_type`: Character ("Urban Traffic", "Urban Background", etc.)
+- **All other columns:** Same as network-specific functions
+
+### Benefits for Converter
+1. **Eliminates metadata cache:** No need to cache/fetch `importMeta()` separately
+2. **Simplified processing:** Coordinates already in data frame
+3. **Consistent across networks:** Same structure whether AURN, KCL, AQE, etc.
+4. **Single source of truth:** Coordinates guaranteed to match data rows
+
+### Recommendation for v0.9.3
+**Use `importUKAQ(meta = TRUE)` as primary data source:**
+- Simplifies converter implementation (no metadata join required)
+- Eliminates metadata caching complexity
+- Future-proof: works with all UK networks
+- Keep `importMeta()` cache as fallback for legacy code or non-UKAQ sources
 
 ## 3. Data Structure: importKCL()
 
@@ -370,17 +447,129 @@ validate_openair_data(data, ...)  # Input validation
 - Conversion time < 5 seconds
 - No rendering regression
 
-## 14. Conclusion
+## 14. OpenAir Utility Functions
 
-**OpenAir → Quickmap conversion is feasible and straightforward:**
-- Metadata already has WGS84 coordinates (no transformation needed)
-- Data structure is clean and well-documented
-- Existing `process_oa_data()` provides clear output template
-- No modifications to existing code required
-- Cache pattern prevents redundant API calls
+### selectByDate() - Date Range Filtering
+```r
+selectByDate(mydata, start = "1/1/2023", end = "31/3/2023")
+# Filters data to date range
+# Useful for: Creating seasonal subsets, testing with smaller datasets
+```
 
-**Key insight:** OpenAir's separation of data and metadata requires explicit join, but this design is actually beneficial for caching and efficiency.
+**Use case for converter:** Pre-filter data before aggregation for performance
 
-**No reinvention of OpenAir functionality:** Converter uses OpenAir's own functions (`importMeta`, `timeAverage`) and simply transforms output to quickmap's sf format.
+### cutData() - Temporal Categorization
+```r
+cutData(data, type = "season")  # Adds 'season' column
+cutData(data, type = "month")   # Adds 'month' column
+cutData(data, type = "daylight") # Day/night categorization
+```
 
-**Ready to proceed to Step 1: Metadata Cache System**
+**Use case for converter:** Not needed for basic annual/monthly aggregation, but useful for future seasonal analysis features
+
+## 15. openairmaps Package Integration
+
+### searchNetwork() - Spatial Site Discovery
+```r
+searchNetwork(
+  lat = 51.5,
+  lng = -0.1,
+  source = "aurn",
+  n = 5,              # number of nearest sites
+  max_dist = NULL,    # max distance in km
+  map = FALSE         # return data.frame only
+)
+# Returns: tibble with site, code, latitude, longitude, dist (distance in km)
+```
+
+**Use case for converter:**
+- Future feature: "Find sites within X km of location"
+- Borough-based auto-site selection
+- Not needed for v0.9.3 core converter
+
+### networkMap() - Interactive Network Visualization
+```r
+networkMap(source = "aurn", control = "nox", year = 2023)
+# Creates leaflet map of entire network
+```
+
+**Note:** openairmaps uses leaflet (same as quickmap). Potential for integration but:
+- openairmaps focuses on network-wide visualization with polar plots
+- quickmap focuses on multi-network overlay with custom icons/legends
+- Different use cases, both valid
+
+**Recommendation:** Keep separate for now, no integration needed in v0.9.3
+
+## 16. Revised Architecture Based on importUKAQ()
+
+### Simplified Converter Design
+
+**Original plan (with metadata cache):**
+```r
+1. Aggregate data with timeAverage()
+2. Fetch cached metadata via importMeta()
+3. Join data + metadata by code
+4. Create sf object
+```
+
+**Revised plan (with importUKAQ meta=TRUE):**
+```r
+1. Data already has coordinates (importUKAQ meta=TRUE)
+2. Aggregate with dplyr (preserves lat/lon columns)
+3. Create sf object directly
+```
+
+### Impact on Implementation Steps
+
+**Step 1 (Metadata Cache):**
+- **OPTIONAL now** - only needed for:
+  - Legacy importAURN/importKCL code
+  - Non-UK networks (importEurope, etc.)
+  - Edge case: if user provides pre-fetched data without coordinates
+
+**Recommendation:** Implement minimal cache as fallback, but design converter to use `importUKAQ(meta=TRUE)` as primary pathway
+
+**Step 2 (Core Converter):**
+- **Simplified** - Check if coordinates already in data
+- If yes: aggregate directly
+- If no: fetch from cache/importMeta()
+
+### Updated Function Signature
+```r
+convert_openair_to_spatial <- function(
+  data,                    # OpenAir data.frame (preferably from importUKAQ meta=TRUE)
+  source = NULL,           # Required only if data lacks coordinates ("aurn", "kcl", etc.)
+  pollutant,               # "no2", "pm2.5", etc.
+  avg.time = "year"        # temporal aggregation period
+)
+# If data has latitude/longitude: use them
+# If not: fetch from importMeta(source) cache
+```
+
+## 17. Updated Conclusion
+
+**OpenAir → Quickmap conversion is feasible and significantly simplified by importUKAQ():**
+
+### Key Findings from Extended Research
+1. **importUKAQ() supersedes importAURN/importKCL:** Unified interface for all UK networks
+2. **meta=TRUE parameter eliminates metadata cache need:** Coordinates embedded directly in data
+3. **5 UK networks accessible:** AURN (318 sites), KCL/LAQN (1068 sites), AQE (411), SAQN (152), WAQN (88)
+4. **openairmaps provides spatial utilities:** searchNetwork() for site discovery, but not needed for core converter
+5. **Coordinates already WGS84:** No transformation needed
+6. **Utility functions available:** selectByDate(), cutData() for advanced filtering (optional)
+
+### Architectural Simplification
+- **Original design:** Metadata cache + join required
+- **New design:** `importUKAQ(meta=TRUE)` provides coordinates directly
+- **Metadata cache:** Now optional fallback for edge cases
+
+### Updated Recommendations for Implementation
+1. **Step 1:** Implement minimal metadata cache as fallback (simplified from original plan)
+2. **Step 2:** Design converter to accept data with or without coordinates
+   - Primary path: data with coordinates (from `importUKAQ meta=TRUE`)
+   - Fallback path: fetch from cache if coordinates missing
+3. **Test scripts:** Use `importUKAQ(meta=TRUE)` in Steps 5-6 to demonstrate simplified workflow
+
+**No reinvention of OpenAir functionality:** Converter uses OpenAir's own functions and transforms output to quickmap's sf format.
+
+**Ready to proceed to Step 1: Metadata Cache System (simplified version)**
