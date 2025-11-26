@@ -1,35 +1,41 @@
 # Source the main script
 Sys.setenv(DATA_PATH = "~/Coding/Library/data")
-source("R/quickmap_clean.R")
+source("R/quickmap.R")
 
 # ==============================================================================
-# MAP 1: Merton NO2 (CSV + BL data with schools) 2018-2024
+# MAP 1: Richmond NO2 (New API: data_sources + data_configs)
 # ==============================================================================
-map1_merton_no2 <- create_pollution_map(
-  diffusion_tube_file = "richmond_1993_2024-1.csv",
-  sensor_file = "bl_imperial_annualised_2021_2025_with_missing.Rdata",
-  school_file = "your_schools_Merton.csv",
+map1_richmond_no2 <- create_pollution_map(
+  data_sources = list(
+    "richmond_1993_2024-1.csv",
+    "bl_imperial_annualised_2021_2025_with_missing.Rdata",
+    "your_schools_Merton.csv"
+  ),
+  data_configs = c("dt_sites", "bl_nodes", "schools"),
   boroughs = "Richmond",
   pollutant = "no2",
   #  years = (2022:2024),
   colour_scale = "stripes_no2",
-  output_file = "debug_richmond_dt_bl.html",
-  title = "Streamline 2 debug - Richmond full data",
+  output_file = "debug_0926b_richmond_dt_bl.html",
+  title = "debug_0926b - Richmond full data (New API)",
   styling_type = "html", # HTML banner + legend
   vignette = TRUE,
   marker_labels = TRUE, # Auto-hide labels
   boundary_labels = FALSE
 )
 
-map1_merton_pm25 <- create_pollution_map(
-  sensor_file = "bl_imperial_annualised_2021_2025_with_missing.Rdata",
-  school_file = "your_schools_Merton.csv",
+map2_merton_pm25 <- create_pollution_map(
+  data_sources = list(
+    "bl_imperial_annualised_2021_2025_with_missing.Rdata",
+    "your_schools_Merton.csv"
+  ),
+  data_configs = c("bl_nodes", "schools"),
   boroughs = "Merton",
   pollutant = "pm25",
   years = (2022:2024),
   colour_scale = "gla_pm25",
-  output_file = "debug_merton_pm25_2018_2024_dt_bl.html",
-  title = "debug 6 LB Merton Annual Mean PM2.5. ✖ Schools. Sensors: ◆ Breathe London.",
+  output_file = "debug_0926b_merton_pm25_2018_2024_dt_bl.html",
+  title = "debug_0926b LB Merton Annual Mean PM2.5 (New API)",
   theme_file = "inst/themes/wandsworth.yaml",
   styling_type = "html", # HTML banner + legend
   # vignette = TRUE,
@@ -39,16 +45,19 @@ map1_merton_pm25 <- create_pollution_map(
 
 theme <- load_theme("inst/themes/wandsworth.yaml")
 
-map1_merton_no2 <- create_pollution_map(
-  diffusion_tube_file = "merton_dt_2018_2024.csv",
-  sensor_file = "bl_imperial_annualised_2021_2025_with_missing.Rdata",
-  school_file = "your_schools_Merton.csv",
+map3_merton_no2_image <- create_pollution_map(
+  data_sources = list(
+    "merton_dt_2018_2024.csv",
+    "bl_imperial_annualised_2021_2025_with_missing.Rdata",
+    "your_schools_Merton.csv"
+  ),
+  data_configs = c("dt_sites", "bl_nodes", "schools"),
   boroughs = "Merton",
   pollutant = "no2",
-  years = (2020), # All available years
+  years = (2020:2022),
   colour_scale = "who_no2",
-  output_file = "debug_image_merton_no2_2018_2024_dt_bl.html",
-  title = "debug 5 LB Merton Annual Mean NO2, 2018-2024. ✖ Schools. Sensors: ● Diffusion Tubes ◆ Breathe London.",
+  output_file = "debug_0926b_image_merton_no2_2018_2024_dt_bl.html",
+  title = "debug_0926b LB Merton Annual Mean NO2 with Image Export (New API)",
   styling_type = "html", # HTML banner + legend
   vignette = TRUE,
   export_image = TRUE,

@@ -1,0 +1,15 @@
+# Schools Configuration
+# Static layer: School locations (Primary and Secondary)
+
+id: schools
+label: "Schools"
+icon_shape: cross
+static: true
+
+# Network metadata
+min_period: null
+available_aggregations: []
+pollutants: []
+openair_import_function: null
+monitoring_type: static_poi
+provider: "Local Authority"
