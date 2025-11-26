@@ -162,6 +162,197 @@ clear_openair_metadata_cache <- function(source = NULL) {
   invisible(NULL)
 }
 
+#' Convert OpenAir data to spatial sf object
+#'
+#' Transforms OpenAir data.frames (from importUKAQ, importAURN, importKCL, etc.)
+#' into sf spatial objects compatible with quickmap's layer system.
+#'
+#' @param data data.frame. OpenAir data with date, code, and pollutant columns.
+#'   Preferably from importUKAQ(meta=TRUE) which includes coordinates.
+#' @param source Character (optional). Network source ("aurn", "kcl", etc.).
+#'   Required only if data lacks latitude/longitude columns.
+#' @param pollutant Character. Pollutant column name (e.g., "no2", "pm2.5").
+#' @param avg.time Character. Temporal aggregation period: "year" (default),
+#'   "month", "day", "hour". Passed to dplyr grouping.
+#' @return sf object with columns: siteCode, year, year_str, pollutant value,
+#'   lat, lon, Longitude, Latitude, geometry. Compatible with process_oa_data() output.
+#' @family openair
+#' @examples
+#' \dontrun{
+#' # With importUKAQ (coordinates included)
+#' data <- importUKAQ(site = "my1", year = 2023, source = "aurn", meta = TRUE)
+#' sf_data <- convert_openair_to_spatial(data, pollutant = "no2")
+#'
+#' # With importAURN (needs source for metadata)
+#' data <- importAURN(site = "my1", year = 2023)
+#' sf_data <- convert_openair_to_spatial(data, source = "aurn", pollutant = "no2")
+#' }
+convert_openair_to_spatial <- function(
+  data,
+  source = NULL,
+  pollutant,
+  avg.time = "year"
+) {
+  # Validate inputs
+  if (!is.data.frame(data) || nrow(data) == 0) {
+    stop("data must be a non-empty data.frame", call. = FALSE)
+  }
+
+  if (!requireNamespace("openair", quietly = TRUE)) {
+    stop(
+      "Package 'openair' is required for this function. ",
+      "Install with: install.packages('openair')",
+      call. = FALSE
+    )
+  }
+
+  # Check required columns
+  required_cols <- c("date", "code")
+  missing_cols <- setdiff(required_cols, names(data))
+  if (length(missing_cols) > 0) {
+    stop(
+      "Missing required columns in data: ",
+      paste(missing_cols, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  # Check pollutant exists
+  if (!pollutant %in% names(data)) {
+    stop(
+      "Pollutant '", pollutant, "' not found in data. ",
+      "Available columns: ", paste(names(data), collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  # Check if coordinates already in data (importUKAQ meta=TRUE)
+  has_coords <- all(c("latitude", "longitude") %in% names(data))
+
+  if (!has_coords) {
+    # Need to fetch metadata
+    if (is.null(source)) {
+      stop(
+        "source parameter required when data lacks coordinates. ",
+        "Either use importUKAQ(meta=TRUE) or provide source name.",
+        call. = FALSE
+      )
+    }
+
+    message("Fetching coordinates from metadata (source: ", source, ")")
+    metadata <- get_openair_metadata(source)
+
+    # Join metadata to data
+    data <- merge(
+      data,
+      metadata[, c("code", "latitude", "longitude")],
+      by = "code",
+      all.x = TRUE
+    )
+
+    # Check for sites without coordinates
+    missing_coords <- is.na(data$latitude) | is.na(data$longitude)
+    if (any(missing_coords)) {
+      missing_codes <- unique(data$code[missing_coords])
+      warning(
+        "Sites without coordinates in metadata (filtered out): ",
+        paste(head(missing_codes, 10), collapse = ", "),
+        if (length(missing_codes) > 10) paste0(" (and ", length(missing_codes) - 10, " more)") else "",
+        call. = FALSE
+      )
+      data <- data[!missing_coords, ]
+    }
+
+    if (nrow(data) == 0) {
+      stop(
+        "No data remaining after filtering sites without coordinates",
+        call. = FALSE
+      )
+    }
+  }
+
+  # Temporal aggregation using dplyr (preserves grouping columns)
+  if (avg.time == "year") {
+    # Annual aggregation
+    data$year <- as.integer(format(data$date, "%Y"))
+    data$year_str <- format(data$date, "%Y")
+
+    aggregated <- data |>
+      group_by(code, year) |>
+      summarise(
+        !!sym(pollutant) := mean(!!sym(pollutant), na.rm = TRUE),
+        latitude = first(latitude),
+        longitude = first(longitude),
+        year_str = first(year_str),
+        .groups = "drop"
+      )
+  } else if (avg.time %in% c("month", "day", "hour")) {
+    # Sub-annual aggregation
+    data$year <- as.integer(format(data$date, "%Y"))
+
+    # Create year_str based on resolution
+    data$year_str <- switch(
+      avg.time,
+      "month" = format(data$date, "%Y-%m"),
+      "day" = format(data$date, "%Y-%m-%d"),
+      "hour" = format(data$date, "%Y-%m-%d %H:00")
+    )
+
+    # Create period column for grouping
+    data$period <- data$date
+    data$period <- switch(
+      avg.time,
+      "month" = as.Date(format(data$date, "%Y-%m-01")),
+      "day" = as.Date(data$date),
+      "hour" = data$date
+    )
+
+    aggregated <- data |>
+      group_by(code, period, year, year_str) |>
+      summarise(
+        !!sym(pollutant) := mean(!!sym(pollutant), na.rm = TRUE),
+        latitude = first(latitude),
+        longitude = first(longitude),
+        .groups = "drop"
+      ) |>
+      select(-period)  # Remove temporary grouping column
+  } else {
+    stop(
+      "Invalid avg.time: '", avg.time, "'. ",
+      "Valid options: 'year', 'month', 'day', 'hour'",
+      call. = FALSE
+    )
+  }
+
+  # Rename code to siteCode for compatibility
+  aggregated$siteCode <- aggregated$code
+  aggregated$code <- NULL
+
+  # Add lat/lon aliases for compatibility
+  aggregated$lat <- aggregated$latitude
+  aggregated$lon <- aggregated$longitude
+
+  # Convert to sf object
+  sf_data <- st_as_sf(
+    aggregated,
+    coords = c("longitude", "latitude"),
+    crs = 4326
+  )
+
+  # Extract coordinates for Longitude/Latitude columns (compatibility)
+  coords <- st_coordinates(sf_data)
+  sf_data$Longitude <- as.numeric(coords[, 1])
+  sf_data$Latitude <- as.numeric(coords[, 2])
+
+  message(
+    "Converted ", nrow(sf_data), " site-",
+    if (avg.time == "year") "years" else paste0(avg.time, "s"),
+    " to sf object"
+  )
+
+  return(sf_data)
+}
+
 validate_oa_data <- function(data, pollutant) {
   required_cols <- c("siteCode", "year", pollutant, "lat", "lon")
   missing_cols <- setdiff(required_cols, names(data))
