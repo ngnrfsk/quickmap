@@ -4,7 +4,12 @@
 id: dt_sites
 label: "Diffusion Tubes"
 icon_shape: circle
-pollutant_col: no2
-temporal: true
-data_source_var: sf_data_wgs84
-description: "Passive diffusion tube monitoring sites for nitrogen dioxide (NO2) measurement"
+static: false
+
+# Network metadata
+min_period: monthly
+available_aggregations: [monthly, annual]
+pollutants: [no2]
+openair_import_function: null
+monitoring_type: passive
+provider: "Local Authority"

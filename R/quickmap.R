@@ -1,5 +1,5 @@
 # quickmap - Air Quality Mapping for R
-# Version 0.9.1  2025/11/22, 22:25
+# Version 0.9.2  2025/11/26
 
 packages <- c(
   "leaflet",
@@ -181,33 +181,22 @@ get_temporal_data <- function(
 #' Get maximum data value across all measurement layers
 #' @param measurement_layers Layer configuration from get_measurement_layers()
 #' @param pollutant Pollutant name (for bl_nodes data)
-#' @param data_env Environment containing data objects
+#' @param spatial_data Spatial data list from load_spatial_data_sources()
 #' @param years Character vector of year strings to include
 #' @return Maximum value or NULL if no data
 #' @family layer
 get_data_maximum <- function(
   measurement_layers,
   pollutant,
-  data_env,
+  spatial_data,
   years = NULL
 ) {
-  get_pollutant_col <- function(layer_type) {
-    switch(layer_type, "dt_sites" = "no2", "bl_nodes" = pollutant, NULL)
-  }
-
   layer_maxima <- lapply(measurement_layers, function(layer_config) {
-    if (
-      !layer_config$enabled ||
-        !layer_config$temporal ||
-        layer_config$id == "schools"
-    ) {
+    if (!layer_config$enabled || layer_config$static) {
       return(NULL)
     }
 
-    data <- tryCatch(
-      get(layer_config$data_source, envir = data_env, inherits = FALSE),
-      error = function(e) NULL
-    )
+    data <- spatial_data$all_data[[layer_config$id]]
     if (is.null(data) || nrow(data) == 0) return(NULL)
 
     if (!is.null(years) && "year_str" %in% names(data)) {
@@ -215,10 +204,10 @@ get_data_maximum <- function(
       if (nrow(data) == 0) return(NULL)
     }
 
-    pollutant_col <- get_pollutant_col(layer_config$id)
-    if (is.null(pollutant_col) || !pollutant_col %in% names(data)) return(NULL)
+    # Use pollutant parameter consistently
+    if (!pollutant %in% names(data)) return(NULL)
 
-    max_val <- max(data[[pollutant_col]], na.rm = TRUE)
+    max_val <- max(data[[pollutant]], na.rm = TRUE)
     if (is.infinite(max_val) || is.nan(max_val)) NULL else max_val
   })
 
@@ -441,9 +430,20 @@ load_colour_scale <- function(scale_name) {
 
 #' Load data source configuration from YAML file
 #' @param source_name Character string, name of the data source (e.g., "dt_sites", "bl_nodes", "schools")
-#' @return List containing data source configuration with fields: id, label, icon_shape, pollutant_col, temporal, data_source_var
+#' @return List containing data source configuration with fields: id, label, icon_shape, static
 #' @family config
 load_data_source_config <- function(source_name) {
+  # L2: Check config file exists with helpful error
+  config_dir <- get_package_dir("config/data_sources")
+  config_file <- file.path(config_dir, paste0(source_name, ".yaml"))
+
+  if (!file.exists(config_file)) {
+    available <- list.files(config_dir, pattern = "\\.yaml$")
+    available_names <- gsub("\\.yaml$", "", available)
+    stop("Config '", source_name, "' not found. Available: ",
+         paste(available_names, collapse = ", "))
+  }
+
   config <- load_yaml_config(
     source_name,
     subdirectory = "data_sources",
@@ -451,7 +451,7 @@ load_data_source_config <- function(source_name) {
   )
 
   # Validate required fields
-  required_fields <- c("id", "icon_shape", "temporal", "data_source_var")
+  required_fields <- c("id", "icon_shape", "static")
   missing_fields <- setdiff(required_fields, names(config))
   if (length(missing_fields) > 0) {
     stop(
@@ -466,11 +466,14 @@ load_data_source_config <- function(source_name) {
 #' Write data source configuration to YAML file
 #' @param id Character string, unique identifier (e.g., "aurn")
 #' @param label Character string, human-readable name (e.g., "AURN Network")
-#' @param icon_shape Character string, one of: "circle", "diamond", "cross", "square", "triangle"
-#' @param pollutant_col Character string or NULL, column name for pollutant data (NULL for non-pollution layers)
-#' @param temporal Logical, TRUE if layer has year data, FALSE for static layers
-#' @param data_source_var Character string, R variable name for the data source
-#' @param description Character string, optional description of the data source
+#' @param icon_shape Character string, one of: "circle", "diamond", "cross", "square", "triangle", "star", "plus"
+#' @param static Logical, TRUE for static layers (no year data), FALSE for temporal layers with years
+#' @param min_period Character string, minimum temporal resolution (e.g., "hourly", "monthly") or NULL
+#' @param available_aggregations Character vector, available time aggregations (default: NULL)
+#' @param pollutants Character vector, pollutants measured (default: NULL)
+#' @param openair_import_function Character string, OpenAir import function name or NULL (default: NULL)
+#' @param monitoring_type Character string, one of: "passive", "continuous_automatic", "low_cost_sensor", "static_poi"
+#' @param provider Character string, data provider name (default: "")
 #' @param output_dir Character string, directory to write YAML file (default: "inst/config/data_sources")
 #' @return Invisible path to written YAML file
 #' @family config
@@ -478,10 +481,13 @@ write_data_source_config <- function(
   id,
   label,
   icon_shape,
-  pollutant_col = "no2",
-  temporal = TRUE,
-  data_source_var,
-  description = "",
+  static = FALSE,
+  min_period = NULL,
+  available_aggregations = NULL,
+  pollutants = NULL,
+  openair_import_function = NULL,
+  monitoring_type = "continuous_automatic",
+  provider = "",
   output_dir = "inst/config/data_sources"
 ) {
   if (!requireNamespace("yaml", quietly = TRUE)) {
@@ -489,7 +495,7 @@ write_data_source_config <- function(
   }
 
   # Validate icon_shape
-  valid_shapes <- c("circle", "diamond", "cross", "square", "triangle")
+  valid_shapes <- c("circle", "diamond", "cross", "square", "triangle", "rect", "star", "plus")
   if (!icon_shape %in% valid_shapes) {
     stop(
       "Invalid icon_shape: ", icon_shape,
@@ -497,16 +503,30 @@ write_data_source_config <- function(
     )
   }
 
-  # Create config list
+  # Validate monitoring_type
+  valid_types <- c("passive", "continuous_automatic", "low_cost_sensor", "static_poi")
+  if (!monitoring_type %in% valid_types) {
+    stop(
+      "Invalid monitoring_type: ", monitoring_type,
+      ". Must be one of: ", paste(valid_types, collapse = ", ")
+    )
+  }
+
+  # Create config list (compact: exclude NULLs)
   config <- list(
     id = id,
     label = label,
     icon_shape = icon_shape,
-    pollutant_col = pollutant_col,
-    temporal = temporal,
-    data_source_var = data_source_var,
-    description = description
+    static = static
   )
+
+  # Add network metadata
+  config$min_period <- min_period
+  config$available_aggregations <- if (!is.null(available_aggregations)) available_aggregations else list()
+  config$pollutants <- if (!is.null(pollutants)) pollutants else list()
+  config$openair_import_function <- openair_import_function
+  config$monitoring_type <- monitoring_type
+  config$provider <- provider
 
   # Ensure output directory exists
   if (!dir.exists(output_dir)) {
@@ -938,7 +958,7 @@ get_contrast_text_color <- function(color) {
 }
 
 #' @keywords internal
-load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
+build_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   banner_dir <- get_package_dir("banner")
   css_variant <- if (image_mode) "banner-image.css" else "banner-interactive.css"
   css_file <- file.path(banner_dir, css_variant)
@@ -956,7 +976,7 @@ load_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 }
 
 #' @keywords internal
-load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
+build_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   legend_dir <- get_package_dir("legend")
   css_variant <- if (image_mode) "legend-image.css" else "legend-interactive.css"
   css_file <- file.path(legend_dir, css_variant)
@@ -980,14 +1000,14 @@ load_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 }
 
 #' @keywords internal
-build_static_map_for_year <- function(template, year, measurement_layers,
-                                      pollutant, colour_scale, data_env,
-                                      scale_factor) {
+add_year_and_static_layers <- function(template, year, measurement_layers,
+                                       pollutant, colour_scale, spatial_data,
+                                       scale_factor) {
   template |>
     generate_map_layers(measurement_layers, year, pollutant,
-                       colour_scale, data_env, scale_factor) |>
+                       colour_scale, spatial_data, scale_factor) |>
     generate_map_layers(measurement_layers, "static_only", pollutant,
-                       colour_scale, data_env, scale_factor)
+                       colour_scale, spatial_data, scale_factor)
 }
 
 finalize_and_save_map <- function(map, html_file, borough_sf, vignette_overlay,
@@ -1000,7 +1020,7 @@ finalize_and_save_map <- function(map, html_file, borough_sf, vignette_overlay,
     interactive, years, boundary_labels, zoom_level
   )
 
-  save_styled_map(
+  save_html_and_style(
     map, html_file, title, styling_type, show_banner,
     banner_colour, colour_scale, !interactive, !interactive,
     image_dimensions, autoplay, play_speed, data_max, years
@@ -1017,10 +1037,10 @@ finalize_and_save_map <- function(map, html_file, borough_sf, vignette_overlay,
   return(map)
 }
 
-save_styled_map <- function(map, html_file, title, styling_type, show_banner,
-                            banner_colour, colour_scale, collapsed_mobile,
-                            image_mode, image_dimensions, autoplay, play_speed,
-                            data_max, years = NULL) {
+save_html_and_style <- function(map, html_file, title, styling_type, show_banner,
+                                banner_colour, colour_scale, collapsed_mobile,
+                                image_mode, image_dimensions, autoplay, play_speed,
+                                data_max, years = NULL) {
   htmlwidgets::saveWidget(
     map,
     file = html_file,
@@ -1031,7 +1051,7 @@ save_styled_map <- function(map, html_file, title, styling_type, show_banner,
   if (styling_type == "html") {
     tryCatch(
       {
-        apply_custom_layout_in_html(
+        inject_banner_legend_controls(
           html_file = html_file,
           title = if (show_banner) title else NULL,
           banner_colour = banner_colour,
@@ -1158,14 +1178,15 @@ load_layer_cache_js <- function() {
   return(read_template_file(js_file))
 }
 
-#' Post-process saved HTML to add banner and external legend
+#' Inject banner, legend, and year control into saved HTML
 #'
 #' Modifies an existing HTML file in place to add:
 #'   1. Viewport meta tag for mobile compatibility
 #'   2. Custom CSS for banner/legend/map layout
 #'   3. Banner div above map (optional)
 #'   4. Map container with flexbox layout
-#'   5. External legend below map (generated from colour_scale)
+#'   5. Year control menu (for temporal data)
+#'   6. External legend below map (generated from colour_scale)
 #'
 #' @param html_file Path to saved HTML file (will be modified in place)
 #' @param title Text for banner (NULL to skip banner entirely)
@@ -1180,7 +1201,7 @@ load_layer_cache_js <- function() {
 #'   - Legend: fixed height at bottom (collapsible)
 #'   Layout is 100vh total height with no scrollbars
 #' @family layout
-apply_custom_layout_in_html <- function(
+inject_banner_legend_controls <- function(
   html_file,
   title = NULL,
   banner_colour = "#2c3e50",
@@ -1202,9 +1223,9 @@ apply_custom_layout_in_html <- function(
 
   viewport_meta <- '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
 
-  banner_css <- load_banner_css(banner_colour, image_mode)
+  banner_css <- build_banner_css(banner_colour, image_mode)
 
-  legend_css <- load_legend_css(banner_colour, image_mode)
+  legend_css <- build_legend_css(banner_colour, image_mode)
 
   custom_css <- paste0(banner_css, legend_css)
 
@@ -1290,15 +1311,35 @@ apply_custom_layout_in_html <- function(
 }
 
 #' @keywords internal
+validate_and_fix_icon_shape <- function(shape_name) {
+  # Valid user-facing shape names
+  valid_shapes <- c("circle", "diamond", "cross", "square", "triangle", "star", "plus")
+
+  # leaflegend compatibility mapping
+  leaflegend_shapes <- c("circle", "diamond", "cross", "rect", "triangle", "star", "plus")
+
+  if (!shape_name %in% valid_shapes) {
+    stop("Invalid icon shape: '", shape_name, "'. ",
+         "Valid shapes: ", paste(valid_shapes, collapse = ", "))
+  }
+
+  # Warn and fix "square" → "rect" for leaflegend compatibility
+  if (shape_name == "square") {
+    warning("Icon shape 'square' automatically converted to 'rect' for leaflegend compatibility")
+    return("rect")
+  }
+
+  return(shape_name)
+}
+
 get_icon_shape_config <- function(shape_name) {
   # Data-driven shape mapping
   # Maps shape names to leaflegend icon parameters
-  # Note: leaflegend uses "rect" not "square"
+  # Note: shape_name should be validated before calling this
   shape_definitions <- list(
     "circle" = list(shape = "circle", base_size = 20),
     "diamond" = list(shape = "diamond", base_size = 20),
     "cross" = list(shape = "cross", base_size = 12),
-    "square" = list(shape = "rect", base_size = 20),  # leaflegend uses "rect"
     "rect" = list(shape = "rect", base_size = 20),
     "triangle" = list(shape = "triangle", base_size = 20),
     "star" = list(shape = "star", base_size = 20),
@@ -1307,8 +1348,7 @@ get_icon_shape_config <- function(shape_name) {
 
   config <- shape_definitions[[shape_name]]
   if (is.null(config)) {
-    stop("Unknown icon shape: ", shape_name,
-         ". Available shapes: ", paste(names(shape_definitions), collapse = ", "))
+    stop("Internal error: Unknown icon shape after validation: ", shape_name)
   }
   return(config)
 }
@@ -1358,24 +1398,38 @@ create_generic_icons <- function(
 get_measurement_layers <- function(
   spatial_data,
   data_configs,
-  marker_labels
+  marker_labels,
+  icon_shapes = NULL
 ) {
+  # L4: Validate icon_shapes length matches data_configs
+  if (!is.null(icon_shapes) && length(icon_shapes) != length(data_configs)) {
+    stop("icon_shapes must have same length as data_configs. Got ",
+         length(icon_shapes), " shapes and ", length(data_configs), " configs.")
+  }
+
   layers <- list()
 
-  for (config_name in data_configs) {
+  for (i in seq_along(data_configs)) {
+    config_name <- data_configs[i]
+
     # Load config from YAML
     yaml_config <- load_data_source_config(config_name)
 
     data_obj <- spatial_data$all_data[[config_name]]
     enabled <- !is.null(data_obj)
 
+    # Override icon_shape if provided
+    icon_shape <- if (!is.null(icon_shapes)) {
+      validate_and_fix_icon_shape(icon_shapes[i])
+    } else {
+      validate_and_fix_icon_shape(yaml_config$icon_shape)
+    }
+
     layers[[config_name]] <- list(
       enabled = enabled,
-      data_source = yaml_config$data_source_var,
       id = yaml_config$id,
-      temporal = yaml_config$temporal,
-      pollutant_col = yaml_config$pollutant_col,
-      icon_shape = yaml_config$icon_shape,
+      static = yaml_config$static,
+      icon_shape = icon_shape,
       options = list(marker_labels = marker_labels)
     )
   }
@@ -1401,8 +1455,6 @@ prepare_generic_layer_data <- function(
     data = year_data,
     labels = generate_marker_labels(year_data, use_pollutant, show_labels, layer_id)
   )
-
-  if (layer_id == "schools") result$layer_type <- "schools"
 
   result
 }
@@ -1461,8 +1513,8 @@ add_layer <- function(
     labelOptions = label_opts
   )
 
-  # Use temporal flag from config instead of hardcoded layer type check
-  if (layer_config$temporal) {
+  # Use static flag from config: non-static (temporal) layers grouped by year
+  if (!layer_config$static) {
     marker_params$group <- year
   }
 
@@ -1471,7 +1523,7 @@ add_layer <- function(
 
 
 #' @keywords internal
-generate_marker_labels <- function(data, pollutant, marker_labels, layer_type) {
+generate_marker_labels <- function(data, pollutant, marker_labels, layer_id) {
   show_values <- marker_labels %in% c(TRUE, "values_on")
   show_custom <- marker_labels %in% c("labels", "labels_on")
 
@@ -1479,12 +1531,9 @@ generate_marker_labels <- function(data, pollutant, marker_labels, layer_type) {
     return(rep("", nrow(data)))
   }
 
-  # Schools: show School column
-  if (layer_type == "schools") {
-    if ("School" %in% names(data)) {
-      return(as.character(data$School))
-    }
-    return(rep("", nrow(data)))
+  # Static layers (schools): show School column
+  if ("School" %in% names(data) && layer_id == "schools") {
+    return(as.character(data$School))
   }
 
   # Custom labels (Label column)
@@ -1492,22 +1541,20 @@ generate_marker_labels <- function(data, pollutant, marker_labels, layer_type) {
     if ("Label" %in% names(data)) {
       return(as.character(data$Label))
     }
-    # Fallback for bl_nodes only
-    if (layer_type == "bl_nodes") {
-      if (!is.null(pollutant) && pollutant %in% names(data)) {
-        warning(
-          "marker_labels set to '", marker_labels,
-          "' but no Label column found in bl_nodes data. Showing pollution values instead.",
-          call. = FALSE
-        )
-        return(ifelse(is.na(data[[pollutant]]), "", paste(round(data[[pollutant]], 0), "ug/m3")))
-      }
+    # Fallback: show pollution values if available
+    if (!is.null(pollutant) && pollutant %in% names(data)) {
       warning(
         "marker_labels set to '", marker_labels,
-        "' but no Label column found in bl_nodes data. No labels will be shown.",
+        "' but no Label column found. Showing pollution values instead.",
         call. = FALSE
       )
+      return(ifelse(is.na(data[[pollutant]]), "", paste(round(data[[pollutant]], 0), "ug/m3")))
     }
+    warning(
+      "marker_labels set to '", marker_labels,
+      "' but no Label column found. No labels will be shown.",
+      call. = FALSE
+    )
     return(rep("", nrow(data)))
   }
 
@@ -1520,8 +1567,8 @@ generate_marker_labels <- function(data, pollutant, marker_labels, layer_type) {
 }
 
 
-get_layer_year_data <- function(data_source_name, year, data_environment) {
-  data_source <- get(data_source_name, envir = data_environment)
+get_layer_year_data <- function(layer_id, year, spatial_data) {
+  data_source <- spatial_data$all_data[[layer_id]]
 
   if (year != "static") {
     data_source[data_source$year_str == year, ]
@@ -1672,27 +1719,25 @@ generate_map_layers <- function(
   target_year,
   pollutant,
   colour_scale,
-  data_env,
+  spatial_data,
   image_scale_factor = 1.0
 ) {
   for (layer_name in names(measurement_layers)) {
     layer_config <- measurement_layers[[layer_name]]
     if (!layer_config$enabled) next
 
-    if (layer_config$temporal) {
+    if (!layer_config$static) {
       if (target_year != "static_only") {
         year_data <- get_layer_year_data(
-          layer_config$data_source,
+          layer_config$id,
           target_year,
-          data_env
+          spatial_data
         )
         if (nrow(year_data) == 0) next
 
-        # Filter missing data using config's pollutant_col (if specified)
-        if (!is.null(layer_config$pollutant_col)) {
-          year_data <- dplyr::filter(year_data, !is.na(.data[[pollutant]]))
-          if (nrow(year_data) == 0) next
-        }
+        # Filter missing pollution data (non-static layers have pollution data)
+        year_data <- dplyr::filter(year_data, !is.na(.data[[pollutant]]))
+        if (nrow(year_data) == 0) next
 
         layer_data <- prepare_generic_layer_data(
           layer_config,
@@ -1718,7 +1763,7 @@ generate_map_layers <- function(
         }
       }
     } else {
-      static_data <- get(layer_config$data_source, envir = data_env)
+      static_data <- spatial_data$all_data[[layer_config$id]]
       layer_data <- prepare_generic_layer_data(layer_config, static_data)
 
       show_labels <- if (!is.null(layer_config$options))
@@ -1737,8 +1782,10 @@ generate_map_layers <- function(
       )
     }
   }
-  base_map <- base_map |>
-    showGroup(layer_name)
+  # Show the target year group (last year processed = most recent)
+  if (!is.null(target_year) && target_year != "static_only") {
+    base_map <- base_map |> showGroup(target_year)
+  }
   return(base_map)
 }
 
@@ -1759,30 +1806,38 @@ load_spatial_data_sources <- function(data_sources, data_configs, pollutant) {
     data_src <- data_sources[[i]]
     config_name <- data_configs[i]
 
-    # Handle both file paths (strings) and sf objects
+    # Handle sf objects directly
     if (inherits(data_src, "sf")) {
       loaded_data[[config_name]] <- data_src
+      next
+    }
+
+    # Load config to determine file format
+    config <- load_data_source_config(config_name)
+
+    # Config-driven file loading
+    if (config$static) {
+      # Static layers: CSV with Easting/Northing
+      result <- load_data_file(data_src, "csv", c("Easting", "Northing"))
+      if (!is.null(result)) {
+        loaded_data[[config_name]] <- result$data |> transform_to_wgs84()
+      }
     } else {
-      # File path - determine type and load
-      if (config_name == "bl_nodes") {
+      # Temporal layers: check for OpenAir format
+      if (!is.null(config$openair_import_function)) {
+        # RData with OpenAir format
         loaded_data[[config_name]] <- load_data_file(data_src, "rdata", pollutant = pollutant)
-      } else if (config_name == "dt_sites") {
+      } else {
+        # CSV with year columns
         result <- load_data_file(data_src, "csv", c("Easting", "Northing"))
         if (!is.null(result)) {
           loaded_data[[config_name]] <- get_temporal_data(result$data) |> transform_to_wgs84()
         }
-      } else if (config_name == "schools") {
-        result <- load_data_file(data_src, "csv", c("Easting", "Northing"))
-        if (!is.null(result)) {
-          loaded_data[[config_name]] <- result$data |> transform_to_wgs84()
-        }
-      } else {
-        warning("Unknown config_name: ", config_name, ". Skipping.")
       }
     }
   }
 
-  # Maintain backward compatibility with expected names
+  # Maintain backward compatibility
   list(
     dt = loaded_data[["dt_sites"]],
     sensor = loaded_data[["bl_nodes"]],
@@ -1795,14 +1850,17 @@ load_spatial_data_sources <- function(data_sources, data_configs, pollutant) {
   )
 }
 
-determine_primary_data_and_years <- function(spatial_data, borough_sf, vignette, requested_years) {
-  dt_data <- spatial_data$dt
-  sensor_data <- spatial_data$sensor
+determine_years_and_viewport <- function(spatial_data, borough_sf, vignette, requested_years) {
+  # Find first temporal (non-static) layer to determine available years
+  temporal_layers <- Filter(
+    function(x) !is.null(x) && "year_str" %in% names(x),
+    spatial_data$all_data
+  )
 
-  primary_data <- dt_data %||% sensor_data
-
-  if (!is.null(sensor_data) && !is.null(borough_sf) && vignette) {
-    sensor_data <- sensor_data |> st_filter(borough_sf, .predicate = st_intersects)
+  primary_data <- if (length(temporal_layers) > 0) {
+    temporal_layers[[1]]
+  } else {
+    NULL
   }
 
   vignette_overlay <- if (vignette) create_vignette_overlay(borough_sf)
@@ -1810,7 +1868,6 @@ determine_primary_data_and_years <- function(spatial_data, borough_sf, vignette,
 
   if (is.null(primary_data)) {
     years <- requested_years %||% "static_only"
-    primary_data <- borough_sf
   } else {
     available_years <- unique(primary_data$year_str)
     years <- if (is.null(requested_years)) {
@@ -1821,8 +1878,7 @@ determine_primary_data_and_years <- function(spatial_data, borough_sf, vignette,
   }
 
   list(
-    primary = primary_data,
-    sensor = sensor_data,
+    primary_data = primary_data,
     years = years,
     vignette_overlay = vignette_overlay,
     bbox = bbox
@@ -1837,6 +1893,10 @@ determine_primary_data_and_years <- function(spatial_data, borough_sf, vignette,
 #' @param diffusion_tube_file CSV file with Easting/Northing columns and year columns (or "none"). Prepends DATA_PATH if set.
 #' @param sensor_file RData file with 'dataOAformat' object (or "none"). Prepends DATA_PATH if set.
 #' @param school_file CSV file with Easting/Northing/Level/School columns (or "none"). Prepends DATA_PATH if set.
+#' @param data_sources List of file paths or sf objects for new API (default: NULL).
+#' @param data_configs Character vector of config names matching data_sources (default: NULL).
+#' @param icon_shapes Character vector of icon shapes to override config files (default: NULL).
+#'   Options: "circle", "diamond", "cross", "triangle", "star", "plus". If provided, must match length of data_sources.
 #' @param output_file Output filename (without extension). Saved to 'aq_maps/' directory.
 #' @param export_image NULL (no export), TRUE (export 1200x1200), or c(width, height) vector for custom dimensions.
 #' @param boroughs Borough name(s) for boundary display and data filtering (required).
@@ -1903,6 +1963,7 @@ create_pollution_map <- function(
   school_file = "none",
   data_sources = NULL,
   data_configs = NULL,
+  icon_shapes = NULL,
   output_file = "pollution_map.html",
   export_image = NULL,
   boroughs,
@@ -1938,6 +1999,14 @@ create_pollution_map <- function(
     }
   }
 
+  # L1: Validate data_sources and data_configs length match
+  if (!is.null(data_sources) && !is.null(data_configs)) {
+    if (length(data_sources) != length(data_configs)) {
+      stop("data_sources and data_configs must have same length. Got ",
+           length(data_sources), " sources and ", length(data_configs), " configs.")
+    }
+  }
+
   c(image_export, map_width_px, map_height_px) %<-% parse_export_params(export_image)
   show_banner <- (styling_type == "html")
   theme <- load_theme(theme_file)
@@ -1964,24 +2033,26 @@ create_pollution_map <- function(
   if (!dir.exists("aq_maps")) dir.create("aq_maps", showWarnings = TRUE)
   spatial_data <- load_spatial_data_sources(data_sources, data_configs, pollutant)
   if (is.null(borough_sf)) return()
-  c(sf_data_wgs84, bl_annual_means_sf, years, vignette_overlay, bbox) %<-%
-    determine_primary_data_and_years(spatial_data, borough_sf, vignette, years)
-  sf_schools_wgs84 <- spatial_data$school
+  c(primary_data, years, vignette_overlay, bbox) %<-%
+    determine_years_and_viewport(spatial_data, borough_sf, vignette, years)
   legend_info <- get_colour_legend(colour_scale)
 
-  html_map <- create_base_map(sf_data_wgs84, TRUE, base_tiles_provider)
+  # Use primary data for base map, or borough boundary if no temporal data
+  base_map_data <- primary_data %||% borough_sf
+  html_map <- create_base_map(base_map_data, TRUE, base_tiles_provider)
 
   if (image_export) {
-    static_map_template <- create_base_map(sf_data_wgs84, FALSE, base_tiles_provider)
+    static_map_template <- create_base_map(base_map_data, FALSE, base_tiles_provider)
   }
 
   measurement_layers <- get_measurement_layers(
     spatial_data,
     data_configs,
-    marker_labels
+    marker_labels,
+    icon_shapes
   )
 
-  data_max <- get_data_maximum(measurement_layers, pollutant, environment(), years)
+  data_max <- get_data_maximum(measurement_layers, pollutant, spatial_data, years)
 
   marker_scale_factor <- if (image_export) {
     sqrt((map_width_px * map_height_px) / (1200 * 1200))
@@ -1989,12 +2060,12 @@ create_pollution_map <- function(
 
   for (yr in unique(years)) {
     html_map <- generate_map_layers(html_map, measurement_layers, yr,
-                                     pollutant, colour_scale, environment(), 1.0)
+                                     pollutant, colour_scale, spatial_data, 1.0)
 
     if (image_export) {
-      static_map <- build_static_map_for_year(
+      static_map <- add_year_and_static_layers(
         static_map_template, yr, measurement_layers,
-        pollutant, colour_scale, environment(), marker_scale_factor
+        pollutant, colour_scale, spatial_data, marker_scale_factor
       )
 
       file_parts <- tools::file_path_sans_ext(basename(output_file))
