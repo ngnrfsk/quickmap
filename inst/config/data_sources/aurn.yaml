@@ -1,0 +1,16 @@
+id: aurn
+label: AURN Network (Mock)
+icon_shape: square
+static: no
+min_period: hourly
+available_aggregations:
+- hourly
+- daily
+- monthly
+- annual
+pollutants:
+- no2
+- pm25
+- pm10
+monitoring_type: continuous_automatic
+provider: Mock AURN Network
