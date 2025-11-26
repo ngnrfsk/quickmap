@@ -47,8 +47,8 @@ points_inside <- points_sf[st_within(points_sf, borough_sf, sparse = FALSE)[,1],
 
 # If we don't have enough points inside, regenerate
 while (nrow(points_inside) < 50) {
-  extra_lons <- runif(10, bbox["xmin"], bbox["xmax"])
-  extra_lats <- runif(10, bbox["ymin"], bbox["ymax"])
+  extra_lons <- runif(20, bbox["xmin"], bbox["xmax"])
+  extra_lats <- runif(20, bbox["ymin"], bbox["ymax"])
   extra_points <- st_as_sf(
     data.frame(lon = extra_lons, lat = extra_lats),
     coords = c("lon", "lat"),
@@ -61,7 +61,7 @@ while (nrow(points_inside) < 50) {
 points_inside <- points_inside[1:50, ]
 
 # Create AURN data matching bl_annual_means_sf structure
-years <- c(2022, 2023, 2024)
+years <- c(2018:2024)
 aurn_data <- do.call(rbind, lapply(years, function(yr) {
   data.frame(
     siteCode = paste0("AURN_", 1:50),
@@ -92,10 +92,13 @@ write_data_source_config(
   id = "aurn",
   label = "AURN Network (Mock)",
   icon_shape = "square",
-  pollutant_col = "no2",
-  temporal = TRUE,
-  data_source_var = "mock_aurn_sf",
-  description = "Mock AURN (Automatic Urban and Rural Network) monitoring sites"
+  static = FALSE,
+  min_period = "hourly",
+  available_aggregations = c("hourly", "daily", "monthly", "annual"),
+  pollutants = c("no2", "pm25", "pm10"),
+  openair_import_function = NULL,
+  monitoring_type = "continuous_automatic",
+  provider = "Mock AURN Network"
 )
 
 cat("   ✓ AURN config written to inst/config/data_sources/aurn.yaml\n")
@@ -115,7 +118,7 @@ map_4network <- create_pollution_map(
   data_configs = c("dt_sites", "bl_nodes", "schools", "aurn"),
   boroughs = "Merton",
   pollutant = "no2",
-  years = c(2022, 2023, 2024),
+  years = c(2018:2024),
   colour_scale = "who_no2",
   output_file = "test_4network_mock_merton_no2.html",
   title = "4-Network Test: DT (●) + BL (◆) + Schools (✖) + AURN (■)",
@@ -127,17 +130,3 @@ map_4network <- create_pollution_map(
 
 cat("   ✓ Map created with 4 distinct icon shapes\n")
 
-# ==============================================================================
-# Summary
-# ==============================================================================
-cat("\n", rep("=", 80), "\n", sep="")
-cat("4-NETWORK TEST COMPLETED SUCCESSFULLY\n")
-cat(rep("=", 80), "\n", sep="")
-cat("\nMap output: aq_maps/test_4network_mock_merton_no2.html\n")
-cat("\nIcon shapes:\n")
-cat("  ● Circles    = Diffusion Tubes (dt_sites)\n")
-cat("  ◆ Diamonds   = Breathe London (bl_nodes)\n")
-cat("  ✖ Crosses    = Schools (schools)\n")
-cat("  ■ Squares    = AURN Network (aurn) - NEW!\n")
-cat("\nAll 4 networks rendered via YAML config - NO code changes required!\n")
-cat(rep("=", 80), "\n", sep="")
