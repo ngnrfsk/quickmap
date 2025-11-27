@@ -1608,7 +1608,6 @@ get_measurement_layers <- function(
       default_symbols[((i - 1) %% 7) + 1]
     }
     icon_shape <- validate_and_fix_icon_shape(symbol)
-    message("Layer ", i, " (", layer_id, "): symbol=", symbol, " -> ", icon_shape)
 
     # Detect if static (no year_str column)
     is_static <- enabled && !("year_str" %in% names(data_obj))
