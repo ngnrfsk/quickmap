@@ -1,7 +1,8 @@
 id: aurn
-label: AURN Network (Mock)
+label: AURN Network
 icon_shape: square
 static: no
+openair_import_function: importUKAQ
 min_period: hourly
 available_aggregations:
 - hourly
@@ -13,4 +14,4 @@ pollutants:
 - pm25
 - pm10
 monitoring_type: continuous_automatic
-provider: Mock AURN Network
+provider: AURN
