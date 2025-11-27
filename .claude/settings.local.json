@@ -9,7 +9,9 @@
       "WebFetch(domain:r-spatial.r-universe.dev)",
       "Bash(Rscript:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(echo:*)",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []
