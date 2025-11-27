@@ -41,7 +41,7 @@ test2_new_api <- create_pollution_map(
     "bl_imperial_annualised_2021_2025_with_missing.Rdata",
     "your_schools_Merton.csv"
   ),
-  data_configs = c("dt_sites", "bl_nodes", "schools"),
+  data_ids = NULL,
   boroughs = "Merton",
   pollutant = "no2",
   years = 2023,
@@ -66,7 +66,7 @@ test3_partial <- create_pollution_map(
     "merton_dt_2018_2024.csv",
     "your_schools_Merton.csv"
   ),
-  data_configs = c("dt_sites", "schools"),
+  data_ids = NULL,
   boroughs = "Merton",
   pollutant = "no2",
   years = 2023,
@@ -112,7 +112,7 @@ test5_richmond <- create_pollution_map(
     "bl_imperial_annualised_2021_2025_with_missing.Rdata",
     "your_schools_Merton.csv"
   ),
-  data_configs = c("dt_sites", "bl_nodes", "schools"),
+  data_ids = NULL,
   boroughs = "Richmond",
   pollutant = "no2",
   years = 2023,

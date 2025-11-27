@@ -63,7 +63,7 @@ create_pollution_map(
     "merton_dt_2018_2024.csv",
     "your_schools_Merton.csv"
   ),
-  data_configs = c("laqn", "aurn", "bl_nodes", "dt_sites", "schools"),
+  data_ids = NULL,
   data_symbols = c("triangle", "square", "diamond", "circle", "cross"),
   boroughs = c("Merton", "Wandsworth", "Richmond upon Thames"),
   pollutant = "no2",

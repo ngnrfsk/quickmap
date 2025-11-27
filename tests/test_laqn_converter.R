@@ -45,7 +45,7 @@ create_pollution_map(
     "laqn_4network_test.Rdata",
     "your_schools_Merton.csv"
   ),
-  data_configs = c("dt_sites", "aurn", "laqn", "schools"),
+  data_ids = NULL,
   boroughs = "Merton",
   pollutant = "no2",
   title = "v0.9.3 Step 6: 4-Network Test (circles/squares/triangles/crosses)",

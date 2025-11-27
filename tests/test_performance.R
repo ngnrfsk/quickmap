@@ -57,7 +57,7 @@ message("\n4. Rendering (baseline ~25s, check for regression)")
 time_render <- system.time({
   create_pollution_map(
     data_sources = list("perf_test_250features.Rdata"),
-    data_configs = c("laqn"),
+    data_ids = NULL,
     boroughs = "Wandsworth",
     pollutant = "no2",
     title = "v0.9.3 Performance Test: 250 site-years",
