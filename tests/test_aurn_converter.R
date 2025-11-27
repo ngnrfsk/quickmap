@@ -42,7 +42,7 @@ create_pollution_map(
   boroughs = "Merton",
   pollutant = "no2",
   years = 2023,
-  output_file = "aq_maps/test_aurn_3network.html"
+  output_file = "test_aurn_3network.html"
 )
 
 # Test 2: Download full AURN network metadata, create static layer map
@@ -73,5 +73,5 @@ create_pollution_map(
   boroughs = "Merton",
   pollutant = "no2",
   years = 2023,
-  output_file = "aq_maps/test_aurn_network.html"
+  output_file = "test_aurn_network.html"
 )
