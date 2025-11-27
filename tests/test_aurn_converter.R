@@ -3,11 +3,6 @@
 
 source("R/quickmap.R")
 
-data_path <- Sys.getenv("DATA_PATH")
-if (data_path == "") {
-  stop("DATA_PATH not set. Set with: Sys.setenv(DATA_PATH = 'path/to/data')")
-}
-
 # Test 1: Download 3 sites with pollution data, create 3-network map
 aurn_data <- openair::importUKAQ(
   site = c("my1", "lh0", "kc1"),
@@ -23,14 +18,8 @@ aurn_sf <- convert_openair_to_spatial(
   avg.time = "year"
 )
 
-dataOAformat <- data.frame(
-  siteCode = aurn_sf$siteCode,
-  year = aurn_sf$year,
-  no2 = aurn_sf$no2,
-  lat = aurn_sf$lat,
-  lon = aurn_sf$lon
-)
-save(dataOAformat, file = file.path(data_path, "aurn_test_data.Rdata"))
+dataOAformat <- st_drop_geometry(aurn_sf)[, c("siteCode", "year", "no2", "lat", "lon")]
+save(dataOAformat, file = file.path(Sys.getenv("DATA_PATH"), "aurn_test_data.Rdata"))
 
 create_pollution_map(
   data_sources = list(
@@ -41,7 +30,7 @@ create_pollution_map(
   data_configs = c("dt_sites", "aurn", "schools"),
   boroughs = "Merton",
   pollutant = "no2",
-  years = 2023,
+  years = "2023",
   output_file = "test_aurn_3network.html"
 )
 
@@ -49,7 +38,6 @@ create_pollution_map(
 aurn_metadata <- get_openair_metadata("aurn")
 aurn_clean <- aurn_metadata[!is.na(aurn_metadata$latitude) & !is.na(aurn_metadata$longitude), ]
 
-# Filter London area (51.2-51.7°N, -0.5-0.3°E)
 aurn_london <- aurn_clean[
   aurn_clean$latitude >= 51.2 & aurn_clean$latitude <= 51.7 &
   aurn_clean$longitude >= -0.5 & aurn_clean$longitude <= 0.3,
@@ -62,7 +50,7 @@ dataOAformat <- data.frame(
   lat = aurn_london$latitude,
   lon = aurn_london$longitude
 )
-save(dataOAformat, file = file.path(data_path, "aurn_london_network.Rdata"))
+save(dataOAformat, file = file.path(Sys.getenv("DATA_PATH"), "aurn_london_network.Rdata"))
 
 create_pollution_map(
   data_sources = list(
@@ -72,6 +60,6 @@ create_pollution_map(
   data_configs = c("aurn", "schools"),
   boroughs = "Merton",
   pollutant = "no2",
-  years = 2023,
+  years = "2023",
   output_file = "test_aurn_network.html"
 )
