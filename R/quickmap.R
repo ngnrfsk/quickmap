@@ -1985,54 +1985,67 @@ parse_export_params <- function(export_image) {
   }
 }
 
-load_spatial_data_sources <- function(data_sources, data_configs, pollutant) {
+load_spatial_data_sources <- function(data_sources, data_ids, data_dynamic, pollutant) {
   loaded_data <- list()
+
+  # Auto-generate IDs if not provided
+  if (is.null(data_ids)) {
+    data_ids <- sapply(seq_along(data_sources), function(i) {
+      src <- data_sources[[i]]
+      if (inherits(src, "sf")) {
+        paste0("layer_", i)
+      } else {
+        tools::file_path_sans_ext(basename(src))
+      }
+    })
+  }
 
   for (i in seq_along(data_sources)) {
     data_src <- data_sources[[i]]
-    config_name <- data_configs[i]
+    layer_id <- data_ids[i]
 
     # Handle sf objects directly
     if (inherits(data_src, "sf")) {
-      loaded_data[[config_name]] <- data_src
+      loaded_data[[layer_id]] <- data_src
       next
     }
 
-    # Load config to determine file format
-    config <- load_data_source_config(config_name)
-
-    # File extension determines format
+    # RData files
     if (grepl("\\.Rdata$", data_src, ignore.case = TRUE)) {
-      # All RData files (OpenAir or local)
-      loaded_data[[config_name]] <- load_data_file(data_src, "rdata", pollutant = pollutant)
+      loaded_data[[layer_id]] <- load_data_file(data_src, "rdata", pollutant = pollutant)
     } else {
-      # CSV files
-      if (config$static) {
-        # Static layers: CSV with Easting/Northing
-        result <- load_data_file(data_src, "csv", c("Easting", "Northing"))
-        if (!is.null(result)) {
-          loaded_data[[config_name]] <- result$data |> transform_to_wgs84()
+      # CSV files - auto-detect temporal/static unless override provided
+      result <- load_data_file(data_src, "csv", c("Easting", "Northing"))
+      if (!is.null(result)) {
+        csv_data <- result$data
+
+        # Determine if temporal (has year columns or pollutant columns)
+        is_temporal <- if (!is.null(data_dynamic)) {
+          data_dynamic[i]
+        } else {
+          cols <- names(csv_data)
+          any(grepl("^\\d{4}$", cols)) || any(c("no2", "pm25", "pm10", "o3") %in% tolower(cols))
         }
-      } else {
-        # Temporal CSV: CSV with year columns
-        result <- load_data_file(data_src, "csv", c("Easting", "Northing"))
-        if (!is.null(result)) {
-          loaded_data[[config_name]] <- get_temporal_data(result$data) |> transform_to_wgs84()
+
+        if (is_temporal) {
+          loaded_data[[layer_id]] <- get_temporal_data(csv_data) |> transform_to_wgs84()
+        } else {
+          loaded_data[[layer_id]] <- csv_data |> transform_to_wgs84()
         }
       }
     }
   }
 
-  # Maintain backward compatibility
+  # Legacy compatibility
   list(
-    dt = loaded_data[["dt_sites"]],
-    sensor = loaded_data[["bl_nodes"]],
-    school = loaded_data[["schools"]],
-    dt_enabled = !is.null(loaded_data[["dt_sites"]]),
-    sensor_enabled = !is.null(loaded_data[["bl_nodes"]]),
-    school_enabled = !is.null(loaded_data[["schools"]]),
+    dt = loaded_data[[data_ids[1]]] %||% NULL,
+    sensor = loaded_data[[data_ids[2]]] %||% NULL,
+    school = loaded_data[[data_ids[3]]] %||% NULL,
+    dt_enabled = !is.null(loaded_data[[data_ids[1]]]),
+    sensor_enabled = !is.null(loaded_data[[data_ids[2]]]),
+    school_enabled = !is.null(loaded_data[[data_ids[3]]]),
     all_data = loaded_data,
-    configs = data_configs
+    ids = data_ids
   )
 }
 
