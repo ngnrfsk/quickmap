@@ -46,29 +46,30 @@ aurn_file <- file.path(data_path, "aurn_test_data.Rdata")
 save(dataOAformat, file = aurn_file)
 cat("   Saved to:", aurn_file, "\n\n")
 
-# 4. Create map with 3 networks
+# 4. Create map with 3 networks using new API
 cat("4. Creating 3-network map (AURN + dt_sites + schools)...\n")
-cat("   Layers:\n")
-cat("     - AURN: square icons (blue)\n")
-cat("     - Diffusion tubes: circle icons\n")
-cat("     - Schools: cross icons\n\n")
+cat("   Using data_sources/data_configs API:\n")
+cat("     - AURN: aurn config (square icons)\n")
+cat("     - Diffusion tubes: dt_sites config (circle icons)\n")
+cat("     - Schools: schools config (cross icons)\n\n")
 
 tryCatch(
   {
     map <- create_pollution_map(
-      diffusion_tube_file = "merton_dt_2018_2024.csv",
-      sensor_file = "aurn_test_data.Rdata",
-      school_file = "your_schools_Merton.csv",
+      data_sources = list(
+        "merton_dt_2018_2024.csv",
+        "aurn_test_data.Rdata",
+        "your_schools_Merton.csv"
+      ),
+      data_configs = c("dt_sites", "aurn", "schools"),
       boroughs = "Merton",
       pollutant = "no2",
-      year = 2023,
-      output_file = "aq_maps/test_aurn_3network.html",
-      sensor_shape = "square",
-      sensor_colour = "blue"
+      years = 2023,
+      output_file = "aq_maps/test_aurn_3network.html"
     )
     cat("\n✓ Map created: aq_maps/test_aurn_3network.html\n")
     cat("\nUser test: Open map and verify:\n")
-    cat("  - AURN sites show as BLUE SQUARES\n")
+    cat("  - AURN sites show as SQUARES\n")
     cat("  - Diffusion tube sites show as CIRCLES\n")
     cat("  - Schools show as CROSSES\n")
     cat("  - All 3 icon shapes are distinct\n")
