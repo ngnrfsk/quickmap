@@ -11,7 +11,7 @@ map1_richmond_no2 <- create_pollution_map(
     "bl_imperial_annualised_2021_2025_with_missing.Rdata",
     "your_schools_Merton.csv"
   ),
-  data_configs = c("dt_sites", "bl_nodes", "schools"),
+  data_ids = NULL,
   boroughs = "Richmond",
   pollutant = "no2",
   #  years = (2022:2024),
@@ -29,7 +29,7 @@ map2_merton_pm25 <- create_pollution_map(
     "bl_imperial_annualised_2021_2025_with_missing.Rdata",
     "your_schools_Merton.csv"
   ),
-  data_configs = c("bl_nodes", "schools"),
+  data_ids = NULL,
   boroughs = "Merton",
   pollutant = "pm25",
   years = (2022:2024),
@@ -51,7 +51,7 @@ map3_merton_no2_image <- create_pollution_map(
     "bl_imperial_annualised_2021_2025_with_missing.Rdata",
     "your_schools_Merton.csv"
   ),
-  data_configs = c("dt_sites", "bl_nodes", "schools"),
+  data_ids = NULL,
   boroughs = "Merton",
   pollutant = "no2",
   years = (2020:2022),

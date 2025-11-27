@@ -27,7 +27,7 @@ create_pollution_map(
     "aurn_test_data.Rdata",
     "your_schools_Merton.csv"
   ),
-  data_configs = c("dt_sites", "aurn", "schools"),
+  data_ids = NULL,
   boroughs = "Merton",
   pollutant = "no2",
   years = "2023",
@@ -57,7 +57,7 @@ create_pollution_map(
     "aurn_london_network.Rdata",
     "your_schools_Merton.csv"
   ),
-  data_configs = c("aurn", "schools"),
+  data_ids = NULL,
   boroughs = "Merton",
   pollutant = "no2",
   years = "2023",

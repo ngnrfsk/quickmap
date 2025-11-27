@@ -115,7 +115,7 @@ map_4network <- create_pollution_map(
     school_file,
     mock_aurn_sf  # Pass sf object directly
   ),
-  data_configs = c("dt_sites", "bl_nodes", "schools", "aurn"),
+  data_ids = NULL,
   boroughs = "Merton",
   pollutant = "no2",
   years = c(2018:2024),
