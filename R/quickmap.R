@@ -442,13 +442,15 @@ load_data_file <- function(
 }
 
 load_rdata_file <- function(file_path, pollutant) {
-  load(file.path(Sys.getenv("DATA_PATH"), file_path), verbose = TRUE)
+  # Load into isolated environment to prevent overwriting
+  env <- new.env()
+  load(file.path(Sys.getenv("DATA_PATH"), file_path), envir = env, verbose = TRUE)
 
-  if (!exists("dataOAformat")) {
+  if (!exists("dataOAformat", envir = env)) {
     stop("dataOAformat object not found in RData file")
   }
 
-  return(process_oa_data(dataOAformat, pollutant))
+  return(process_oa_data(env$dataOAformat, pollutant))
 }
 
 get_temporal_data <- function(
