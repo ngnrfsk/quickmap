@@ -1,10 +1,10 @@
-# Comprehensive 5-Network Test: v0.9.3 All Networks (2018-2024)
-# Tests: LAQN + AURN + BL + DT + Schools with image export
-# Expected: 5 distinct symbols, multi-year data, HTML + JPG outputs
+# Comprehensive 6-Network Test: v0.9.3 (2018-2024)
+# LAQN + AURN + BL + Richmond DT + Merton DT + Schools
+# Tests: Multi-network, symbol assignment, custom IDs, data_dynamic override, image export
 
 source("R/quickmap.R")
 
-# Download LAQN data (London sites, 2018-2024)
+# Download LAQN (London sites, 2018-2024)
 laqn_meta <- get_openair_metadata("kcl")
 laqn_london <- laqn_meta[
   !is.na(laqn_meta$latitude) & !is.na(laqn_meta$longitude) &
@@ -28,7 +28,7 @@ laqn_sf <- convert_openair_to_spatial(
 dataOAformat <- st_drop_geometry(laqn_sf)[, c("siteCode", "year", "no2", "lat", "lon")]
 save(dataOAformat, file = file.path(Sys.getenv("DATA_PATH"), "comprehensive_laqn.Rdata"))
 
-# Download AURN data (London sites, 2018-2024)
+# Download AURN (London sites, 2018-2024)
 aurn_meta <- get_openair_metadata("aurn")
 aurn_london <- aurn_meta[
   !is.na(aurn_meta$latitude) & !is.na(aurn_meta$longitude) &
@@ -53,22 +53,58 @@ aurn_sf <- convert_openair_to_spatial(
 dataOAformat <- st_drop_geometry(aurn_sf)[, c("siteCode", "year", "no2", "lat", "lon")]
 save(dataOAformat, file = file.path(Sys.getenv("DATA_PATH"), "comprehensive_aurn.Rdata"))
 
-# Create 5-network map: LAQN + AURN + BL + DT + Schools
-# Symbols: triangle, square, diamond, circle, cross
+# Test 1: Default symbols (auto-cycle)
 create_pollution_map(
   data_sources = list(
     "comprehensive_laqn.Rdata",
     "comprehensive_aurn.Rdata",
     "bl_imperial_annualised_2021_2025_with_missing.Rdata",
+    "richmond_1993_2024-1.csv",
     "merton_dt_2018_2024.csv",
     "your_schools_Merton.csv"
   ),
-  data_ids = NULL,
-  data_symbols = c("triangle", "square", "diamond", "circle", "cross"),
-  boroughs = c("Merton", "Wandsworth", "Richmond upon Thames"),
+  boroughs = "Merton",
   pollutant = "no2",
-  title = "v0.9.3 Comprehensive Test: 5 Networks - LAQN/AURN/BL/DT/Schools (2018-2024)",
+  title = "v0.9.3 Test 1: Auto-cycling symbols (circle/square/triangle/diamond/cross/star)",
+  marker_labels = TRUE,
+  output_file = "v093_test1_auto_symbols.html"
+)
+
+# Test 2: Custom symbols (swapped order)
+create_pollution_map(
+  data_sources = list(
+    "comprehensive_laqn.Rdata",
+    "comprehensive_aurn.Rdata",
+    "bl_imperial_annualised_2021_2025_with_missing.Rdata",
+    "richmond_1993_2024-1.csv",
+    "merton_dt_2018_2024.csv",
+    "your_schools_Merton.csv"
+  ),
+  data_symbols = c("star", "plus", "triangle", "diamond", "cross", "circle"),
+  boroughs = c("Wandsworth", "Merton", "Richmond upon Thames"),
+  pollutant = "no2",
+  title = "v0.9.3 Test 2: Custom symbols (star/plus/triangle/diamond/cross/circle)",
+  marker_labels = FALSE,
+  output_file = "v093_test2_custom_symbols.html"
+)
+
+# Test 3: Custom IDs + data_dynamic override + image export
+create_pollution_map(
+  data_sources = list(
+    "comprehensive_laqn.Rdata",
+    "comprehensive_aurn.Rdata",
+    "bl_imperial_annualised_2021_2025_with_missing.Rdata",
+    "richmond_1993_2024-1.csv",
+    "merton_dt_2018_2024.csv",
+    "your_schools_Merton.csv"
+  ),
+  data_ids = c("laqn_london", "aurn_london", "bl_sensors", "richmond_tubes", "merton_tubes", "schools"),
+  data_symbols = c("triangle", "square", "diamond", "circle", "cross", "star"),
+  data_dynamic = c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE),
+  boroughs = "all",
+  pollutant = "no2",
+  title = "v0.9.3 Test 3: Custom IDs + data_dynamic override + 3 boroughs",
   marker_labels = TRUE,
   export_image = c(2400, 2400),
-  output_file = "v093_comprehensive_5network_2018_2024.html"
+  output_file = "v093_test3_full_options.html"
 )
