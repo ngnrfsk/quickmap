@@ -2079,11 +2079,11 @@ determine_years_and_viewport <- function(spatial_data, borough_sf, vignette, req
 #' @param diffusion_tube_file CSV file with Easting/Northing columns and year columns (or "none"). Prepends DATA_PATH if set.
 #' @param sensor_file RData file with 'dataOAformat' object (or "none"). Prepends DATA_PATH if set.
 #' @param school_file CSV file with Easting/Northing/Level/School columns (or "none"). Prepends DATA_PATH if set.
-#' @param data_sources List of file paths or sf objects for new API (default: NULL).
-#' @param data_configs Character vector of config names matching data_sources (default: NULL).
-#' @param data_symbols Character vector of marker symbols to override config defaults (default: NULL).
-#'   Valid symbols: "circle", "diamond", "cross", "square", "triangle", "star", "plus".
-#'   Must match length of data_sources if provided. Note: "square" converted to "rect" for leaflegend.
+#' @param data_sources List of file paths or sf objects (default: NULL).
+#' @param data_ids Character vector of layer IDs (default: NULL, auto-generated from filenames).
+#' @param data_symbols Character vector of marker symbols (default: NULL, auto-cycles through defaults).
+#'   Valid: "circle", "diamond", "cross", "square", "triangle", "star", "plus". Note: "square" → "rect".
+#' @param data_dynamic Logical vector indicating temporal (TRUE) vs static (FALSE) layers (default: NULL, auto-detected).
 #' @param output_file Output filename (without extension). Saved to 'aq_maps/' directory.
 #' @param export_image NULL (no export), TRUE (export 1200x1200), or c(width, height) vector for custom dimensions.
 #' @param boroughs Borough name(s) for boundary display and data filtering (required).
@@ -2149,8 +2149,9 @@ create_pollution_map <- function(
   sensor_file = "none",
   school_file = "none",
   data_sources = NULL,
-  data_configs = NULL,
+  data_ids = NULL,
   data_symbols = NULL,
+  data_dynamic = NULL,
   output_file = "pollution_map.html",
   export_image = NULL,
   boroughs,
