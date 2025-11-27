@@ -1693,12 +1693,12 @@ get_measurement_layers <- function(
   spatial_data,
   data_configs,
   marker_labels,
-  icon_shapes = NULL
+  data_symbols = NULL
 ) {
-  # L4: Validate icon_shapes length matches data_configs
-  if (!is.null(icon_shapes) && length(icon_shapes) != length(data_configs)) {
-    stop("icon_shapes must have same length as data_configs. Got ",
-         length(icon_shapes), " shapes and ", length(data_configs), " configs.")
+  # L4: Validate data_symbols length matches data_configs
+  if (!is.null(data_symbols) && length(data_symbols) != length(data_configs)) {
+    stop("data_symbols must have same length as data_configs. Got ",
+         length(data_symbols), " symbols and ", length(data_configs), " configs.")
   }
 
   layers <- list()
@@ -1713,8 +1713,8 @@ get_measurement_layers <- function(
     enabled <- !is.null(data_obj)
 
     # Override icon_shape if provided
-    icon_shape <- if (!is.null(icon_shapes)) {
-      validate_and_fix_icon_shape(icon_shapes[i])
+    icon_shape <- if (!is.null(data_symbols)) {
+      validate_and_fix_icon_shape(data_symbols[i])
     } else {
       validate_and_fix_icon_shape(yaml_config$icon_shape)
     }
@@ -2189,8 +2189,9 @@ determine_years_and_viewport <- function(spatial_data, borough_sf, vignette, req
 #' @param school_file CSV file with Easting/Northing/Level/School columns (or "none"). Prepends DATA_PATH if set.
 #' @param data_sources List of file paths or sf objects for new API (default: NULL).
 #' @param data_configs Character vector of config names matching data_sources (default: NULL).
-#' @param icon_shapes Character vector of icon shapes to override config files (default: NULL).
-#'   Options: "circle", "diamond", "cross", "triangle", "star", "plus". If provided, must match length of data_sources.
+#' @param data_symbols Character vector of marker symbols to override config defaults (default: NULL).
+#'   Valid symbols: "circle", "diamond", "cross", "square", "triangle", "star", "plus".
+#'   Must match length of data_sources if provided. Note: "square" converted to "rect" for leaflegend.
 #' @param output_file Output filename (without extension). Saved to 'aq_maps/' directory.
 #' @param export_image NULL (no export), TRUE (export 1200x1200), or c(width, height) vector for custom dimensions.
 #' @param boroughs Borough name(s) for boundary display and data filtering (required).
@@ -2257,7 +2258,7 @@ create_pollution_map <- function(
   school_file = "none",
   data_sources = NULL,
   data_configs = NULL,
-  icon_shapes = NULL,
+  data_symbols = NULL,
   output_file = "pollution_map.html",
   export_image = NULL,
   boroughs,
@@ -2343,7 +2344,7 @@ create_pollution_map <- function(
     spatial_data,
     data_configs,
     marker_labels,
-    icon_shapes
+    data_symbols
   )
 
   data_max <- get_data_maximum(measurement_layers, pollutant, spatial_data, years)
