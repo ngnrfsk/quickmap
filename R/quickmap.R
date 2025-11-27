@@ -2109,20 +2109,20 @@ load_spatial_data_sources <- function(data_sources, data_configs, pollutant) {
     # Load config to determine file format
     config <- load_data_source_config(config_name)
 
-    # Config-driven file loading
-    if (config$static) {
-      # Static layers: CSV with Easting/Northing
-      result <- load_data_file(data_src, "csv", c("Easting", "Northing"))
-      if (!is.null(result)) {
-        loaded_data[[config_name]] <- result$data |> transform_to_wgs84()
-      }
+    # File extension determines format
+    if (grepl("\\.Rdata$", data_src, ignore.case = TRUE)) {
+      # All RData files (OpenAir or local)
+      loaded_data[[config_name]] <- load_data_file(data_src, "rdata", pollutant = pollutant)
     } else {
-      # Temporal layers: check for OpenAir format
-      if (!is.null(config$openair_import_function)) {
-        # RData with OpenAir format
-        loaded_data[[config_name]] <- load_data_file(data_src, "rdata", pollutant = pollutant)
+      # CSV files
+      if (config$static) {
+        # Static layers: CSV with Easting/Northing
+        result <- load_data_file(data_src, "csv", c("Easting", "Northing"))
+        if (!is.null(result)) {
+          loaded_data[[config_name]] <- result$data |> transform_to_wgs84()
+        }
       } else {
-        # CSV with year columns
+        # Temporal CSV: CSV with year columns
         result <- load_data_file(data_src, "csv", c("Easting", "Northing"))
         if (!is.null(result)) {
           loaded_data[[config_name]] <- get_temporal_data(result$data) |> transform_to_wgs84()
