@@ -1560,12 +1560,15 @@ create_generic_icons <- function(
     size = round(base_shape_config$base_size * image_scale_factor)
   )
 
-  # Color assignment: schools use categorical colors, others use pollution scale
-  colors <- if (!is.null(layer_id) && layer_id == "schools") {
+  # Color assignment: static layers with Level column use categorical colors
+  has_level <- "Level" %in% names(data)
+  colors <- if (has_level && is.null(pollutant)) {
     pal <- colorFactor(c("#1E90FF", "#32CD32"), unique(data$Level))
     pal(data$Level)
-  } else {
+  } else if (!is.null(pollutant)) {
     sapply(data[[pollutant]], assign_colour, scale = colour_scale)
+  } else {
+    rep("gray", nrow(data))  # Fallback for static without Level
   }
 
   makeSymbolsSize(
@@ -1630,12 +1633,12 @@ prepare_generic_layer_data <- function(
   show_labels <- if (!is.null(layer_config$options))
     layer_config$options$marker_labels else FALSE
 
-  layer_id <- layer_config$id
-  use_pollutant <- if (layer_id == "schools") NULL else pollutant
+  # Static layers don't have pollutant columns
+  use_pollutant <- if (layer_config$static) NULL else pollutant
 
   result <- list(
     data = year_data,
-    labels = generate_marker_labels(year_data, use_pollutant, show_labels, layer_id)
+    labels = generate_marker_labels(year_data, use_pollutant, show_labels, layer_config$id)
   )
 
   result
