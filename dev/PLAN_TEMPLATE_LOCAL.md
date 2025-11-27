@@ -16,12 +16,14 @@ Incremental steps, commit-test-approve workflow, code review checkpoints.
 
 **Must Exclude:** \[List things NOT to change\]
 
-## Lesson from previous work
+## Lessons from previous work
 
 -   **Avoid line numbers** - brittle after edits
 -   **Design data schemas upfront** - extensibility fields from start, not minimal-then-expand
 -   **Avoid prescribing names** - let Claude choose parameters/functions but make them meaningful
 -   **State "what" not "how"** - outcomes, not implementation steps
+-   **Avoid documentation and code bloat** - no cat statements in user scripts, aim for 1-2 line in-line code comments, reports to user no longer than 250 words, record essential information for future steps, analysis or work, no fluff, no hallucinating, 
+- **Always ask user to resolve ambigutity, never guess, infer or hallucinate instructions** Where instructions have any ambigutity, concisely escalate this to the user for claification using multiple choice questions
 
 ------------------------------------------------------------------------
 
@@ -92,3 +94,19 @@ Incremental steps, commit-test-approve workflow, code review checkpoints.
 **What to do:** - Reuse existing patterns, don't rewrite working code - Focus only on step objective - Run smoke test after each step (`Rscript tests/test_quickmap.R`) - Stop and wait for user approval before next step - Explicitly confirm current step number - Keep all documentation concise, describe only essentials in minimum possible words
 
 **What NOT to do:** - Prescribe parameter/function names unless critical - Reference line numbers (brittle) - Design minimal schemas that need expansion later - Combine steps even if related
+
+**Follow Code Minimalism Rules**
+
+_Avoid:_
+- cat() in user scripts
+- Redundant validation (env vars, parameters already checked downstream)
+- Obvious comments
+- Try-catch around operations that should fail
+- Single-use helpers/wrappers
+- Success messages
+
+_Do:_
+- Trust R's errors
+- Let functions fail naturally
+- Write self-evident code
+- Ensure map titles and file names contain test information e.g. v093 or title = "this should show 4 networks" etc
