@@ -1,40 +1,28 @@
 # Test Script: AURN Converter with Multi-Network Overlay (Step 5)
-# Maps AURN + dt_sites + schools with 3 distinct icon shapes
+# Tests: 3-site pollution overlay + full network metadata layer
 
 source("R/quickmap.R")
 
-cat("\n=== Step 5: AURN Converter Test ===\n\n")
-
-# Check DATA_PATH
 data_path <- Sys.getenv("DATA_PATH")
 if (data_path == "") {
   stop("DATA_PATH not set. Set with: Sys.setenv(DATA_PATH = 'path/to/data')")
 }
-cat("DATA_PATH:", data_path, "\n\n")
 
-# 1. Download AURN data (3 London sites, 2 years)
-cat("1. Downloading AURN data (3 sites: MY1, LH0, KC1; 2022-2023)...\n")
+# Test 1: Download 3 sites with pollution data, create 3-network map
 aurn_data <- openair::importUKAQ(
-  site = c("my1", "lh0", "kc1"),  # Marylebone, London Hillingdon, Kings College
+  site = c("my1", "lh0", "kc1"),
   year = 2022:2023,
   source = "aurn",
   meta = TRUE,
   pollutant = "no2"
 )
-cat("   Downloaded:", nrow(aurn_data), "hourly observations\n\n")
 
-# 2. Convert to spatial
-cat("2. Converting AURN data to spatial sf object...\n")
 aurn_sf <- convert_openair_to_spatial(
   data = aurn_data,
   pollutant = "no2",
   avg.time = "year"
 )
-cat("   Converted:", nrow(aurn_sf), "site-years\n")
-cat("   Sites:", paste(unique(aurn_sf$siteCode), collapse = ", "), "\n\n")
 
-# 3. Save as Rdata (compatible with quickmap)
-cat("3. Saving AURN data to Rdata file...\n")
 dataOAformat <- data.frame(
   siteCode = aurn_sf$siteCode,
   year = aurn_sf$year,
@@ -42,45 +30,48 @@ dataOAformat <- data.frame(
   lat = aurn_sf$lat,
   lon = aurn_sf$lon
 )
-aurn_file <- file.path(data_path, "aurn_test_data.Rdata")
-save(dataOAformat, file = aurn_file)
-cat("   Saved to:", aurn_file, "\n\n")
+save(dataOAformat, file = file.path(data_path, "aurn_test_data.Rdata"))
 
-# 4. Create map with 3 networks using new API
-cat("4. Creating 3-network map (AURN + dt_sites + schools)...\n")
-cat("   Using data_sources/data_configs API:\n")
-cat("     - AURN: aurn config (square icons)\n")
-cat("     - Diffusion tubes: dt_sites config (circle icons)\n")
-cat("     - Schools: schools config (cross icons)\n\n")
-
-tryCatch(
-  {
-    map <- create_pollution_map(
-      data_sources = list(
-        "merton_dt_2018_2024.csv",
-        "aurn_test_data.Rdata",
-        "your_schools_Merton.csv"
-      ),
-      data_configs = c("dt_sites", "aurn", "schools"),
-      boroughs = "Merton",
-      pollutant = "no2",
-      years = 2023,
-      output_file = "aq_maps/test_aurn_3network.html"
-    )
-    cat("\n✓ Map created: aq_maps/test_aurn_3network.html\n")
-    cat("\nUser test: Open map and verify:\n")
-    cat("  - AURN sites show as SQUARES\n")
-    cat("  - Diffusion tube sites show as CIRCLES\n")
-    cat("  - Schools show as CROSSES\n")
-    cat("  - All 3 icon shapes are distinct\n")
-  },
-  error = function(e) {
-    cat("\nERROR creating map:\n")
-    cat(e$message, "\n")
-    cat("\nNote: Requires valid data files in DATA_PATH:\n")
-    cat("  - merton_dt_2018_2024.csv\n")
-    cat("  - your_schools_Merton.csv\n")
-  }
+create_pollution_map(
+  data_sources = list(
+    "merton_dt_2018_2024.csv",
+    "aurn_test_data.Rdata",
+    "your_schools_Merton.csv"
+  ),
+  data_configs = c("dt_sites", "aurn", "schools"),
+  boroughs = "Merton",
+  pollutant = "no2",
+  years = 2023,
+  output_file = "aq_maps/test_aurn_3network.html"
 )
 
-cat("\n=== Test complete ===\n")
+# Test 2: Download full AURN network metadata, create static layer map
+aurn_metadata <- get_openair_metadata("aurn")
+aurn_clean <- aurn_metadata[!is.na(aurn_metadata$latitude) & !is.na(aurn_metadata$longitude), ]
+
+# Filter London area (51.2-51.7°N, -0.5-0.3°E)
+aurn_london <- aurn_clean[
+  aurn_clean$latitude >= 51.2 & aurn_clean$latitude <= 51.7 &
+  aurn_clean$longitude >= -0.5 & aurn_clean$longitude <= 0.3,
+]
+
+dataOAformat <- data.frame(
+  siteCode = aurn_london$code,
+  year = 2023,
+  no2 = 20,
+  lat = aurn_london$latitude,
+  lon = aurn_london$longitude
+)
+save(dataOAformat, file = file.path(data_path, "aurn_london_network.Rdata"))
+
+create_pollution_map(
+  data_sources = list(
+    "aurn_london_network.Rdata",
+    "your_schools_Merton.csv"
+  ),
+  data_configs = c("aurn", "schools"),
+  boroughs = "Merton",
+  pollutant = "no2",
+  years = 2023,
+  output_file = "aq_maps/test_aurn_network.html"
+)
