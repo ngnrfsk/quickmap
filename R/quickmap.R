@@ -1583,38 +1583,34 @@ create_generic_icons <- function(
 #' @keywords internal
 get_measurement_layers <- function(
   spatial_data,
-  data_configs,
   marker_labels,
   data_symbols = NULL
 ) {
-  # L4: Validate data_symbols length matches data_configs
-  if (!is.null(data_symbols) && length(data_symbols) != length(data_configs)) {
-    stop("data_symbols must have same length as data_configs. Got ",
-         length(data_symbols), " symbols and ", length(data_configs), " configs.")
-  }
+  layer_ids <- spatial_data$ids
+  default_symbols <- c("circle", "square", "triangle", "diamond", "cross", "star", "plus")
 
   layers <- list()
 
-  for (i in seq_along(data_configs)) {
-    config_name <- data_configs[i]
-
-    # Load config from YAML
-    yaml_config <- load_data_source_config(config_name)
-
-    data_obj <- spatial_data$all_data[[config_name]]
+  for (i in seq_along(layer_ids)) {
+    layer_id <- layer_ids[i]
+    data_obj <- spatial_data$all_data[[layer_id]]
     enabled <- !is.null(data_obj)
 
-    # Override icon_shape if provided
-    icon_shape <- if (!is.null(data_symbols)) {
-      validate_and_fix_icon_shape(data_symbols[i])
+    # Symbol: use data_symbols or auto-cycle through defaults
+    symbol <- if (!is.null(data_symbols) && i <= length(data_symbols)) {
+      data_symbols[i]
     } else {
-      validate_and_fix_icon_shape(yaml_config$icon_shape)
+      default_symbols[((i - 1) %% 7) + 1]
     }
+    icon_shape <- validate_and_fix_icon_shape(symbol)
 
-    layers[[config_name]] <- list(
+    # Detect if static (no year_str column)
+    is_static <- enabled && !("year_str" %in% names(data_obj))
+
+    layers[[layer_id]] <- list(
       enabled = enabled,
-      id = yaml_config$id,
-      static = yaml_config$static,
+      id = layer_id,
+      static = is_static,
       icon_shape = icon_shape,
       options = list(marker_labels = marker_labels)
     )
@@ -2184,28 +2180,9 @@ create_pollution_map <- function(
   # Backward compatibility: convert old API to new API
   if (is.null(data_sources)) {
     data_sources <- list()
-    data_configs <- character(0)
-
-    if (diffusion_tube_file != "none") {
-      data_sources <- c(data_sources, list(diffusion_tube_file))
-      data_configs <- c(data_configs, "dt_sites")
-    }
-    if (sensor_file != "none") {
-      data_sources <- c(data_sources, list(sensor_file))
-      data_configs <- c(data_configs, "bl_nodes")
-    }
-    if (school_file != "none") {
-      data_sources <- c(data_sources, list(school_file))
-      data_configs <- c(data_configs, "schools")
-    }
-  }
-
-  # L1: Validate data_sources and data_configs length match
-  if (!is.null(data_sources) && !is.null(data_configs)) {
-    if (length(data_sources) != length(data_configs)) {
-      stop("data_sources and data_configs must have same length. Got ",
-           length(data_sources), " sources and ", length(data_configs), " configs.")
-    }
+    if (diffusion_tube_file != "none") data_sources <- c(data_sources, list(diffusion_tube_file))
+    if (sensor_file != "none") data_sources <- c(data_sources, list(sensor_file))
+    if (school_file != "none") data_sources <- c(data_sources, list(school_file))
   }
 
   c(image_export, map_width_px, map_height_px) %<-% parse_export_params(export_image)
@@ -2232,7 +2209,7 @@ create_pollution_map <- function(
   )
 
   if (!dir.exists("aq_maps")) dir.create("aq_maps", showWarnings = TRUE)
-  spatial_data <- load_spatial_data_sources(data_sources, data_configs, pollutant)
+  spatial_data <- load_spatial_data_sources(data_sources, data_ids, data_dynamic, pollutant)
   if (is.null(borough_sf)) return()
   c(primary_data, years, vignette_overlay, bbox) %<-%
     determine_years_and_viewport(spatial_data, borough_sf, vignette, years)
@@ -2248,7 +2225,6 @@ create_pollution_map <- function(
 
   measurement_layers <- get_measurement_layers(
     spatial_data,
-    data_configs,
     marker_labels,
     data_symbols
   )
