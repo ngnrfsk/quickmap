@@ -1532,11 +1532,25 @@ get_icon_shape_config <- function(shape_name) {
   # Maps shape names to leaflegend icon parameters
   # Note: shape_name should be validated before calling this
   shape_definitions <- list(
+    # Solid symbols
     "circle" = list(shape = "circle", base_size = 20),
-    "diamond" = list(shape = "diamond", base_size = 20),
-    "cross" = list(shape = "cross", base_size = 12),
     "rect" = list(shape = "rect", base_size = 20),
     "triangle" = list(shape = "triangle", base_size = 20),
+    "diamond" = list(shape = "diamond", base_size = 20),
+    "stadium" = list(shape = "stadium", base_size = 20),
+    "down-triangle" = list(shape = "down-triangle", base_size = 20),
+    "solid-circle-sm" = list(shape = "solid-circle-sm", base_size = 15),
+    "solid-circle-md" = list(shape = "solid-circle-md", base_size = 18),
+    # Non-solid symbols
+    "simple-plus" = list(shape = "simple-plus", base_size = 12),
+    "simple-cross" = list(shape = "simple-cross", base_size = 12),
+    "cross-rect" = list(shape = "cross-rect", base_size = 20),
+    "simple-star" = list(shape = "simple-star", base_size = 20),
+    "plus-circle" = list(shape = "plus-circle", base_size = 20),
+    "plus-rect" = list(shape = "plus-rect", base_size = 20),
+    "cross-circle" = list(shape = "cross-circle", base_size = 20),
+    # Legacy symbols
+    "cross" = list(shape = "cross", base_size = 12),
     "star" = list(shape = "star", base_size = 20),
     "plus" = list(shape = "plus", base_size = 12)
   )
