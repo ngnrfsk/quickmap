@@ -31,61 +31,14 @@ hospitals_data <- data.frame(
 )
 write.csv(hospitals_data, file.path(Sys.getenv("DATA_PATH"), "test_hospitals.csv"), row.names = FALSE)
 
-# Download LAQN (temporal)
-laqn_meta <- get_openair_metadata("kcl")
-laqn_london <- laqn_meta[
-  !is.na(laqn_meta$latitude) & !is.na(laqn_meta$longitude) &
-  laqn_meta$latitude >= 51.2 & laqn_meta$latitude <= 51.7 &
-  laqn_meta$longitude >= -0.5 & laqn_meta$longitude <= 0.3,
-][1:5, ]
-
-laqn_data <- openair::importKCL(
-  site = laqn_london$code,
-  year = 2022:2024,
-  pollutant = "no2",
-  meta = TRUE
-)
-
-laqn_sf <- convert_openair_to_spatial(
-  data = laqn_data,
-  pollutant = "no2",
-  avg.time = "year"
-)
-
-dataOAformat <- st_drop_geometry(laqn_sf)[, c("siteCode", "year", "no2", "lat", "lon")]
-save(dataOAformat, file = file.path(Sys.getenv("DATA_PATH"), "test_laqn_subset.Rdata"))
-
-# Download AURN (temporal)
-aurn_meta <- get_openair_metadata("aurn")
-aurn_london <- aurn_meta[
-  !is.na(aurn_meta$latitude) & !is.na(aurn_meta$longitude) &
-  aurn_meta$latitude >= 51.2 & aurn_meta$latitude <= 51.7 &
-  aurn_meta$longitude >= -0.5 & aurn_meta$longitude <= 0.3,
-][1:3, ]
-
-aurn_data <- openair::importUKAQ(
-  site = aurn_london$code,
-  year = 2022:2024,
-  source = "aurn",
-  meta = TRUE,
-  pollutant = "no2"
-)
-
-aurn_sf <- convert_openair_to_spatial(
-  data = aurn_data,
-  pollutant = "no2",
-  avg.time = "year"
-)
-
-dataOAformat <- st_drop_geometry(aurn_sf)[, c("siteCode", "year", "no2", "lat", "lon")]
-save(dataOAformat, file = file.path(Sys.getenv("DATA_PATH"), "test_aurn_subset.Rdata"))
+# LAQN and AURN data already available in DATA_PATH from test_comprehensive_5network.R
 
 # Test: 6 temporal + 2 static with auto symbol assignment
 create_pollution_map(
   data_sources = list(
     # Temporal layers (should get solid symbols: circle, rect, triangle, diamond, stadium, down-triangle)
-    "test_laqn_subset.Rdata",
-    "test_aurn_subset.Rdata",
+    "comprehensive_laqn.Rdata",
+    "comprehensive_aurn.Rdata",
     "bl_imperial_annualised_2021_2025_with_missing.Rdata",
     "richmond_1993_2024-1.csv",
     "merton_dt_2018_2024.csv",
