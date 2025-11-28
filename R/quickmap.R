@@ -1695,10 +1695,13 @@ add_layer <- function(
 
   layer_id <- layer_config$id
 
+  # Static layers use categorical colors (e.g., Primary/Secondary), not pollutant scale
+  use_pollutant <- if (layer_config$static) NULL else pollutant
+
   icons <- create_generic_icons(
     layer_data$data,
     icon_shape = layer_config$icon_shape,
-    pollutant,
+    use_pollutant,
     colour_scale,
     image_scale_factor,
     layer_id = layer_id
