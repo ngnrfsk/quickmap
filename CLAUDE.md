@@ -109,9 +109,11 @@ map_object <- create_pollution_map(
 Required environment variables:
 
 ``` r
-Sys.setenv(DATA_PATH = "path/to/data/files")
+Sys.setenv(DATA_PATH = "~/Coding/Library/data")
 Sys.setenv(SCRIPTS_PATH = "path/to/scripts")
 ```
+
+**Note:** DATA_PATH points to `~/Coding/Library/data` where all test data files are stored.
 
 ## Data Formats
 
