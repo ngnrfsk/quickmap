@@ -1594,10 +1594,14 @@ create_generic_icons <- function(
     rep("gray", nrow(data))  # Fallback for static without Level
   }
 
+  # Non-solid symbols use color (stroke), solid symbols use fillColor
+  is_nonsolid <- shape_config$shape %in% c("simple-plus", "simple-cross", "cross-rect", "simple-star",
+                                            "plus-circle", "plus-rect", "cross-circle", "cross", "plus")
+
   makeSymbolsSize(
     values = rep(1, length(colors)),
     shape = shape_config$shape,
-    color = "black",
+    color = if (is_nonsolid) colors else "black",
     fillColor = colors,
     baseSize = shape_config$size,
     fillOpacity = 0.7,
