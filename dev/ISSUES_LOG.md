@@ -766,3 +766,59 @@ implementation begins.
 **Description:** Add input validation for boundary_names parameter to handle NULL, missing, or invalid input gracefully. Currently assumes input is always valid.
 **Priority:** Medium
 **Impact:** Better error handling and user experience
+
+## Symbol Shape Categories (v0.9.3)
+
+**Date:** 2025-11-28
+**Context:** Analysis from `R/symbols_chart.R` sampler showing all 32 leaflegend shapes
+
+### Solid Symbols (8 unique shapes)
+Suitable for temporal/dynamic data requiring easily differentiable fill colors:
+- **rect** (square)
+- **circle**
+- **triangle**
+- **diamond**
+- **stadium** (rounded rectangle)
+- **down-triangle** (inverted triangle)
+- **solid-circle-md** (medium circle variant)
+- **solid-circle-sm** (small circle variant)
+
+**Application:** Multi-network pollution maps with up to 8 distinct data sources where color-coding by pollution concentration is primary visual signal.
+
+### Non-Solid Symbols (7 line-based shapes)
+Suitable for static layers where simple line colors sufficient:
+- **simple-plus** (thin + symbol)
+- **simple-cross** (thin × symbol)
+- **cross-rect** (× inside rectangle)
+- **simple-star** (thin outline star)
+- **plus-circle** (+ inside circle)
+- **plus-rect** (+ inside rectangle)
+- **cross-circle** (× inside circle)
+
+**Application:** Static reference layers (schools, landmarks) where location marking is primary purpose, not data visualization. Line color distinguishes category without competing with temporal data fill colors.
+
+### Potential Use Cases
+
+**Scenario 1: Maximum Network Differentiation**
+- 8 pollution monitoring networks (LAQN, AURN, BL, 5 borough DT networks)
+- Each uses unique solid symbol shape
+- Fill color represents pollution concentration
+- Symbol shape instantly identifies network
+
+**Scenario 2: Temporal + Static Hybrid**
+- 4-6 solid symbols for temporal pollution data (DT, sensors, API sources)
+- 2-3 non-solid symbols for static reference layers (schools, hospitals, parks)
+- Visual hierarchy: solid shapes = data, line shapes = context
+- Reduces cognitive load by separating data types visually
+
+**Scenario 3: Multi-Pollutant Comparison**
+- Same monitoring network, different pollutants (NO2, PM2.5, PM10)
+- Each pollutant uses different solid shape
+- Fill color represents concentration for that pollutant
+- Enables side-by-side comparison of spatial patterns
+
+**Current Implementation Status:**
+- Default auto-cycling uses: circle, square, triangle, diamond, cross, star, plus (7 shapes)
+- Mix of solid (circle, square, triangle, diamond, star) and non-solid (cross, plus)
+- Could optimize by separating into temporal-preferred (solid) and static-preferred (non-solid) defaults
+- `data_symbols` parameter allows manual override for any of 32 available shapes
