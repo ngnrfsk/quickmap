@@ -1503,17 +1503,19 @@ validate_and_fix_icon_shape <- function(shape_name) {
   # Valid user-facing shape names
   valid_shapes <- c("circle", "diamond", "cross", "square", "triangle", "star", "plus")
 
-  # leaflegend compatibility mapping
-  leaflegend_shapes <- c("circle", "diamond", "cross", "rect", "triangle", "star", "plus")
+  # Fix "square" → "rect" for leaflegend compatibility
+  if (shape_name == "square") {
+    return("rect")
+  }
+
+  # Accept "rect" (result of square conversion)
+  if (shape_name == "rect") {
+    return("rect")
+  }
 
   if (!shape_name %in% valid_shapes) {
     stop("Invalid icon shape: '", shape_name, "'. ",
          "Valid shapes: ", paste(valid_shapes, collapse = ", "))
-  }
-
-  # Fix "square" → "rect" for leaflegend compatibility
-  if (shape_name == "square") {
-    return("rect")
   }
 
   return(shape_name)
