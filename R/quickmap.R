@@ -1500,8 +1500,19 @@ inject_banner_legend_controls <- function(
 
 #' @keywords internal
 validate_and_fix_icon_shape <- function(shape_name) {
-  # Valid shape names (includes both user-facing and leaflegend names)
-  valid_shapes <- c("circle", "diamond", "cross", "square", "rect", "triangle", "star", "plus")
+  # Valid shape names: solid symbols first, then non-solid
+  # Solid: suitable for temporal/dynamic data with color-coded concentrations
+  # Non-solid: suitable for static reference layers
+  valid_shapes <- c(
+    # Solid symbols
+    "circle", "rect", "square", "triangle", "diamond", "stadium", "down-triangle",
+    "solid-circle-sm", "solid-circle-md",
+    # Non-solid symbols
+    "simple-plus", "simple-cross", "cross-rect", "simple-star",
+    "plus-circle", "plus-rect", "cross-circle",
+    # Legacy mixed (kept for backward compatibility)
+    "cross", "star", "plus"
+  )
 
   if (!shape_name %in% valid_shapes) {
     stop("Invalid icon shape: '", shape_name, "'. ",
@@ -1588,25 +1599,36 @@ get_measurement_layers <- function(
   data_symbols = NULL
 ) {
   layer_ids <- spatial_data$ids
-  default_symbols <- c("circle", "square", "triangle", "diamond", "cross", "star", "plus")
+  # Solid symbols for temporal/dynamic data
+  default_solid_symbols <- c("circle", "rect", "triangle", "diamond", "stadium", "down-triangle", "solid-circle-sm", "solid-circle-md")
+  # Non-solid symbols for static reference layers
+  default_nonsolid_symbols <- c("simple-plus", "simple-cross", "cross-rect", "simple-star", "plus-circle", "plus-rect", "cross-circle")
 
   layers <- list()
+
+  # Track separate counters for dynamic and static layers
+  dynamic_counter <- 0
+  static_counter <- 0
 
   for (i in seq_along(layer_ids)) {
     layer_id <- layer_ids[i]
     data_obj <- spatial_data$all_data[[layer_id]]
     enabled <- !is.null(data_obj)
 
-    # Symbol: use data_symbols or auto-cycle through defaults
+    # Detect if static (no year_str column) - do this before symbol assignment
+    is_static <- enabled && !("year_str" %in% names(data_obj))
+
+    # Symbol: use data_symbols or auto-cycle based on static/dynamic type
     symbol <- if (!is.null(data_symbols) && i <= length(data_symbols)) {
       data_symbols[i]
+    } else if (is_static) {
+      static_counter <- static_counter + 1
+      default_nonsolid_symbols[((static_counter - 1) %% length(default_nonsolid_symbols)) + 1]
     } else {
-      default_symbols[((i - 1) %% 7) + 1]
+      dynamic_counter <- dynamic_counter + 1
+      default_solid_symbols[((dynamic_counter - 1) %% length(default_solid_symbols)) + 1]
     }
     icon_shape <- validate_and_fix_icon_shape(symbol)
-
-    # Detect if static (no year_str column)
-    is_static <- enabled && !("year_str" %in% names(data_obj))
 
     layers[[layer_id]] <- list(
       enabled = enabled,
