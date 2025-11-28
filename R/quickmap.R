@@ -1511,9 +1511,8 @@ validate_and_fix_icon_shape <- function(shape_name) {
          "Valid shapes: ", paste(valid_shapes, collapse = ", "))
   }
 
-  # Warn and fix "square" → "rect" for leaflegend compatibility
+  # Fix "square" → "rect" for leaflegend compatibility
   if (shape_name == "square") {
-    warning("Icon shape 'square' automatically converted to 'rect' for leaflegend compatibility")
     return("rect")
   }
 
