@@ -43,11 +43,11 @@ create_pollution_map(
     "richmond_1993_2024-1.csv",
     "merton_dt_2018_2024.csv",
     "your_schools_Merton.csv",
-    # Static layers (should get non-solid symbols: simple-plus, simple-cross)
+    # additionak dummy Static layers (should get non-solid symbols: simple-plus, simple-cross)
     "test_parks.csv",
     "test_hospitals.csv"
   ),
-  boroughs = c("Wandsworth", "Merton", "Richmond upon Thames"),
+  boroughs = c("all"),
   pollutant = "no2",
   title = "v0.9.3.14 Test: Auto Symbol Assignment - 6 Temporal (solid) + 2 Static (non-solid)",
   marker_labels = TRUE,
