@@ -418,26 +418,11 @@ load_data_file <- function(
 ) {
   if (file_path == "none") return(NULL)
 
-  tryCatch(
-    {
-      switch(
-        file_type,
-        "csv" = import_csv_data(file_path, required_cols),
-        "rdata" = load_rdata_file(file_path, pollutant),
-        stop("Unknown file type: ", file_type)
-      )
-    },
-    error = function(e) {
-      warning(
-        "Failed to load ",
-        file_type,
-        " file: ",
-        file_path,
-        "\n",
-        e$message
-      )
-      return(NULL)
-    }
+  switch(
+    file_type,
+    "csv" = import_csv_data(file_path, required_cols),
+    "rdata" = load_rdata_file(file_path, pollutant),
+    stop("Unknown file type: ", file_type)
   )
 }
 
@@ -607,28 +592,21 @@ transform_to_wgs84 <- function(
   northing = "Northing",
   crs_from = 27700
 ) {
-  tryCatch(
-    {
-      sf_obj <- sf::st_as_sf(
-        df,
-        coords = c(easting, northing),
-        crs = crs_from
-      ) |>
-        sf::st_transform(crs = 4326)
-      coords <- sf::st_coordinates(sf_obj)
-      sf_obj$Longitude <- coords[, 1]
-      sf_obj$Latitude <- coords[, 2]
+  sf_obj <- sf::st_as_sf(
+    df,
+    coords = c(easting, northing),
+    crs = crs_from
+  ) |>
+    sf::st_transform(crs = 4326)
+  coords <- sf::st_coordinates(sf_obj)
+  sf_obj$Longitude <- coords[, 1]
+  sf_obj$Latitude <- coords[, 2]
 
-      if ("year" %in% names(df)) {
-        sf_obj$year_str <- format(sf_obj$year, "%Y")
-      }
+  if ("year" %in% names(df)) {
+    sf_obj$year_str <- format(sf_obj$year, "%Y")
+  }
 
-      sf_obj
-    },
-    error = function(e) {
-      stop("Coordinate transformation failed: ", e$message)
-    }
-  )
+  sf_obj
 }
 
 create_vignette_overlay <- function(spatial_feature) {
@@ -1237,25 +1215,18 @@ save_html_and_style <- function(map, html_file, title, styling_type, show_banner
   )
 
   if (styling_type == "html") {
-    tryCatch(
-      {
-        inject_banner_legend_controls(
-          html_file = html_file,
-          title = if (show_banner) title else NULL,
-          banner_colour = banner_colour,
-          scale_name = colour_scale,
-          collapsed_mobile = collapsed_mobile,
-          image_mode = image_mode,
-          image_dimensions = image_dimensions,
-          autoplay = autoplay,
-          play_speed = play_speed,
-          data_max = data_max,
-          years = years
-        )
-      },
-      error = function(e) {
-        warning("Failed to apply layout: ", e$message)
-      }
+    inject_banner_legend_controls(
+      html_file = html_file,
+      title = if (show_banner) title else NULL,
+      banner_colour = banner_colour,
+      scale_name = colour_scale,
+      collapsed_mobile = collapsed_mobile,
+      image_mode = image_mode,
+      image_dimensions = image_dimensions,
+      autoplay = autoplay,
+      play_speed = play_speed,
+      data_max = data_max,
+      years = years
     )
   }
 
@@ -2198,9 +2169,6 @@ determine_years_and_viewport <- function(spatial_data, borough_sf, vignette, req
 #'
 #' @family map
 create_pollution_map <- function(
-  diffusion_tube_file = "none",
-  sensor_file = "none",
-  school_file = "none",
   data_sources = NULL,
   data_ids = NULL,
   data_symbols = NULL,
@@ -2221,13 +2189,6 @@ create_pollution_map <- function(
   play_speed = NULL,
   theme_file = NULL
 ) {
-  # Backward compatibility: convert old API to new API
-  if (is.null(data_sources)) {
-    data_sources <- list()
-    if (diffusion_tube_file != "none") data_sources <- c(data_sources, list(diffusion_tube_file))
-    if (sensor_file != "none") data_sources <- c(data_sources, list(sensor_file))
-    if (school_file != "none") data_sources <- c(data_sources, list(school_file))
-  }
 
   c(image_export, map_width_px, map_height_px) %<-% parse_export_params(export_image)
   show_banner <- (styling_type == "html")
@@ -2244,17 +2205,13 @@ create_pollution_map <- function(
       theme$map$base_tiles
     )
 
-  borough_sf <- tryCatch(
-    get_boundary_sf(boroughs),
-    error = function(e) {
-      message(e$message)
-      return(NULL)
-    }
-  )
+  borough_sf <- get_boundary_sf(boroughs)
+  if (is.null(borough_sf)) return()
 
   if (!dir.exists("aq_maps")) dir.create("aq_maps", showWarnings = TRUE)
+
   spatial_data <- load_spatial_data_sources(data_sources, data_ids, data_dynamic, pollutant)
-  if (is.null(borough_sf)) return()
+
   c(primary_data, years, vignette_overlay, bbox) %<-%
     determine_years_and_viewport(spatial_data, borough_sf, vignette, years)
   legend_info <- get_colour_legend(colour_scale)
