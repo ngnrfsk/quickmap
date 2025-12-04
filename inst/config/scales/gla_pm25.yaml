@@ -25,10 +25,10 @@ colours:
 labels:
   - "< 5: WHO guideline"
   - "5-7.5"
-  - "7.5-10: < GLA/WHO Int 1"
+  - "7.5-10: < GLA/WHO Int 3"
   - "10-12.5"
   - "12.5-15: < WHO Int 2"
   - "15-20: < UK"
-  - "20-25: < WHO Int 2"
+  - "20-25: < WHO Int 1"
   - "> 25"
   - "Insufficient data"

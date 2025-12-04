@@ -131,9 +131,9 @@ Incremental steps, commit-test-approve workflow, code review checkpoints.
 
 **Outcome:** Verify converter handles realistic data volumes efficiently
 
-**What must exist:** - Test with 50 sites × 5 years = 250 features - Performance metrics: - API download time: logged but not benchmarked (network-dependent) - Conversion: < 5 seconds for 250 features - Rendering: uses existing baseline (~25s, no regression) - Memory profile: peak usage documented - No performance regression vs existing CSV/RData loaders
+**What must exist:** - Test with 50 sites × 5 years = 250 features - Performance metrics: - API download time: logged but not benchmarked (network-dependent) - Conversion: \< 5 seconds for 250 features - Rendering: uses existing baseline (\~25s, no regression) - Memory profile: peak usage documented - No performance regression vs existing CSV/RData loaders
 
-**User will test:** Run performance test, confirm conversion < 5s, no rendering regression
+**User will test:** Run performance test, confirm conversion \< 5s, no rendering regression
 
 ------------------------------------------------------------------------
 
