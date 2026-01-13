@@ -61,6 +61,13 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
 
 ### Completed Fixes
 
+#### RData Duck Typing (v0.9.3.21) - 2026-01-13
+
+**Problem**: RData loading required exact object name "dataOAformat"
+**Fix**: Three-strategy loader - (1) standard names (dataOAformat/data/oa_data/sensor_data), (2) any compatible data.frame (largest), (3) optional explicit data_object_name parameter
+**Impact**: Works with any RData file containing compatible sensor data (siteCode, year, pollutant, lat, lon columns)
+**Testing**: Comprehensive test suite in tests/test_rdata_duck_typing.R validates all strategies
+
 #### School Label Duck Typing (v0.9.3.20) - 2026-01-13
 
 **Problem**: School labels failed with auto-generated layer IDs (e.g., "schools_wandsworth")

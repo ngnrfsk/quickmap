@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **QuickMap** is an R project for generating interactive air quality maps showing pollution data (NO2, PM2.5) overlaid with school locations and borough boundaries. It creates both interactive Leaflet HTML maps and static JPG exports for local government air quality reporting.
 
-### Current Version: 0.9.3
+### Current Version: 0.9.3.21
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,200 lines)
 -   **Archived versions**: `versions/quickmap_0_8_5.R` through `versions/quickmap_0_9_3.R`
@@ -135,9 +135,10 @@ Sys.setenv(SCRIPTS_PATH = "path/to/scripts")
 
 ### RData Files (Breathe London)
 
--   **Must contain**: `dataOAformat` object
+-   **Duck typing**: Checks standard names (dataOAformat/data/oa_data/sensor_data), then any compatible data.frame
 -   **Required columns**: `siteCode`, `year`, pollutant, `lat`, `lon`
 -   **Format**: OpenAir-compatible long format
+-   **Multiple objects**: Automatically selects largest compatible data.frame
 
 ### School Data
 
@@ -283,5 +284,6 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.2**: Consolidated API (data_sources replaces individual file params)
 -   **v0.9.3**: OpenAir converter functions (importUKAQ, importAURN, importKCL)
 -   **v0.9.3.20**: School label duck typing fix
+-   **v0.9.3.21**: RData duck typing (standard names → any compatible data.frame)
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
