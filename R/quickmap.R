@@ -1,5 +1,6 @@
 # quickmap - Air Quality Mapping for R
-# Version 0.9.3.20  2026/01/13
+# Version 0.9.3.21  2026/01/13
+# v0.9.3.21: RData duck typing - standard names, then any compatible data.frame
 # v0.9.3.20: School label duck typing - removed hardcoded layer_id check
 
 packages <- c(
@@ -423,16 +424,91 @@ load_data_file <- function(
   )
 }
 
-load_rdata_file <- function(file_path, pollutant) {
+#' Load RData file with duck typing
+#'
+#' Three-strategy loader: (1) explicit data_object_name, (2) standard names
+#' (dataOAformat/data/oa_data/sensor_data), (3) any compatible data.frame (largest)
+#'
+#' @param file_path Path to RData file (relative to DATA_PATH)
+#' @param pollutant Pollutant name (e.g., "no2", "pm25")
+#' @param data_object_name Optional: explicit object name in RData file
+#' @return Processed sensor data
+#' @keywords internal
+load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
   # Load into isolated environment to prevent overwriting
   env <- new.env()
   load(file.path(Sys.getenv("DATA_PATH"), file_path), envir = env, verbose = TRUE)
 
-  if (!exists("dataOAformat", envir = env)) {
-    stop("dataOAformat object not found in RData file")
+  obj_names <- ls(envir = env)
+  required_cols <- c("siteCode", "year", pollutant, "lat", "lon")
+
+  # Helper: validate and use object
+  use_object <- function(obj, name) {
+    if (!is.data.frame(obj)) {
+      stop("Object '", name, "' is not a data.frame", call. = FALSE)
+    }
+    if (!all(required_cols %in% names(obj))) {
+      stop(
+        "Object '", name, "' missing columns: ",
+        paste(setdiff(required_cols, names(obj)), collapse = ", "),
+        call. = FALSE
+      )
+    }
+    message("Using sensor data: ", name, " (", nrow(obj), " rows)")
+    return(process_oa_data(obj, pollutant))
   }
 
-  return(process_oa_data(env$dataOAformat, pollutant))
+  # Strategy 1: Explicit user choice (if data_object_name specified)
+  if (!is.null(data_object_name)) {
+    if (!exists(data_object_name, envir = env)) {
+      stop(
+        "Object '", data_object_name, "' not found.\n",
+        "Available: ", paste(obj_names, collapse = ", "),
+        call. = FALSE
+      )
+    }
+    return(use_object(get(data_object_name, envir = env), data_object_name))
+  }
+
+  # Strategy 2: Standard names (backward compatible)
+  standard_names <- c("dataOAformat", "data", "oa_data", "sensor_data")
+  for (sname in standard_names) {
+    if (exists(sname, envir = env)) {
+      obj <- get(sname, envir = env)
+      if (is.data.frame(obj) && all(required_cols %in% names(obj))) {
+        return(use_object(obj, sname))
+      }
+    }
+  }
+
+  # Strategy 3: Duck typing (largest compatible data.frame)
+  compatible <- list()
+  for (obj_name in obj_names) {
+    obj <- get(obj_name, envir = env)
+    if (is.data.frame(obj) && all(required_cols %in% names(obj))) {
+      compatible[[obj_name]] <- list(data = obj, nrow = nrow(obj))
+    }
+  }
+
+  if (length(compatible) == 0) {
+    stop(
+      "No compatible sensor data in: ", basename(file_path), "\n",
+      "Expected: data.frame with [", paste(required_cols, collapse = ", "), "]\n",
+      "Found: ", paste(obj_names, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
+  sizes <- sapply(compatible, function(x) x$nrow)
+  selected <- names(which.max(sizes))
+
+  if (length(compatible) > 1) {
+    message(
+      "Found ", length(compatible), " compatible objects, using largest: ", selected
+    )
+  }
+
+  return(use_object(compatible[[selected]]$data, selected))
 }
 
 get_temporal_data <- function(
