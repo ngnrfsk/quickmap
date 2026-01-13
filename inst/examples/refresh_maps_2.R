@@ -1,46 +1,25 @@
-# 2025 ASR map generation script ####
-# Depends on quickmap.R
+# ASR map generation script
+# Updated for QuickMap v0.9.3.20
 
-# check if quickmap.R is sourced otherwise source it
+Sys.setenv(DATA_PATH = "~/Coding/Library/data")
+
 if (!exists("create_pollution_map")) {
-  source("../quickmap.R")
+  source("R/quickmap.R")
 }
 
-
-# create_pollution_map <- function(
-#     csv_data_file = "none",
-#     oa_data_file = "none",
-#     boroughs,
-#     school_file = "none",
-#     output_file = "pollution_map.html", # if NULL no output file
-#     image_export = FALSE,
-#     scale_to_use = "who_no2",
-#     title_prefix = "none",
-#     vignette_overlay_on = TRUE,
-#     legend_title = "Annual NO2, ug/m3",
-#     years_to_plot = NULL,
-#     map_width_px = 1200,
-#     use_data_labels = FALSE,
-#     pollutant = "no2",
-#     map_title = "Air pollution map"
-# )
-
-# Richmond PM25 from BL data with vignette overlay
+# Wandsworth NO2 with ward labels
 map_object <- create_pollution_map(
-  csv_data_file = "~/Coding/R projects/Library/data/wandsworth_2017_2024_no_labels.csv", # takes off the CSV data
-  boroughs = c("Wandsworth"),
-  output_file = "lbw_no2_2017_2024_dt_ward_labels.html",
-  image_export = FALSE,
-  scale_to_use = "who_no2",
-  #  legend_title = "Annual mean PM2.5, ug/m3",
-  vignette_overlay_on = TRUE, # no vignette overlay for this map
+  data_sources = list("wandsworth_2017_2024_no_labels.csv"),
+  boroughs = "Wandsworth",
   pollutant = "no2",
-  html_page_title = "LB Wandsworth Annual Mean NO2 2017-2024",
-  use_data_labels = FALSE,
-  show_legend = TRUE,
-  show_banner = FALSE,
-  show_title = FALSE
+  years = NULL,
+  colour_scale = "who_no2",
+  output_file = "lbw_no2_2017_2024_dt_ward_labels.html",
+  title = "LB Wandsworth Annual Mean NO2 2017-2024",
+  styling_type = "html",
+  vignette = TRUE,
+  marker_labels = FALSE,
+  boundary_labels = TRUE
 )
-# display the HMTL map to export to inspect before putting online
 
 map_object
