@@ -61,6 +61,12 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
 
 ### Completed Fixes
 
+#### School Label Duck Typing (v0.9.3.20) - 2026-01-13
+
+**Problem**: School labels failed with auto-generated layer IDs (e.g., "schools_wandsworth")
+**Fix**: Removed hardcoded `layer_id == "schools"` check; now detects via School column
+**Impact**: Works with any filename; data_ids truly optional
+
 #### Issue 1: Boundary Labels Control (v0.8.8)
 
 -   Added `show_boundary_labels` parameter (TRUE/FALSE)
@@ -98,13 +104,12 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
 
 -   Fixed schools label behavior to respect show_marker_labels parameter
 -   Fixed OA data label fallback when Label column missing
--   All data sources now have consistent label behavior
 
 #### Issue 8: Borough Colour Palettes (v0.8.11)
 
--   Restructured borough_palettes as nested named lists for easy colour access
--   Added show_borough_colours() helper function to display available colours
--   Usage: borough_palettes$merton$purple or borough_palettes$wandsworth$blue
+-   Added borough-specific colour palettes in nested named lists
+-   Created show_borough_colours() helper function
+-   Enables consistent borough branding across maps
 
 #### Issue 9: Parameter Simplification (v0.9.0) - 2025-10-28
 
