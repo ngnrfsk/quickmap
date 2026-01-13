@@ -6,12 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **QuickMap** is an R project for generating interactive air quality maps showing pollution data (NO2, PM2.5) overlaid with school locations and borough boundaries. It creates both interactive Leaflet HTML maps and static JPG exports for local government air quality reporting.
 
-### Current Version: 0.9.1
+### Current Version: 0.9.3
 
--   **Production code**: `quickmap.R` (stable, ~2,900 lines)
--   **Archived versions**: `versions/quickmap_0_8_5.R` through `versions/quickmap_0_9_0_3.R`
--   **Test scripts**: 14 test scripts in `tests/` directory, 3 testthat files
--   **Utility scripts**: 6 scripts in `scripts/` directory
+-   **Production code**: `R/quickmap.R` (stable, ~2,200 lines)
+-   **Archived versions**: `versions/quickmap_0_8_5.R` through `versions/quickmap_0_9_3.R`
+-   **Test scripts**: Multiple test scripts in `tests/` directory, testthat files
+-   **Utility scripts**: Scripts in `scripts/` directory
 
 ## Core Architecture
 
@@ -82,25 +82,35 @@ Data Loading → Layer Configuration → Generic Processing → Icon Generation 
 
 ``` r
 # Interactive development in R/RStudio
-source("quickmap.R")
+source("R/quickmap.R")
 
 # Run example scripts
-source("test_quickmap.R")
-source("do_maps_with_v0.8.3_LBM_PM25.R")
+source("tests/test_quickmap.R")
+source("inst/examples/create_all_borough_maps.R")
 ```
 
 ### Creating Maps
 
+Current API (v0.9.2+) uses `data_sources` list:
+
 ``` r
 map_object <- create_pollution_map(
-  csv_data_file = "path/to/diffusion_tubes.csv",
-  oa_data_file = "path/to/breathe_london.Rdata",
-  boroughs = c("Wandsworth", "Merton"),
-  output_file = "map_output.html",
-  image_export = TRUE,  # Also creates JPG files
-  scale_to_use = "who_no2",
-  show_banner = TRUE,
-  banner_text = "Air Quality Dashboard"
+  data_sources = list(
+    "wandsworth_2017_2024.csv",
+    "bl_imperial_annualised_2021_2025.Rdata",
+    "schools_wandsworth.csv"
+  ),
+  data_ids = NULL,  # Optional - auto-generates from filenames
+  boroughs = "Wandsworth",
+  pollutant = "no2",
+  years = NULL,  # All available years
+  colour_scale = "who_no2",
+  output_file = "wandsworth_no2.html",
+  title = "Wandsworth NO2 Annual Mean",
+  styling_type = "html",
+  export_image = TRUE,  # Also creates JPG files
+  marker_labels = "labels",  # Show school names and custom labels
+  vignette = TRUE
 )
 ```
 
@@ -131,7 +141,8 @@ Sys.setenv(SCRIPTS_PATH = "path/to/scripts")
 
 ### School Data
 
--   **Required columns**: `Easting`, `Northing`, `Level` (Primary/Secondary), `School`
+-   **Required columns**: `Easting`, `Northing`, `Level`, `School`
+-   **Detection**: Automatic via `School` column (duck typing)
 
 ## Configuration System (v0.10.0+)
 
@@ -251,21 +262,26 @@ Scripts expect data files via environment variables or absolute paths.
 
 Core R packages (auto-installed): - `leaflet`: Interactive mapping - `sf`: Spatial data handling - `dplyr`: Data manipulation - `leaflegend`: Custom legend controls - `webshot2`: Static image export - `htmlwidgets`: Widget saving and manipulation
 
-## Version History Context
+## Marker Labels
 
--   **v0.8.0**: Major refactor to unified architecture
--   **v0.8.5**: Code cleanup and simplification
--   **v0.8.6**: Enhanced UI with external legends and banners
--   **v0.8.7-v0.8.7.3**: Unified banner/legend system with proportional scaling, missing data filtering
--   **v0.8.8**: Boundary labels control (`show_boundary_labels` parameter)
--   **v0.8.9**: Marker labels control (5-state `show_marker_labels` parameter, removed `use_data_labels`)
--   **v0.8.10**: Fixed schools label behavior and OA data label fallback
--   **v0.8.11**: Borough colour palettes (nested named lists) and `show_borough_colours()` helper
--   **v0.9.0**: Parameter simplification following OpenAir design patterns (breaking changes)
--   **v0.9.0.1**: UI fixes - year control positioning and behavior
--   **v0.9.0.2**: Touch-friendly collapsible year menu with dynamic banner-based theming
--   **v0.9.0.3**: Legend refactor with symbol keys, fixed-width blocks, shortened labels, flexbox alignment
--   **v0.9.0.4**: Configuration system - YAML-based colour scales and themes, externalized CSS/JS to inst/, named placeholder pattern, theme_file parameter
--   **v0.9.1**: Streamlined create_pollution_map() with helper function extraction and zeallot multiple assignment (main function: 185→111 lines, -40%)
+**Options:** `FALSE` | `TRUE` (hover) | `"values_on"` (always) | `"labels"` (custom/hover) | `"labels_on"` (custom/always)
 
-All archived versions are stored in `versions/` directory. Current stable version is always `quickmap.R`.
+**Content (duck typing):** School column → school names | Label column → custom labels | pollutant → values
+
+School data detected by School column presence. Any filename works (schools.csv, schools_wandsworth.csv, etc.).
+
+## Design Philosophy
+
+**Duck typing:** Data types detected by column presence (School/Label/year_str), not filenames or IDs.
+**Optional IDs:** `data_ids` auto-generates from filenames when NULL.
+**OpenAir consistency:** Follows OpenAir API patterns.
+
+## Version History
+
+-   **v0.9.0**: Parameter simplification (breaking changes)
+-   **v0.9.1**: Function extraction, zeallot assignment (-40% main function size)
+-   **v0.9.2**: Consolidated API (data_sources replaces individual file params)
+-   **v0.9.3**: OpenAir converter functions (importUKAQ, importAURN, importKCL)
+-   **v0.9.3.20**: School label duck typing fix
+
+Archived versions in `versions/`. Current: `R/quickmap.R`.

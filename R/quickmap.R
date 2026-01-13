@@ -1,5 +1,6 @@
 # quickmap - Air Quality Mapping for R
-# Version 0.9.2  2025/11/26
+# Version 0.9.3.20  2026/01/13
+# v0.9.3.20: School label duck typing - removed hardcoded layer_id check
 
 packages <- c(
   "leaflet",
@@ -22,11 +23,7 @@ if (any(!installed)) {
 
 lapply(packages, library, character.only = TRUE)
 
-# Note: Linter warnings for package functions are false positives.
-# All required packages are loaded via lapply() above.
-# Functions from dplyr, sf, leaflet, leaflegend, and other packages are available at runtime.
-
-# NULL coalescing operator - returns y if x is NULL, otherwise x
+# NULL coalescing operator
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
 # Constants
@@ -1719,6 +1716,13 @@ add_layer <- function(
 }
 
 
+#' Generate marker labels via duck typing (School/Label/pollutant columns)
+#'
+#' @param data Data frame with spatial data
+#' @param pollutant Pollutant name or NULL for static layers
+#' @param marker_labels Label visibility setting
+#' @param layer_id Layer identifier (not used for detection)
+#' @return Character vector of labels
 #' @keywords internal
 generate_marker_labels <- function(data, pollutant, marker_labels, layer_id) {
   show_values <- marker_labels %in% c(TRUE, "values_on")
@@ -1728,8 +1732,8 @@ generate_marker_labels <- function(data, pollutant, marker_labels, layer_id) {
     return(rep("", nrow(data)))
   }
 
-  # Static layers (schools): show School column
-  if ("School" %in% names(data) && layer_id == "schools") {
+  # School data: detect via School column
+  if ("School" %in% names(data)) {
     return(as.character(data$School))
   }
 
@@ -2100,13 +2104,11 @@ determine_years_and_viewport <- function(spatial_data, borough_sf, vignette, req
 #' Main function to create Leaflet maps showing air pollution data with optional
 #' schools overlay. Generates both interactive HTML maps and static JPG exports.
 #'
-#' @param diffusion_tube_file CSV file with Easting/Northing columns and year columns (or "none"). Prepends DATA_PATH if set.
-#' @param sensor_file RData file with 'dataOAformat' object (or "none"). Prepends DATA_PATH if set.
-#' @param school_file CSV file with Easting/Northing/Level/School columns (or "none"). Prepends DATA_PATH if set.
-#' @param data_sources List of file paths or sf objects (default: NULL).
+#' @param data_sources List of file paths or sf objects. Files can be CSV (diffusion tubes, schools)
+#'   or RData (sensor data). Prepends DATA_PATH if set.
 #' @param data_ids Character vector of layer IDs (default: NULL, auto-generated from filenames).
 #' @param data_symbols Character vector of marker symbols (default: NULL, auto-cycles through defaults).
-#'   Valid: "circle", "diamond", "cross", "square", "triangle", "star", "plus". Note: "square" → "rect".
+#'   Valid: "circle", "diamond", "cross", "square", "triangle", "star", "plus".
 #' @param data_dynamic Logical vector indicating temporal (TRUE) vs static (FALSE) layers (default: NULL, auto-detected).
 #' @param output_file Output filename (without extension). Saved to 'aq_maps/' directory.
 #' @param export_image NULL (no export), TRUE (export 1200x1200), or c(width, height) vector for custom dimensions.
@@ -2117,9 +2119,8 @@ determine_years_and_viewport <- function(spatial_data, borough_sf, vignette, req
 #' @param vignette If TRUE, darkens areas outside borough(s). Default: NULL (uses theme).
 #' @param colour_scale Color scale name (default: "who_no2"). See \code{load_colour_scale()} for options.
 #' @param styling_type Controls banner/legend display: "html" (default) or "none".
-#' @param marker_labels Control label visibility. Options: FALSE (no labels), TRUE (values on hover),
-#'   "values_on" (values always visible), "labels" (custom labels on hover), "labels_on" (custom labels always visible).
-#'   Default: NULL (uses theme).
+#' @param marker_labels Label visibility: FALSE, TRUE (hover), "values_on" (always), "labels" (custom/hover),
+#'   "labels_on" (custom/always). Default: NULL (uses theme). Content: School/Label/pollutant columns.
 #' @param banner_colour Color for banner and vignette. Default: NULL (uses theme).
 #' @param boundary_labels If TRUE, shows borough boundary labels. Default: NULL (uses theme).
 #' @param autoplay Auto-start year animation on load. Default: NULL (uses theme).
@@ -2130,20 +2131,20 @@ determine_years_and_viewport <- function(spatial_data, borough_sf, vignette, req
 #'   If \code{export_image} is not NULL, also saves JPG files (one per year).
 #'
 #' @details
-#' \strong{Data Sources:} Diffusion tubes (CSV), Breathe London sensors (RData), Schools (CSV)
+#' \strong{Data Files:} CSV files (diffusion tubes, schools) require Easting/Northing columns.
+#' RData files (sensors) require 'dataOAformat' object. School data auto-detected by School column.
 #'
-#' \strong{Coordinate Systems:} Input uses British National Grid (EPSG:27700), output WGS84 (EPSG:4326)
+#' \strong{Coordinates:} Input British National Grid (EPSG:27700), output WGS84 (EPSG:4326).
 #'
-#' \strong{Setup:} Set \code{Sys.setenv(DATA_PATH = "~/path/to/data")} before use
+#' \strong{Setup:} Set \code{Sys.setenv(DATA_PATH = "~/path/to/data")} before use.
 #'
-#' \strong{Markers:} Circles (DT sites), diamonds (BL nodes), crosses (schools). Automatically scaled for static exports.
+#' \strong{Symbols:} Auto-assigned by data type. Override with data_symbols parameter.
 #'
 #' @examples
 #' # Basic interactive map
 #' Sys.setenv(DATA_PATH = "~/data")
 #' create_pollution_map(
-#'   diffusion_tube_file = "wandsworth_2017_2024.csv",
-#'   school_file = "schools_Wandsworth.csv",
+#'   data_sources = list("wandsworth_2017_2024.csv", "schools_Wandsworth.csv"),
 #'   boroughs = "Wandsworth",
 #'   years = 2024,
 #'   output_file = "wandsworth_2024.html"
@@ -2151,7 +2152,7 @@ determine_years_and_viewport <- function(spatial_data, borough_sf, vignette, req
 #'
 #' # Static JPG export with theme
 #' create_pollution_map(
-#'   diffusion_tube_file = "data.csv",
+#'   data_sources = list("merton_dt_2018_2024.csv"),
 #'   boroughs = "Merton",
 #'   years = 2024,
 #'   export_image = TRUE,
@@ -2160,12 +2161,8 @@ determine_years_and_viewport <- function(spatial_data, borough_sf, vignette, req
 #' )
 #'
 #' @note
-#' \itemize{
-#'   \item Set \code{DATA_PATH} environment variable before use
-#'   \item Year columns in CSV: YYYY format (e.g., "2024")
-#'   \item Static JPG exports require Chrome/Chromium for webshot2
-#'   \item Use \code{show_borough_colours()} to list available borough palettes
-#' }
+#' Year columns in CSV files must be YYYY format (e.g., "2024").
+#' Static JPG exports require Chrome/Chromium for webshot2.
 #'
 #' @family map
 create_pollution_map <- function(
