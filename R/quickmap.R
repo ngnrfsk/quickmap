@@ -100,7 +100,9 @@ get_openair_metadata <- function(source) {
 
       if (is.null(metadata) || nrow(metadata) == 0) {
         stop(
-          "No metadata returned for source '", source, "'. ",
+          "No metadata returned for source '",
+          source,
+          "'. ",
           "Check that the source name is valid.",
           call. = FALSE
         )
@@ -120,7 +122,9 @@ get_openair_metadata <- function(source) {
     },
     error = function(e) {
       stop(
-        "Failed to fetch metadata for source '", source, "': ",
+        "Failed to fetch metadata for source '",
+        source,
+        "': ",
         e$message,
         call. = FALSE
       )
@@ -146,7 +150,10 @@ get_openair_metadata <- function(source) {
 clear_openair_metadata_cache <- function(source = NULL) {
   if (is.null(source)) {
     # Clear entire cache
-    rm(list = ls(envir = .openair_metadata_cache), envir = .openair_metadata_cache)
+    rm(
+      list = ls(envir = .openair_metadata_cache),
+      envir = .openair_metadata_cache
+    )
     message("Cleared all OpenAir metadata cache")
   } else {
     # Clear specific source
@@ -218,8 +225,11 @@ convert_openair_to_spatial <- function(
   # Check pollutant exists
   if (!pollutant %in% names(data)) {
     stop(
-      "Pollutant '", pollutant, "' not found in data. ",
-      "Available columns: ", paste(names(data), collapse = ", "),
+      "Pollutant '",
+      pollutant,
+      "' not found in data. ",
+      "Available columns: ",
+      paste(names(data), collapse = ", "),
       call. = FALSE
     )
   }
@@ -255,7 +265,8 @@ convert_openair_to_spatial <- function(
       warning(
         "Sites without coordinates in metadata (filtered out): ",
         paste(head(missing_codes, 10), collapse = ", "),
-        if (length(missing_codes) > 10) paste0(" (and ", length(missing_codes) - 10, " more)") else "",
+        if (length(missing_codes) > 10)
+          paste0(" (and ", length(missing_codes) - 10, " more)") else "",
         call. = FALSE
       )
       data <- data[!missing_coords, ]
@@ -313,10 +324,12 @@ convert_openair_to_spatial <- function(
         longitude = first(longitude),
         .groups = "drop"
       ) |>
-      select(-period)  # Remove temporary grouping column
+      select(-period) # Remove temporary grouping column
   } else {
     stop(
-      "Invalid avg.time: '", avg.time, "'. ",
+      "Invalid avg.time: '",
+      avg.time,
+      "'. ",
       "Valid options: 'year', 'month', 'day', 'hour'",
       call. = FALSE
     )
@@ -343,7 +356,9 @@ convert_openair_to_spatial <- function(
   sf_data$Latitude <- as.numeric(coords[, 2])
 
   message(
-    "Converted ", nrow(sf_data), " site-",
+    "Converted ",
+    nrow(sf_data),
+    " site-",
     if (avg.time == "year") "years" else paste0(avg.time, "s"),
     " to sf object"
   )
@@ -435,9 +450,14 @@ load_data_file <- function(
 #' @return Processed sensor data
 #' @keywords internal
 load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
-  # Load into isolated environment to prevent overwriting
+  # Explicit param → standard names (dataOAformat/data/oa_data/sensor_data) → largest compatible data.frame
+  # Priority order ensures backward compatibility with OpenAir conventions while enabling duck typing for non-standard files
   env <- new.env()
-  load(file.path(Sys.getenv("DATA_PATH"), file_path), envir = env, verbose = TRUE)
+  load(
+    file.path(Sys.getenv("DATA_PATH"), file_path),
+    envir = env,
+    verbose = TRUE
+  )
 
   obj_names <- ls(envir = env)
   required_cols <- c("siteCode", "year", pollutant, "lat", "lon")
@@ -449,7 +469,9 @@ load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
     }
     if (!all(required_cols %in% names(obj))) {
       stop(
-        "Object '", name, "' missing columns: ",
+        "Object '",
+        name,
+        "' missing columns: ",
         paste(setdiff(required_cols, names(obj)), collapse = ", "),
         call. = FALSE
       )
@@ -458,20 +480,23 @@ load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
     return(process_oa_data(obj, pollutant))
   }
 
-  # Strategy 1: Explicit user choice (if data_object_name specified)
+  # If Explicit user choice (if data_object_name specified)
   if (!is.null(data_object_name)) {
     if (!exists(data_object_name, envir = env)) {
       stop(
-        "Object '", data_object_name, "' not found.\n",
-        "Available: ", paste(obj_names, collapse = ", "),
+        "Object '",
+        data_object_name,
+        "' not found.\n",
+        "Available: ",
+        paste(obj_names, collapse = ", "),
         call. = FALSE
       )
     }
     return(use_object(get(data_object_name, envir = env), data_object_name))
   }
 
-  # Strategy 2: Standard names (backward compatible)
-  standard_names <- c("dataOAformat", "data", "oa_data", "sensor_data")
+  # Else screen for standard names (backward compatible)
+  standard_names <- c("dataOAformat", "data", "sensor_data", "measuremnts")
   for (sname in standard_names) {
     if (exists(sname, envir = env)) {
       obj <- get(sname, envir = env)
@@ -481,7 +506,7 @@ load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
     }
   }
 
-  # Strategy 3: Duck typing (largest compatible data.frame)
+  # Else duck typing (largest compatible data.frame)
   compatible <- list()
   for (obj_name in obj_names) {
     obj <- get(obj_name, envir = env)
@@ -492,9 +517,14 @@ load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
 
   if (length(compatible) == 0) {
     stop(
-      "No compatible sensor data in: ", basename(file_path), "\n",
-      "Expected: data.frame with [", paste(required_cols, collapse = ", "), "]\n",
-      "Found: ", paste(obj_names, collapse = ", "),
+      "No compatible sensor data in: ",
+      basename(file_path),
+      "\n",
+      "Expected: data.frame with [",
+      paste(required_cols, collapse = ", "),
+      "]\n",
+      "Found: ",
+      paste(obj_names, collapse = ", "),
       call. = FALSE
     )
   }
@@ -504,7 +534,10 @@ load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
 
   if (length(compatible) > 1) {
     message(
-      "Found ", length(compatible), " compatible objects, using largest: ", selected
+      "Found ",
+      length(compatible),
+      " compatible objects, using largest: ",
+      selected
     )
   }
 
@@ -779,7 +812,6 @@ load_colour_scale <- function(scale_name) {
 #' @param source_name Character string, name of the data source (e.g., "dt_sites", "bl_nodes", "schools")
 #' @return List containing data source configuration with fields: id, label, icon_shape, static
 #' @family config
-
 
 #' @keywords internal
 load_yaml_config <- function(
@@ -1199,7 +1231,8 @@ get_contrast_text_color <- function(color) {
 #' @keywords internal
 build_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   banner_dir <- get_package_dir("banner")
-  css_variant <- if (image_mode) "banner-image.css" else "banner-interactive.css"
+  css_variant <- if (image_mode) "banner-image.css" else
+    "banner-interactive.css"
   css_file <- file.path(banner_dir, css_variant)
   css_content <- read_template_file(css_file)
 
@@ -1217,7 +1250,8 @@ build_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 #' @keywords internal
 build_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   legend_dir <- get_package_dir("legend")
-  css_variant <- if (image_mode) "legend-image.css" else "legend-interactive.css"
+  css_variant <- if (image_mode) "legend-image.css" else
+    "legend-interactive.css"
   css_file <- file.path(legend_dir, css_variant)
   css_content <- read_template_file(css_file)
 
@@ -1239,47 +1273,114 @@ build_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
 }
 
 #' @keywords internal
-add_year_and_static_layers <- function(template, year, measurement_layers,
-                                       pollutant, colour_scale, spatial_data,
-                                       scale_factor) {
+add_year_and_static_layers <- function(
+  template,
+  year,
+  measurement_layers,
+  pollutant,
+  colour_scale,
+  spatial_data,
+  scale_factor
+) {
   template |>
-    generate_map_layers(measurement_layers, year, pollutant,
-                       colour_scale, spatial_data, scale_factor) |>
-    generate_map_layers(measurement_layers, "static_only", pollutant,
-                       colour_scale, spatial_data, scale_factor)
+    generate_map_layers(
+      measurement_layers,
+      year,
+      pollutant,
+      colour_scale,
+      spatial_data,
+      scale_factor
+    ) |>
+    generate_map_layers(
+      measurement_layers,
+      "static_only",
+      pollutant,
+      colour_scale,
+      spatial_data,
+      scale_factor
+    )
 }
 
-finalize_and_save_map <- function(map, html_file, borough_sf, vignette_overlay,
-                                  vignette, bbox, interactive, years, boundary_labels,
-                                  zoom_level, title, styling_type, show_banner,
-                                  banner_colour, colour_scale, autoplay, play_speed,
-                                  data_max, image_dimensions = NULL) {
+finalize_and_save_map <- function(
+  map,
+  html_file,
+  borough_sf,
+  vignette_overlay,
+  vignette,
+  bbox,
+  interactive,
+  years,
+  boundary_labels,
+  zoom_level,
+  title,
+  styling_type,
+  show_banner,
+  banner_colour,
+  colour_scale,
+  autoplay,
+  play_speed,
+  data_max,
+  image_dimensions = NULL
+) {
   map <- add_map_controls(
-    map, borough_sf, vignette_overlay, vignette, bbox,
-    interactive, years, boundary_labels, zoom_level
+    map,
+    borough_sf,
+    vignette_overlay,
+    vignette,
+    bbox,
+    interactive,
+    years,
+    boundary_labels,
+    zoom_level
   )
 
   save_html_and_style(
-    map, html_file, title, styling_type, show_banner,
-    banner_colour, colour_scale, !interactive, !interactive,
-    image_dimensions, autoplay, play_speed, data_max, years
+    map,
+    html_file,
+    title,
+    styling_type,
+    show_banner,
+    banner_colour,
+    colour_scale,
+    !interactive,
+    !interactive,
+    image_dimensions,
+    autoplay,
+    play_speed,
+    data_max,
+    years
   )
 
   if (!is.null(image_dimensions)) {
     img_file <- sub("\\.html$", ".jpg", html_file)
-    webshot2::webshot(html_file, img_file,
-                     vwidth = image_dimensions[1],
-                     vheight = image_dimensions[2])
+    webshot2::webshot(
+      html_file,
+      img_file,
+      vwidth = image_dimensions[1],
+      vheight = image_dimensions[2]
+    )
     unlink(html_file)
   }
 
   return(map)
 }
 
-save_html_and_style <- function(map, html_file, title, styling_type, show_banner,
-                                banner_colour, colour_scale, collapsed_mobile,
-                                image_mode, image_dimensions, autoplay, play_speed,
-                                data_max, years = NULL) {
+save_html_and_style <- function(
+  map,
+  html_file,
+  title,
+  styling_type,
+  show_banner,
+  banner_colour,
+  colour_scale,
+  collapsed_mobile,
+  image_mode,
+  image_dimensions,
+  autoplay,
+  play_speed,
+  data_max,
+  years = NULL
+) {
   htmlwidgets::saveWidget(
     map,
     file = html_file,
@@ -1549,18 +1650,37 @@ validate_and_fix_icon_shape <- function(shape_name) {
   # Non-solid: suitable for static reference layers
   valid_shapes <- c(
     # Solid symbols
-    "circle", "rect", "square", "triangle", "diamond", "stadium", "down-triangle",
-    "solid-circle-sm", "solid-circle-md",
+    "circle",
+    "rect",
+    "square",
+    "triangle",
+    "diamond",
+    "stadium",
+    "down-triangle",
+    "solid-circle-sm",
+    "solid-circle-md",
     # Non-solid symbols
-    "simple-plus", "simple-cross", "cross-rect", "simple-star",
-    "plus-circle", "plus-rect", "cross-circle",
+    "simple-plus",
+    "simple-cross",
+    "cross-rect",
+    "simple-star",
+    "plus-circle",
+    "plus-rect",
+    "cross-circle",
     # Legacy mixed (kept for backward compatibility)
-    "cross", "star", "plus"
+    "cross",
+    "star",
+    "plus"
   )
 
   if (!shape_name %in% valid_shapes) {
-    stop("Invalid icon shape: '", shape_name, "'. ",
-         "Valid shapes: ", paste(valid_shapes, collapse = ", "))
+    stop(
+      "Invalid icon shape: '",
+      shape_name,
+      "'. ",
+      "Valid shapes: ",
+      paste(valid_shapes, collapse = ", ")
+    )
   }
 
   # Fix "square" → "rect" for leaflegend compatibility
@@ -1635,12 +1755,22 @@ create_generic_icons <- function(
   } else if (!is.null(pollutant)) {
     sapply(data[[pollutant]], assign_colour, scale = colour_scale)
   } else {
-    rep("gray", nrow(data))  # Fallback for static without Level
+    rep("gray", nrow(data)) # Fallback for static without Level
   }
 
   # Non-solid symbols use color (stroke), solid symbols use fillColor
-  is_nonsolid <- shape_config$shape %in% c("simple-plus", "simple-cross", "cross-rect", "simple-star",
-                                            "plus-circle", "plus-rect", "cross-circle", "cross", "plus")
+  is_nonsolid <- shape_config$shape %in%
+    c(
+      "simple-plus",
+      "simple-cross",
+      "cross-rect",
+      "simple-star",
+      "plus-circle",
+      "plus-rect",
+      "cross-circle",
+      "cross",
+      "plus"
+    )
 
   makeSymbolsSize(
     values = rep(1, length(colors)),
@@ -1662,9 +1792,26 @@ get_measurement_layers <- function(
 ) {
   layer_ids <- spatial_data$ids
   # Solid symbols for temporal/dynamic data
-  default_solid_symbols <- c("circle", "rect", "triangle", "diamond", "stadium", "down-triangle", "solid-circle-sm", "solid-circle-md")
+  default_solid_symbols <- c(
+    "circle",
+    "rect",
+    "triangle",
+    "diamond",
+    "stadium",
+    "down-triangle",
+    "solid-circle-sm",
+    "solid-circle-md"
+  )
   # Non-solid symbols for static reference layers
-  default_nonsolid_symbols <- c("simple-plus", "simple-cross", "cross-rect", "simple-star", "plus-circle", "plus-rect", "cross-circle")
+  default_nonsolid_symbols <- c(
+    "simple-plus",
+    "simple-cross",
+    "cross-rect",
+    "simple-star",
+    "plus-circle",
+    "plus-rect",
+    "cross-circle"
+  )
 
   layers <- list()
 
@@ -1685,10 +1832,14 @@ get_measurement_layers <- function(
       data_symbols[i]
     } else if (is_static) {
       static_counter <- static_counter + 1
-      default_nonsolid_symbols[((static_counter - 1) %% length(default_nonsolid_symbols)) + 1]
+      default_nonsolid_symbols[
+        ((static_counter - 1) %% length(default_nonsolid_symbols)) + 1
+      ]
     } else {
       dynamic_counter <- dynamic_counter + 1
-      default_solid_symbols[((dynamic_counter - 1) %% length(default_solid_symbols)) + 1]
+      default_solid_symbols[
+        ((dynamic_counter - 1) %% length(default_solid_symbols)) + 1
+      ]
     }
     icon_shape <- validate_and_fix_icon_shape(symbol)
 
@@ -1720,7 +1871,12 @@ prepare_generic_layer_data <- function(
 
   result <- list(
     data = year_data,
-    labels = generate_marker_labels(year_data, use_pollutant, show_labels, layer_config$id)
+    labels = generate_marker_labels(
+      year_data,
+      use_pollutant,
+      show_labels,
+      layer_config$id
+    )
   )
 
   result
@@ -1821,14 +1977,20 @@ generate_marker_labels <- function(data, pollutant, marker_labels, layer_id) {
     # Fallback: show pollution values if available
     if (!is.null(pollutant) && pollutant %in% names(data)) {
       warning(
-        "marker_labels set to '", marker_labels,
+        "marker_labels set to '",
+        marker_labels,
         "' but no Label column found. Showing pollution values instead.",
         call. = FALSE
       )
-      return(ifelse(is.na(data[[pollutant]]), "", paste(round(data[[pollutant]], 0), "ug/m3")))
+      return(ifelse(
+        is.na(data[[pollutant]]),
+        "",
+        paste(round(data[[pollutant]], 0), "ug/m3")
+      ))
     }
     warning(
-      "marker_labels set to '", marker_labels,
+      "marker_labels set to '",
+      marker_labels,
       "' but no Label column found. No labels will be shown.",
       call. = FALSE
     )
@@ -1837,7 +1999,11 @@ generate_marker_labels <- function(data, pollutant, marker_labels, layer_id) {
 
   # Pollution values
   if (show_values && !is.null(pollutant) && pollutant %in% names(data)) {
-    return(ifelse(is.na(data[[pollutant]]), "", paste(round(data[[pollutant]], 0), "ug/m3")))
+    return(ifelse(
+      is.na(data[[pollutant]]),
+      "",
+      paste(round(data[[pollutant]], 0), "ug/m3")
+    ))
   }
 
   rep("", nrow(data))
@@ -1976,11 +2142,14 @@ add_map_controls <- function(
 
 #' @keywords internal
 create_base_map <- function(data, interactive = TRUE, base_tiles = NULL) {
-  map <- leaflet(data, options = leafletOptions(
-    zoomControl = interactive,
-    zoomDelta = 0.5,
-    zoomSnap = 0
-  ))
+  map <- leaflet(
+    data,
+    options = leafletOptions(
+      zoomControl = interactive,
+      zoomDelta = 0.5,
+      zoomSnap = 0
+    )
+  )
 
   if (!is.null(base_tiles)) {
     map |> addProviderTiles(base_tiles)
@@ -2076,7 +2245,12 @@ parse_export_params <- function(export_image) {
   }
 }
 
-load_spatial_data_sources <- function(data_sources, data_ids, data_dynamic, pollutant) {
+load_spatial_data_sources <- function(
+  data_sources,
+  data_ids,
+  data_dynamic,
+  pollutant
+) {
   loaded_data <- list()
 
   # Auto-generate IDs if not provided
@@ -2103,7 +2277,11 @@ load_spatial_data_sources <- function(data_sources, data_ids, data_dynamic, poll
 
     # RData files
     if (grepl("\\.Rdata$", data_src, ignore.case = TRUE)) {
-      loaded_data[[layer_id]] <- load_data_file(data_src, "rdata", pollutant = pollutant)
+      loaded_data[[layer_id]] <- load_data_file(
+        data_src,
+        "rdata",
+        pollutant = pollutant
+      )
     } else {
       # CSV files - auto-detect temporal/static unless override provided
       result <- load_data_file(data_src, "csv", c("Easting", "Northing"))
@@ -2115,11 +2293,13 @@ load_spatial_data_sources <- function(data_sources, data_ids, data_dynamic, poll
           data_dynamic[i]
         } else {
           cols <- names(csv_data)
-          any(grepl("^\\d{4}$", cols)) || any(c("no2", "pm25", "pm10", "o3") %in% tolower(cols))
+          any(grepl("^\\d{4}$", cols)) ||
+            any(c("no2", "pm25", "pm10", "o3") %in% tolower(cols))
         }
 
         if (is_temporal) {
-          loaded_data[[layer_id]] <- get_temporal_data(csv_data) |> transform_to_wgs84()
+          loaded_data[[layer_id]] <- get_temporal_data(csv_data) |>
+            transform_to_wgs84()
         } else {
           loaded_data[[layer_id]] <- csv_data |> transform_to_wgs84()
         }
@@ -2140,7 +2320,12 @@ load_spatial_data_sources <- function(data_sources, data_ids, data_dynamic, poll
   )
 }
 
-determine_years_and_viewport <- function(spatial_data, borough_sf, vignette, requested_years) {
+determine_years_and_viewport <- function(
+  spatial_data,
+  borough_sf,
+  vignette,
+  requested_years
+) {
   # Find first temporal (non-static) layer to determine available years
   temporal_layers <- Filter(
     function(x) !is.null(x) && "year_str" %in% names(x),
@@ -2262,11 +2447,20 @@ create_pollution_map <- function(
   play_speed = NULL,
   theme_file = NULL
 ) {
-
-  c(image_export, map_width_px, map_height_px) %<-% parse_export_params(export_image)
+  c(image_export, map_width_px, map_height_px) %<-%
+    parse_export_params(export_image)
   show_banner <- (styling_type == "html")
   theme <- load_theme(theme_file)
-  c(title, vignette, banner_colour, boundary_labels, marker_labels, autoplay, play_speed, base_tiles_provider) %<-%
+  c(
+    title,
+    vignette,
+    banner_colour,
+    boundary_labels,
+    marker_labels,
+    autoplay,
+    play_speed,
+    base_tiles_provider
+  ) %<-%
     list(
       title %||% theme$banner$title,
       vignette %||% theme$map$vignette,
@@ -2283,7 +2477,12 @@ create_pollution_map <- function(
 
   if (!dir.exists("aq_maps")) dir.create("aq_maps", showWarnings = TRUE)
 
-  spatial_data <- load_spatial_data_sources(data_sources, data_ids, data_dynamic, pollutant)
+  spatial_data <- load_spatial_data_sources(
+    data_sources,
+    data_ids,
+    data_dynamic,
+    pollutant
+  )
 
   c(primary_data, years, vignette_overlay, bbox) %<-%
     determine_years_and_viewport(spatial_data, borough_sf, vignette, years)
@@ -2294,7 +2493,11 @@ create_pollution_map <- function(
   html_map <- create_base_map(base_map_data, TRUE, base_tiles_provider)
 
   if (image_export) {
-    static_map_template <- create_base_map(base_map_data, FALSE, base_tiles_provider)
+    static_map_template <- create_base_map(
+      base_map_data,
+      FALSE,
+      base_tiles_provider
+    )
   }
 
   measurement_layers <- get_measurement_layers(
@@ -2303,30 +2506,62 @@ create_pollution_map <- function(
     data_symbols
   )
 
-  data_max <- get_data_maximum(measurement_layers, pollutant, spatial_data, years)
+  data_max <- get_data_maximum(
+    measurement_layers,
+    pollutant,
+    spatial_data,
+    years
+  )
 
   marker_scale_factor <- if (image_export) {
     sqrt((map_width_px * map_height_px) / (1200 * 1200))
   } else NULL
 
   for (yr in unique(years)) {
-    html_map <- generate_map_layers(html_map, measurement_layers, yr,
-                                     pollutant, colour_scale, spatial_data, 1.0)
+    html_map <- generate_map_layers(
+      html_map,
+      measurement_layers,
+      yr,
+      pollutant,
+      colour_scale,
+      spatial_data,
+      1.0
+    )
 
     if (image_export) {
       static_map <- add_year_and_static_layers(
-        static_map_template, yr, measurement_layers,
-        pollutant, colour_scale, spatial_data, marker_scale_factor
+        static_map_template,
+        yr,
+        measurement_layers,
+        pollutant,
+        colour_scale,
+        spatial_data,
+        marker_scale_factor
       )
 
       file_parts <- tools::file_path_sans_ext(basename(output_file))
       html_file <- file.path("aq_maps", paste0(file_parts, "_", yr, ".html"))
 
       finalize_and_save_map(
-        static_map, html_file, borough_sf, vignette_overlay,
-        vignette, bbox, FALSE, yr, boundary_labels, theme$map$zoom_level,
-        title, styling_type, show_banner, banner_colour, colour_scale,
-        autoplay, play_speed, data_max, c(map_width_px, map_height_px)
+        static_map,
+        html_file,
+        borough_sf,
+        vignette_overlay,
+        vignette,
+        bbox,
+        FALSE,
+        yr,
+        boundary_labels,
+        theme$map$zoom_level,
+        title,
+        styling_type,
+        show_banner,
+        banner_colour,
+        colour_scale,
+        autoplay,
+        play_speed,
+        data_max,
+        c(map_width_px, map_height_px)
       )
     }
   }
@@ -2335,15 +2570,37 @@ create_pollution_map <- function(
     html_file <- file.path("aq_maps", output_file)
 
     html_map <- finalize_and_save_map(
-      html_map, html_file, borough_sf, vignette_overlay,
-      vignette, bbox, TRUE, years, boundary_labels, theme$map$zoom_level,
-      title, styling_type, show_banner, banner_colour, colour_scale,
-      autoplay, play_speed, data_max, NULL
+      html_map,
+      html_file,
+      borough_sf,
+      vignette_overlay,
+      vignette,
+      bbox,
+      TRUE,
+      years,
+      boundary_labels,
+      theme$map$zoom_level,
+      title,
+      styling_type,
+      show_banner,
+      banner_colour,
+      colour_scale,
+      autoplay,
+      play_speed,
+      data_max,
+      NULL
     )
   } else {
     html_map <- add_map_controls(
-      html_map, borough_sf, vignette_overlay, vignette, bbox,
-      TRUE, years, boundary_labels, theme$map$zoom_level
+      html_map,
+      borough_sf,
+      vignette_overlay,
+      vignette,
+      bbox,
+      TRUE,
+      years,
+      boundary_labels,
+      theme$map$zoom_level
     )
   }
 
