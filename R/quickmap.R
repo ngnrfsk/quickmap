@@ -1,5 +1,6 @@
 # quickmap - Air Quality Mapping for R
-# Version 0.9.3.21  2026/01/13
+# Version 0.9.4  2026/01/15
+# v0.9.4: Sub-annual temporal resolution - month/day/hour support, renamed years→display_times
 # v0.9.3.21: RData duck typing - standard names, then any compatible data.frame
 # v0.9.3.20: School label duck typing - removed hardcoded layer_id check
 
@@ -477,6 +478,17 @@ load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
       )
     }
     message("Using sensor data: ", name, " (", nrow(obj), " rows)")
+
+    # If year_str exists, data is already processed (e.g., from convert_openair_to_spatial)
+    # Just convert to sf without re-aggregating (preserves sub-annual resolution)
+    if ("year_str" %in% names(obj)) {
+      sf_obj <- st_as_sf(obj, coords = c("lon", "lat"), crs = 4326)
+      coords <- st_coordinates(sf_obj)
+      sf_obj$Longitude <- coords[, 1]
+      sf_obj$Latitude <- coords[, 2]
+      return(sf_obj)
+    }
+
     return(process_oa_data(obj, pollutant))
   }
 
@@ -569,14 +581,14 @@ get_temporal_data <- function(
 #' @param measurement_layers Layer configuration from get_measurement_layers()
 #' @param pollutant Pollutant name (for bl_nodes data)
 #' @param spatial_data Spatial data list from load_spatial_data_sources()
-#' @param years Character vector of year strings to include
+#' @param display_times Character vector of time period strings to include (e.g., "2023", "2023-01", "2023-01-15")
 #' @return Maximum value or NULL if no data
 #' @family layer
 get_data_maximum <- function(
   measurement_layers,
   pollutant,
   spatial_data,
-  years = NULL
+  display_times = NULL
 ) {
   layer_maxima <- lapply(measurement_layers, function(layer_config) {
     if (!layer_config$enabled || layer_config$static) {
@@ -586,8 +598,8 @@ get_data_maximum <- function(
     data <- spatial_data$all_data[[layer_config$id]]
     if (is.null(data) || nrow(data) == 0) return(NULL)
 
-    if (!is.null(years) && "year_str" %in% names(data)) {
-      data <- data[data$year_str %in% years, ]
+    if (!is.null(display_times) && "year_str" %in% names(data)) {
+      data <- data[data$year_str %in% display_times, ]
       if (nrow(data) == 0) return(NULL)
     }
 
@@ -606,8 +618,8 @@ get_data_maximum <- function(
       "Legend trimming: data_max = ",
       round(result, 2),
       " (from ",
-      if (is.null(years)) "all years" else
-        paste(length(years), "selected years"),
+      if (is.null(display_times)) "all periods" else
+        paste(length(display_times), "selected periods"),
       ")"
     )
     return(result)
@@ -1309,7 +1321,7 @@ finalize_and_save_map <- function(
   vignette,
   bbox,
   interactive,
-  years,
+  display_times,
   boundary_labels,
   zoom_level,
   title,
@@ -1329,7 +1341,7 @@ finalize_and_save_map <- function(
     vignette,
     bbox,
     interactive,
-    years,
+    display_times,
     boundary_labels,
     zoom_level
   )
@@ -1348,7 +1360,7 @@ finalize_and_save_map <- function(
     autoplay,
     play_speed,
     data_max,
-    years
+    display_times
   )
 
   if (!is.null(image_dimensions)) {
@@ -1379,7 +1391,7 @@ save_html_and_style <- function(
   autoplay,
   play_speed,
   data_max,
-  years = NULL
+  display_times = NULL
 ) {
   htmlwidgets::saveWidget(
     map,
@@ -1400,7 +1412,7 @@ save_html_and_style <- function(
       autoplay = autoplay,
       play_speed = play_speed,
       data_max = data_max,
-      years = years
+      display_times = display_times
     )
   }
 
@@ -1416,7 +1428,7 @@ load_roller_menu_control <- function(
   autoplay = FALSE,
   play_speed = 500,
   image_mode = FALSE,
-  years = NULL
+  display_times = NULL
 ) {
   controls_dir <- get_package_dir("controls")
 
@@ -1439,11 +1451,11 @@ load_roller_menu_control <- function(
       '',
       html_content
     )
-    if (!is.null(years) && length(years) > 0) {
-      year_text <- as.character(years[1])
+    if (!is.null(display_times) && length(display_times) > 0) {
+      time_text <- as.character(display_times[1])
       html_content <- gsub(
         '<span id="selectedYear"></span>',
-        sprintf('<span id="selectedYear">%s</span>', year_text),
+        sprintf('<span id="selectedYear">%s</span>', time_text),
         html_content
       )
     }
@@ -1545,7 +1557,7 @@ inject_banner_legend_controls <- function(
   autoplay = FALSE,
   play_speed = 500,
   data_max = NULL,
-  years = NULL
+  display_times = NULL
 ) {
   if (!file.exists(html_file)) {
     stop("HTML file not found: ", html_file)
@@ -1620,14 +1632,14 @@ inject_banner_legend_controls <- function(
 
   html_text <- sub("(<body[^>]*>)", paste0("\\1\n", banner_html), html_text)
 
-  # Only add year control if we have temporal data
-  if (!identical(years, "static_only")) {
+  # Only add time control if we have temporal data
+  if (!identical(display_times, "static_only")) {
     roller_menu_html <- load_roller_menu_control(
       banner_colour,
       autoplay,
       play_speed,
       image_mode,
-      years
+      display_times
     )
   } else {
     roller_menu_html <- ""
@@ -1775,12 +1787,13 @@ create_generic_icons <- function(
   makeSymbolsSize(
     values = rep(1, length(colors)),
     shape = shape_config$shape,
-    color = if (is_nonsolid) colors else "black",
+    color = if (is_nonsolid) colors else "#ffffff",
     fillColor = colors,
     baseSize = shape_config$size,
-    fillOpacity = 0.7,
+    fillOpacity = 0.75,
     stroke = TRUE,
-    weight = 1
+    weight = 10,
+    opacity = 1
   )
 }
 
@@ -2080,16 +2093,16 @@ add_map_controls <- function(
   vignette = FALSE,
   bbox,
   interactive = TRUE,
-  years,
+  display_times,
   boundary_labels = FALSE,
   zoom_level = NULL
 ) {
   # Handle "static_only" case (no temporal layers - only schools)
-  if (identical(years, "static_only")) {
-    years <- "2024"
+  if (identical(display_times, "static_only")) {
+    display_times <- "2024"
   }
 
-  if (is.null(years)) stop("years parameter is required")
+  if (is.null(display_times)) stop("display_times parameter is required")
   if (is.null(bbox)) stop("bbox parameter is required")
 
   if (!is.null(borough_sf)) {
@@ -2119,7 +2132,8 @@ add_map_controls <- function(
 
   # NOTE: addLayersControl() removed - it hides inactive groups before onRender,
   # making layers inaccessible to JavaScript caching
-  baseGroups <- if (interactive && length(years) >= 1) years else NULL
+  baseGroups <- if (interactive && length(display_times) >= 1)
+    display_times else NULL
   if (!is.null(baseGroups)) {
     map <- map |>
       htmlwidgets::onRender(load_layer_cache_js())
@@ -2320,13 +2334,13 @@ load_spatial_data_sources <- function(
   )
 }
 
-determine_years_and_viewport <- function(
+determine_times_and_viewport <- function(
   spatial_data,
   borough_sf,
   vignette,
-  requested_years
+  requested_times
 ) {
-  # Find first temporal (non-static) layer to determine available years
+  # Find first temporal (non-static) layer to determine available time periods
   temporal_layers <- Filter(
     function(x) !is.null(x) && "year_str" %in% names(x),
     spatial_data$all_data
@@ -2342,19 +2356,19 @@ determine_years_and_viewport <- function(
   bbox <- st_bbox(borough_sf)
 
   if (is.null(primary_data)) {
-    years <- requested_years %||% "static_only"
+    display_times <- requested_times %||% "static_only"
   } else {
-    available_years <- unique(primary_data$year_str)
-    years <- if (is.null(requested_years)) {
-      available_years
+    available_times <- unique(primary_data$year_str)
+    display_times <- if (is.null(requested_times)) {
+      available_times
     } else {
-      intersect(requested_years, available_years)
+      intersect(requested_times, available_times)
     }
   }
 
   list(
     primary_data = primary_data,
-    years = years,
+    display_times = display_times,
     vignette_overlay = vignette_overlay,
     bbox = bbox
   )
@@ -2375,7 +2389,8 @@ determine_years_and_viewport <- function(
 #' @param export_image NULL (no export), TRUE (export 1200x1200), or c(width, height) vector for custom dimensions.
 #' @param boroughs Borough name(s) for boundary display and data filtering (required).
 #' @param pollutant Pollutant type: "no2" or "pm25" (default: "no2").
-#' @param years Years to display. NULL uses all available years from data.
+#' @param display_times Time periods to display (e.g., "2023", "2023-01", "2023-01-15 10:00").
+#'   NULL uses all available periods from data. Must match year_str format in data.
 #' @param title Page title and banner text. Default: NULL (uses theme).
 #' @param vignette If TRUE, darkens areas outside borough(s). Default: NULL (uses theme).
 #' @param colour_scale Color scale name (default: "who_no2"). See \code{load_colour_scale()} for options.
@@ -2402,23 +2417,21 @@ determine_years_and_viewport <- function(
 #' \strong{Symbols:} Auto-assigned by data type. Override with data_symbols parameter.
 #'
 #' @examples
-#' # Basic interactive map
+#' # Basic interactive map (annual)
 #' Sys.setenv(DATA_PATH = "~/data")
 #' create_pollution_map(
 #'   data_sources = list("wandsworth_2017_2024.csv", "schools_Wandsworth.csv"),
 #'   boroughs = "Wandsworth",
-#'   years = 2024,
+#'   display_times = "2024",
 #'   output_file = "wandsworth_2024.html"
 #' )
 #'
-#' # Static JPG export with theme
+#' # Monthly data (sub-annual)
 #' create_pollution_map(
-#'   data_sources = list("merton_dt_2018_2024.csv"),
+#'   data_sources = list("sensor_monthly.Rdata"),
 #'   boroughs = "Merton",
-#'   years = 2024,
-#'   export_image = TRUE,
-#'   theme_file = "inst/themes/merton.yaml",
-#'   output_file = "merton_2024"
+#'   display_times = c("2024-01", "2024-02", "2024-03"),
+#'   output_file = "merton_q1_2024"
 #' )
 #'
 #' @note
@@ -2435,7 +2448,7 @@ create_pollution_map <- function(
   export_image = NULL,
   boroughs,
   pollutant = "no2",
-  years = NULL,
+  display_times = NULL,
   title = NULL,
   vignette = NULL,
   colour_scale = "who_no2",
@@ -2484,8 +2497,13 @@ create_pollution_map <- function(
     pollutant
   )
 
-  c(primary_data, years, vignette_overlay, bbox) %<-%
-    determine_years_and_viewport(spatial_data, borough_sf, vignette, years)
+  c(primary_data, display_times, vignette_overlay, bbox) %<-%
+    determine_times_and_viewport(
+      spatial_data,
+      borough_sf,
+      vignette,
+      display_times
+    )
   legend_info <- get_colour_legend(colour_scale)
 
   # Use primary data for base map, or borough boundary if no temporal data
@@ -2510,14 +2528,14 @@ create_pollution_map <- function(
     measurement_layers,
     pollutant,
     spatial_data,
-    years
+    display_times
   )
 
   marker_scale_factor <- if (image_export) {
     sqrt((map_width_px * map_height_px) / (1200 * 1200))
   } else NULL
 
-  for (yr in unique(years)) {
+  for (yr in unique(display_times)) {
     html_map <- generate_map_layers(
       html_map,
       measurement_layers,
@@ -2577,7 +2595,7 @@ create_pollution_map <- function(
       vignette,
       bbox,
       TRUE,
-      years,
+      display_times,
       boundary_labels,
       theme$map$zoom_level,
       title,
@@ -2598,7 +2616,7 @@ create_pollution_map <- function(
       vignette,
       bbox,
       TRUE,
-      years,
+      display_times,
       boundary_labels,
       theme$map$zoom_level
     )

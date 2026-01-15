@@ -2,7 +2,7 @@
 # NO2 maps use CSV + BL data, PM2.5 maps use BL data only
 # Merton includes schools overlay
 #
-# Updated for QuickMap v0.9.2+ with new data_sources API
+# Updated for QuickMap v0.9.4 with display_times parameter
 # Previous version archived as create_all_borough_maps_v090.R
 
 # Set up data path
@@ -26,7 +26,7 @@ map1_merton_no2 <- create_pollution_map(
   data_ids = c("dt", "bl_sensors", "schools"),
   boroughs = "Merton",
   pollutant = "no2",
-  years = NULL, # All available years
+  display_times = NULL, # All available time periods
   colour_scale = "who_no2",
   output_file = "merton_no2_2018_2024_dt_bl.html",
   title = "LB Merton Annual Mean NO2, 2018-2024. ✖ Schools. Sensors: ● Diffusion Tubes ◆ Breathe London.",
@@ -50,7 +50,7 @@ map2_wandsworth_no2 <- create_pollution_map(
   data_symbols = c("circle", "diamond", "cross"),
   boroughs = "Wandsworth",
   pollutant = "no2",
-  years = NULL, # All available years
+  display_times = NULL, # All available time periods
   colour_scale = "lbw_no2",
   output_file = "wandsworth_no2_2017_2024_dt_bl_schools.html",
   title = "LB Wandsworth Annual Mean NO2, 2017-2024. ✖ Schools. Sensors: ● Diffusion Tubes ◆ Breathe London.",
@@ -72,7 +72,7 @@ map3_richmond_no2 <- create_pollution_map(
   data_ids = c("dt", "bl_sensors"),
   boroughs = "Richmond",
   pollutant = "no2",
-  years = NULL, # All available years
+  display_times = NULL, # All available time periods
   colour_scale = "lbrut_no2",
   output_file = "richmond_no2_1993_2024_dt_bl.html",
   title = "LB Richmond Annual Mean NO2, 1993-2024. Sensors: ● Diffusion Tubes ◆ Breathe London",
@@ -94,7 +94,7 @@ map4_merton_pm25 <- create_pollution_map(
   data_ids = c("bl_sensors", "schools"),
   boroughs = "Merton",
   pollutant = "pm25",
-  years = NULL, # All available years
+  display_times = NULL, # All available time periods
   colour_scale = "gla_pm25",
   output_file = "merton_pm25_2022_2024_bl.html",
   title = "LB Merton Annual Mean PM2.5, 2022-2024. ✖ Schools. Sensors: ◆ Breathe London.",
@@ -115,7 +115,7 @@ map5_wandsworth_pm25 <- create_pollution_map(
   data_ids = c("bl_sensors"),
   boroughs = "Wandsworth",
   pollutant = "pm25",
-  years = NULL, # All available years
+  display_times = NULL, # All available time periods
   colour_scale = "gla_pm25",
   output_file = "wandsworth_pm25_2021_2025_bl.html",
   title = "LB Wandsworth Annual Mean PM2.5, 2022-2024. Sensors: ◆ Breathe London",
@@ -136,7 +136,7 @@ map6_richmond_pm25 <- create_pollution_map(
   data_ids = c("bl_sensors"),
   boroughs = "Richmond",
   pollutant = "pm25",
-  years = NULL, # All available years
+  display_times = NULL, # All available time periods
   colour_scale = "gla_pm25",
   output_file = "richmond_pm25_2022_2024_bl.html",
   title = "LB Richmond Annual Mean PM2.5, 2022-2024. Sensors: ◆ Breathe London",

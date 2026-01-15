@@ -112,10 +112,8 @@
     var config = window.quickmapConfig || {autoplay: false, playSpeed: 500};
     var playSpeed = config.playSpeed;
 
-    // Extract years from layer cache and sort
-    var years = Object.keys(window.quickmapLayerCache).sort(function(a, b) {
-      return parseInt(a) - parseInt(b);
-    });
+    // Extract years from layer cache and sort (string sort works for ISO dates)
+    var years = Object.keys(window.quickmapLayerCache).sort();
 
     console.log('DEBUG: Years found in layer cache:', years);
     console.log('DEBUG: Years count:', years.length);

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **QuickMap** is an R project for generating interactive air quality maps showing pollution data (NO2, PM2.5) overlaid with school locations and borough boundaries. It creates both interactive Leaflet HTML maps and static JPG exports for local government air quality reporting.
 
-### Current Version: 0.9.3.21
+### Current Version: 0.9.4
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,200 lines)
 -   **Archived versions**: `versions/quickmap_0_8_5.R` through `versions/quickmap_0_9_3.R`
@@ -103,7 +103,7 @@ map_object <- create_pollution_map(
   data_ids = NULL,  # Optional - auto-generates from filenames
   boroughs = "Wandsworth",
   pollutant = "no2",
-  years = NULL,  # All available years
+  display_times = NULL,  # All available time periods (year/month/day/hour)
   colour_scale = "who_no2",
   output_file = "wandsworth_no2.html",
   title = "Wandsworth NO2 Annual Mean",
@@ -285,5 +285,6 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.3**: OpenAir converter functions (importUKAQ, importAURN, importKCL)
 -   **v0.9.3.20**: School label duck typing fix
 -   **v0.9.3.21**: RData duck typing (standard names → any compatible data.frame)
+-   **v0.9.4**: Sub-annual temporal resolution (month/day/hour), renamed `years` → `display_times`
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
