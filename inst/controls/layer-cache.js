@@ -12,8 +12,8 @@ function(el, x) {
       }
       layersByGroup[group].push(layer);
 
-      // Track latest year
-      if (!latestYear || parseInt(group) > parseInt(latestYear)) {
+      // Track latest year (string compare works for ISO dates)
+      if (!latestYear || group > latestYear) {
         latestYear = group;
       }
     }

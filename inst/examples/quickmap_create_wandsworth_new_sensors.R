@@ -1,5 +1,5 @@
 # Wandsworth sensor location map with proposed new sensors
-# Updated for QuickMap v0.9.3.20
+# Updated for QuickMap v0.9.4
 
 Sys.setenv(DATA_PATH = "~/Coding/Library/data")
 source("R/quickmap.R")
@@ -14,7 +14,7 @@ map_wandsworth_sensors <- create_pollution_map(
   data_ids = c("dt", "bl_sensors", "proposed"),
   boroughs = "Wandsworth",
   pollutant = "no2",
-  years = NULL,
+  display_times = NULL,
   colour_scale = "lbw_no2",
   output_file = "wandsworth_sites_2017_2024_all.html",
   title = "LB Wandsworth Site Locations, 2017-2024. ● DT ◆ Breathe London ✖ Proposed",

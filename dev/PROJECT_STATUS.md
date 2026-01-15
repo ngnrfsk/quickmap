@@ -6,37 +6,22 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2025-11-25 **Current Working Version**: v0.9.1 **In Progress**: v0.9.2 Layer Generalization
+**Last Updated**: 2026-01-14 **Current Working Version**: v0.9.3.21 **Branch**: feature/v093-openair-converter
 
 --------------------------------------------------------------------------------
 
-## v0.9.2 Layer Generalization (In Progress)
+## v0.9.3 OpenAir Converter (Current)
 
-**Status**: Planning complete, ready for implementation
-**Branch**: `feature/v092-layer-generalization` (from commit 90c0b83)
-**Implementation Plan**: `dev/Implementation_v092_Layer_Generalization.md`
-**High-Level Roadmap**: `dev/Plan_v091_to_v095.md`
+**Status**: Active development
+**Branch**: `feature/v093-openair-converter`
+**Implementation Plan**: `dev/Implementation_v093_OpenAir_Converter.md`
 
-**Key Changes**:
-- New API: `data_sources` (files/sf objects) + `data_configs` (YAML config names) as parallel vectors
-- YAML-based network configs in `inst/config/networks/` (dt_sites.yaml, bl_nodes.yaml, schools.yaml)
-- Removed hardcoded layer_type switches, generic config iteration
-- Icon shapes data-driven (circle, diamond, cross, square, triangle)
-- Icon colors remain dynamic (from colour_scale parameter, not configs)
-- Backward compatible: old 3-file API still works
-
-**Success Criteria**:
-- 4th network (mock AURN) added via YAML config only
-- All 14 existing test scripts pass unchanged
-- Visual regression: v0.9.1 vs v0.9.2 identical
-
-**Lessons from Planning Session (2025-11-25)**:
-1. **Avoid prescriptive plans**: Describe outcomes, not implementation (no function signatures in plans)
-2. **Color logic clarity**: Icon colors are dynamic (colour_scale), not fixed in configs—must be explicit
-3. **Parallel vectors pattern**: Cleaner than nested lists for data+config association
-4. **Problem-oriented beats step-by-step for early planning**: Let engineer discover solutions
-5. **Test API realism**: Step 6 tests production API, not throwaway test code
-6. **Parameter naming**: `years` → defer to v0.9.4 (temporal resolution change)
+**Key Features (v0.9.3.x)**:
+- OpenAir converter functions (importUKAQ, importAURN, importKCL)
+- Duck typing for data loading (columns, not filenames)
+- RData flexible loading (standard names → any compatible data.frame)
+- Type-aware symbol defaults (solid for temporal, non-solid for static)
+- Categorical color fixes for schools layer
 
 --------------------------------------------------------------------------------
 
@@ -248,27 +233,15 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
 
 ## Current State Summary
 
-### What Works
+### What Works (v0.9.3.21)
 
--   Simplified parameter interface (14 parameters, down from 21)
--   Clear intent-based parameter design following OpenAir patterns
+-   OpenAir converter functions for UK air quality networks
+-   Duck typing: data detected by columns (School, Label, year), not filenames
+-   RData loading: standard names first, then any compatible data.frame
+-   Simplified API: `data_sources` list replaces individual file params
 -   Unified HTML banner/legend system across interactive and static maps
--   Conditional HTML processing (only when `styling_type = "html"`)
--   Proportional scaling for all image dimensions
--   Marker size scaling based on image dimensions
--   Complete migration guide for v0.8.x → v0.9.0
--   Git version control with comprehensive documentation
--   Organized file structure
-
-### Testing Status (v0.9.0)
-
--   `tests/test_step1_renames.R` ✓ - All 6 renamed parameters work
--   `tests/test_step2_export_image.R` ✓ - Merged image export parameter
--   `tests/test_step3_title.R` ✓ - Merged title parameter (browser + banner)
--   `tests/test_step4_styling_type.R` ✓ - HTML banner/legend conditional display
--   All tests create actual map outputs for visual verification
--   Validated dimensions: 800x600, 1200x1200, 1920x1080
--   Uses `years = 2024` parameter correctly (renamed from years_to_plot)
+-   Type-aware symbols: solid shapes for temporal, non-solid for static
+-   18 test scripts in `tests/` directory
 
 ## Outstanding Issues
 
@@ -379,21 +352,18 @@ animated/auto-start time steps for timeslices - Add animation export
 
 ### Quick Start
 
-1.  Load latest version: `source("quickmap.R")` (v0.9.0)
-2.  Test with: `source("tests/test_step4_styling_type.R")` (validates v0.9.0)
-3.  Review documentation: Read `CLAUDE.md` for full system understanding
-4.  Check migration guide: See quickmap.R header lines 39-68 for v0.8.x → v0.9.0
-5.  Check task status: Review `PROJECT_STATUS_SUMMARY.md` (this document) for
-    current priorities
+1.  Load latest version: `source("R/quickmap.R")` (v0.9.3.21)
+2.  Test with: `source("tests/test_quickmap.R")`
+3.  Review documentation: `CLAUDE.md` for system overview
+4.  Check dev docs: `dev/` folder for plans and implementation details
 
 ### Development Workflow
 
-1.  **Create new version**: Copy `quickmap.R` to `versions/quickmap_0_8_X.R`
-2.  **Implement changes**: Follow patterns established in Task 1E/1E.1
+1.  **Create branch**: Feature branches like `feature/v09X-feature-name`
+2.  **Implement changes**: Follow patterns in existing code
 3.  **Test thoroughly**: Use test scripts in `tests/` directory
-4.  **Document changes**: Update version history in file header
-5.  **Commit to git**: Use descriptive commit messages with Claude attribution
-6.  **Update main**: Copy working version back to `quickmap.R` when stable
+4.  **Document changes**: Update version in `CLAUDE.md` and commit messages
+5.  **Archive version**: Copy to `versions/quickmap_X_X_X.R` when stable
 
 ### Key Functions to Understand
 
@@ -403,25 +373,16 @@ animated/auto-start time steps for timeslices - Add animation export
 -   `create_generic_icons()` - Marker creation with scaling
 -   `add_layer()` - Universal layer addition
 
-### Testing Approach (v0.9.0)
+### Testing Approach (v0.9.3)
 
--   Use `tests/test_step4_styling_type.R` for v0.9.0 validation
--   Test parameter renames: `tests/test_step1_renames.R`
--   Test merged parameters: `tests/test_step2_export_image.R`, `tests/test_step3_title.R`
--   Test with actual data file:
-    `~/Coding/R projects/Library/data/wandsworth_2017_2024_no_labels.csv`
--   Verify scaling across small (800x600), standard (1200x1200), and large
-    (1920x1080) dimensions
--   Check both interactive HTML and static JPG outputs
+-   Core tests: `tests/test_quickmap.R`, `tests/test_comprehensive_5network.R`
+-   Converter tests: `tests/test_aurn_converter.R`, `tests/test_laqn_converter.R`
+-   Duck typing tests: `tests/test_rdata_duck_typing.R`, `tests/test_school_labels_fix.R`
 -   All tests create actual map outputs for visual verification
 
-### Important Notes (v0.9.0)
+### Important Notes (v0.9.3)
 
--   **BREAKING CHANGES**: v0.8.x scripts require migration (see quickmap.R lines 39-68)
--   Parameter name: Use `years = 2024` (renamed from `years_to_plot`)
--   Image export: Use `export_image = c(1920, 1080)` (merged 3 parameters)
--   Styling: Use `styling_type = "html"` or `"none"` (merged 4 parameters)
--   Scaling calculation: Uses geometric mean for balanced scaling across aspect
-    ratios
--   Symbol proportions: 1.3:1 ratio with text for optimal visual balance
--   Parameter count: 14 (reduced from 21, 33% reduction)
+-   **API**: Use `data_sources` list for all data files
+-   **Duck typing**: Data types detected by columns, not filenames
+-   **RData**: Loads from standard names or any compatible data.frame
+-   See `CLAUDE.md` for current API examples
