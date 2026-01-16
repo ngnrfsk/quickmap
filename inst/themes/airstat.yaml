@@ -1,0 +1,14 @@
+banner:
+  title: "Air Quality Map"
+  background: "#589636"
+
+map:
+  vignette: true
+  boundary_labels: false
+  marker_labels: false
+  zoom_level: 11
+  base_tiles: "CartoDB.Positron"  # Clean light basemap
+
+controls:
+  autoplay: false
+  play_speed: 500

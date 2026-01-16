@@ -173,7 +173,9 @@ clear_openair_metadata_cache <- function(source = NULL) {
 #' Transforms OpenAir data.frames (from importUKAQ, importAURN, importKCL, etc.)
 #' into sf spatial objects compatible with quickmap's layer system.
 #'
-#' @param data data.frame. OpenAir data with date, code, and pollutant columns.
+#' @param data data.frame. OpenAir data with date, site identifier, and pollutant columns.
+#'   Site identifier: 'code' (OpenAir) or 'siteCode' (quickmap) accepted.
+#'   Coordinates: 'latitude'/'longitude' or 'lat'/'lon' accepted.
 #'   Preferably from importUKAQ(meta=TRUE) which includes coordinates.
 #' @param source Character (optional). Network source ("aurn", "kcl", etc.).
 #'   Required only if data lacks latitude/longitude columns.
@@ -213,12 +215,16 @@ convert_openair_to_spatial <- function(
   }
 
   # Check required columns
-  required_cols <- c("date", "code")
-  missing_cols <- setdiff(required_cols, names(data))
-  if (length(missing_cols) > 0) {
+  if (!"date" %in% names(data)) {
+    stop("Missing required column: date", call. = FALSE)
+  }
+
+  # Site identifier: OpenAir uses 'code', quickmap uses 'siteCode' - accept both
+  if ("code" %in% names(data)) {
+    data$siteCode <- data$code
+  } else if (!"siteCode" %in% names(data)) {
     stop(
-      "Missing required columns in data: ",
-      paste(missing_cols, collapse = ", "),
+      "Missing site identifier column: need 'code' or 'siteCode'",
       call. = FALSE
     )
   }
@@ -235,15 +241,30 @@ convert_openair_to_spatial <- function(
     )
   }
 
-  # Check if coordinates already in data (importUKAQ meta=TRUE)
-  has_coords <- all(c("latitude", "longitude") %in% names(data))
+  # Coordinates: OpenAir uses 'latitude'/'longitude', also accept 'lat'/'lon'
+  if (all(c("latitude", "longitude") %in% names(data))) {
+    has_coords <- TRUE
+  } else if (all(c("lat", "lon") %in% names(data))) {
+    data$latitude <- data$lat
+    data$longitude <- data$lon
+    has_coords <- TRUE
+  } else {
+    has_coords <- FALSE
+  }
 
   if (!has_coords) {
-    # Need to fetch metadata
+    # Need to fetch metadata - requires code column for OpenAir lookup
     if (is.null(source)) {
       stop(
         "source parameter required when data lacks coordinates. ",
         "Either use importUKAQ(meta=TRUE) or provide source name.",
+        call. = FALSE
+      )
+    }
+    if (!"code" %in% names(data)) {
+      stop(
+        "Metadata lookup requires 'code' column matching OpenAir site codes. ",
+        "Your data has 'siteCode' which may not match OpenAir metadata.",
         call. = FALSE
       )
     }
@@ -288,7 +309,7 @@ convert_openair_to_spatial <- function(
     data$year_str <- format(data$date, "%Y")
 
     aggregated <- data |>
-      group_by(code, year) |>
+      group_by(siteCode, year) |>
       summarise(
         !!sym(pollutant) := mean(!!sym(pollutant), na.rm = TRUE),
         latitude = first(latitude),
@@ -318,7 +339,7 @@ convert_openair_to_spatial <- function(
     )
 
     aggregated <- data |>
-      group_by(code, period, year, year_str) |>
+      group_by(siteCode, period, year, year_str) |>
       summarise(
         !!sym(pollutant) := mean(!!sym(pollutant), na.rm = TRUE),
         latitude = first(latitude),
@@ -335,10 +356,6 @@ convert_openair_to_spatial <- function(
       call. = FALSE
     )
   }
-
-  # Rename code to siteCode for compatibility
-  aggregated$siteCode <- aggregated$code
-  aggregated$code <- NULL
 
   # Add lat/lon aliases for compatibility
   aggregated$lat <- aggregated$latitude
@@ -450,9 +467,114 @@ load_data_file <- function(
 #' @param data_object_name Optional: explicit object name in RData file
 #' @return Processed sensor data
 #' @keywords internal
+# load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
+#   # Explicit param → standard names (dataOAformat/data/oa_data/sensor_data) → largest compatible data.frame
+#   # Priority order ensures backward compatibility with OpenAir conventions while enabling duck typing for non-standard files
+#   env <- new.env()
+#   load(
+#     file.path(Sys.getenv("DATA_PATH"), file_path),
+#     envir = env,
+#     verbose = TRUE
+#   )
+
+# obj_names <- ls(envir = env)
+# required_cols <- c("siteCode", "year", pollutant, "lat", "lon")
+#
+# # Helper: validate and use object
+# use_object <- function(obj, name) {
+#   if (!is.data.frame(obj)) {
+#     stop("Object '", name, "' is not a data.frame", call. = FALSE)
+#   }
+#   if (!all(required_cols %in% names(obj))) {
+#     stop(
+#       "Object '",
+#       name,
+#       "' missing columns: ",
+#       paste(setdiff(required_cols, names(obj)), collapse = ", "),
+#       call. = FALSE
+#     )
+#   }
+#   message("Using sensor data: ", name, " (", nrow(obj), " rows)")
+#
+#   # If year_str exists, data is already processed (e.g., from convert_openair_to_spatial)
+#   # Just convert to sf without re-aggregating (preserves sub-annual resolution)
+#   if ("year_str" %in% names(obj)) {
+#     sf_obj <- st_as_sf(obj, coords = c("lon", "lat"), crs = 4326)
+#     coords <- st_coordinates(sf_obj)
+#     sf_obj$Longitude <- coords[, 1]
+#     sf_obj$Latitude <- coords[, 2]
+#     return(sf_obj)
+#   }
+#
+#   return(process_oa_data(obj, pollutant))
+# }
+
+# If Explicit user choice (if data_object_name specified)
+#   if (!is.null(data_object_name)) {
+#     if (!exists(data_object_name, envir = env)) {
+#       stop(
+#         "Object '",
+#         data_object_name,
+#         "' not found.\n",
+#         "Available: ",
+#         paste(obj_names, collapse = ", "),
+#         call. = FALSE
+#       )
+#     }
+#     return(use_object(get(data_object_name, envir = env), data_object_name))
+#   }
+#
+#   # Else screen for standard names (backward compatible)
+#   standard_names <- c("dataOAformat", "data", "sensor_data", "measurements")
+#   for (sname in standard_names) {
+#     if (exists(sname, envir = env)) {
+#       obj <- get(sname, envir = env)
+#       if (is.data.frame(obj) && all(required_cols %in% names(obj))) {
+#         return(use_object(obj, sname))
+#       }
+#     }
+#   }
+#
+#   # Else duck typing (largest compatible data.frame)
+#   compatible <- list()
+#   for (obj_name in obj_names) {
+#     obj <- get(obj_name, envir = env)
+#     if (is.data.frame(obj) && all(required_cols %in% names(obj))) {
+#       compatible[[obj_name]] <- list(data = obj, nrow = nrow(obj))
+#     }
+#   }
+#
+#   if (length(compatible) == 0) {
+#     stop(
+#       "No compatible sensor data in: ",
+#       basename(file_path),
+#       "\n",
+#       "Expected: data.frame with [",
+#       paste(required_cols, collapse = ", "),
+#       "]\n",
+#       "Found: ",
+#       paste(obj_names, collapse = ", "),
+#       call. = FALSE
+#     )
+#   }
+#
+#   sizes <- sapply(compatible, function(x) x$nrow)
+#   selected <- names(which.max(sizes))
+#
+#   if (length(compatible) > 1) {
+#     message(
+#       "Found ",
+#       length(compatible),
+#       " compatible objects, using largest: ",
+#       selected
+#     )
+#   }
+#
+#   return(use_object(compatible[[selected]]$data, selected))
+# }
+
 load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
-  # Explicit param → standard names (dataOAformat/data/oa_data/sensor_data) → largest compatible data.frame
-  # Priority order ensures backward compatibility with OpenAir conventions while enabling duck typing for non-standard files
+  # Explicit param → duck typing (largest compatible data.frame)
   env <- new.env()
   load(
     file.path(Sys.getenv("DATA_PATH"), file_path),
@@ -461,27 +583,59 @@ load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
   )
 
   obj_names <- ls(envir = env)
-  required_cols <- c("siteCode", "year", pollutant, "lat", "lon")
+  base_required_cols <- c("siteCode", pollutant, "lat", "lon")
+  # Precedence: year_str (processed) → datetime columns → year (annual fallback)
+  datetime_cols <- c("date", "date_time", "time", "datetime", "timestamp")
+  temporal_cols <- c("year_str", datetime_cols, "year")
 
-  # Helper: validate and use object
+  # Helper: infer temporal resolution from datetime column
+  infer_resolution <- function(dates) {
+    if (length(dates) < 2) return("year")
+    sorted_dates <- sort(unique(dates))
+    if (length(sorted_dates) < 2) return("year")
+    diffs <- as.numeric(diff(sorted_dates), units = "hours")
+    median_diff <- median(diffs, na.rm = TRUE)
+    if (median_diff <= 1) return("hour")
+    if (median_diff <= 24) return("day")
+    if (median_diff <= 744) return("month")
+    return("year")
+  }
+
+  # Helper: validate and process object
   use_object <- function(obj, name) {
     if (!is.data.frame(obj)) {
       stop("Object '", name, "' is not a data.frame", call. = FALSE)
     }
-    if (!all(required_cols %in% names(obj))) {
+
+    # Check base required columns
+    if (!all(base_required_cols %in% names(obj))) {
       stop(
         "Object '",
         name,
         "' missing columns: ",
-        paste(setdiff(required_cols, names(obj)), collapse = ", "),
+        paste(setdiff(base_required_cols, names(obj)), collapse = ", "),
         call. = FALSE
       )
     }
+
+    # Check for at least one temporal column
+    has_temporal <- any(temporal_cols %in% names(obj))
+    if (!has_temporal) {
+      stop(
+        "Object '",
+        name,
+        "' missing temporal column. ",
+        "Expected one of: ",
+        paste(temporal_cols, collapse = ", "),
+        call. = FALSE
+      )
+    }
+
     message("Using sensor data: ", name, " (", nrow(obj), " rows)")
 
-    # If year_str exists, data is already processed (e.g., from convert_openair_to_spatial)
-    # Just convert to sf without re-aggregating (preserves sub-annual resolution)
+    # Precedence: year_str → datetime → year
     if ("year_str" %in% names(obj)) {
+      # Already processed - convert to sf directly
       sf_obj <- st_as_sf(obj, coords = c("lon", "lat"), crs = 4326)
       coords <- st_coordinates(sf_obj)
       sf_obj$Longitude <- coords[, 1]
@@ -489,12 +643,28 @@ load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
       return(sf_obj)
     }
 
-    return(process_oa_data(obj, pollutant))
+    # Find first available datetime column
+    datetime_col <- intersect(datetime_cols, names(obj))[1]
+    if (!is.na(datetime_col)) {
+      # Normalize to 'date' for convert_openair_to_spatial
+      obj$date <- obj[[datetime_col]]
+      resolution <- infer_resolution(obj$date)
+      message("Inferred temporal resolution from '", datetime_col, "': ", resolution)
+      return(convert_openair_to_spatial(obj, pollutant = pollutant, avg.time = resolution))
+    }
+
+    # Fallback: year column (annual resolution)
+    obj$year_str <- as.character(obj$year)
+    sf_obj <- st_as_sf(obj, coords = c("lon", "lat"), crs = 4326)
+    coords <- st_coordinates(sf_obj)
+    sf_obj$Longitude <- coords[, 1]
+    sf_obj$Latitude <- coords[, 2]
+    return(sf_obj)
   }
 
-  # If Explicit user choice (if data_object_name specified)
+  # Explicit user choice (if data_object_name specified)
   if (!is.null(data_object_name)) {
-    if (!exists(data_object_name, envir = env)) {
+    if (!exists(data_object_name, envir = env, inherits = FALSE)) {
       stop(
         "Object '",
         data_object_name,
@@ -507,22 +677,15 @@ load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
     return(use_object(get(data_object_name, envir = env), data_object_name))
   }
 
-  # Else screen for standard names (backward compatible)
-  standard_names <- c("dataOAformat", "data", "sensor_data", "measuremnts")
-  for (sname in standard_names) {
-    if (exists(sname, envir = env)) {
-      obj <- get(sname, envir = env)
-      if (is.data.frame(obj) && all(required_cols %in% names(obj))) {
-        return(use_object(obj, sname))
-      }
-    }
-  }
-
-  # Else duck typing (largest compatible data.frame)
+  # Duck typing: find largest compatible data.frame
   compatible <- list()
   for (obj_name in obj_names) {
-    obj <- get(obj_name, envir = env)
-    if (is.data.frame(obj) && all(required_cols %in% names(obj))) {
+    obj <- get(obj_name, envir = env, inherits = FALSE)
+    if (
+      is.data.frame(obj) &&
+        all(base_required_cols %in% names(obj)) &&
+        any(temporal_cols %in% names(obj))
+    ) {
       compatible[[obj_name]] <- list(data = obj, nrow = nrow(obj))
     }
   }
@@ -533,7 +696,9 @@ load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
       basename(file_path),
       "\n",
       "Expected: data.frame with [",
-      paste(required_cols, collapse = ", "),
+      paste(base_required_cols, collapse = ", "),
+      "] and one of [",
+      paste(temporal_cols, collapse = ", "),
       "]\n",
       "Found: ",
       paste(obj_names, collapse = ", "),
@@ -555,6 +720,7 @@ load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
 
   return(use_object(compatible[[selected]]$data, selected))
 }
+
 
 get_temporal_data <- function(
   #
@@ -1785,14 +1951,16 @@ create_generic_icons <- function(
     )
 
   makeSymbolsSize(
+    # note
     values = rep(1, length(colors)),
     shape = shape_config$shape,
     color = if (is_nonsolid) colors else "#ffffff",
     fillColor = colors,
     baseSize = shape_config$size,
     fillOpacity = 0.75,
-    stroke = TRUE,
-    weight = 10,
+    #   stroke = TRUE,
+    #  weight = 10,
+    strokeWidth = 2,
     opacity = 1
   )
 }
