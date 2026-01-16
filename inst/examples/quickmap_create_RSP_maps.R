@@ -28,7 +28,8 @@ map1_merton_no2 <- create_pollution_map(
   pollutant = "no2",
   display_times = NULL, # All available time periods
   colour_scale = "who_no2",
-  output_file = "merton_no2_2018_2024_dt_bl.html",
+  theme = "airstat",
+  output_file = "merton_no2_2018_2024_dt_bl_airstat.html",
   title = "LB Merton Annual Mean NO2, 2018-2024. ✖ Schools. Sensors: ● Diffusion Tubes ◆ Breathe London.",
   styling_type = "html", # HTML banner + legend
   vignette = TRUE,
