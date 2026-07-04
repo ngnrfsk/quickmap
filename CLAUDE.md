@@ -4,11 +4,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**QuickMap** is an R project for generating interactive air quality maps showing pollution data (NO2, PM2.5) overlaid with school locations and borough boundaries. It creates both interactive Leaflet HTML maps and static JPG exports for local government air quality reporting.
+**QuickMap** is an R package for building clean, interactive air quality maps that
+people can email or publish on a website with minimal programming overhead.
+
+### Philosophy
+
+The prime motivation is accessibility. Users bring their existing data — a basic CSV
+from a diffusion tube survey, an Excel export, a sophisticated RData object from a
+sensor network, or a live OpenAir data pull — and QuickMap turns it into a
+professional map, including options for time animation, without requiring deep R knowledge.
+
+The goal for QuickMap 1.0 (which will need reform of the current API) is to defy
+the typical R approach of making things arcane and obscure. The API is designed
+with a gentle, progressive learning curve: a two-line
+call produces a usable map; each additional parameter unlocks more sophistication.
+The goal is that someone picking up QuickMap for the first time should not encounter
+the horror show that is the typical introduction to R.
+
+### Scope
+
+**v1.0 scope: air quality.** Maps show pollution data (NO2, PM2.5) overlaid with
+contextual layers such as school locations and borough boundaries. Output is an
+interactive Leaflet HTML map (self-contained, email-safe) and optionally a static
+JPG export. The primary users are local government officers and air quality
+consultants producing reports and public-facing communications.
+
+**Beyond v1.0:** The architecture is designed to generalise to any time-varying,
+location-based data, with QuickMap acting as a spatial companion to the OpenAir
+package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
+maps it.
 
 ### Current Version: 0.9.4
 
--   **Production code**: `R/quickmap.R` (stable, ~2,200 lines)
+-   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/quickmap_0_8_5.R` through `versions/quickmap_0_9_3.R`
 -   **Test scripts**: Multiple test scripts in `tests/` directory, testthat files
 -   **Utility scripts**: Scripts in `scripts/` directory
@@ -52,7 +80,7 @@ Data Loading → Layer Configuration → Generic Processing → Icon Generation 
 
 ### Planning
 
--   Plans to be stored in the dev/ folder with filename following the format YYYYMMDD_project_name_plan_HHMM.md.
+-   Plans to be stored in the dev/ folder with filename following the format YYMMDD_project_name_plan.md.
 
 ### Starting and ending execution of a new plan
 
@@ -145,7 +173,7 @@ Sys.setenv(SCRIPTS_PATH = "path/to/scripts")
 -   **Required columns**: `Easting`, `Northing`, `Level`, `School`
 -   **Detection**: Automatic via `School` column (duck typing)
 
-## Configuration System (v0.10.0+)
+## Configuration System
 
 ### Directory Structure
 
@@ -180,7 +208,7 @@ Loading: `load_colour_scale("who_no2")` returns R list with validation
 
 Reusable theme files in `inst/themes/` for consistent borough styling:
 
-Example `merton_purple.yaml`:
+Example `merton.yaml`:
 ```yaml
 banner:
   background: "#5F3E94"
@@ -205,9 +233,9 @@ controls:
 Usage in `create_pollution_map()`:
 ```r
 create_pollution_map(
-  diffusion_tube_file = "data.csv",
+  data_sources = list("data.csv"),
   boroughs = "Merton",
-  theme_file = "inst/themes/merton_purple.yaml",
+  theme_file = "inst/themes/merton.yaml",
   # Explicit params override theme:
   vignette = FALSE  # overrides theme's vignette: true
 )
@@ -277,6 +305,12 @@ School data detected by School column presence. Any filename works (schools.csv,
 **Optional IDs:** `data_ids` auto-generates from filenames when NULL.
 **OpenAir consistency:** Follows OpenAir API patterns.
 
+### Code Minimalism
+
+**Avoid:** cat() in scripts, redundant validation, obvious comments, try-catch around operations that should fail, single-use helpers/wrappers, success messages.
+
+**Do:** Trust R's errors, let functions fail naturally, write self-evident code.
+
 ## Version History
 
 -   **v0.9.0**: Parameter simplification (breaking changes)
@@ -288,3 +322,198 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.4**: Sub-annual temporal resolution (month/day/hour), renamed `years` → `display_times`
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
+
+**Canonical version**: the list above (and the "Current Version" heading) is the
+source of truth. Keep DESCRIPTION's `Version:` field in sync with it on every bump.
+
+## Autonomous Agent Instructions
+
+This section is for Claude agents working on the project autonomously. Read it in
+full before starting. It overrides general coding instincts where they conflict,
+and in autonomous sessions it supersedes the "Development Workflow" section above.
+The roadmap below **is** the approved plan: work within it needs no further plan
+confirmation, and commits on feature branches need no confirmation. The only stops
+are the ones this section states explicitly (the DATA_PATH abort, the atomic-unit
+design approval, human visual sign-off, and PR review — never push to `main`).
+Work outside the roadmap requires user approval first. In interactive sessions,
+the Development Workflow section governs.
+
+### Final goal
+
+A CRAN-publishable R package (v1.0). The package must:
+- Have a clean, stable public API with full Roxygen documentation
+- Pass `R CMD CHECK` with no errors or warnings
+- Be installable via `devtools::install()` (DESCRIPTION + NAMESPACE already needed)
+
+### Known bugs — fix these first
+
+1. **Path resolution**: quickmap is still sourced as a script, so `system.file()`
+   returns `""` and `get_package_dir()` (R/quickmap.R) falls back to fragile relative
+   `inst/` paths. DESCRIPTION and NAMESPACE already exist. Fix: update DESCRIPTION
+   (version, dependencies), regenerate NAMESPACE with roxygen2, then install via
+   `devtools::install()` and load with `library(quickmap)` instead of `source()`.
+
+(A former bug #2 — `na.strings` passed via `...` to `import_csv_data` — was fixed in
+v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
+
+### Roadmap priorities (in order)
+
+1. Fix the path-resolution bug above
+2. Formalise the atomic data unit and wrapper API (see below)
+3. Refactor `create_pollution_map()` as a thin wrapper around `quickmap()` — ease of
+   use takes priority over retaining the existing API; when the API changes, all
+   examples, docs, vignettes, and test files must be updated in the same change.
+   Plan API development with care to minimise revisions of these key files — settle
+   the design before implementing rather than rewriting everything repeatedly
+4. Implement time step cap and lazy loading — addresses the CRITICAL HTML
+   file-size blocker recorded in dev/PROJECT_STATUS.md
+5. Add wind layer support via worldmet + leaflet-velocity — its JS payload rides
+   on the lazy-loading architecture, so it must follow item 4
+6. Migrate and validate all examples
+7. CRAN compliance (R CMD CHECK clean)
+8. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md (LCA visual
+   fixes, static-export subfolder generation, unified marker/text/legend scaling,
+   ward/marker label consistency) — so v1.0 releases without known user-facing
+   defects. Do not work on these earlier or piecemeal; they are item 8, not
+   background tasks.
+
+### Verification and human testing
+
+**Automated gate — run after every change:**
+
+1. Unit tests: `testthat::test_dir("tests/testthat")` — must pass with no failures
+   (subject to the known-red baseline below until roadmap item 1 lands).
+2. Smoke test: `source("tests/test_quickmap.R")` — must complete without error and
+   write an HTML map to `aq_maps/`. (Once roadmap item 1 lands and quickmap loads
+   via `library(quickmap)`, update the smoke test accordingly in the same change —
+   the gate is then the updated script.)
+3. Prerequisite: `DATA_PATH` must point to `~/Coding/Library/data`. If the data is
+   absent, STOP and report — do not refactor unverified.
+
+**Known-red baseline (as of 2026-07-04):** the testthat suite has ~11 pre-existing
+failures caused by the path-resolution bug and by tests referencing renamed
+functions (`load_banner_css`, `load_legend_css`). Roadmap item 1 includes making
+the gate green — fix or delete stale tests as part of that item. Until then, the
+gate for a change is: no *new* failures beyond that baseline.
+
+The other `tests/test_*.R` scripts are historical one-off checks; do not treat them
+as a gate.
+
+**Human visual testing — automated tests cannot verify the rendered HTML.**
+The core deliverable is a self-contained interactive HTML file; its appearance and
+behaviour must be checked by a human at defined points:
+
+- Every roadmap item must produce freshly generated demonstration maps in the local
+  `aq_maps/` directory (at minimum: one annual multi-year map, one sub-annual map,
+  one with schools and labels). Note `aq_maps/` and `*.html` are gitignored, so the
+  maps cannot be committed: the PR description must instead list the generating
+  script, the output file paths, and what the human should visually check.
+- All merging is done by the human; the agent never merges its own PRs. The rules
+  below define the approval bar a PR must state it has met, not permission to merge.
+- PRs touching rendering, UI, or HTML post-processing (wind layer, lazy loading,
+  legend/banner/controls) **block on human visual sign-off** before merge.
+- Pure internal refactors (packaging, data plumbing) qualify for merge on green
+  automated tests plus a visually unchanged smoke-test output.
+- When the classification is ambiguous, treat the PR as rendering-touching and
+  block on human visual sign-off.
+- Never stack more than one unreviewed roadmap item — each builds on the last, so
+  an undetected rendering regression compounds.
+
+### The atomic data unit — research task before implementing
+
+The internal currency of the current code is already close to the right thing: an `sf`
+object in long format, one row per site per time step, produced by
+`convert_openair_to_spatial()`. Columns: `siteCode`, `year_str`, pollutant value,
+`lat`, `lon`, geometry.
+
+**Before implementing**, survey the APIs of:
+- OpenAir (`openair` package) — how it structures its layer/data arguments
+- tmap v4 — how it defines its layer grammar (it changed significantly in v4)
+- Find 1–2 examples of R packages that wrap Leaflet with a layered API (not ggplot2-based)
+
+Then recommend — with justification — what the formalised atomic object should be.
+This might be a named S3 class, a plain list with a required structure, or the sf
+object as-is. The overriding criterion is the package philosophy: a gentle,
+progressive learning curve where a two-line call works and each added parameter
+unlocks more sophistication. Treat ggplot2 / Grammar of Graphics as a **last
+resort**, not a forbidden model — the existing approach is more flexible and
+directly supports animations, and ggplot2's `aes()` abstraction fits time-varying
+spatial layers poorly, but adopt it if the survey shows it genuinely serves
+incremental learning better than the alternatives.
+
+Write the recommendation to dev/ with justification, then STOP and wait for the user
+to approve the design before implementing. Implementation (on a feature branch)
+begins only after explicit design approval — do not fold design and implementation
+into a single PR.
+
+### The wrapper API — design goal
+
+Once the atomic unit is settled, implement lightweight wrappers that convert each
+input format into it:
+
+| Wrapper | Input | Notes |
+|---------|-------|-------|
+| `from_csv(file)` | CSV file path | Diffusion tubes or schools |
+| `from_rdata(file, pollutant)` | RData file path | Duck typing already implemented |
+| `from_openair(data, source, pollutant)` | OpenAir tibble | `convert_openair_to_spatial()` is the basis |
+| `from_worldmet(data, pollutant)` | worldmet tibble | Wind layer; see Wind section below |
+| `from_yaml(file)` | YAML config path | Reads config, fetches/loads data, returns atomic unit |
+
+`quickmap(layers, boroughs, ...)` takes a list of atomic units. `create_pollution_map()`
+becomes a thin wrapper that calls `from_csv`/`from_rdata` duck typing then `quickmap()`.
+YAML-based themes and colour scales (already implemented) remain as styling inputs to
+`quickmap()`, not as part of the atomic unit.
+
+### Wind animation
+
+**Data source**: OpenAir's `worldmet` package fetches hourly met data (wind speed,
+wind direction) from NOAA's Integrated Surface Database. For most UK urban areas,
+a single nearby station is representative. Convert speed + direction to U/V components
+(standard meteorological decomposition) to get a uniform wind field.
+
+**Rendering**: `leaflet-velocity` plugin renders particle flow animations on a Canvas
+layer using a U/V wind grid. A uniform city-scale field is a minimal 2×2 grid — file
+size is negligible. The plugin JS must be inlined (see Self-contained constraint below).
+
+**Data pipeline at map generation time**:
+1. User specifies a worldmet station code (or nearest is auto-selected)
+2. `from_worldmet()` fetches and aggregates wind data to match `display_times` resolution
+3. U/V components embedded as JSON in the output HTML alongside pollution layers
+
+**Wind data does not need to match exactly** at sub-hourly resolution — hourly or daily
+averages aligned to the displayed time steps are sufficient. For monthly/annual maps,
+use period-mean wind.
+
+### Time steps and file size
+
+- **Default cap**: 200 time steps. Warn if data exceeds this; subset to most recent by default.
+- **Lazy loading threshold**: if estimated file size exceeds ~5 MB or time steps exceed 50,
+  render layers from embedded JSON on demand in JS rather than pre-building all hidden
+  Leaflet layers. An existing design covers this ground:
+  `dev/20250118_geojson_option_d_design.md` ("Option D": GeoJSON + client-side JS
+  styling, ~90% size reduction). Evaluate it first; only research alternatives if
+  it falls short. Either way the implementation should be a minimal custom JS
+  controller, not a large framework.
+- Time resolution ranges from 15-minute to monthly. The cap applies regardless of resolution.
+
+### Self-contained HTML — hard constraint
+
+All JS and CSS must be inlined in the output HTML. `htmlwidgets::saveWidget(selfcontained = TRUE)`
+handles this for Leaflet. Any new JS dependencies (leaflet-velocity, custom lazy loader)
+must also be inlined, not loaded from CDN. This is non-negotiable: files are sometimes
+delivered as email attachments and must work offline.
+
+### What NOT to change without flagging
+
+- The public API may change in service of ease of use, but any change must keep
+  examples, docs, vignettes, and test files consistent within the same change
+- YAML colour scale format in `inst/config/scales/` — other scripts depend on it
+- The `{{placeholder}}` CSS/JS template pattern — it works and is readable
+
+### Committing and branching
+
+- Work on a new branch per roadmap item (e.g. `feature/atomic-unit`, `feature/wind-layer`)
+- Commit frequently with descriptive messages
+- Update `dev/PROJECT_STATUS.md` at the end of each session
+- Archive the previous `R/quickmap.R` to `versions/` before significant refactors
+- Do not push to `main` — leave PRs for the human to review

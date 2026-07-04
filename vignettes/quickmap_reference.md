@@ -20,6 +20,29 @@ create_pollution_map(
 )
 ```
 
+## Full Example
+
+```r
+create_pollution_map(
+  data_sources   = list(
+    "wandsworth_2017_2024.csv",
+    "bl_imperial_annualised_2021_2025.Rdata",
+    "schools_wandsworth.csv"
+  ),
+  boroughs       = "Wandsworth",
+  pollutant      = "no2",
+  display_times  = NULL,          # all available years
+  colour_scale   = "who_no2",
+  output_file    = "wandsworth_no2",
+  export_image   = TRUE,
+  styling_type   = "html",
+  title          = "Wandsworth NO2 Annual Mean",
+  marker_labels  = "labels",
+  vignette       = TRUE
+)
+```
+
+
 ## Parameters
 
 ### Data
@@ -141,27 +164,6 @@ Object duck-typed in order: `dataOAformat` → `data` → `oa_data` → `sensor_
 | `date` / `date_time` / `time` / `datetime` / `timestamp` | Temporal (one required) | Datetime column — temporal resolution (hour/day/month/year) inferred from median gap between values |
 | `year` | Temporal (one required) | Fallback integer year — used if no datetime column found |
 
-## Full Example
-
-```r
-create_pollution_map(
-  data_sources   = list(
-    "wandsworth_2017_2024.csv",
-    "bl_imperial_annualised_2021_2025.Rdata",
-    "schools_wandsworth.csv"
-  ),
-  boroughs       = "Wandsworth",
-  pollutant      = "no2",
-  display_times  = NULL,          # all available years
-  colour_scale   = "who_no2",
-  output_file    = "wandsworth_no2",
-  export_image   = TRUE,
-  styling_type   = "html",
-  title          = "Wandsworth NO2 Annual Mean",
-  marker_labels  = "labels",
-  vignette       = TRUE
-)
-```
 
 ---
 
