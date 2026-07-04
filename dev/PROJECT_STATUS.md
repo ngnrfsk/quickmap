@@ -6,15 +6,43 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-01-14 **Current Working Version**: v0.9.3.21 **Branch**: feature/v093-openair-converter
+**Last Updated**: 2026-07-04 **Current Working Version**: v0.9.4 **Branch**: feature/v093-openair-converter
 
 --------------------------------------------------------------------------------
+
+### Added: quickmap_reference vignette — 2026-07-04
+`vignettes/quickmap_reference.md` — plain markdown quick-reference for `create_pollution_map()`.
+Covers: all parameters with defaults and descriptions, `display_times` format table, colour
+scale catalogue, and full column-by-column tables for both CSV and RData input formats (traced
+from source). Includes `Label` silent-drop gotcha. Committed on `feature/v093-openair-converter`.
+
+### Bug (priority): Sourced-script path resolution — 2026-03-13
+quickmap is sourced as a script so system.file() returns "" and all inst/ paths fall back to
+fragile relative paths anchored to the working directory. Cascading effects: working directory
+must be quickmap root; theme_file requires full paths and fails silently; colour_scale = NULL
+hardcoded for static layers in add_layer. Fix: install as a proper R package via
+devtools::install() — directory structure already matches conventions, DESCRIPTION and NAMESPACE
+are the main additions needed.
+
+### Bug: import_csv_data does not accept ... so na.strings from load_data_file errors — 2026-03-13
+Fix: remove na.strings from load_data_file call; consolidate the two near-identical defaults
+directly into import_csv_data.
+
+### Added: geocode_uk_postcodes() — 2026-03-13
+Bulk postcode geocoder added to quickmap.R. Uses postcodes.io bulk POST API (100 per request).
+Falls back to terminated postcodes endpoint for retired postcodes, converting WGS84 → OSGB36
+via sf. Flags terminated postcodes with a NOTE message.
+
+### Fixed — 2026-03-13
+- import_csv_data rejects static label-only CSVs: skip value columns check when static = TRUE
+- create_generic_icons hardcodes two colours: load from load_yaml_config(colour_scale, subdirectory = "scales")
+- na.strings ... threading error: resolved
 
 ## v0.9.3 OpenAir Converter (Current)
 
 **Status**: Active development
 **Branch**: `feature/v093-openair-converter`
-**Implementation Plan**: `dev/Implementation_v093_OpenAir_Converter.md`
+**Implementation Plan**: `dev/archive/251126_Implementation_v093_OpenAir_Converter.md`
 
 **Key Features (v0.9.3.x)**:
 - OpenAir converter functions (importUKAQ, importAURN, importKCL)
@@ -222,7 +250,7 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
 -   All 7 colour scales: Shortened labels across NO2 and PM2.5 scales
 -   Version archived to `versions/quickmap_0_9_0_3.R`
 
-**Detailed Documentation:** `dev/20251118_v0.9.0.3_legend_refactor_complete.md`
+**Detailed Documentation:** Archived
 
 #### Unified Architecture
 
@@ -244,6 +272,39 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
 -   18 test scripts in `tests/` directory
 
 ## Outstanding Issues
+
+### CRITICAL: HTML File Size Bloat (Scalability Blocker)
+
+**Design Doc:** `dev/20250118_geojson_option_d_design.md`
+
+**Problem:** HTML files grow to 27MB+ with many markers × time slices, causing slow load times and browser memory issues.
+
+**Root Cause:** Leaflet's R bindings serialize icon SVGs per-marker per-call:
+- 180 `addMarkers()` calls (time slices × layers)
+- Icons deduplicated within call, but **repeated across calls**
+- Same 11 icon SVGs × 180 calls = ~2000 redundant icon definitions
+- Per-marker: ~400 bytes (embedded SVG) vs ~30 bytes (coordinates only)
+
+**Scale Impact:**
+| Markers | Time Slices | Current Size | With Fix |
+|---------|-------------|--------------|----------|
+| 100 | 10 | ~1 MB | ~100 KB |
+| 500 | 50 | ~10 MB | ~750 KB |
+| 500 | 200 | ~27 MB | ~2 MB |
+
+**Proposed Fix (Option D):** GeoJSON + client-side JS styling
+- R sends raw coordinates + values as GeoJSON (~30 bytes/marker)
+- JavaScript applies icons at render time using cached SVG templates
+- Estimated reduction: **90%** (27MB → 2-3MB)
+
+**Implementation Impact:**
+- Significant refactor of `create_generic_icons()` and `add_layer()`
+- Estimated effort: 2-3 days
+- Could implement as optional backend: `create_pollution_map(..., backend = "geojson")`
+
+**Status:** Design complete, not implemented. Blocking for production use with sub-annual data.
+
+--------------------------------------------------------------------------------
 
 ### Essential visual site fixes for LCA site
 
@@ -344,6 +405,66 @@ create_pollution_map <- function(...) {
 - CRAN submission preparation
 
 **Expected Effort**: 12-16 hours **Complexity**: High
+
+#### Technical Debt: Prioritized Action List
+
+**Analysis Date**: 2026-01-23
+
+##### Priority 1: Quick Wins (1-2 hours, immediate value)
+
+| Task | Location | Impact |
+|------|----------|--------|
+| Extract constants | Top of quickmap.R | `BASELINE_IMAGE_SIZE=1200`, `MOBILE_BREAKPOINT=480`, `DEFAULT_BANNER_COLOR="#2c3e50"` appear 5+ times each |
+| Remove commented code | Lines 471-575 | Delete 104 lines of old `load_rdata_file()` implementation |
+| Consolidate symbol lists | `get_measurement_layers()` + `validate_and_fix_icon_shape()` | Two separate lists of valid symbols; single source of truth needed |
+| Standardize NULL pattern | Throughout | Use `%||%` operator consistently; currently 4 different patterns |
+
+##### Priority 2: Error Handling (2-3 hours)
+
+| Task | Current State | Target |
+|------|---------------|--------|
+| Consistent error style | Mix of `stop()`, `warning()+return`, `tryCatch`, silent NULL | Standardize: `stop(msg, call.=FALSE)` for fatal, `warning()` for recoverable |
+| Entry-point validation | Errors caught late in pipeline | Validate data structure in `create_pollution_map()` before calling pipeline |
+| Document failure modes | Silent failures possible | Each public function documents what happens on invalid input |
+
+##### Priority 3: Parameter Threading (4-6 hours, prep for Refactor-5)
+
+| Issue | Example | Solution |
+|-------|---------|----------|
+| 15-18 params through chain | `create_pollution_map → finalize_and_save_map → save_html_and_style` | Group into config objects: `styling_config`, `export_config` |
+| Naming inconsistency | `export_image` vs `image_export` vs `image_mode` | Standardize: `export_*` for output params |
+| Scale factor variants | `image_scale_factor`, `marker_scale_factor`, `label_sizing` | Single `scale_config` object |
+
+##### Priority 4: Dead Code Removal (1 hour)
+
+| Function | Status |
+|----------|--------|
+| `validate_oa_data()` | Defined but never called; logic in `convert_openair_to_spatial()` |
+| `process_oa_data()` | Only called from commented code |
+| `import_csv_data()` | Single caller; consider inlining |
+| Unreachable branches | `year=="static"` check when value is `"static_only"` |
+
+##### Priority 5: Long Functions (feeds into Refactor-5)
+
+| Function | Lines | Issue |
+|----------|-------|-------|
+| `convert_openair_to_spatial()` | 187 | Split: validation, aggregation, sf conversion |
+| `create_pollution_map()` | 184 | Split: setup, data loading, map generation, export |
+| `load_rdata_file()` | 155 | Split: file loading, duck typing, processing |
+| `inject_banner_legend_controls()` | 107 | Split: CSS scaling, HTML injection |
+
+##### Debt Summary
+
+| Category | Items | Est. Hours |
+|----------|-------|------------|
+| Quick wins | 4 | 1-2 |
+| Error handling | 3 | 2-3 |
+| Parameter cleanup | 3 | 4-6 |
+| Dead code | 4 | 1 |
+| Long functions | 4 | (Refactor-5) |
+| **Total pre-refactor** | **14** | **8-12** |
+
+--------------------------------------------------------------------------------
 
 #### Version 1.1-1.9
 
