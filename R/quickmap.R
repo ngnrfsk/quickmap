@@ -1928,8 +1928,14 @@ create_generic_icons <- function(
   # Color assignment: static layers with Level column use categorical colors
   has_level <- "Level" %in% names(data)
   colors <- if (has_level && is.null(pollutant)) {
-    pal <- colorFactor(c("#1E90FF", "#32CD32"), unique(data$Level))
-    pal(data$Level)
+    # Level-based layers use the categorical schools scale, not the pollutant scale
+    scale_data <- load_yaml_config("schools", subdirectory = "scales")
+    pal <- colorFactor(
+      unlist(scale_data$colours),
+      domain = NULL,
+      levels = scale_data$domain
+    )
+    pal(trimws(data$Level))
   } else if (!is.null(pollutant)) {
     sapply(data[[pollutant]], assign_colour, scale = colour_scale)
   } else {
