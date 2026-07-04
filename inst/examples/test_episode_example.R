@@ -4,8 +4,8 @@ source("R/quickmap.R")
 # Load data
 load("~/Coding/Library/data/bl_imperial_210122-250422.Rdata")
 
-start_time <- as.POSIXct("2024-01-15 12:00:00", tz = "UTC")
-end_time <- as.POSIXct("2024-01-20 00:00:00", tz = "UTC")
+start_time <- as.POSIXct("2024-01-12 15:00:00", tz = "UTC")
+end_time <- as.POSIXct("2024-01-20 03:00:00", tz = "UTC")
 
 # Subset and add required 'code' column
 subset_data <- subset(dataOAformat, date >= start_time & date < end_time)
@@ -31,51 +31,34 @@ borough_sf <- get_boundary_sf("Richmond")
 subset_data_sf_richmond <- st_filter(subset_data_sf_all, borough_sf)
 
 # Check output
-print(head(subset_data_sf_richmond$year_str))
-print(paste("Unique times:", length(unique(subset_data_sf_richmond$year_str))))
+print(head(subset_data_sf_richmond$year))
+print(paste("Unique times:", length(unique(subset_data_sf_richmond$year))))
 
 # Save
 save(
   subset_data_sf_all,
-  file = "~/Coding/Library/data/episodeJan15-20_2024_sf_all.Rdata"
+  file = "~/Coding/Library/data/episodeJan2024_sf_all.Rdata"
 )
 save(
   subset_data_sf_richmond,
-  file = "~/Coding/Library/data/episodeJan15-20_2024_sf_richmond.Rdata"
+  file = "~/Coding/Library/data/episodeJan2024_sf_richmond.Rdata"
 )
 
-#rm(dataOAformat)
-#display_times <- unique(subset_data_sf_richmond$year)
-# Create map - use NULL for theme or full path
-map1_test <- create_pollution_map(
-  data_sources = list("episodeJan2024_sf_Richmond.Rdata"),
-  data_ids = c("bl_sensors"),
-  boroughs = "Richmond",
-  pollutant = "pm25",
-  #  display_times = display_times,
-  colour_scale = "stripes_pm25",
-  theme_file = NULL, # Use default theme for now
-  output_file = "map1_test_episode_240115-20.html",
-  title = "PM2.5 Episode: Jan 15-20, 2024",
-  styling_type = "html",
-  vignette = TRUE,
-  marker_labels = TRUE,
-  banner_colour = "#005794",
-  boundary_labels = FALSE,
-  autoplay = TRUE,
-  play_speed = 500
-)
+load("~/Coding/Library/data/episodeJan2024_sf_all.Rdata")
+load("~/Coding/Library/data/episodeJan2024_sf_richmond.Rdata")
+display_times <- unique(subset_data_sf_all$year_str)
+
 
 map2_test <- create_pollution_map(
-  data_sources = list("episodeJan15-20_2024_sf_all.Rdata"),
+  data_sources = list("episodeJan2024_sf_all.Rdata"),
   data_ids = c("bl_sensors"),
   boroughs = c("Wandsworth", "Richmond"),
   pollutant = "pm25",
   #  display_times = display_times,
   colour_scale = "stripes_pm25",
   theme_file = "inst/themes/airstat.yaml", # Use default theme for now
-  output_file = "map2_test_episode_240115-20.html",
-  title = "PM2.5 Episode: Jan 15-20, 2024",
+  output_file = "map2_test_episode_240110_test.html",
+  title = "PM2.5 Episode: Jan 10-20, 2024",
   styling_type = "html",
   vignette = FALSE,
   marker_labels = TRUE,

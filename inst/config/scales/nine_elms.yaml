@@ -1,0 +1,16 @@
+colours:
+  - "#E74C3C"
+  - "#F39C12"
+  - "#2ECC71"
+
+domain:
+  - Stacks
+  - Risk Sites
+  - Register
+
+labels:
+  - Stacks
+  - Risk Sites
+  - Register
+
+title: "Site Type"

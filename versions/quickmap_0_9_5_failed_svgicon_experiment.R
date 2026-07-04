@@ -1,8 +1,17 @@
 # quickmap - Air Quality Mapping for R
-# Version 0.9.4  2026/01/15
-# v0.9.4: Sub-annual temporal resolution - month/day/hour support, renamed years→display_times
-# v0.9.3.21: RData duck typing - standard names, then any compatible data.frame
-# v0.9.3.20: School label duck typing - removed hardcoded layer_id check
+# Version 0.9.5 FAILED EXPERIMENT - SVG Data URI Icons
+#
+# FAILED APPROACH: Replace makeSymbolsSize() with makeIcon() + base64 SVG data URIs
+# GOAL: Reduce 68MB HTML files by reusing icon definitions instead of per-marker SVGs
+# RESULT: File size unchanged - leaflet still embeds full icon data per marker
+#
+# WHY IT FAILED:
+# - makeIcon() with iconUrl still creates unique JSON per marker in HTML output
+# - The data URI is repeated for every marker, not deduplicated
+# - Leaflet's serialization doesn't share icon references across markers
+#
+# LESSON: Need approach that changes HTML structure, not just icon creation method
+# OPTIONS: 1) Post-process HTML to deduplicate, 2) Use CircleMarkers, 3) GeoJSON layer
 
 packages <- c(
   "leaflet",
@@ -15,7 +24,8 @@ packages <- c(
   "htmlwidgets",
   "htmltools",
   "leaflet.extras",
-  "zeallot"
+  "zeallot",
+  "base64enc"
 )
 
 installed <- packages %in% rownames(installed.packages())
@@ -649,17 +659,8 @@ load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
       # Normalize to 'date' for convert_openair_to_spatial
       obj$date <- obj[[datetime_col]]
       resolution <- infer_resolution(obj$date)
-      message(
-        "Inferred temporal resolution from '",
-        datetime_col,
-        "': ",
-        resolution
-      )
-      return(convert_openair_to_spatial(
-        obj,
-        pollutant = pollutant,
-        avg.time = resolution
-      ))
+      message("Inferred temporal resolution from '", datetime_col, "': ", resolution)
+      return(convert_openair_to_spatial(obj, pollutant = pollutant, avg.time = resolution))
     }
 
     # Fallback: year column (annual resolution)
@@ -804,72 +805,6 @@ get_data_maximum <- function(
   }
 }
 
-#' Geocode UK postcodes to OSGB36 eastings/northings
-#'
-#' Uses the postcodes.io bulk API (100 per request). Falls back to the
-#' terminated postcodes endpoint for retired postcodes, converting the
-#' returned WGS84 coordinates to OSGB36 via sf.
-#'
-#' @param postcodes Character vector of postcodes (spaces optional, case-insensitive)
-#' @return data.frame with columns: postcode, Easting, Northing (NA where lookup fails)
-#' @family utils
-geocode_uk_postcodes <- function(postcodes) {
-  if (!requireNamespace("httr", quietly = TRUE)) {
-    stop("Package 'httr' required. Install with: install.packages('httr')")
-  }
-
-  clean <- toupper(trimws(postcodes))
-  result <- data.frame(postcode = clean, Easting = NA_integer_,
-                       Northing = NA_integer_, stringsAsFactors = FALSE)
-
-  wgs84_to_osgb36 <- function(lon, lat) {
-    pt <- sf::st_as_sf(data.frame(lon = lon, lat = lat),
-                       coords = c("lon", "lat"), crs = 4326)
-    coords <- sf::st_coordinates(sf::st_transform(pt, crs = 27700))
-    list(Easting = as.integer(round(coords[, 1])),
-         Northing = as.integer(round(coords[, 2])))
-  }
-
-  unique_pcs <- unique(clean[!is.na(clean) & clean != ""])
-  batches <- split(unique_pcs, ceiling(seq_along(unique_pcs) / 100))
-
-  for (batch in batches) {
-    resp <- httr::POST(
-      "https://api.postcodes.io/postcodes",
-      body    = list(postcodes = as.list(batch)),
-      encode  = "json"
-    )
-    if (httr::status_code(resp) != 200) next
-    items <- httr::content(resp, as = "parsed")$result
-
-    for (item in items) {
-      pc <- toupper(trimws(item$query))
-      idx <- result$postcode == pc
-      if (!is.null(item$result)) {
-        result$Easting[idx]  <- as.integer(item$result$eastings)
-        result$Northing[idx] <- as.integer(item$result$northings)
-      } else {
-        # Try terminated postcodes endpoint
-        url  <- paste0("https://api.postcodes.io/terminated_postcodes/",
-                       gsub("\\s+", "", pc))
-        tresp <- httr::GET(url)
-        if (httr::status_code(tresp) == 200) {
-          tr <- httr::content(tresp, as = "parsed")$result
-          if (!is.null(tr$longitude) && !is.null(tr$latitude)) {
-            osgb <- wgs84_to_osgb36(tr$longitude, tr$latitude)
-            result$Easting[idx]  <- osgb$Easting
-            result$Northing[idx] <- osgb$Northing
-            message("NOTE: ", pc, " is a terminated postcode — coordinates approximated from WGS84")
-          }
-        } else {
-          message("WARNING: geocoding failed for ", pc)
-        }
-      }
-    }
-  }
-  result
-}
-
 import_csv_data <- function(
   file_path,
   required_cols = c("Easting", "Northing")
@@ -882,7 +817,7 @@ import_csv_data <- function(
     file_path,
     stringsAsFactors = FALSE,
     check.names = FALSE,
-    na.strings = c("", " ", "NA", "NaN")
+    na.strings = c("", "NA", "NaN")
   )
   names(data) <- gsub("^X", "", names(data))
   if (!all(required_cols %in% names(data))) {
@@ -896,8 +831,8 @@ import_csv_data <- function(
   }
   data <- data[complete.cases(data[, required_cols]), ]
   value_columns <- setdiff(names(data), required_cols)
-  if (length(value_columns) == 0 && !"Label" %in% names(data)) {
-    stop("No value or label columns found in data")
+  if (length(value_columns) == 0) {
+    stop("No value columns found in data")
   }
   list(data = data, value_columns = value_columns)
 }
@@ -1532,8 +1467,7 @@ add_year_and_static_layers <- function(
   measurement_layers,
   pollutant,
   colour_scale,
-  spatial_data,
-  scale_factor
+  spatial_data
 ) {
   template |>
     generate_map_layers(
@@ -1541,16 +1475,14 @@ add_year_and_static_layers <- function(
       year,
       pollutant,
       colour_scale,
-      spatial_data,
-      scale_factor
+      spatial_data
     ) |>
     generate_map_layers(
       measurement_layers,
       "static_only",
       pollutant,
       colour_scale,
-      spatial_data,
-      scale_factor
+      spatial_data
     )
 }
 
@@ -1979,71 +1911,75 @@ get_icon_shape_config <- function(shape_name) {
   return(config)
 }
 
-create_generic_icons <- function(
-  data,
-  icon_shape,
-  pollutant = NULL,
-  colour_scale = NULL,
-  image_scale_factor = 1.0,
-  layer_id = NULL
-) {
-  # Base sizes are for 1200x1200px reference images
-  # For other sizes: scale = sqrt((width × height) / (1200 × 1200))
-  # HTML maps: image_scale_factor = 1.0 (no scaling)
-  # Static maps: image_scale_factor calculated from dimensions
+#' Create icons using SVG data URIs
+#' @param data Data frame with marker data
+#' @param icon_shape Shape name
+#' @param pollutant Pollutant column name (NULL for static layers)
+#' @param colour_scale Colour scale name
+#' @return List of icon objects for each row
+#' @keywords internal
+create_generic_icons <- function(data, icon_shape, pollutant, colour_scale) {
+  scale_data <- load_colour_scale(colour_scale)
+  config <- get_icon_shape_config(icon_shape)
+  size <- config$base_size
+  colors <- scale_data$colours
+  static_colors <- c("#1E90FF", "#32CD32")
 
-  # Get shape config from data-driven lookup (icon_shape now passed from config)
-  base_shape_config <- get_icon_shape_config(icon_shape)
+  # Build icon library: one icon per unique color
+  nonsolid_shapes <- c("simple-plus", "simple-cross", "cross", "plus")
+  is_nonsolid <- icon_shape %in% nonsolid_shapes
 
-  shape_config <- list(
-    shape = base_shape_config$shape,
-    size = round(base_shape_config$base_size * image_scale_factor)
-  )
+  pollutant_icons <- lapply(seq_along(colors), function(i) {
+    svg_uri <- get_svg_data_uri(config$shape, colors[i],
+      stroke = if (is_nonsolid) colors[i] else "#ffffff", size = size)
+    makeIcon(iconUrl = svg_uri, iconWidth = size, iconHeight = size,
+      iconAnchorX = size/2, iconAnchorY = size/2)
+  })
 
-  # Color assignment: static layers with Level column use categorical colors
-  has_level <- "Level" %in% names(data)
-  colors <- if (has_level && is.null(pollutant)) {
-    # Level-based layers use the categorical schools scale, not the pollutant scale
-    scale_data <- load_yaml_config("schools", subdirectory = "scales")
-    pal <- colorFactor(
-      unlist(scale_data$colours),
-      domain = NULL,
-      levels = scale_data$domain
-    )
-    pal(trimws(data$Level))
-  } else if (!is.null(pollutant)) {
-    sapply(data[[pollutant]], assign_colour, scale = colour_scale)
-  } else {
-    rep("gray", nrow(data)) # Fallback for static without Level
+  static_icons <- lapply(seq_along(static_colors), function(i) {
+    svg_uri <- get_svg_data_uri(config$shape, static_colors[i],
+      stroke = if (is_nonsolid) static_colors[i] else "#ffffff", size = size)
+    makeIcon(iconUrl = svg_uri, iconWidth = size, iconHeight = size,
+      iconAnchorX = size/2, iconAnchorY = size/2)
+  })
+
+  # Map each row to an icon from the library
+  if (!is.null(pollutant) && pollutant %in% names(data)) {
+    indices <- findInterval(data[[pollutant]], scale_data$thresholds, left.open = FALSE)
+    indices[is.na(indices) | indices < 1] <- length(colors)
+    return(pollutant_icons[indices])
   }
 
-  # Non-solid symbols use color (stroke), solid symbols use fillColor
-  is_nonsolid <- shape_config$shape %in%
-    c(
-      "simple-plus",
-      "simple-cross",
-      "cross-rect",
-      "simple-star",
-      "plus-circle",
-      "plus-rect",
-      "cross-circle",
-      "cross",
-      "plus"
-    )
+  if ("Level" %in% names(data)) {
+    level_map <- c("Primary" = 1, "Secondary" = 2)
+    indices <- level_map[as.character(data$Level)]
+    indices[is.na(indices)] <- 1
+    return(static_icons[indices])
+  }
 
-  makeSymbolsSize(
-    # note
-    values = rep(1, length(colors)),
-    shape = shape_config$shape,
-    color = if (is_nonsolid) colors else "#ffffff",
-    fillColor = colors,
-    baseSize = shape_config$size,
-    fillOpacity = 0.75,
-    #   stroke = TRUE,
-    #  weight = 10,
-    strokeWidth = 2,
-    opacity = 1
+  # Fallback: all first color
+  rep(pollutant_icons[1], nrow(data))
+}
+
+#' Generate SVG data URI for icon
+#' @keywords internal
+get_svg_data_uri <- function(shape, fill, stroke = "#ffffff", size = 20) {
+  svg_content <- switch(shape,
+    "circle" = sprintf('<circle cx="10" cy="10" r="8" fill="%s" stroke="%s" stroke-width="1.5"/>', fill, stroke),
+    "diamond" = sprintf('<polygon points="10,1 19,10 10,19 1,10" fill="%s" stroke="%s" stroke-width="1.5"/>', fill, stroke),
+    "triangle" = sprintf('<polygon points="10,2 18,17 2,17" fill="%s" stroke="%s" stroke-width="1.5"/>', fill, stroke),
+    "down-triangle" = sprintf('<polygon points="2,3 18,3 10,18" fill="%s" stroke="%s" stroke-width="1.5"/>', fill, stroke),
+    "rect" = sprintf('<rect x="2" y="2" width="16" height="16" fill="%s" stroke="%s" stroke-width="1.5"/>', fill, stroke),
+    "stadium" = sprintf('<rect x="2" y="5" width="16" height="10" rx="5" fill="%s" stroke="%s" stroke-width="1.5"/>', fill, stroke),
+    "simple-plus" = sprintf('<path d="M10,3 L10,17 M3,10 L17,10" fill="none" stroke="%s" stroke-width="3" stroke-linecap="round"/>', fill),
+    "simple-cross" = sprintf('<path d="M4,4 L16,16 M16,4 L4,16" fill="none" stroke="%s" stroke-width="3" stroke-linecap="round"/>', fill),
+    "cross" = sprintf('<path d="M4,4 L16,16 M16,4 L4,16" fill="none" stroke="%s" stroke-width="2.5" stroke-linecap="round"/>', fill),
+    "plus" = sprintf('<path d="M10,3 L10,17 M3,10 L17,10" fill="none" stroke="%s" stroke-width="2.5" stroke-linecap="round"/>', fill),
+    sprintf('<circle cx="10" cy="10" r="8" fill="%s" stroke="%s" stroke-width="1.5"/>', fill, stroke)
   )
+
+  svg <- sprintf('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="%d" height="%d">%s</svg>', size, size, svg_content)
+  paste0("data:image/svg+xml;base64,", base64enc::base64encode(charToRaw(svg)))
 }
 
 #' @keywords internal
@@ -2154,12 +2090,9 @@ add_layer <- function(
   pollutant = NULL,
   colour_scale = NULL,
   label_sizing = 1.0,
-  image_scale_factor = 1.0,
   marker_labels = FALSE
 ) {
   if (is.null(layer_data)) return(map)
-
-  layer_id <- layer_config$id
 
   # Static layers use categorical colors (e.g., Primary/Secondary), not pollutant scale
   use_pollutant <- if (layer_config$static) NULL else pollutant
@@ -2167,10 +2100,8 @@ add_layer <- function(
   icons <- create_generic_icons(
     layer_data$data,
     icon_shape = layer_config$icon_shape,
-    use_pollutant,
-    colour_scale,
-    image_scale_factor,
-    layer_id = layer_id
+    pollutant = use_pollutant,
+    colour_scale = colour_scale
   )
 
   label_text_size <- as.character(12 * label_sizing)
@@ -2428,8 +2359,7 @@ generate_map_layers <- function(
   target_year,
   pollutant,
   colour_scale,
-  spatial_data,
-  image_scale_factor = 1.0
+  spatial_data
 ) {
   for (layer_name in names(measurement_layers)) {
     layer_config <- measurement_layers[[layer_name]]
@@ -2466,7 +2396,6 @@ generate_map_layers <- function(
             pollutant,
             colour_scale,
             label_sizing = 1.0,
-            image_scale_factor,
             marker_labels = show_labels
           )
         }
@@ -2484,9 +2413,8 @@ generate_map_layers <- function(
         layer_config,
         year = NULL,
         pollutant = NULL,
-        colour_scale = colour_scale,
+        colour_scale,
         label_sizing = 1.0,
-        image_scale_factor,
         marker_labels = show_labels
       )
     }
@@ -2508,16 +2436,15 @@ parse_export_params <- function(export_image) {
   }
 }
 
-
 load_spatial_data_sources <- function(
   data_sources,
-  data_ids = NULL,
-  data_dynamic = NULL,
-  pollutant = "no2"
+  data_ids,
+  data_dynamic,
+  pollutant
 ) {
   loaded_data <- list()
 
-  # 1. Auto-generate IDs if not provided
+  # Auto-generate IDs if not provided
   if (is.null(data_ids)) {
     data_ids <- sapply(seq_along(data_sources), function(i) {
       src <- data_sources[[i]]
@@ -2539,7 +2466,7 @@ load_spatial_data_sources <- function(
       next
     }
 
-    # 2. Handle RData files
+    # RData files
     if (grepl("\\.Rdata$", data_src, ignore.case = TRUE)) {
       loaded_data[[layer_id]] <- load_data_file(
         data_src,
@@ -2547,40 +2474,21 @@ load_spatial_data_sources <- function(
         pollutant = pollutant
       )
     } else {
-      # 3. Handle CSV files
-      # This explicitly treats empty strings as NA to prevent 'NULL' returns on missing data
-      result <- load_data_file(
-        data_src,
-        "csv",
-        c("Easting", "Northing")
-      )
-
+      # CSV files - auto-detect temporal/static unless override provided
+      result <- load_data_file(data_src, "csv", c("Easting", "Northing"))
       if (!is.null(result)) {
         csv_data <- result$data
-        cols <- names(csv_data)
 
-        # 4. FIXED LOGIC: Detect Time-Series Structure
-        # Pattern catches '2026', '2026-01-01', or '26-10-01'
-        time_pattern <- "^(\\d{4}|\\d{2}-\\d{2}-\\d{2})"
-        time_cols <- grep(time_pattern, cols)
-
+        # Determine if temporal (has year columns or pollutant columns)
         is_temporal <- if (!is.null(data_dynamic)) {
-          # Use [[i]] to get the logical value, not a list subset
-          data_dynamic[[i]]
+          data_dynamic[i]
         } else {
-          # A file is ONLY temporal if it has multiple time-step columns.
-          # We ignore pollutant names here because they indicate static data.
-          length(time_cols) > 1
+          cols <- names(csv_data)
+          any(grepl("^\\d{4}$", cols)) ||
+            any(c("no2", "pm25", "pm10", "o3") %in% tolower(cols))
         }
 
-        # 5. Process based on detected type
         if (is_temporal) {
-          # Ensure time columns are numeric (critical for missing values like your 2017 data)
-          csv_data[time_cols] <- lapply(
-            csv_data[time_cols],
-            function(x) as.numeric(as.character(x))
-          )
-
           loaded_data[[layer_id]] <- get_temporal_data(csv_data) |>
             transform_to_wgs84()
         } else {
@@ -2590,24 +2498,18 @@ load_spatial_data_sources <- function(
     }
   }
 
-  # 6. Legacy compatibility and Output
-  # Helper to safely grab layers by index
-  get_layer <- function(idx) {
-    if (length(data_ids) >= idx) loaded_data[[data_ids[idx]]] else NULL
-  }
-
+  # Legacy compatibility
   list(
-    dt = get_layer(1),
-    sensor = get_layer(2),
-    school = get_layer(3),
-    dt_enabled = !is.null(get_layer(1)),
-    sensor_enabled = !is.null(get_layer(2)),
-    school_enabled = !is.null(get_layer(3)),
+    dt = loaded_data[[data_ids[1]]] %||% NULL,
+    sensor = loaded_data[[data_ids[2]]] %||% NULL,
+    school = loaded_data[[data_ids[3]]] %||% NULL,
+    dt_enabled = !is.null(loaded_data[[data_ids[1]]]),
+    sensor_enabled = !is.null(loaded_data[[data_ids[2]]]),
+    school_enabled = !is.null(loaded_data[[data_ids[3]]]),
     all_data = loaded_data,
     ids = data_ids
   )
 }
-
 
 determine_times_and_viewport <- function(
   spatial_data,
@@ -2806,10 +2708,6 @@ create_pollution_map <- function(
     display_times
   )
 
-  marker_scale_factor <- if (image_export) {
-    sqrt((map_width_px * map_height_px) / (1200 * 1200))
-  } else NULL
-
   for (yr in unique(display_times)) {
     html_map <- generate_map_layers(
       html_map,
@@ -2817,8 +2715,7 @@ create_pollution_map <- function(
       yr,
       pollutant,
       colour_scale,
-      spatial_data,
-      1.0
+      spatial_data
     )
 
     if (image_export) {
@@ -2828,8 +2725,7 @@ create_pollution_map <- function(
         measurement_layers,
         pollutant,
         colour_scale,
-        spatial_data,
-        marker_scale_factor
+        spatial_data
       )
 
       file_parts <- tools::file_path_sans_ext(basename(output_file))

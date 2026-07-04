@@ -1,0 +1,15 @@
+interactive:
+  color: "#078141"
+  weight: 2.5
+  dashArray: "5, 10"
+  opacity: 0.75
+  fillColor: "transparent"
+  fillOpacity: 0.1
+
+static:
+  color: "#078141"
+  weight: 2.5
+  dashArray: null
+  opacity: 1
+  fillColor: "transparent"
+  fillOpacity: 0
