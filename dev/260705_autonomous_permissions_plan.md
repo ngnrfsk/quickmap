@@ -1,9 +1,31 @@
 # Autonomous Permissions — investigation and fix (260705)
 
-A trial autonomous run on 2026-07-05 had to be killed: it stalled repeatedly on
-permission prompts, e.g. "Tilde in assignment value — bash may expand at
-assignment time". This doc records the investigation, what was implemented on
-`chore/autonomous-permissions`, and what remains.
+A trial autonomous run on **2026-07-04, killed ~21:00 local** (initially
+misrecorded here as 2026-07-05 — corrected after the user flagged it), stalled
+repeatedly on permission prompts, e.g. "Tilde in assignment value — bash may
+expand at assignment time". This doc records the investigation, what was
+implemented on `chore/autonomous-permissions`, and what remains.
+
+## Trial run evidence (transcript recovered)
+
+The corrected date located the transcript: the trial was the **roadmap item 1
+packaging agent**, run as a subagent in the `agent-a74c8a79472843d40` worktree,
+2026-07-04 19:44–20:14 UTC (20:44–21:14 BST) — which is why `feature/packaging`
+sits uncommitted in that worktree. Findings from the transcript:
+
+- 35 Bash commands in ~30 minutes; the run was killed mid-task after the
+  testthat audit phase.
+- Two outright denials recorded: `cd /tmp && Rscript -e '...'` (cd-compound)
+  and a `for f in ...; do ... $(Rscript ...)` loop (loop + command
+  substitution).
+- The other prompts were manually **approved** by the user — each one a stall.
+  Their residue is the tail of ad-hoc rules in settings.local.json
+  (`gh auth *`, `R --version`, `git checkout *`, `perl -i -pe ' *`).
+- The "Tilde in assignment value" prompt appears in the UI dialog only; it is
+  not persisted in transcripts (0 matches), consistent with the user's report.
+- The agent's habitual command style was the problem: cd-compounds, `for`
+  loops, `$(...)` substitution, heredoc appends (`cat >> file << 'EOF'`),
+  `perl -i` — every novel construct raised a fresh prompt.
 
 ## Root cause — two layers
 
@@ -32,6 +54,12 @@ exports DATA_PATH, so the assignment was never needed — but nothing told the
 agent that.) The curated allowlist also lived only in `.claude/settings.local.json`
 (personal, auto-mutating, accumulated from one-off approvals), not in a
 committed project file.
+
+**A process note:** the initial version of this investigation assumed the trial
+ran on 2026-07-05 instead of asking the user, searched the transcripts around
+the wrong date, and wrongly concluded the transcript was unrecoverable. Facts
+about events outside the session (when, where, which run) should be confirmed
+with the user before building on them.
 
 ## Implemented (branch `chore/autonomous-permissions`)
 
@@ -94,7 +122,10 @@ committed project file.
    work. If prompts still occur for novel commands, consider launching
    autonomous sessions with `--permission-mode auto` (background safety
    classifier handles the unmatched tail) rather than widening the allowlist.
-4. The trial run's own transcript was not found under this project's history
-   (likely run under a different working directory or since cleaned up), so the
-   prompt inventory above comes from the user's report, this session's
-   settings.local.json approval trail, and documented heuristics.
+4. ~~The trial run's transcript was not found~~ — superseded: the transcript
+   was recovered once the correct date (2026-07-04) was known; see "Trial run
+   evidence" above. The prompt inventory is now evidence-based.
+5. **Resuming roadmap item 1**: the killed packaging agent's work sits
+   uncommitted on the `feature/packaging` worktree. With the permission config
+   now in place, that item can be resumed without the prompt storm that killed
+   it.

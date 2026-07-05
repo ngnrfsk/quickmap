@@ -580,10 +580,16 @@ prompt **regardless of the allowlist**. In an unattended run a prompt is a stall
 so never write commands that trigger them:
 
 - **Never set env vars inline** — `VAR=~/path cmd` forces the "Tilde in
-  assignment value" prompt (this killed the 2026-07-05 trial run). DATA_PATH is
-  already set; if an inline assignment is ever unavoidable, use an absolute path.
+  assignment value" prompt (seen in the 2026-07-04 trial run that had to be
+  killed). DATA_PATH is already set; if an inline assignment is ever
+  unavoidable, use an absolute path.
 - **No `cd`** — use absolute paths or `git -C /Users/iarla/Coding/quickmap`.
-- **No command substitution** `$(...)` or backticks inside Bash tool commands.
+  (`cd /tmp && Rscript ...` was one of the trial's two hard denials.)
+- **No command substitution** `$(...)` or backticks, and **no shell variables**
+  (`f=x; cmd "$f"`) inside Bash tool commands — the matcher cannot resolve them.
+- **No `for`/`while` loops, heredocs (`<< EOF`), or output redirects** as ways
+  to batch work — a loop with `$(...)` was the trial's other hard denial. Use a
+  script file plus `Rscript`/`python3` for anything multi-step.
 - **No exec wrappers** (`find -exec`, `xargs`, `watch`) and no unquoted globs in
   write/delete commands.
 - **Compound commands** (`&&`, `|`, `;`) are matched segment-by-segment — every
