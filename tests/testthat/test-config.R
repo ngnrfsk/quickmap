@@ -12,8 +12,9 @@ test_that("load_colour_scale loads valid YAML scale", {
 test_that("load_colour_scale validates threshold count matches colour count", {
   scale <- load_colour_scale("who_no2")
 
-  # thresholds should be 1 more than colours (n+1 breakpoints for n ranges)
-  expect_equal(length(scale$thresholds), length(scale$colours) + 1)
+  # convention: one threshold per colour; the final colour/label is the
+  # "insufficient data" band paired with the .Inf threshold
+  expect_equal(length(scale$thresholds), length(scale$colours))
 })
 
 test_that("load_colour_scale validates label count", {
