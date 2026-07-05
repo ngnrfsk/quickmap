@@ -20,3 +20,5 @@ Thumbs.db
 .Ruserdata
 .Rproj.user
 quickmap.Rproj
+.RDataTmp
+*.tgz

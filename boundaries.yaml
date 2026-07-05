@@ -1,8 +1,0 @@
-data_file: "ward_boundaries.Rdata"
-data_object: "wardBoundaries"
-name_column: "DISTRICT"
-name_corrections:
-  "The City": "City and County of the City of London"
-  "Westminster": "City of Westminster"
-  "Kingston": "Kingston upon Thames"
-  "Richmond": "Richmond upon Thames"
