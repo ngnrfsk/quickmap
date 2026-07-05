@@ -29,6 +29,11 @@ interactive Leaflet HTML map (self-contained, email-safe) and optionally a stati
 JPG export. The primary users are local government officers and air quality
 consultants producing reports and public-facing communications.
 
+QuickMap's distinctive capability is production-ready temporal animation of
+monitoring-network data with self-contained HTML/JPG output. It does not aim to
+compete with general-purpose mapping packages such as `mapview` or `tmap`; it is
+a production tool for air quality reporting and research visualisation.
+
 **Beyond v1.0:** The architecture is designed to generalise to any time-varying,
 location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
@@ -304,6 +309,13 @@ School data detected by School column presence. Any filename works (schools.csv,
 **Duck typing:** Data types detected by column presence (School/Label/year_str), not filenames or IDs.
 **Optional IDs:** `data_ids` auto-generates from filenames when NULL.
 **OpenAir consistency:** Follows OpenAir API patterns.
+
+### API Principles
+
+1. **User intent over implementation**: parameters describe what the user wants, not how it is done.
+2. **Progressive disclosure**: common parameters are top-level; advanced or obscure ones are secondary.
+3. **Context-aware defaults**: defaults should work unmodified for 90% of use cases.
+4. **Multi-value over boolean**: prefer categorical state parameters (e.g. `marker_labels = "values_on"`) over stacks of boolean flags.
 
 ### Code Minimalism
 

@@ -14,3 +14,4 @@
 ^\.lintr$
 ^Original.*alias$
 ^REORGANIZATION_PROPOSAL\.md$
+^\.RDataTmp$
