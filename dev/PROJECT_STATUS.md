@@ -23,6 +23,17 @@ dimensions. Repair belongs to the unified scaling work (UI defect #9, roadmap
 item 10) — do not patch piecemeal. Found 2026-07-05 while adding fail-loud anchor
 checks (dev/260705_risk_handlers_plan.md, handler 3.1).
 
+### Autonomous permissions hardened — 2026-07-05
+Branch `chore/autonomous-permissions`. A trial autonomous run died on permission
+prompts (tilde-in-assignment heuristic + allowlist living only in
+settings.local.json). Added committed `.claude/settings.json` (DATA_PATH env,
+72-rule allowlist, deny rules guarding main, acceptEdits) and a verified
+PreToolUse hook that turns commits on main into a human-approval prompt.
+CLAUDE.md gained a "Permissions and command style" section; the pre-test idea
+was adopted and upgraded to dev/260705_permissions_pretest.md (human runs it
+interactively before the next autonomous session). Full investigation:
+dev/260705_autonomous_permissions_plan.md.
+
 ### Housekeeping: _gem docs archived, repo root cleaned — 2026-07-05
 Branch `chore/risk-handlers`. CLAUDE_gem.md / PROJECT_STATUS_gem.md archived to
 dev/archive/ after harvesting unique content into CLAUDE.md (positioning

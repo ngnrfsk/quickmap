@@ -1,0 +1,107 @@
+{
+  "env": {
+    "DATA_PATH": "/Users/iarla/Coding/Library/data"
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "WebSearch",
+      "WebFetch(domain:openair-project.github.io)",
+      "WebFetch(domain:cran.r-project.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:r-spatial.r-universe.dev)",
+      "WebFetch(domain:r-spatial.github.io)",
+      "WebFetch(domain:bookdown.org)",
+      "WebFetch(domain:davidcarslaw.github.io)",
+      "Bash(R:*)",
+      "Bash(R CMD:*)",
+      "Bash(Rscript:*)",
+      "Bash(python3:*)",
+      "Bash(perl:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git remote:*)",
+      "Bash(git fetch:*)",
+      "Bash(git worktree:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git restore:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git mv:*)",
+      "Bash(git rm:*)",
+      "Bash(git stash:*)",
+      "Bash(git apply:*)",
+      "Bash(git push:*)",
+      "Bash(git -C /Users/iarla/Coding/quickmap:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh repo:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh search:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(chmod +x:*)",
+      "Bash(printf:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(awk:*)",
+      "Bash(sed -n:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(cut:*)",
+      "Bash(tr:*)",
+      "Bash(diff:*)",
+      "Bash(comm:*)",
+      "Bash(file:*)",
+      "Bash(stat:*)",
+      "Bash(od:*)",
+      "Bash(xxd:*)",
+      "Bash(jq:*)",
+      "Bash(which:*)",
+      "Bash(echo:*)",
+      "Bash(pwd)",
+      "Bash(date:*)",
+      "Bash(true)"
+    ],
+    "deny": [
+      "Bash(git push origin main)",
+      "Bash(git push origin main:*)",
+      "Bash(git push origin HEAD:main)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git merge:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git branch -D main)",
+      "Bash(rm -rf:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-main.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

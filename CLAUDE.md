@@ -157,6 +157,9 @@ Sys.setenv(SCRIPTS_PATH = "path/to/scripts")
 ```
 
 **Note:** DATA_PATH points to `~/Coding/Library/data` where all test data files are stored.
+In Claude Code sessions DATA_PATH is already provided by `.claude/settings.json`
+(`env`) — verify with `Sys.getenv("DATA_PATH")`; do not set it inline in bash
+commands (see "Permissions and command style" below).
 
 ## Data Formats
 
@@ -564,6 +567,36 @@ delivered as email attachments and must work offline.
   examples, docs, vignettes, and test files consistent within the same change
 - YAML colour scale format in `inst/config/scales/` — other scripts depend on it
 - The `{{placeholder}}` CSS/JS template pattern — it works and is readable
+
+### Permissions and command style — autonomous safety
+
+Permission config lives in `.claude/settings.json` (committed): the DATA_PATH
+env var, the command allowlist, deny rules protecting `main`, and a PreToolUse
+hook that turns any `git commit` on `main` into a human-approval prompt.
+Rationale and investigation: dev/260705_autonomous_permissions_plan.md.
+
+Claude Code's permission system has parse-safety heuristics that force a manual
+prompt **regardless of the allowlist**. In an unattended run a prompt is a stall,
+so never write commands that trigger them:
+
+- **Never set env vars inline** — `VAR=~/path cmd` forces the "Tilde in
+  assignment value" prompt (this killed the 2026-07-05 trial run). DATA_PATH is
+  already set; if an inline assignment is ever unavoidable, use an absolute path.
+- **No `cd`** — use absolute paths or `git -C /Users/iarla/Coding/quickmap`.
+- **No command substitution** `$(...)` or backticks inside Bash tool commands.
+- **No exec wrappers** (`find -exec`, `xargs`, `watch`) and no unquoted globs in
+  write/delete commands.
+- **Compound commands** (`&&`, `|`, `;`) are matched segment-by-segment — every
+  segment must be allowlisted. Prefer single-command calls, and the dedicated
+  Read/Edit/Write/Grep tools over cat/sed/echo.
+- **Branch before modifying anything** — the protect-main hook makes commits on
+  `main` prompt for a human, which autonomous runs must never depend on.
+
+After any change to `.claude/settings.json`, the hook, or these rules, a human
+runs the interactive probe in dev/260705_permissions_pretest.md before the next
+autonomous session. Deny rules are a local guard, not a guarantee (push variants
+like `HEAD:main` exist); the definitive protection for `main` is a GitHub branch
+protection rule, which only the repo owner can set.
 
 ### Committing and branching
 

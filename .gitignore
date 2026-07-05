@@ -22,3 +22,4 @@ Thumbs.db
 quickmap.Rproj
 .RDataTmp
 *.tgz
+.claude/settings.local.json
