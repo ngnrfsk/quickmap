@@ -52,7 +52,6 @@ maps it.
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
 -   **Test scripts**: Multiple test scripts in `tests/` directory, testthat files
--   **Utility scripts**: Scripts in `scripts/` directory
 
 ## Core Architecture
 
@@ -404,7 +403,11 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
 7. Add wind layer support via worldmet + leaflet-velocity — its JS payload rides
    on the lazy-loading architecture, so it must follow item 6
 8. Migrate and validate all examples
-9. CRAN compliance (R CMD CHECK clean)
+9. CRAN compliance (R CMD CHECK clean) + full internal-consistency audit:
+   verify all documentation (CLAUDE.md, dev docs, vignettes, roxygen) against
+   the stabilised code, mark dev docs current vs historical, and restructure
+   dev/PROJECT_STATUS.md into a maintained current-state section plus archived
+   history
 10. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md (LCA visual
     fixes, static-export subfolder generation, unified marker/text/legend scaling,
     ward/marker label consistency) — so v1.0 releases without known user-facing
@@ -435,6 +438,11 @@ gate for a change is: no *new* failures beyond that baseline.
 
 The other `tests/test_*.R` scripts are historical one-off checks; do not treat them
 as a gate.
+
+`tests/testthat/test-consistency.R` mechanically checks CLAUDE.md against the
+project (version sync, referenced files exist, cited functions defined, YAML
+configs present). It is dependency-free and **not** part of the known-red
+baseline — it must always be green. When editing CLAUDE.md, run it.
 
 **Human visual testing — automated tests verify HTML structure (roadmap item 2),
 not appearance or behaviour.** The core deliverable is a self-contained interactive

@@ -23,6 +23,18 @@ dimensions. Repair belongs to the unified scaling work (UI defect #9, roadmap
 item 10) — do not patch piecemeal. Found 2026-07-05 while adding fail-loud anchor
 checks (dev/260705_risk_handlers_plan.md, handler 3.1).
 
+### Internal-consistency strategy adopted — 2026-07-05
+Full internal consistency (never yet achieved) is confirmed as a v1.0 goal.
+User-approved staged strategy: (1) CLAUDE.md now carries a stale-artifact
+warning — code is the source of truth, docs contradicting code get fixed in the
+same change; (2) `tests/testthat/test-consistency.R` (new, dependency-free,
+always-green) mechanically checks CLAUDE.md against the project — version sync,
+referenced files, cited functions, YAML configs — and caught two live issues on
+first run (nonexistent `scripts/` directory claim; ggplot2 `aes()` needing an
+external-functions allowlist); (3) the full cross-component audit and this
+file's current-vs-history restructure are folded into roadmap item 9, after the
+API stabilises. Branch `chore/autonomous-permissions`.
+
 ### Autonomous permissions hardened — 2026-07-05
 Branch `chore/autonomous-permissions`. The 2026-07-04 (~21:00) trial autonomous
 run — the roadmap item 1 packaging agent, transcript recovered — died on
