@@ -5,7 +5,7 @@ input=$(cat)
 cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
 
 case "$cmd" in
-  *"git commit"*) ;;
+  *git*" commit"*) ;;
   *) exit 0 ;;
 esac
 

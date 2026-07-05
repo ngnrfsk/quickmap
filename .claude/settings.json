@@ -87,6 +87,14 @@
       "Bash(git merge:*)",
       "Bash(git reset --hard:*)",
       "Bash(git branch -D main)",
+      "Bash(git -C /Users/iarla/Coding/quickmap push origin main)",
+      "Bash(git -C /Users/iarla/Coding/quickmap push origin main:*)",
+      "Bash(git -C /Users/iarla/Coding/quickmap push origin HEAD:main)",
+      "Bash(git -C /Users/iarla/Coding/quickmap push --force:*)",
+      "Bash(git -C /Users/iarla/Coding/quickmap push -f:*)",
+      "Bash(git -C /Users/iarla/Coding/quickmap merge:*)",
+      "Bash(git -C /Users/iarla/Coding/quickmap reset --hard:*)",
+      "Bash(git -C /Users/iarla/Coding/quickmap branch -D main)",
       "Bash(rm -rf:*)"
     ]
   },
