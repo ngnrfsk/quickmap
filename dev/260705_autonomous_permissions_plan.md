@@ -122,10 +122,7 @@ with the user before building on them.
    work. If prompts still occur for novel commands, consider launching
    autonomous sessions with `--permission-mode auto` (background safety
    classifier handles the unmatched tail) rather than widening the allowlist.
-4. ~~The trial run's transcript was not found~~ — superseded: the transcript
-   was recovered once the correct date (2026-07-04) was known; see "Trial run
-   evidence" above. The prompt inventory is now evidence-based.
-5. **Resuming roadmap item 1**: the killed packaging agent's work sits
+4. **Resuming roadmap item 1**: the killed packaging agent's work sits
    uncommitted on the `feature/packaging` worktree. With the permission config
    now in place, that item can be resumed without the prompt storm that killed
    it.

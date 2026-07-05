@@ -42,7 +42,7 @@ maps it.
 ### Current Version: 0.9.4
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
--   **Archived versions**: `versions/quickmap_0_8_5.R` through `versions/quickmap_0_9_3.R`
+-   **Archived versions**: `versions/`
 -   **Test scripts**: Multiple test scripts in `tests/` directory, testthat files
 -   **Utility scripts**: Scripts in `scripts/` directory
 
@@ -79,7 +79,7 @@ Data Loading → Layer Configuration → Generic Processing → Icon Generation 
 -   **Configuration Objects**: All styling, colors, and layer definitions stored in config objects
 -   **Generic Layer Functions**: `prepare_generic_layer_data()` → `create_generic_icons()` → `add_layer()`
 -   **Temporal Support**: Year-based filtering with interactive controls for time series data
--   **Environment Variables**: `DATA_PATH` and `SCRIPTS_PATH` for file locations
+-   **Environment Variables**: `DATA_PATH` for data file locations
 
 ## Development Workflow
 
@@ -153,7 +153,6 @@ Required environment variables:
 
 ``` r
 Sys.setenv(DATA_PATH = "~/Coding/Library/data")
-Sys.setenv(SCRIPTS_PATH = "path/to/scripts")
 ```
 
 **Note:** DATA_PATH points to `~/Coding/Library/data` where all test data files are stored.
@@ -257,7 +256,8 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 - Better readability than sprintf positional parameters
 - Self-documenting template structure
 - No parameter counting errors
-- Used in: `load_banner_css()`, `load_legend_css()`, `load_roller_menu_control()`
+- Used in: `build_banner_css()`, `build_legend_css()`, `load_roller_menu_control()`
+- A missing `{{placeholder}}` in a template is a hard error (`apply_template_replacements()`)
 
 ## UI Enhancement System
 
@@ -266,7 +266,7 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 -   **Mobile responsive**: Auto-collapses on screens \<480px
 -   **Collapsible**: Click header to toggle visibility
 -   **Generated from color scales**: Uses existing `colour_scales` configuration
--   **Post-processing**: Modifies saved HTML files with `apply_custom_layout()`
+-   **Post-processing**: Modifies saved HTML files with `inject_banner_legend_controls()`; missing injection anchors are hard errors
 
 ### Banner System
 
@@ -527,7 +527,8 @@ before that investment is made. Two candidates:
   `dev/20250118_geojson_option_d_design.md` (GeoJSON + client-side JS styling,
   ~90% size reduction via a minimal custom JS controller).
 - **MapLibre via mapgl**: migrate rendering to the `mapgl` package — a working
-  experiment exists at `maplibre.R` / `maplibre_template.html` in the repo root.
+  experiment exists at `dev/maplibre.R` / `dev/maplibre_template.html` (sample
+  input: `dev/data.csv`; package tarball: `dev/mapgl_0.4.4.tgz`).
   MapLibre renders large point sets natively, which could make Option D
   unnecessary, but the banner/legend/controls HTML post-processing would need
   porting, and mapgl's self-contained offline output must be verified against the
@@ -576,33 +577,28 @@ hook that turns any `git commit` on `main` into a human-approval prompt.
 Rationale and investigation: dev/260705_autonomous_permissions_plan.md.
 
 Claude Code's permission system has parse-safety heuristics that force a manual
-prompt **regardless of the allowlist**. In an unattended run a prompt is a stall,
-so never write commands that trigger them:
+prompt **regardless of the allowlist**; in an unattended run a prompt is a
+stall. Never write commands that trigger them:
 
-- **Never set env vars inline** — `VAR=~/path cmd` forces the "Tilde in
-  assignment value" prompt (seen in the 2026-07-04 trial run that had to be
-  killed). DATA_PATH is already set; if an inline assignment is ever
-  unavoidable, use an absolute path.
+- **No inline env assignments** (`VAR=~/path cmd`). DATA_PATH is already set;
+  if an inline assignment is ever unavoidable, use an absolute path.
 - **No `cd`** — use absolute paths or `git -C /Users/iarla/Coding/quickmap`.
-  (`cd /tmp && Rscript ...` was one of the trial's two hard denials.)
-- **No command substitution** `$(...)` or backticks, and **no shell variables**
-  (`f=x; cmd "$f"`) inside Bash tool commands — the matcher cannot resolve them.
-- **No `for`/`while` loops, heredocs (`<< EOF`), or output redirects** as ways
-  to batch work — a loop with `$(...)` was the trial's other hard denial. Use a
-  script file plus `Rscript`/`python3` for anything multi-step.
-- **No exec wrappers** (`find -exec`, `xargs`, `watch`) and no unquoted globs in
+- **No `$(...)`, backticks, or shell variables** (`f=x; cmd "$f"`) — the
+  matcher cannot resolve them.
+- **No `for`/`while` loops, heredocs, or output redirects** — for anything
+  multi-step, write a script file and run it with `Rscript`/`python3`.
+- **No exec wrappers** (`find -exec`, `xargs`, `watch`); quote globs in
   write/delete commands.
 - **Compound commands** (`&&`, `|`, `;`) are matched segment-by-segment — every
   segment must be allowlisted. Prefer single-command calls, and the dedicated
   Read/Edit/Write/Grep tools over cat/sed/echo.
-- **Branch before modifying anything** — the protect-main hook makes commits on
-  `main` prompt for a human, which autonomous runs must never depend on.
+- **Branch before modifying anything** — commits on `main` stall on the hook's
+  human prompt.
 
 After any change to `.claude/settings.json`, the hook, or these rules, a human
-runs the interactive probe in dev/260705_permissions_pretest.md before the next
-autonomous session. Deny rules are a local guard, not a guarantee (push variants
-like `HEAD:main` exist); the definitive protection for `main` is a GitHub branch
-protection rule, which only the repo owner can set.
+runs dev/260705_permissions_pretest.md interactively before the next autonomous
+session. Deny rules are a local guard only; definitive `main` protection is a
+GitHub branch protection rule (repo owner action).
 
 ### Committing and branching
 
