@@ -10,7 +10,22 @@ Instructions" section of CLAUDE.md. Read that section in full first — it is th
 approved plan and overrides general instincts.
 
 Start with roadmap item 1 (path-resolution/packaging fix), then proceed in
-roadmap order as far as the defined STOP points allow. Reminders:
+roadmap order as far as the defined STOP points allow.
+
+Item 1 was partially executed by a previous failed run. Its work sits
+UNCOMMITTED in the stale worktree .claude/worktrees/agent-a74c8a79472843d40/
+(branch feature/packaging, whose tip is an ancestor of main — no committed
+work). Relevant files there: DESCRIPTION, NAMESPACE, LICENSE, .Rbuildignore,
+R/quickmap-package.R, and modifications to R/quickmap.R. Begin item 1 by
+reviewing that diff critically — do NOT merge it wholesale; the worktree also
+contains files of doubtful lineage (CLAUDE_gem.md, PROJECT_STATUS_gem.md,
+251029_README.md) and is based on a main that predates the current permission
+guards and CLAUDE.md. Port only what is still correct onto a fresh branch cut
+from current main (pick a new branch name, e.g. feature/packaging-2, to avoid
+colliding with the stale branch), then delete the stale worktree and the old
+feature/packaging branch once salvage is complete.
+
+Reminders:
 
 - Verify Sys.getenv("DATA_PATH") points to ~/Coding/Library/data before
   anything else; if the data is absent, STOP and report.
