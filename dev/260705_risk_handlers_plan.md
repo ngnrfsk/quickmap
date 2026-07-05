@@ -9,8 +9,25 @@ roadmap amendments in CLAUDE.md (items 2 and 5, inserted 2026-07-05):
 - **Risk 2 (Leaflet vs. MapLibre fork)** → roadmap item 5: explicit backend
   decision with user-approval STOP before lazy loading.
 
-This plan drafts handlers for the remaining risks. **Status: draft — not yet
-approved for execution.** Each handler notes when in the roadmap it should run.
+This plan drafts handlers for the remaining risks. Each handler notes when in the
+roadmap it should run.
+
+**Execution status (2026-07-05, branch `chore/risk-handlers`):**
+- Risk 3.1 (fail-loud anchors): **executed** — anchor checks in
+  `inject_banner_legend_controls()`, strict `{{placeholder}}` matching in
+  `apply_template_replacements()`. The image-mode numeric rescale list at the
+  same call site was found to be silently inert (escaped patterns vs
+  `fixed = TRUE`) and order-broken; per the "do not fix UI defects piecemeal"
+  rule it is documented in PROJECT_STATUS.md under UI defect #9 (roadmap
+  item 10), not fixed here, and is deliberately excluded from the strict check.
+- Risk 3.2 (injection assertions in characterization tests): pending — lands
+  inside roadmap item 2 by design.
+- Risk 3.3 (dependency floors): **executed** — `leaflet (>= 2.2.2)`,
+  `htmlwidgets (>= 1.6.2)` added to DESCRIPTION on the in-flight
+  `feature/packaging` worktree.
+- Risk 4 (_gem archival + root cleanup): **executed** — see commit on
+  `chore/risk-handlers`.
+- CRAN checklist: recorded only; executes with roadmap items 8–9 by design.
 
 ---
 
