@@ -46,17 +46,22 @@ not retry.
 13. CLEANUP: `git -C /Users/iarla/Coding/quickmap checkout main`, delete the
     branch (`git branch -D permtest-branch`), confirm permtest/ is gone from the
     working tree
-14. KNOWN-BAD PROBE 1 (EXPECTED SANDBOX, NO PROMPT — deliberate): run
-    `cd /tmp && ls`. As of the 2026-07-05 run, Claude Code no longer prompts on
-    compound `cd` commands — it runs them in a sandbox and resets the cwd
-    afterwards ("Shell cwd was reset" in the output). Expected outcome: runs
-    sandboxed, cwd reset, no prompt. If it prompts instead, the sandbox
-    behaviour has changed again — note the Claude Code version
-15. KNOWN-BAD PROBE 2 (EXPECTED PROMPT — deliberate; this one killed the
-    2026-07-04 trial run): run `DATA_PATH=~/Coding/Library/data Rscript -e
-    "cat(1)"`. It must trigger the "Tilde in assignment value" prompt; answer No.
-    If it ever stops prompting, note the Claude Code version — the heuristic has
-    changed
+14. KNOWN-BAD PROBE 1 (EXPECTED DENY by gatekeeper — deliberate): run
+    `cd /tmp && ls`. The gatekeeper hook must deny it with a "[gatekeeper]"
+    reason before it reaches the permission system. If it instead runs
+    sandboxed ("Shell cwd was reset") or prompts, the gatekeeper is not
+    registered or not firing — fix before autonomous work
+15. KNOWN-BAD PROBE 2 (EXPECTED DENY by gatekeeper — deliberate; this one
+    killed the 2026-07-04 trial run as a prompt): run
+    `DATA_PATH=~/Coding/Library/data Rscript -e "cat(1)"`. The gatekeeper must
+    deny it (inline environment assignment). A "Tilde in assignment value"
+    prompt instead means the gatekeeper is not firing
+16. GATEKEEPER UNLISTED-COMMAND PROBE (EXPECTED DENY — deliberate): run
+    `whoami`. Must be denied with a "[gatekeeper] segment ... does not match"
+    reason — not prompted, not sandboxed
+17. GATEKEEPER SELF-TEST: run
+    `python3 /Users/iarla/Coding/quickmap/.claude/hooks/test_gatekeeper.py` —
+    must print ALL GATEKEEPER TESTS PASS
 
 Then report a table: step | command class | allowed silently / prompted / denied.
 Make no other changes. Do not push anything for real, do not open PRs, do not
@@ -65,15 +70,20 @@ touch main's content.
 ## Pass criteria
 
 - Steps 1–5, 7–9, 11–13 complete with **zero prompts**
-- Step 6 prompts (hook working), step 10 denies (deny rules working)
-- Step 14 runs sandboxed with no prompt (cwd reset); step 15 prompts
-  (tilde-assignment heuristic unchanged)
+- Step 6 prompts (protect-main hook working — the one intentional prompt),
+  step 10 denies (deny rules working)
+- Steps 14–16 denied with a "[gatekeeper]" reason (no prompt, no sandbox run);
+  step 17 prints ALL GATEKEEPER TESTS PASS
 
 History: the 2026-07-05 run failed steps 6 and 10 — the hook matched only the
 literal string "git commit" and the deny rules only bare `git merge`/`git push`
 prefixes, so the `git -C /Users/iarla/Coding/quickmap` form mandated by
 CLAUDE.md bypassed both. Fixed same day: hook now matches both forms; deny list
-carries `-C` variants of every rule.
+carries `-C` variants of every rule. Same day, the gatekeeper hook
+(.claude/hooks/gatekeeper.py) was added: it denies any Bash/WebFetch call that
+could raise a permission prompt (unlisted command segment, shell
+metacharacters, inline assignments, redirects), reading the allowlist live
+from settings.json, so a prompt can never stall an unattended run.
 
 Any silent pass on 6/10 or unexpected prompt on 1–13 means the config or the
 heuristics have drifted: fix `.claude/settings.json` / the hook, or update the

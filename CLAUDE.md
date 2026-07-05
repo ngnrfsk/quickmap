@@ -588,8 +588,16 @@ delivered as email attachments and must work offline.
 ### Permissions and command style — autonomous safety
 
 Permission config lives in `.claude/settings.json` (committed): the DATA_PATH
-env var, the command allowlist, deny rules protecting `main`, and a PreToolUse
-hook that turns any `git commit` on `main` into a human-approval prompt.
+env var, the command allowlist, deny rules protecting `main`, and two
+PreToolUse hooks — `protect-main.sh` turns any `git commit` on `main` into a
+human-approval prompt, and `gatekeeper.py` denies any Bash/WebFetch call that
+could raise a permission prompt (unlisted command segment, shell
+metacharacters, inline assignments, redirects), reading the allowlist live
+from settings.json. A gatekeeper denial is not an obstacle to work around: the
+reason names the offending segment — rewrite as it suggests (usually: put the
+work in a script file run via `Rscript`/`python3`). After any change to
+gatekeeper.py or the allowlist, run its mechanical test:
+`python3 .claude/hooks/test_gatekeeper.py`.
 Rationale and investigation: dev/260705_autonomous_permissions_plan.md.
 
 Claude Code's permission system has parse-safety heuristics that force a manual
