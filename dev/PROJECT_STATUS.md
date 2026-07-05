@@ -6,9 +6,25 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-05 **Current Working Version**: v0.9.4 **Branch**: feature/v093-openair-converter
+**Last Updated**: 2026-07-05 **Current Working Version**: v0.9.5 **Branch**: feature/packaging-2
 
 --------------------------------------------------------------------------------
+
+### Roadmap item 1 complete (v0.9.5): quickmap is an installed R package — 2026-07-05
+Branch `feature/packaging-2` (PR pending human review). Salvaged the uncommitted
+work from the stale `feature/packaging` worktree, reviewed critically, and
+ported onto current main; stale worktree and branch deleted. Changes:
+DESCRIPTION 0.9.5 with corrected dependencies (yaml added; unused
+stringr/htmltools/leaflet.extras dropped; openair/httr/testthat in Suggests with
+requireNamespace guards); install.packages preamble removed from R/quickmap.R;
+@export tags + R/quickmap-package.R; NAMESPACE and man/ regenerated with
+roxygen2; LICENSE added; R/symbols_chart.R moved to scripts/; smoke test loads
+`library(quickmap)`. `system.file()` now resolves, so `get_package_dir()` no
+longer falls back to relative inst/ paths. Test gate made fully green
+(72 pass / 0 fail / 0 skip): fixed stale assumptions in test-config /
+test-css-extraction / test-themes; deleted pre-v0.9.2-API test-export /
+test-parameters / test-styling (roadmap item 2's characterization net replaces
+their coverage). Pre-change quickmap.R archived as versions/quickmap_0_9_4.R.
 
 ### Bug (fold into UI defect #9, roadmap item 10): image-mode CSS text scaling silently inert — 2026-07-05
 The `image_mode` branch of `inject_banner_legend_controls()` passes regex-escaped
