@@ -334,7 +334,8 @@ and in autonomous sessions it supersedes the "Development Workflow" section abov
 The roadmap below **is** the approved plan: work within it needs no further plan
 confirmation, and commits on feature branches need no confirmation. The only stops
 are the ones this section states explicitly (the DATA_PATH abort, the atomic-unit
-design approval, human visual sign-off, and PR review — never push to `main`).
+design approval, the rendering-backend decision approval, human visual sign-off,
+and PR review — never push to `main`).
 Work outside the roadmap requires user approval first. In interactive sessions,
 the Development Workflow section governs.
 
@@ -359,23 +360,36 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
 ### Roadmap priorities (in order)
 
 1. Fix the path-resolution bug above
-2. Formalise the atomic data unit and wrapper API (see below)
-3. Refactor `create_pollution_map()` as a thin wrapper around `quickmap()` — ease of
+2. Characterization test net — before any API or rendering change, write testthat
+   tests that assert on the rendered HTML output of the smoke-test maps: marker
+   counts per layer and time step, layer group names, embedded JSON payload
+   structure, and presence of the injected banner/legend/year-control blocks.
+   These assert output, not function signatures, so they survive the item-4 API
+   refactor and act as the regression net for items 4 and 6. They live in
+   `tests/testthat/` and join the automated gate once written
+3. Formalise the atomic data unit and wrapper API (see below)
+4. Refactor `create_pollution_map()` as a thin wrapper around `quickmap()` — ease of
    use takes priority over retaining the existing API; when the API changes, all
    examples, docs, vignettes, and test files must be updated in the same change.
    Plan API development with care to minimise revisions of these key files — settle
    the design before implementing rather than rewriting everything repeatedly
-4. Implement time step cap and lazy loading — addresses the CRITICAL HTML
+5. Rendering backend decision — decide between Leaflet + Option D and
+   MapLibre/mapgl before any lazy-loading work (see "Rendering backend decision"
+   below). **STOP for explicit user approval** of the recommendation
+6. Implement time step cap and lazy loading — addresses the CRITICAL HTML
    file-size blocker recorded in dev/PROJECT_STATUS.md
-5. Add wind layer support via worldmet + leaflet-velocity — its JS payload rides
-   on the lazy-loading architecture, so it must follow item 4
-6. Migrate and validate all examples
-7. CRAN compliance (R CMD CHECK clean)
-8. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md (LCA visual
-   fixes, static-export subfolder generation, unified marker/text/legend scaling,
-   ward/marker label consistency) — so v1.0 releases without known user-facing
-   defects. Do not work on these earlier or piecemeal; they are item 8, not
-   background tasks.
+7. Add wind layer support via worldmet + leaflet-velocity — its JS payload rides
+   on the lazy-loading architecture, so it must follow item 6
+8. Migrate and validate all examples
+9. CRAN compliance (R CMD CHECK clean)
+10. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md (LCA visual
+    fixes, static-export subfolder generation, unified marker/text/legend scaling,
+    ward/marker label consistency) — so v1.0 releases without known user-facing
+    defects. Do not work on these earlier or piecemeal; they are item 10, not
+    background tasks.
+
+(Items 2 and 5 were inserted 2026-07-05. Dev docs written before that date use the
+previous numbering: atomic unit = 2, wrapper = 3, lazy loading = 4, wind = 5.)
 
 ### Verification and human testing
 
@@ -399,9 +413,9 @@ gate for a change is: no *new* failures beyond that baseline.
 The other `tests/test_*.R` scripts are historical one-off checks; do not treat them
 as a gate.
 
-**Human visual testing — automated tests cannot verify the rendered HTML.**
-The core deliverable is a self-contained interactive HTML file; its appearance and
-behaviour must be checked by a human at defined points:
+**Human visual testing — automated tests verify HTML structure (roadmap item 2),
+not appearance or behaviour.** The core deliverable is a self-contained interactive
+HTML file; its appearance and behaviour must be checked by a human at defined points:
 
 - Every roadmap item must produce freshly generated demonstration maps in the local
   `aq_maps/` directory (at minimum: one annual multi-year map, one sub-annual map,
@@ -484,6 +498,31 @@ size is negligible. The plugin JS must be inlined (see Self-contained constraint
 averages aligned to the displayed time steps are sufficient. For monthly/annual maps,
 use period-mean wind.
 
+### Rendering backend decision — research task before lazy loading (roadmap item 5)
+
+The lazy-loading work (roadmap item 6) rewrites the core marker path
+(`create_generic_icons()`, `add_layer()`), so the rendering backend must be settled
+before that investment is made. Two candidates:
+
+- **Leaflet + Option D**: keep the current leaflet backend and implement
+  `dev/20250118_geojson_option_d_design.md` (GeoJSON + client-side JS styling,
+  ~90% size reduction via a minimal custom JS controller).
+- **MapLibre via mapgl**: migrate rendering to the `mapgl` package — a working
+  experiment exists at `maplibre.R` / `maplibre_template.html` in the repo root.
+  MapLibre renders large point sets natively, which could make Option D
+  unnecessary, but the banner/legend/controls HTML post-processing would need
+  porting, and mapgl's self-contained offline output must be verified against the
+  email-attachment constraint before it can be considered at all.
+
+Write a comparison to dev/ covering: output file size at 500 markers × 200 time
+steps, self-contained offline HTML (hard constraint — disqualifying if unmet),
+temporal layer switching, migration cost of the HTML post-processing system, and
+CRAN-readiness of the dependency. Read
+`versions/quickmap_0_9_5_failed_svgicon_experiment.R` first — it records a prior
+failed attempt at the file-size problem and why it failed. Then STOP and wait for
+explicit user approval of the recommendation before starting item 6 — do not fold
+the decision and the implementation into a single PR.
+
 ### Time steps and file size
 
 - **Default cap**: 200 time steps. Warn if data exceeds this; subset to most recent by default.
@@ -491,9 +530,9 @@ use period-mean wind.
   render layers from embedded JSON on demand in JS rather than pre-building all hidden
   Leaflet layers. An existing design covers this ground:
   `dev/20250118_geojson_option_d_design.md` ("Option D": GeoJSON + client-side JS
-  styling, ~90% size reduction). Evaluate it first; only research alternatives if
-  it falls short. Either way the implementation should be a minimal custom JS
-  controller, not a large framework.
+  styling, ~90% size reduction). Whether Option D or a MapLibre migration is used
+  is settled by roadmap item 5 (see "Rendering backend decision" above). Either way
+  the implementation should be a minimal custom JS controller, not a large framework.
 - Time resolution ranges from 15-minute to monthly. The cap applies regardless of resolution.
 
 ### Self-contained HTML — hard constraint
