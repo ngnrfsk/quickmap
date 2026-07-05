@@ -13,6 +13,9 @@ This plan drafts handlers for the remaining risks. Each handler notes when in th
 roadmap it should run.
 
 **Execution status (2026-07-05, branch `chore/risk-handlers`):**
+- Human visual sign-off received 2026-07-05 on the smoke-test outputs
+  (visually unchanged) — the branch has met its approval bar for merge. The
+  signed-off set is preserved in `aq_maps/baseline_260705_signed_off/`.
 - Risk 3.1 (fail-loud anchors): **executed** — anchor checks in
   `inject_banner_legend_controls()`, strict `{{placeholder}}` matching in
   `apply_template_replacements()`. The image-mode numeric rescale list at the
