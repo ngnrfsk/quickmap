@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Internal consistency warning.** The project has never been fully internally
+consistent; full consistency across code, instructions, documentation, tests,
+and configs is a v1.0 goal. Stale artifacts may exist in this file and in all
+documentation — renamed functions, removed parameters, files that no longer
+exist. The code is the source of truth: verify any documented claim against the
+source before acting on it, and when a doc contradicts the code, fix the doc in
+the same change.
+
 ## Project Overview
 
 **QuickMap** is an R package for building clean, interactive air quality maps that
