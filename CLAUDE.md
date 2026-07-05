@@ -395,9 +395,11 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
    examples, docs, vignettes, and test files must be updated in the same change.
    Plan API development with care to minimise revisions of these key files — settle
    the design before implementing rather than rewriting everything repeatedly
-5. Rendering backend decision — decide between Leaflet + Option D and
-   MapLibre/mapgl before any lazy-loading work (see "Rendering backend decision"
-   below). **STOP for explicit user approval** of the recommendation
+5. Rendering backend decision — settle the rendering backend before any
+   lazy-loading work (see "Rendering backend decision" below). **STOP for user
+   confirmation of the candidate list before starting the comparison** (an
+   expanded field is proposed in dev/260705_rendering_backend_candidates.md),
+   and **STOP again for explicit user approval** of the recommendation
 6. Implement time step cap and lazy loading — addresses the CRITICAL HTML
    file-size blocker recorded in dev/PROJECT_STATUS.md
 7. Add wind layer support via worldmet + leaflet-velocity — its JS payload rides
@@ -537,7 +539,14 @@ use period-mean wind.
 
 The lazy-loading work (roadmap item 6) rewrites the core marker path
 (`create_generic_icons()`, `add_layer()`), so the rendering backend must be settled
-before that investment is made. Two candidates:
+before that investment is made.
+
+**Before beginning this work, STOP and ask the user to identify/confirm the
+candidate options.** The field has moved since the two candidates below were
+chosen; dev/260705_rendering_backend_candidates.md proposes an expanded list
+(adding deck.gl via a CRAN wrapper, and a no-framework Leaflet-Canvas variant
+of Option D) which the user is reviewing. The comparison must run against the
+user-confirmed list, not this default pair. The original two candidates:
 
 - **Leaflet + Option D**: keep the current leaflet backend and implement
   `dev/20250118_geojson_option_d_design.md` (GeoJSON + client-side JS styling,
