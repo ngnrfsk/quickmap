@@ -6,9 +6,31 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-04 **Current Working Version**: v0.9.4 **Branch**: feature/v093-openair-converter
+**Last Updated**: 2026-07-05 **Current Working Version**: v0.9.4 **Branch**: feature/v093-openair-converter
 
 --------------------------------------------------------------------------------
+
+### Bug (fold into UI defect #9, roadmap item 10): image-mode CSS text scaling silently inert — 2026-07-05
+The `image_mode` branch of `inject_banner_legend_controls()` passes regex-escaped
+patterns (e.g. `"1\\.8rem"`) to `apply_template_replacements()`, which matches with
+`fixed = TRUE` — the escaped backslash never matches, so none of the static-export
+banner/legend font-scaling substitutions apply. Even unescaped, the list is
+order-broken: the bare `"1rem"` pattern would consume `"padding: 1rem"` and
+`"gap: 1rem"` before their own patterns run, and some patterns don't exist in the
+image CSS variants at all (e.g. `1.3rem` is only in banner-interactive.css).
+Static exports have been rendering at baseline text sizes regardless of image
+dimensions. Repair belongs to the unified scaling work (UI defect #9, roadmap
+item 10) — do not patch piecemeal. Found 2026-07-05 while adding fail-loud anchor
+checks (dev/260705_risk_handlers_plan.md, handler 3.1).
+
+### Housekeeping: _gem docs archived, repo root cleaned — 2026-07-05
+Branch `chore/risk-handlers`. CLAUDE_gem.md / PROJECT_STATUS_gem.md archived to
+dev/archive/ after harvesting unique content into CLAUDE.md (positioning
+statement, API principles). MapLibre experiment files moved to dev/ as evidence
+for roadmap item 5 (backend decision). Root YAML duplicates of inst/ copies
+deleted; root airstat_no2.yaml actually held a deltas scale — archived as
+mislabelled_deltas_scale.yaml. Fail-loud checks added to HTML injection anchors
+and {{placeholder}} substitution (risk handler 3.1).
 
 ### Added: quickmap_reference vignette — 2026-07-04
 `vignettes/quickmap_reference.md` — plain markdown quick-reference for `create_pollution_map()`.

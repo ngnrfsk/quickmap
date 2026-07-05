@@ -48,6 +48,11 @@ read_template_file <- function(filepath) {
 apply_template_replacements <- function(template, replacements) {
   result <- template
   for (placeholder in names(replacements)) {
+    # {{name}} placeholders are mandatory template anchors; a silent non-match
+    # ships literal "{{name}}" text in the output HTML
+    if (startsWith(placeholder, "{{") && !grepl(placeholder, result, fixed = TRUE)) {
+      stop("Template placeholder not found: ", placeholder)
+    }
     result <- gsub(
       placeholder,
       replacements[[placeholder]],
@@ -1806,6 +1811,18 @@ inject_banner_legend_controls <- function(
 
   html_content <- readLines(html_file, warn = FALSE)
   html_text <- paste(html_content, collapse = "\n")
+
+  # every injection below anchors on saveWidget's markup; a silent non-match
+  # would ship a map with no banner, legend, or controls
+  anchors <- c("</head>", "<body", "</body>")
+  found <- vapply(anchors, grepl, logical(1), x = html_text, fixed = TRUE)
+  if (!all(found)) {
+    stop(
+      "HTML injection anchors not found in ", html_file, ": ",
+      paste(anchors[!found], collapse = ", "),
+      " (htmlwidgets/leaflet output format may have changed)"
+    )
+  }
 
   viewport_meta <- '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
 
