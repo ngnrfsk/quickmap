@@ -24,9 +24,10 @@ item 10) — do not patch piecemeal. Found 2026-07-05 while adding fail-loud anc
 checks (dev/260705_risk_handlers_plan.md, handler 3.1).
 
 ### Autonomous permissions hardened — 2026-07-05
-Branch `chore/autonomous-permissions`. A trial autonomous run died on permission
-prompts (tilde-in-assignment heuristic + allowlist living only in
-settings.local.json). Added committed `.claude/settings.json` (DATA_PATH env,
+Branch `chore/autonomous-permissions`. The 2026-07-04 (~21:00) trial autonomous
+run — the roadmap item 1 packaging agent, transcript recovered — died on
+permission prompts (tilde-in-assignment heuristic, cd-compounds, loops with
+command substitution; allowlist living only in settings.local.json). Added committed `.claude/settings.json` (DATA_PATH env,
 72-rule allowlist, deny rules guarding main, acceptEdits) and a verified
 PreToolUse hook that turns commits on main into a human-approval prompt.
 CLAUDE.md gained a "Permissions and command style" section; the pre-test idea

@@ -50,7 +50,7 @@ not retry.
     Whether it prompts tells us if compound `cd` commands still bypass the
     allowlist
 15. KNOWN-BAD PROBE 2 (EXPECTED PROMPT — deliberate; this one killed the
-    2026-07-05 trial run): run `DATA_PATH=~/Coding/Library/data Rscript -e
+    2026-07-04 trial run): run `DATA_PATH=~/Coding/Library/data Rscript -e
     "cat(1)"`. It must trigger the "Tilde in assignment value" prompt; answer No.
     If it ever stops prompting, note the Claude Code version — the heuristic has
     changed
