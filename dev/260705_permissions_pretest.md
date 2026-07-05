@@ -46,9 +46,12 @@ not retry.
 13. CLEANUP: `git -C /Users/iarla/Coding/quickmap checkout main`, delete the
     branch (`git branch -D permtest-branch`), confirm permtest/ is gone from the
     working tree
-14. KNOWN-BAD PROBE 1 (EXPECTED PROMPT — deliberate): run `cd /tmp && ls`.
-    Whether it prompts tells us if compound `cd` commands still bypass the
-    allowlist
+14. KNOWN-BAD PROBE 1 (EXPECTED SANDBOX, NO PROMPT — deliberate): run
+    `cd /tmp && ls`. As of the 2026-07-05 run, Claude Code no longer prompts on
+    compound `cd` commands — it runs them in a sandbox and resets the cwd
+    afterwards ("Shell cwd was reset" in the output). Expected outcome: runs
+    sandboxed, cwd reset, no prompt. If it prompts instead, the sandbox
+    behaviour has changed again — note the Claude Code version
 15. KNOWN-BAD PROBE 2 (EXPECTED PROMPT — deliberate; this one killed the
     2026-07-04 trial run): run `DATA_PATH=~/Coding/Library/data Rscript -e
     "cat(1)"`. It must trigger the "Tilde in assignment value" prompt; answer No.
@@ -63,7 +66,14 @@ touch main's content.
 
 - Steps 1–5, 7–9, 11–13 complete with **zero prompts**
 - Step 6 prompts (hook working), step 10 denies (deny rules working)
-- Steps 14–15 prompt (heuristics unchanged)
+- Step 14 runs sandboxed with no prompt (cwd reset); step 15 prompts
+  (tilde-assignment heuristic unchanged)
+
+History: the 2026-07-05 run failed steps 6 and 10 — the hook matched only the
+literal string "git commit" and the deny rules only bare `git merge`/`git push`
+prefixes, so the `git -C /Users/iarla/Coding/quickmap` form mandated by
+CLAUDE.md bypassed both. Fixed same day: hook now matches both forms; deny list
+carries `-C` variants of every rule.
 
 Any silent pass on 6/10 or unexpected prompt on 1–13 means the config or the
 heuristics have drifted: fix `.claude/settings.json` / the hook, or update the
