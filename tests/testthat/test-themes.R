@@ -1,5 +1,5 @@
 test_that("get_default_theme returns complete structure", {
-  theme <- get_default_theme()
+  theme <- quickmap:::get_default_theme()
 
   expect_type(theme, "list")
   expect_true("banner" %in% names(theme))
@@ -14,7 +14,7 @@ test_that("get_default_theme returns complete structure", {
 
 test_that("load_theme returns defaults when theme_file is NULL", {
   theme <- load_theme(NULL)
-  defaults <- get_default_theme()
+  defaults <- quickmap:::get_default_theme()
 
   expect_identical(theme, defaults)
 })
@@ -25,23 +25,18 @@ test_that("load_theme warns and returns defaults for nonexistent file", {
     "Theme file not found"
   )
 
-  expect_identical(theme, get_default_theme())
+  expect_identical(theme, quickmap:::get_default_theme())
 })
 
 test_that("load_theme loads and merges valid YAML theme", {
-  # Use existing merton_purple theme
-  theme_file <- "inst/themes/merton_purple.yaml"
+  theme_file <- system.file("themes", "merton.yaml", package = "quickmap")
+  expect_true(file.exists(theme_file))
 
-  if (file.exists(theme_file)) {
-    theme <- load_theme(theme_file)
+  theme <- load_theme(theme_file)
 
-    expect_type(theme, "list")
-    expect_equal(theme$banner$background, "#5F3E94")
-    expect_equal(theme$banner$title, "Merton Air Quality")
-
-    # Verify defaults still present for unspecified fields
-    expect_true(!is.null(theme$map$base_tiles))
-  }
+  expect_type(theme, "list")
+  expect_equal(theme$banner$background, "#5F3E94")
+  expect_equal(theme$banner$title, "Merton Air Quality")
 })
 
 test_that("load_theme handles malformed YAML gracefully", {
@@ -53,6 +48,6 @@ test_that("load_theme handles malformed YAML gracefully", {
     "Failed to load theme file"
   )
 
-  expect_identical(theme, get_default_theme())
+  expect_identical(theme, quickmap:::get_default_theme())
   unlink(temp_file)
 })

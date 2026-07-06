@@ -1,8 +1,29 @@
 # quickmap - Air Quality Mapping for R
-# Version 0.9.5  2026/07/04
-# v0.9.5: R package installation - devtools::install() + library(quickmap)
+# Version 0.9.4  2026/01/15
 # v0.9.4: Sub-annual temporal resolution - month/day/hour support, renamed years→display_times
 # v0.9.3.21: RData duck typing - standard names, then any compatible data.frame
+# v0.9.3.20: School label duck typing - removed hardcoded layer_id check
+
+packages <- c(
+  "leaflet",
+  "sf",
+  "dplyr",
+  "leaflegend",
+  "tidyr",
+  "lubridate",
+  "webshot2",
+  "htmlwidgets",
+  "htmltools",
+  "leaflet.extras",
+  "zeallot"
+)
+
+installed <- packages %in% rownames(installed.packages())
+if (any(!installed)) {
+  install.packages(packages[!installed])
+}
+
+lapply(packages, library, character.only = TRUE)
 
 # NULL coalescing operator
 `%||%` <- function(x, y) if (is.null(x)) y else x
@@ -55,7 +76,6 @@ apply_template_replacements <- function(template, replacements) {
 #' @param source Character. Network source: "aurn", "kcl", "aqe", "saqn", "waqn", "ni"
 #' @return data.frame with columns: source, site, code, latitude, longitude, site_type
 #' @family openair
-#' @export
 #' @examples
 #' \dontrun{
 #' # First call fetches from API
@@ -79,9 +99,6 @@ get_openair_metadata <- function(source) {
   }
 
   # Fetch from OpenAir API
-  if (!requireNamespace("openair", quietly = TRUE)) {
-    stop("Package 'openair' required. Install with: install.packages('openair')")
-  }
   message("Fetching metadata for source: ", source)
   tryCatch(
     {
@@ -129,7 +146,6 @@ get_openair_metadata <- function(source) {
 #' @param source Character (optional). Specific source to clear, or NULL to clear all
 #' @return Invisible NULL
 #' @family openair
-#' @export
 #' @examples
 #' \dontrun{
 #' # Clear specific source
@@ -174,7 +190,6 @@ clear_openair_metadata_cache <- function(source = NULL) {
 #' @return sf object with columns: siteCode, year, year_str, pollutant value,
 #'   lat, lon, Longitude, Latitude, geometry. Compatible with process_oa_data() output.
 #' @family openair
-#' @export
 #' @examples
 #' \dontrun{
 #' # With importUKAQ (coordinates included)
@@ -981,14 +996,6 @@ create_vignette_overlay <- function(spatial_feature) {
   )
 }
 
-#' Show borough theme colours
-#'
-#' Displays the colour palettes defined in the bundled borough theme files.
-#'
-#' @param borough Character. Borough name to show colours for, or NULL for all.
-#' @return Invisibly, a list of theme palettes.
-#' @family config
-#' @export
 show_borough_colours <- function(borough = NULL) {
   themes_dir <- get_package_dir("themes")
 
@@ -1044,7 +1051,6 @@ show_borough_colours <- function(borough = NULL) {
 #' @param scale_name Character string, name of the colour scale (e.g., "who_no2")
 #' @return List containing colour scale definition
 #' @family config
-#' @export
 load_colour_scale <- function(scale_name) {
   scale <- load_yaml_config(
     scale_name,
@@ -1057,7 +1063,6 @@ load_colour_scale <- function(scale_name) {
     scale$thresholds <- as.numeric(scale$thresholds)
   }
 
-  scale$name <- scale_name
   scale
 }
 
@@ -1147,7 +1152,6 @@ get_default_theme <- function() {
 #' @param theme_file Path to YAML theme file (NULL for defaults)
 #' @return Complete theme list (merged with defaults)
 #' @family config
-#' @export
 load_theme <- function(theme_file = NULL) {
   defaults <- get_default_theme()
 
@@ -2727,7 +2731,6 @@ determine_times_and_viewport <- function(
 #' Static JPG exports require Chrome/Chromium for webshot2.
 #'
 #' @family map
-#' @export
 create_pollution_map <- function(
   data_sources = NULL,
   data_ids = NULL,
