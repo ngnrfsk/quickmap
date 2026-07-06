@@ -396,10 +396,11 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
    Plan API development with care to minimise revisions of these key files — settle
    the design before implementing rather than rewriting everything repeatedly
 5. Rendering backend decision — settle the rendering backend before any
-   lazy-loading work (see "Rendering backend decision" below). **STOP for user
-   confirmation of the candidate list before starting the comparison** (an
-   expanded field is proposed in dev/260705_rendering_backend_candidates.md),
-   and **STOP again for explicit user approval** of the recommendation
+   lazy-loading work (see "Rendering backend decision" below). The comparison
+   brief (candidates, criteria, method, budget) was **user-approved 2026-07-06**:
+   dev/260705_rendering_backend_candidates.md is the mandate. **STOP for
+   explicit user approval of the recommendation** at the end — do not start
+   item 6 without it
 6. Implement time step cap and lazy loading — addresses the CRITICAL HTML
    file-size blocker recorded in dev/PROJECT_STATUS.md
 7. Add wind layer support via worldmet + leaflet-velocity — its JS payload rides
@@ -541,32 +542,17 @@ The lazy-loading work (roadmap item 6) rewrites the core marker path
 (`create_generic_icons()`, `add_layer()`), so the rendering backend must be settled
 before that investment is made.
 
-**Before beginning this work, STOP and ask the user to identify/confirm the
-candidate options.** The field has moved since the two candidates below were
-chosen; dev/260705_rendering_backend_candidates.md proposes an expanded list
-(adding deck.gl via a CRAN wrapper, and a no-framework Leaflet-Canvas variant
-of Option D) which the user is reviewing. The comparison must run against the
-user-confirmed list, not this default pair. The original two candidates:
-
-- **Leaflet + Option D**: keep the current leaflet backend and implement
-  `dev/20250118_geojson_option_d_design.md` (GeoJSON + client-side JS styling,
-  ~90% size reduction via a minimal custom JS controller).
-- **MapLibre via mapgl**: migrate rendering to the `mapgl` package — a working
-  experiment exists at `dev/maplibre.R` / `dev/maplibre_template.html` (sample
-  input: `dev/data.csv`; package tarball: `dev/mapgl_0.4.4.tgz`).
-  MapLibre renders large point sets natively, which could make Option D
-  unnecessary, but the banner/legend/controls HTML post-processing would need
-  porting, and mapgl's self-contained offline output must be verified against the
-  email-attachment constraint before it can be considered at all.
-
-Write a comparison to dev/ covering: output file size at 500 markers × 200 time
-steps, self-contained offline HTML (hard constraint — disqualifying if unmet),
-temporal layer switching, migration cost of the HTML post-processing system, and
-CRAN-readiness of the dependency. Read
-`versions/quickmap_0_9_5_failed_svgicon_experiment.R` first — it records a prior
-failed attempt at the file-size problem and why it failed. Then STOP and wait for
-explicit user approval of the recommendation before starting item 6 — do not fold
-the decision and the implementation into a single PR.
+**The comparison brief is user-approved (2026-07-06) and lives at
+dev/260705_rendering_backend_candidates.md** — candidates (Leaflet+Option D
+Canvas, MapLibre/mapgl, deck.gl via CRAN wrapper, plotly), scoring criteria,
+datasets, prototype scope, gating order, and per-candidate timebox. Run the
+comparison against that brief; it specifies invariants, not methods —
+per-stack implementation choices are findings from current documentation.
+Read `versions/quickmap_0_9_5_failed_svgicon_experiment.R` first — it records
+a prior failed attempt at the file-size problem and why it failed. Then STOP
+and wait for explicit user approval of the recommendation before starting
+item 6 — do not fold the decision and the implementation into a single PR.
+Kick-off prompt for a fresh autonomous session: dev/item5_start-prompt_v1.md.
 
 ### Time steps and file size
 
@@ -580,12 +566,22 @@ the decision and the implementation into a single PR.
   the implementation should be a minimal custom JS controller, not a large framework.
 - Time resolution ranges from 15-minute to monthly. The cap applies regardless of resolution.
 
-### Self-contained HTML — hard constraint
+### Sharing constraint — file OR link (relaxed 2026-07-06)
 
-All JS and CSS must be inlined in the output HTML. `htmlwidgets::saveWidget(selfcontained = TRUE)`
-handles this for Leaflet. Any new JS dependencies (leaflet-velocity, custom lazy loader)
-must also be inlined, not loaded from CDN. This is non-negotiable: files are sometimes
-delivered as email attachments and must work offline.
+The product must be easily shareable in at least one of two modes (user
+decision, 2026-07-06; previously "self-contained file" was the sole hard
+constraint):
+
+- **(a) Compact self-contained file**: all JS/CSS inlined
+  (`htmlwidgets::saveWidget(selfcontained = TRUE)` for Leaflet; any new JS
+  dependencies such as leaflet-velocity or a custom lazy loader must also be
+  inlined, not CDN-loaded); works offline as an email attachment.
+- **(b) Shareable link**: the map can be shared by emailing/WhatsApping a
+  link (e.g. a hosted static page) without sending the file itself.
+
+For the current Leaflet output, mode (a) remains the operative constraint and
+nothing changes in practice. Which mode(s) future backends must satisfy is
+scored per candidate in the item-5 comparison.
 
 ### What NOT to change without flagging
 
