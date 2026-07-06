@@ -165,10 +165,81 @@ later needs vector basemaps or much larger point sets. Nothing in Option D
 forecloses it: the compact JSON payload and the JS controller pattern
 transfer directly (the Option D design doc already noted this equivalence).
 
+## Downstream benefits considered (added post-review, user request)
+
+A sweep of roadmap items 6–10 and the integration angle for real advantages
+the losing candidates would have delivered:
+
+**Genuine plotly benefits.** (1) *Controls for free*: the v2 prototype has
+zero custom controller JS — slider, labels and autoplay are declared in R.
+Option D and MapLibre both require the ~100-line controller (which the roller
+menu partially is already). Offset: plotly's controls are only styleable
+within its chart-layout options, not to the themed roller-menu spec.
+(2) *Native static export*: `plotly::save_image()` (kaleido) is structurally
+more reliable than the webshot2 screenshot path the current export uses — if
+item 10's static-export defects trace to webshot2 flakiness, kaleido is the
+class of fix. **This is borrowable without adopting plotly as renderer** and
+is worth remembering at item 10. (3) *Linking ecosystem* (crosstalk,
+subplot, flexdashboard): a map linked to a time-series chart in one file is
+a plausible post-1.0 feature plotly does natively.
+
+**Genuine MapLibre benefits.** (1) *Unified marker scaling* (first defect on
+the item-10 list): zoom-interpolated paint expressions solve marker scaling
+declaratively; under Option D we own a few lines of `zoomend` handling
+instead. (2) *Headroom*: vector basemaps, 10k+ points, tmap-v4 ecosystem
+momentum — the recorded V2 path.
+
+**Downstream costs found in the same sweep.** (1) plotly's mandatory ~53 ms
+full redraw per step starts item 6 (lazy loading, whose point is instant
+stepping) 100× behind. (2) Persistent marker labels (`marker_labels =
+"labels_on"`, item 10 label-consistency work) are free DOM tooltips in
+Leaflet but require glyph PBFs in MapLibre — a network fetch that breaks the
+mode-(a) story the prototype preserved, or inlined font ranges at real size
+cost. (3) Item 7 (below) penalises both. Net: no change to the
+recommendation.
+
 ## Wind-layer note (item 7 dependency)
 
 leaflet-velocity rides on Leaflet unchanged under Option D — another argument
-against switching renderers before item 7.
+against switching renderers before item 7. plotly has no wind-particle
+concept at all (item 7 as specified is impossible on it); MapLibre has no
+maintained free particle layer (the capable option, WeatherLayers GL, is
+commercial; the rest are demos), so item 7 there means porting or writing a
+particle renderer.
+
+### Windy API assessed as an alternative wind source (user request)
+
+The Windy **Map Forecast API** is a Leaflet-based JS library that overlays
+Windy.com's animated weather layers (including wind particles) on a map.
+Assessed against the roadmap's worldmet + leaflet-velocity plan:
+
+- **Architecture conflict:** it is not a layer plugin — `windyInit()` owns
+  the Leaflet map instance and pins **Leaflet 1.4.x**, so QuickMap's map,
+  markers and controls would live inside Windy's map rather than the
+  reverse. leaflet-velocity is the opposite: a plain overlay on our map.
+- **Online-only:** layers stream from Windy's servers with an API key at
+  runtime — fails sharing mode (a) outright (an emailed file shows no wind
+  offline); acceptable only for mode (b) hosted pages, and adds a
+  third-party availability dependency to every published map.
+- **Forecast vs archive mismatch (decisive):** QuickMap animates
+  *historical measured* episodes; the API serves *current/forecast* fields.
+  There is no supported way to request the wind field for, e.g., Jan 15–20
+  2024 at hourly steps to sync with `display_times`. worldmet (NOAA ISD
+  observations) is exactly that historical record.
+- **Licensing:** free tier is limited and professional/commercial use is a
+  paid annual subscription; QuickMap's users are consultancies and local
+  government (criterion 7: free preferred). ToS also prohibits intensive
+  machine-reading of the data.
+- Sources: api.windy.com/map-forecast/docs, github.com/windycom/API,
+  account.windy.com/agreements (terms), api.windy.com pricing pages.
+
+**Verdict:** unsuitable as the item-7 mechanism (wrong temporal direction,
+online-only, paid, owns the map). It *is* a reasonable inspiration for what
+the particle layer should look like, and its existence reinforces the Option
+D choice: the one ecosystem where a free, offline, historical wind overlay
+already exists (leaflet-velocity) is Leaflet. The **Point Forecast API**
+(data, not maps) is likewise forecast-oriented and adds nothing over
+worldmet for historical episodes.
 
 ## Regenerating the demonstration maps
 
