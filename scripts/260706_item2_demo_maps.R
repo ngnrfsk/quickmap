@@ -21,13 +21,22 @@ create_pollution_map(
   marker_labels = "labels"
 )
 
-# sub-annual (15-minute) map
+# canonical animation example (inst/examples/episode_example.R, map2):
+# the ~3.5 MB slow-loading product published at
+# parhillresearch.github.io/maps/episode.html
 create_pollution_map(
-  data_sources = list("mock_15min_data.Rdata"),
-  boroughs = "Westminster",
-  pollutant = "no2",
-  colour_scale = "who_no2",
-  output_file = "260706_item2_subannual_westminster.html",
-  title = "Item 2 demo: Westminster NO2 15-min",
-  styling_type = "html"
+  data_sources = list("episodeJan15-20_2024_sf_all.Rdata"),
+  data_ids = c("bl_sensors"),
+  boroughs = c("Wandsworth", "Richmond"),
+  pollutant = "pm25",
+  colour_scale = "stripes_pm25",
+  theme_file = system.file("themes", "airstat.yaml", package = "quickmap"),
+  output_file = "260706_item2_episode.html",
+  title = "PM2.5 Episode: Jan 15-20, 2024",
+  styling_type = "html",
+  vignette = FALSE,
+  marker_labels = TRUE,
+  banner_colour = "#005794",
+  autoplay = TRUE,
+  play_speed = 500
 )

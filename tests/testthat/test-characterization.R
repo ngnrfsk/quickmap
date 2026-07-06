@@ -68,30 +68,57 @@ test_that("annual map: self-contained (no external script/css loads)", {
   expect_false(grepl('<link[^>]+href="https?://', html))
 })
 
-# ---- sub-annual map (15-minute resolution BL mock data) ----
+# ---- canonical animation example (inst/examples/episode_example.R, map2) ----
+# Reproduces the published parhillresearch.github.io/maps/episode.html byte
+# size: the ~3.5 MB, 108-time-step product whose slow loading motivates the
+# rendering-backend decision (item 5) and lazy loading (item 6).
 
-test_that("sub-annual map: one marker group per 15-minute time step", {
+test_that("episode map: one marker group per hourly time step", {
   skip_if_no_char_data()
-  payload <- char_payload(char_html("char_subannual.html"))
+  payload <- char_payload(char_html("char_episode.html"))
   methods <- char_methods(payload)
   mk <- char_marker_calls(payload)
 
-  expect_equal(sum(methods == "addMarkers"), 23) # 23 quarter-hour steps
-  expect_true(all(!is.na(mk$group)))
-  expect_true(all(mk$n == 3)) # 3 sites per step
+  expect_equal(sum(methods == "addMarkers"), 108)      # 108 hourly steps
+  expect_equal(sum(methods == "showGroup"), 108)
+  expect_equal(sum(methods == "addProviderTiles"), 1)  # airstat theme base tiles
+  expect_equal(sum(methods == "addPolygons"), 1)       # boundaries, no vignette
 
+  expect_true(all(!is.na(mk$group)))
+  expect_equal(length(unique(mk$group)), 108)
   groups <- sort(mk$group)
-  expect_equal(groups[1], "2026-01-01 12:00")
-  expect_equal(groups[23], "2026-01-01 17:30")
-  expect_true(all(grepl("^2026-01-01 \\d{2}:\\d{2}$", groups)))
-  expect_equal(length(unique(groups)), 23)
+  expect_equal(groups[1], "2024-01-15 12:00")
+  expect_equal(groups[108], "2024-01-19 23:00")
+
+  # all BL sensors across the two boroughs, per step (recorded baseline)
+  expect_true(all(mk$n >= 369 & mk$n <= 385))
+  expect_equal(sum(mk$n), 40876)
 })
 
-test_that("sub-annual map: banner and time control injected with title", {
+test_that("episode map: file size baseline — the problem item 6 must fix", {
   skip_if_no_char_data()
-  html <- char_html("char_subannual.html")
+  size <- char_file_size("char_episode.html")
 
-  expect_true(grepl("Characterization sub-annual", html, fixed = TRUE))
+  # Recorded v0.9.5 baseline: 3,456,970 bytes (matches the published map).
+  # Item 6 (lazy loading) should CUT this dramatically — when it does, lower
+  # these bounds in the same change. A rise above the ceiling is a regression.
+  expect_gt(size, 3.2e6)
+  expect_lt(size, 3.7e6)
+})
+
+test_that("episode map: banner, time control and autoplay injected", {
+  skip_if_no_char_data()
+  html <- char_html("char_episode.html")
+
+  expect_true(grepl("PM2.5 Episode: Jan 15-20, 2024", html, fixed = TRUE))
   expect_true(grepl('id="yearControl"', html, fixed = TRUE))
+  expect_true(grepl('id="playPauseButton"', html, fixed = TRUE))
   expect_false(grepl("\\{\\{[a-z_]+\\}\\}", html))
+})
+
+test_that("episode map: self-contained (no external script/css loads)", {
+  skip_if_no_char_data()
+  html <- char_html("char_episode.html")
+  expect_false(grepl('<script[^>]+src="https?://', html))
+  expect_false(grepl('<link[^>]+href="https?://', html))
 })

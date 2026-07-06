@@ -6,7 +6,7 @@ char_data_files <- c(
   "merton_dt_2018_2024.csv",
   "bl_imperial_annualised_2021_2025_with_missing.Rdata",
   "schools_Merton.csv",
-  "mock_15min_data.Rdata"
+  "episodeJan15-20_2024_sf_all.Rdata"
 )
 
 char_data_available <- function() {
@@ -44,14 +44,25 @@ char_map_dir <- function() {
     marker_labels = "labels"
   ))
 
+  # Canonical animation example (inst/examples/episode_example.R, map2):
+  # hourly PM2.5, Jan 15-20 2024, all BL sensors across two boroughs. This is
+  # the published parhillresearch.github.io/maps/episode.html — the ~3.5 MB
+  # slow-loading product that roadmap items 5/6 exist to fix.
   create_pollution_map(
-    data_sources = list("mock_15min_data.Rdata"),
-    boroughs = "Westminster",
-    pollutant = "no2",
-    colour_scale = "who_no2",
-    output_file = "char_subannual.html",
-    title = "Characterization sub-annual",
-    styling_type = "html"
+    data_sources = list("episodeJan15-20_2024_sf_all.Rdata"),
+    data_ids = c("bl_sensors"),
+    boroughs = c("Wandsworth", "Richmond"),
+    pollutant = "pm25",
+    colour_scale = "stripes_pm25",
+    theme_file = system.file("themes", "airstat.yaml", package = "quickmap"),
+    output_file = "char_episode.html",
+    title = "PM2.5 Episode: Jan 15-20, 2024",
+    styling_type = "html",
+    vignette = FALSE,
+    marker_labels = TRUE,
+    banner_colour = "#005794",
+    autoplay = TRUE,
+    play_speed = 500
   )
 
   .char_cache$dir <- file.path(work, "aq_maps")
@@ -65,6 +76,10 @@ char_html <- function(name) {
     .char_cache[[key]] <- paste(readLines(path, warn = FALSE), collapse = "\n")
   }
   .char_cache[[key]]
+}
+
+char_file_size <- function(name) {
+  file.size(file.path(char_map_dir(), name))
 }
 
 # Extract the htmlwidgets payload embedded in the saved map
