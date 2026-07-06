@@ -74,6 +74,17 @@ paths, \code{\link[=qm_layer]{qm_layer()}} objects, or data.frames — and rende
 interactive HTML map (optionally with static JPG export). A two-line call
 works; each additional parameter unlocks more sophistication.
 }
+\section{Design rule — where parameters live}{
+
+Properties of a \emph{layer} (its value column, time column, label column,
+symbol shape, name) belong on the layer itself, set by \code{\link[=qm_layer]{qm_layer()}} or the
+\verb{from_*()} wrappers. Properties of the \emph{map} (boroughs, colour scale,
+title, theme, output) belong here. \code{quickmap()} therefore has no per-layer
+parallel-vector arguments: to customise one layer of several, customise
+that layer — e.g.
+\code{quickmap(list(from_csv("tubes.csv"), qm_layer(d, value_col = "pm25")), ...)}.
+}
+
 \examples{
 \dontrun{
 # two lines: a usable map

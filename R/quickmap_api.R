@@ -47,6 +47,15 @@ as_qm_layer <- function(x, pollutant, temporal = NULL) {
 #' interactive HTML map (optionally with static JPG export). A two-line call
 #' works; each additional parameter unlocks more sophistication.
 #'
+#' @section Design rule — where parameters live:
+#' Properties of a *layer* (its value column, time column, label column,
+#' symbol shape, name) belong on the layer itself, set by [qm_layer()] or the
+#' `from_*()` wrappers. Properties of the *map* (boroughs, colour scale,
+#' title, theme, output) belong here. `quickmap()` therefore has no per-layer
+#' parallel-vector arguments: to customise one layer of several, customise
+#' that layer — e.g.
+#' `quickmap(list(from_csv("tubes.csv"), qm_layer(d, value_col = "pm25")), ...)`.
+#'
 #' @param layers One layer or a list of layers. Each element may be a file
 #'   path (CSV or RData, resolved against `DATA_PATH`), a [qm_layer()], or a
 #'   data.frame/sf object (converted via [qm_layer()]).

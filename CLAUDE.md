@@ -346,6 +346,7 @@ School data detected by School column presence. Any filename works (schools.csv,
 2. **Progressive disclosure**: common parameters are top-level; advanced or obscure ones are secondary.
 3. **Context-aware defaults**: defaults should work unmodified for 90% of use cases.
 4. **Multi-value over boolean**: prefer categorical state parameters (e.g. `marker_labels = "values_on"`) over stacks of boolean flags.
+5. **Parameters live where they belong** (user-approved 2026-07-06): properties of a *layer* (value/time/label columns, symbol shape, name) are set on the layer via `qm_layer()`/`from_*()` wrappers; properties of the *map* (boroughs, scale, title, theme, output) are `quickmap()` arguments. No per-layer parallel-vector arguments at the map level — to customise one layer of several, customise that layer.
 
 ### Code Minimalism
 
