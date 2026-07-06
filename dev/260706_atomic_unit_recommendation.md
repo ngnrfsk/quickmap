@@ -4,6 +4,16 @@
 **Author**: autonomous session, per CLAUDE.md "The atomic data unit — research
 task before implementing"
 
+User comments:
+
+* considering atomic data unit recommendation - do we need to distinguish between static and temporal data at all? if a time/date  column is present, doesn't this auto
+
+
+
+
+
+
+
 ## The question
 
 Formalise the internal currency that all input wrappers (`from_csv`,
