@@ -119,15 +119,59 @@ and any cost) is part of the score.
 
 ## Method
 
-1. Sharing-mode test first for each candidate (cheap disqualifier per mode):
-   mode (a) fully-offline open of a generated file; mode (b) minimal hosting
-   workflow.
-2. Benchmark: regenerate the pinned episode fixture and a synthetic 500 × 200
-   dataset in each backend; record file size, load time, switching smoothness.
-3. Score the feature-parity checklist (1–10) per candidate.
-4. Assess post-processing migration cost and CRAN-readiness.
+Specification principle: this brief fixes the *invariants* — datasets,
+metrics, scope, ordering, budget — so results are comparable and the work
+bounded. It deliberately does **not** prescribe how each stack implements
+time-stepping, which wrapper package to prefer, or what the prototype code
+looks like: those are findings, to be discovered from current library
+documentation, not inputs.
+
+### Datasets (identical across all candidates — otherwise numbers are not comparable)
+
+1. **Episode fixture** — hourly PM2.5, Jan 15–20 2024, ~380 BL sensors ×
+   108 steps: `episodeJan15-20_2024_sf_all.Rdata` in `DATA_PATH`, loadable
+   via `from_rdata(..., "pm25")`. Current Leaflet output: 3,456,970 bytes
+   (pinned by `tests/testthat/test-characterization.R`).
+2. **Synthetic stress case** — 500 markers × 200 time steps (the CLAUDE.md
+   scale target), generated once and reused for every candidate.
+
+### Prototype scope (per candidate — minimal by design)
+
+Build only what proves feature-checklist items 1–3: threshold-coloured point
+markers, a working time control switching all markers per step, one static
+overlay visible across all steps, one boundary polygon. **Excluded from
+prototypes**: banner/legend/roller-menu chrome, JPG export, themes — the
+`{{placeholder}}` injection system is renderer-agnostic HTML, so porting it
+is assessed as a migration-cost *estimate* (step 4), not built four times.
+
+### Steps
+
+1. **Sharing-mode test first** for each candidate (cheap disqualifier per
+   mode): mode (a) open the generated file fully offline — watch for silent
+   glyph/sprite/basemap fetches; mode (b) record the minimal hosting workflow
+   and any cost. Run on the episode fixture only.
+2. **Benchmark** each surviving candidate on the episode fixture; build the
+   500 × 200 case **only for finalists** that pass step 1 and are not
+   obviously disqualified by step 2 results. Record per dataset, same
+   machine, same browser, cold open: output file size (mode a), seconds to
+   interactive, switching/autoplay smoothness through all steps (jank,
+   memory growth).
+3. **Score the feature-parity checklist** (criteria 1–10) per candidate,
+   from the prototype where demonstrable, else from current documentation.
+4. **Assess migration cost** of the banner/legend/controls post-processing
+   and CRAN-readiness of the wrapper dependency.
 5. Write comparison + recommendation to `dev/`, then **STOP for user approval
    of the recommendation** before any item-6 implementation.
+
+### Budget guardrail
+
+Timebox each prototype (order of half a day, not days). If a candidate
+exceeds its box, record the blocker and the partial findings, mark it
+"not evaluated to completion", and move on — do not tunnel on the one stack
+that fights back. Prior art is mandatory pre-reading before any prototype:
+`versions/quickmap_0_9_5_failed_svgicon_experiment.R` (a previous failed
+attempt at the file-size problem). Existing MapLibre experiment:
+`dev/maplibre.R`, `dev/maplibre_template.html`, `dev/data.csv`.
 
 ## Sources consulted for candidate discovery
 
