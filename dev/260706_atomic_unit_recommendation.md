@@ -4,7 +4,9 @@
 declared; time-column inference contract added; parsing placed in the `from_*`
 wrappers. rev 3: naming pass — `siteCode` → `code`, `year_str` → `time_label`,
 layer `id` → `name`, coordinate duplication dropped; alias rule added) ·
-**Status**: awaiting user design approval (STOP point)
+**Status**: **DESIGN APPROVED by user 2026-07-06** (rev-3 structure and naming,
+including scales-out-of-unit). Still open: constructor name (Q3) and
+time_sort stored-vs-derived (implementation detail).
 **Author**: autonomous session, per CLAUDE.md "The atomic data unit — research
 task before implementing"
 
