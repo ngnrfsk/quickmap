@@ -2727,8 +2727,8 @@ determine_times_and_viewport <- function(
 #' Static JPG exports require Chrome/Chromium for webshot2.
 #'
 #' @family map
-#' @export
-create_pollution_map <- function(
+#' @keywords internal
+render_pollution_map <- function(
   data_sources = NULL,
   data_ids = NULL,
   data_symbols = NULL,

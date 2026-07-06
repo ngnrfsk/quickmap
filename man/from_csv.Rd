@@ -4,7 +4,7 @@
 \alias{from_csv}
 \title{Build a qm_layer from a CSV file}
 \usage{
-from_csv(file, pollutant = "no2", name = NULL)
+from_csv(file, pollutant = "no2", name = NULL, temporal = NULL)
 }
 \arguments{
 \item{file}{Path to the CSV (relative paths resolve against \code{DATA_PATH})}
@@ -12,6 +12,9 @@ from_csv(file, pollutant = "no2", name = NULL)
 \item{pollutant}{Name for the value column of temporal data (default "no2")}
 
 \item{name}{Layer name (default: the file name without extension)}
+
+\item{temporal}{Force temporal (TRUE) or static (FALSE) handling; NULL
+(default) auto-detects: more than one year column means temporal}
 }
 \value{
 A \code{\link[=qm_layer]{qm_layer()}}
