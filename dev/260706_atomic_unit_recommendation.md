@@ -1,12 +1,41 @@
 # Atomic data unit — survey and recommendation (roadmap item 3)
 
-**Date**: 2026-07-06 · **Status**: awaiting user design approval (STOP point)
+**Date**: 2026-07-06 · **Revision 2** (same day: `kind` dropped — derived, not
+declared; time-column inference contract added; parsing placed in the `from_*`
+wrappers) · **Status**: awaiting user design approval (STOP point)
 **Author**: autonomous session, per CLAUDE.md "The atomic data unit — research
 task before implementing"
 
 User comments:
 
-* considering atomic data unit recommendation - do we need to distinguish between static and temporal data at all? if a time/date  column is present, doesn't this auto
+* considering atomic data unit recommendation, and the philosophy to to keep the API simple and progressive, do we need to distinguish between static and temporal data at all? if a time/date  column is present, doesn't this automatically indicate it is time varying?
+  * **[resolved in rev 2]** Agreed — no user-facing distinction. Presence of a
+    parseable time column ⇒ time-varying; "static" is just the degenerate case
+    of ≤1 distinct time step, decided by a predicate at render time, not a
+    stored flag. See "Derived, not declared" below.
+* For Roadmap Step 5, check if any of the following technology stacks have been reviewed for suitability for our purpose of *plotting time varying point* data *on maps* that are *coloured by value/level* and making these *shareable* with *professional quality results*, e.g. *interactive maps of mutidimensional data*. Key criteria are: 
+  * ability to change colours of objects by time slice (currenlty handled in quickmap using leaflet by hiding and revealing layers for each time slice), 
+  * features optins of interactive time controller, 
+  * allows multiple symbols to appear on a map in different colours, as well as having static layers overlaid on all.
+  * ability to control tooltips or labels that appear by symbols, 
+  * ability to overlay or underlay polygons of varying transparency, 
+  * ability to have map underlays using opensource data suitable for public use, 
+  * free or low cost tier (fee is preferred), 
+  * Either: (a) produces compact files, does not require a client -server relationship OR (b) can be accessed by sending a link by email to see the product, without sending the file itself (the emailable self-contained file is not a requirement, as long as something can easily be emailed/whatsapped etc that shares the resulting maps and animations)
+  * Is maintained and live or part of the wider non-R ecosystem.
+  * Produces production standard results
+  * This might examine any of
+    * https://r-spatial.org/projects/
+    * https://github.com/r-spatial/mapview?tab=readme-ov-file
+    * https://plotly.com
+    * https://r-spatial.github.io/mapview/
+    * https://cran.r-project.org/web/views/Spatial.html
+    * Any other R accessible technologies, eg RBokeh, Highcharter, Mapdeck, MapGL, Deck.gl etc
+  * **[noted — belongs to roadmap item 5]** This comment supersedes/extends the
+    candidate list in dev/260705_rendering_backend_candidates.md and relaxes
+    the self-contained-file constraint to "easily shareable (file OR link)".
+    It will be folded into the item-5 comparison brief; not part of this
+    atomic-unit design.
 
 
 
@@ -95,15 +124,81 @@ Attributes (set once by the wrappers, never re-inferred):
 | attribute | values | today's source |
 |---|---|---|
 | `value_col` | e.g. `"no2"` | duck typing per call site |
-| `kind` | `"temporal"` / `"static"` | year-column duck typing |
+| `time_col` | column name / NULL | year-column duck typing |
 | `shape` | `"circle"` / `"diamond"` / `"cross"` | filename/config guessing |
 | `label_col` | `"Label"` / `"School"` / NULL | column duck typing |
 | `id` | layer id string | filename auto-generation |
 
-Constructor `qm_layer(data, value_col, kind = "temporal", ...)` validates the
-contract and fails with a plain-English error naming the missing column. A
-`print.qm_layer()` method summarises: `qm_layer 'merton_dt': 61 sites x 3 time
-steps of no2 (circle)`.
+*(Rev 2: the rev-1 `kind = "temporal"/"static"` attribute is removed — see
+"Derived, not declared".)*
+
+Constructor `qm_layer(data, value_col, ...)` validates the contract and fails
+with a plain-English error naming the missing column. A `print.qm_layer()`
+method summarises: `qm_layer 'merton_dt': 61 sites x 3 time steps of no2
+(circle)`.
+
+### Derived, not declared (rev 2)
+
+The design principle, sharpened by the user's question: **the atomic unit
+carries data plus only what cannot be inferred from it — and almost everything
+can be inferred.** In particular there is no temporal/static kind:
+
+- A layer *is* time-varying iff its time column has >1 distinct value. That is
+  a one-line predicate evaluated where needed (`n_distinct(time) > 1`), not
+  stored state that can go stale. One year of diffusion tubes renders exactly
+  like a static layer — no time control — which falls out of the count, not a
+  flag.
+- `shape`, `label_col`, `id` follow the same pattern: inferred by the wrapper
+  (School column ⇒ cross + School labels; Label column ⇒ custom labels;
+  filename ⇒ id), stored so inference runs once, overridable by an explicit
+  argument for the exceptional case. Progressive disclosure: the arguments
+  exist, but nobody needs them on day one.
+
+### Time-column inference contract (rev 2)
+
+Which column is "time", given inputs ranging from a bare `YYYY` header to full
+ISO datetimes? Best practice (openair, readr/lubridate) is layered — class,
+then name, then content — and never content-sniffing arbitrary columns:
+
+1. **Class**: a column of class `Date`/`POSIXct` is the time column regardless
+   of name. Unambiguous; covers OpenAir (which mandates a `date` POSIXct
+   column) and database pulls.
+2. **Name gate**: a column named `date`, `time`, `datetime` (case-insensitive)
+   or `year_str` (back-compat) earns a *parse attempt* — the name grants
+   candidacy, the parse validates it.
+3. **Content grammar**, most-specific first, applied only inside that gate
+   (`lubridate::parse_date_time(orders = ...)`):
+   `YYYY-MM-DD HH:MM(:SS)(+ZZ)` (T separator ok) → `YYYY-MM-DD` → `YYYY-MM` →
+   `YYYY`. The matched format records the layer's **resolution**, which drives
+   the display-label format; the parsed value provides the **sort key** for
+   the time control (formalising the v0.9.4 ad-hoc sorting).
+4. **Wide CSV headers**: column *names* matching `^\d{4}$` are year columns to
+   pivot (existing behaviour — still name-based inference, on headers).
+5. Nothing matches ⇒ static layer.
+
+Refusals, deliberately:
+
+- **No date-likeness scanning of arbitrary columns.** A numeric column of
+  `2018, 2019, 2021` is indistinguishable from measurements; that is where
+  inference schemes rot.
+- **A `date`-named column that fails the grammar is a loud error** naming the
+  column and the first offending value — never a silent fall-through to
+  static.
+- **Bare `HH` / cyclic values (diurnal profiles) are excluded from the
+  grammar** — `07` as time-of-day is exactly the ambiguity that breaks
+  guessing. They are served by the explicit override instead: the animation
+  machinery needs an *ordered label set*, not real dates, so
+  `qm_layer(d, time_col = "hour")` accepts any ordered column when the user
+  says so.
+
+**Where the parsing lives**: in the parsing/wrapper functions (`from_csv`,
+`from_rdata`, `from_openair`, `from_worldmet`, `from_yaml`), not in the
+renderer and not scattered through the pipeline. Each wrapper normalises its
+input's native time representation (CSV year headers, RData `year_str`
+strings, OpenAir `date` POSIXct, worldmet hourly `date`) into the canonical
+time column + resolution + sort key at construction time; downstream code
+never re-parses. `qm_layer()` itself re-runs only the validation, so a
+hand-built layer gets the same guarantees.
 
 ### Why this beats the alternatives
 
@@ -136,8 +231,9 @@ quickmap(
   boroughs = "Merton", colour_scale = "who_no2", theme_file = "merton.yaml"
 )
 
-# expert: hand-built layer from any source
-d <- my_database_pull() |> qm_layer(value_col = "pm25", kind = "temporal")
+# expert: hand-built layer from any source (time column auto-detected;
+# time_col= only needed for non-date orderings like diurnal hours)
+d <- my_database_pull() |> qm_layer(value_col = "pm25")
 quickmap(d, boroughs = "Richmond")
 ```
 
@@ -152,6 +248,8 @@ thin compatibility wrapper (roadmap item 4).
    sub-annual data) or rename to `time_label` in the formal contract with
    `year_str` accepted and normalised by the constructor during transition?
    Recommendation: rename in the contract, normalise in the constructor.
+   (Rev 2 note: under the inference contract the canonical name matters less —
+   `year_str` stays a recognised alias either way.)
 2. **Colour scale binding**: leave scales entirely to `quickmap()` styling
    (current plan, recommended) or allow an optional `scale` attribute on the
    layer as a hint? Recommendation: keep scales out of the atomic unit.
