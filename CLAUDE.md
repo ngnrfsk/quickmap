@@ -454,6 +454,14 @@ HTML file; its appearance and behaviour must be checked by a human at defined po
   one with schools and labels). Note `aq_maps/` and `*.html` are gitignored, so the
   maps cannot be committed: the PR description must instead list the generating
   script, the output file paths, and what the human should visually check.
+- **Naming convention (mandatory for new artefacts):** every new test file, demo
+  script, and demonstration output must encode `[map/subject name]_[roadmap item]_
+  [iteration]` in its handle — e.g. `episode_item2_v1.html` (in aq_maps/),
+  `merton_annual_item2_v1.R` (in scripts/), `test-qmlayer-item3-v1.R` (testthat) —
+  so any artefact is traceable to the map it shows, the roadmap item that produced
+  it, and its revision. Existing files keep their names until touched; when a
+  script or test is materially revised, bump the iteration rather than overwriting
+  the history of what the human previously inspected.
 - Keep the previously signed-off outputs for before/after comparison — never leave
   the human with only the new set. Before regenerating, copy the last approved maps
   to a dated folder (e.g. `aq_maps/baseline_YYMMDD_signed_off/`) or use dated output
