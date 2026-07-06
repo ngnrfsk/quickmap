@@ -475,18 +475,15 @@ HTML file; its appearance and behaviour must be checked by a human at defined po
   maps cannot be committed: the PR description must instead list the generating
   script, the output file paths, and what the human should visually check.
 - **Naming convention (mandatory for new artefacts):** every new test file, demo
-  script, and demonstration output must encode what it specifically tests and
-  what data it shows:
-  `[location]_[data source]_[period]_[roadmap item]_[iteration]`
-  — e.g. `richmond_bl_2024jan_item2_v1.html` (aq_maps/),
-  `merton_dt_2020-2022_item2_v1.R` (scripts/) — and testthat files name the
-  specific behaviour under test plus item and iteration, e.g.
-  `test-qmlayer-time-inference-item3-v1.R`. The goal: from the filename alone a
-  human can tell the location, the data source, the time period covered, which
-  roadmap item produced it, and which revision it is. Existing files keep their
-  names until touched; when a script or test is materially revised, bump the
-  iteration rather than overwriting the history of what the human previously
-  inspected.
+  script, and demonstration output is named
+  `[item]_[short description]_[version]`
+  — e.g. `item4_merton-annual_v1.html` (aq_maps/), `item4_demo-maps_v1.R`
+  (scripts/) — and testthat files keep the required `test-` prefix:
+  `test-item4-quickmap-api-v1.R`. The short description says what the artefact
+  shows or tests (location/data/period where that is the point, behaviour name
+  for tests). Existing files keep their names until touched; when a script or
+  test is materially revised, bump the version rather than overwriting the
+  history of what the human previously inspected.
 - Keep the previously signed-off outputs for before/after comparison — never leave
   the human with only the new set. Before regenerating, copy the last approved maps
   to a dated folder (e.g. `aq_maps/baseline_YYMMDD_signed_off/`) or use dated output
