@@ -6,9 +6,29 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-06 **Current Working Version**: v0.9.5 **Branch**: feature/atomic-unit
+**Last Updated**: 2026-07-06 **Current Working Version**: v0.9.6 **Branch**: feature/quickmap-wrapper
 
 --------------------------------------------------------------------------------
+
+### Roadmap item 4 complete (v0.9.6): quickmap() core API — 2026-07-06
+Branch `feature/quickmap-wrapper`. New R/quickmap_api.R: `quickmap(layers,
+boroughs, ...)` is the core entry point — layers may be file paths, qm_layer
+objects, or data frames; pollutant inferred from the first temporal layer;
+two-line call works (`quickmap("tubes.csv", boroughs = "Merton")`). The
+historic `create_pollution_map()` body was renamed to internal
+`render_pollution_map()` (unchanged); `create_pollution_map()` is now a thin
+wrapper converting data_sources to qm_layers and delegating to `quickmap()`.
+from_csv() gained a `temporal` override matching legacy data_dynamic and the
+legacy >1-year-columns auto-detect plus numeric coercion. Faithfulness proof:
+the full characterization suite passes unchanged, and the episode demo
+generated through the new chain is byte-identical to the published map
+(3,456,970 bytes). Docs updated in the same change: CLAUDE.md (Creating Maps,
+version 0.9.6, history), vignettes/quickmap_reference.md, roxygen/man. New
+tests: tests/testthat/test-quickmap-api-item4-v1.R (two-line call, mixed
+inputs, wrapper/direct payload equivalence, pollutant inference). Gate: 173
+pass / 0 fail / 0 skip; smoke OK. Demo script:
+scripts/merton-richmond_dt-bl-schools_2018-2024_item4_v1.R →
+aq_maps/*_item4_v1.html.
 
 ### Roadmap item 3 implementation: qm_layer atomic unit — 2026-07-06
 Branch `feature/atomic-unit` (stacked on characterization tests). Implements

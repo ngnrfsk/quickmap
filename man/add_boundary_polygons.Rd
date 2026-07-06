@@ -23,6 +23,8 @@ Adds borough boundary polygons with optional labels
 }
 \seealso{
 Other map: 
-\code{\link{create_pollution_map}()}
+\code{\link{create_pollution_map}()},
+\code{\link{quickmap}()},
+\code{\link{render_pollution_map}()}
 }
 \concept{map}

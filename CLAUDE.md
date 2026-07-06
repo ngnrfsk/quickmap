@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.5
+### Current Version: 0.9.6
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -132,7 +132,26 @@ source("inst/examples/create_all_borough_maps.R")
 
 ### Creating Maps
 
-Current API (v0.9.2+) uses `data_sources` list:
+Core API (v0.9.6+) is `quickmap()`, which takes file paths, `qm_layer()`
+atomic units, or data frames:
+
+``` r
+# two lines: a usable map
+quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth")
+
+# several layers plus styling
+quickmap(
+  list("merton_dt_2018_2024.csv", "bl_sensors.Rdata", "schools_Merton.csv"),
+  boroughs = "Merton",
+  colour_scale = "who_no2",
+  title = "Merton NO2",
+  output_file = "merton_no2.html"
+)
+```
+
+`create_pollution_map()` remains as a compatibility wrapper with its historic
+signature (it converts `data_sources` to `qm_layer`s and delegates to
+`quickmap()`):
 
 ``` r
 map_object <- create_pollution_map(
@@ -344,6 +363,7 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.3.21**: RData duck typing (standard names → any compatible data.frame)
 -   **v0.9.4**: Sub-annual temporal resolution (month/day/hour), renamed `years` → `display_times`
 -   **v0.9.5**: Proper R package installation — roxygen2 NAMESPACE/man, `devtools::install()` + `library(quickmap)` replaces `source()`; `system.file()` path resolution fixed
+-   **v0.9.6**: `quickmap()` core API consuming `qm_layer` atomic units (items 3+4); `create_pollution_map()` becomes a thin compatibility wrapper; rendered output unchanged (characterization-verified)
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 
