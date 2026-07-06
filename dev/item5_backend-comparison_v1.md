@@ -4,8 +4,8 @@
 practice after review (see "plotly v2" notes inline) — v1 had under-sold it.
 **Branch:** `feature/item5-backend-comparison`
 **Mandate:** dev/260705_rendering_backend_candidates.md (user-approved 2026-07-06)
-**Status:** awaiting user approval of the recommendation (STOP point). Item 6
-does not start until that approval.
+**Status: recommendation APPROVED by user 2026-07-06 — Option D.** Item 6 is
+unblocked; kick-off prompt: dev/item6_start-prompt_v1.md.
 
 ## What was built
 
