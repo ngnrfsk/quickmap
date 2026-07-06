@@ -1574,8 +1574,7 @@ finalize_and_save_map <- function(
   autoplay,
   play_speed,
   data_max,
-  image_dimensions = NULL,
-  lazy_payload = NULL
+  image_dimensions = NULL
 ) {
   map <- add_map_controls(
     map,
@@ -1586,8 +1585,7 @@ finalize_and_save_map <- function(
     interactive,
     display_times,
     boundary_labels,
-    zoom_level,
-    lazy_payload
+    zoom_level
   )
 
   save_html_and_style(
@@ -1765,149 +1763,6 @@ load_layer_cache_js <- function() {
 
   js_file <- file.path(controls_dir, "layer-cache.js")
   return(read_template_file(js_file))
-}
-
-#' @keywords internal
-load_lazy_controller_js <- function() {
-  controls_dir <- get_package_dir("controls")
-  read_template_file(file.path(controls_dir, "lazy-time-controller.js"))
-}
-
-# Shapes coloured by stroke rather than fill (kept in sync with the Canvas
-# controller's drawSymbol and create_generic_icons)
-NONSOLID_SHAPES <- c(
-  "simple-plus", "simple-cross", "cross-rect", "simple-star",
-  "plus-circle", "plus-rect", "cross-circle", "cross", "plus"
-)
-
-#' Enforce the default time step cap (CLAUDE.md "Time steps and file size")
-#' @keywords internal
-apply_time_step_cap <- function(display_times) {
-  if (identical(display_times, "static_only")) return(display_times)
-  cap <- getOption("quickmap.time_step_cap", 200)
-  times <- sort(unique(display_times))
-  if (length(times) <= cap) return(display_times)
-  warning(
-    length(times), " time steps exceed the ", cap,
-    "-step cap; showing the most recent ", cap, ".",
-    call. = FALSE
-  )
-  utils::tail(times, cap)
-}
-
-# Marker rows across enabled temporal layers within display_times
-#' @keywords internal
-count_temporal_rows <- function(
-  measurement_layers,
-  spatial_data,
-  display_times,
-  pollutant
-) {
-  sum(vapply(measurement_layers, function(layer_config) {
-    if (!layer_config$enabled || layer_config$static) return(0L)
-    d <- spatial_data$all_data[[layer_config$id]]
-    if (!pollutant %in% names(d)) return(0L)
-    sum(d$year_str %in% as.character(display_times) & !is.na(d[[pollutant]]))
-  }, 0L))
-}
-
-#' Decide between pre-built layers and the lazy embedded-JSON path (item 6).
-#' Lazy when time steps exceed 50 or the estimated pre-built file size exceeds
-#' ~5 MB (~1 MB widget base + ~65 bytes per serialized marker, calibrated on
-#' the characterization fixtures).
-#' @keywords internal
-use_lazy_rendering <- function(n_steps, n_marker_rows) {
-  n_steps > getOption("quickmap.lazy_step_threshold", 50) ||
-    (1e6 + 65 * n_marker_rows) >
-      getOption("quickmap.lazy_size_threshold", 5e6)
-}
-
-#' Build the compact embedded payload consumed by lazy-time-controller.js:
-#' {times, thresholds, colours, naColour, layers: [{id, shape, radius,
-#' nonsolid, labelMode, noHide, sites: [{code, lat, lon, label?, v: [...]}]}]}
-#' @keywords internal
-build_lazy_payload <- function(
-  measurement_layers,
-  spatial_data,
-  display_times,
-  pollutant,
-  colour_scale
-) {
-  scale_data <- load_colour_scale(colour_scale)
-  finite <- is.finite(scale_data$thresholds)
-  colours_hex <- convert_colors_to_hex(unlist(scale_data$colours))
-  times <- as.character(sort(unique(display_times)))
-
-  layers <- list()
-  for (layer_config in measurement_layers) {
-    if (!layer_config$enabled || layer_config$static) next
-    d <- spatial_data$all_data[[layer_config$id]]
-    if (inherits(d, "sf")) d <- sf::st_drop_geometry(d)
-    d <- as.data.frame(d)
-    d <- d[d$year_str %in% times & !is.na(d[[pollutant]]), , drop = FALSE]
-    if (nrow(d) == 0) next
-
-    marker_labels <- layer_config$options$marker_labels %||% FALSE
-    want_custom <- isTRUE(marker_labels %in% c("labels", "labels_on"))
-    has_label_col <- "Label" %in% names(d)
-    label_mode <- if (isTRUE(marker_labels) ||
-                      identical(marker_labels, "values_on")) {
-      "values"
-    } else if (want_custom && has_label_col) {
-      "custom"
-    } else if (want_custom) {
-      warning(
-        "marker_labels set to '", marker_labels,
-        "' but no Label column found. Showing pollution values instead.",
-        call. = FALSE
-      )
-      "values"
-    } else {
-      "none"
-    }
-
-    key <- if ("siteCode" %in% names(d)) {
-      as.character(d$siteCode)
-    } else {
-      paste(d$Longitude, d$Latitude)
-    }
-    first <- !duplicated(key)
-    ukey <- key[first]
-    values <- matrix(NA_real_, nrow = length(ukey), ncol = length(times))
-    values[cbind(match(key, ukey), match(d$year_str, times))] <-
-      d[[pollutant]]
-
-    sites <- lapply(seq_along(ukey), function(i) {
-      site <- list(
-        code = ukey[i],
-        lat = d$Latitude[first][i],
-        lon = d$Longitude[first][i],
-        v = I(round(values[i, ], 1))
-      )
-      if (label_mode == "custom") {
-        site$label <- as.character(d$Label[first][i])
-      }
-      site
-    })
-
-    layers[[length(layers) + 1]] <- list(
-      id = layer_config$id,
-      shape = layer_config$icon_shape,
-      radius = get_icon_shape_config(layer_config$icon_shape)$base_size / 2,
-      nonsolid = layer_config$icon_shape %in% NONSOLID_SHAPES,
-      labelMode = label_mode,
-      noHide = marker_labels %in% c("values_on", "labels_on"),
-      sites = sites
-    )
-  }
-
-  list(
-    times = I(times),
-    thresholds = I(scale_data$thresholds[finite]),
-    colours = I(colours_hex[finite]),
-    naColour = colours_hex[length(colours_hex)],
-    layers = layers
-  )
 }
 
 #' Inject banner, legend, and year control into saved HTML
@@ -2176,7 +2031,18 @@ create_generic_icons <- function(
   }
 
   # Non-solid symbols use color (stroke), solid symbols use fillColor
-  is_nonsolid <- shape_config$shape %in% NONSOLID_SHAPES
+  is_nonsolid <- shape_config$shape %in%
+    c(
+      "simple-plus",
+      "simple-cross",
+      "cross-rect",
+      "simple-star",
+      "plus-circle",
+      "plus-rect",
+      "cross-circle",
+      "cross",
+      "plus"
+    )
 
   makeSymbolsSize(
     # note
@@ -2491,8 +2357,7 @@ add_map_controls <- function(
   interactive = TRUE,
   display_times,
   boundary_labels = FALSE,
-  zoom_level = NULL,
-  lazy_payload = NULL
+  zoom_level = NULL
 ) {
   # Handle "static_only" case (no temporal layers - only schools)
   if (identical(display_times, "static_only")) {
@@ -2531,15 +2396,7 @@ add_map_controls <- function(
   # making layers inaccessible to JavaScript caching
   baseGroups <- if (interactive && length(display_times) >= 1)
     display_times else NULL
-  if (!is.null(lazy_payload)) {
-    # Lazy path (item 6): temporal markers are Canvas-rendered and restyled
-    # per step from the embedded payload; no per-step layer cache exists
-    map <- map |>
-      htmlwidgets::onRender(load_lazy_controller_js(), data = lazy_payload)
-    # 7 significant digits (~1 m coordinate precision) instead of the
-    # htmlwidgets default 16, which serializes 22.8 as 22.800000000000001
-    attr(map$x, "TOJSON_ARGS") <- list(digits = 7)
-  } else if (!is.null(baseGroups)) {
+  if (!is.null(baseGroups)) {
     map <- map |>
       htmlwidgets::onRender(load_layer_cache_js())
   }
@@ -2936,7 +2793,6 @@ render_pollution_map <- function(
       vignette,
       display_times
     )
-  display_times <- apply_time_step_cap(display_times)
   legend_info <- get_colour_legend(colour_scale)
 
   # Use primary data for base map, or borough boundary if no temporal data
@@ -2968,50 +2824,16 @@ render_pollution_map <- function(
     sqrt((map_width_px * map_height_px) / (1200 * 1200))
   } else NULL
 
-  # Lazy path (item 6): above the size/step thresholds the interactive map
-  # embeds one compact JSON payload restyled in JS instead of pre-building
-  # per-step hidden layers. Static image export always uses the pre-built
-  # path (one non-interactive map per step; webshot never sees JS restyling).
-  lazy <- !identical(display_times, "static_only") &&
-    use_lazy_rendering(
-      length(unique(display_times)),
-      count_temporal_rows(
-        measurement_layers, spatial_data, display_times, pollutant
-      )
-    )
-
-  lazy_payload <- NULL
-  if (lazy) {
-    lazy_payload <- build_lazy_payload(
-      measurement_layers,
-      spatial_data,
-      display_times,
-      pollutant,
-      colour_scale
-    )
+  for (yr in unique(display_times)) {
     html_map <- generate_map_layers(
       html_map,
       measurement_layers,
-      "static_only",
+      yr,
       pollutant,
       colour_scale,
       spatial_data,
       1.0
     )
-  }
-
-  for (yr in unique(display_times)) {
-    if (!lazy) {
-      html_map <- generate_map_layers(
-        html_map,
-        measurement_layers,
-        yr,
-        pollutant,
-        colour_scale,
-        spatial_data,
-        1.0
-      )
-    }
 
     if (image_export) {
       static_map <- add_year_and_static_layers(
@@ -3073,8 +2895,7 @@ render_pollution_map <- function(
       autoplay,
       play_speed,
       data_max,
-      NULL,
-      lazy_payload
+      NULL
     )
   } else {
     html_map <- add_map_controls(
@@ -3086,8 +2907,7 @@ render_pollution_map <- function(
       TRUE,
       display_times,
       boundary_labels,
-      theme$map$zoom_level,
-      lazy_payload
+      theme$map$zoom_level
     )
   }
 

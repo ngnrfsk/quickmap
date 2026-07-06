@@ -20,6 +20,12 @@
 
   function switchToYear(selectedYear, years) {
     try {
+      // Lazy-loading mode (item 6): a time controller restyles Canvas markers
+      // in place; the layer cache is an empty stub that only supplies keys
+      if (window.quickmapTimeController) {
+        window.quickmapTimeController.setTime(selectedYear);
+        return;
+      }
       if (!window.quickmapLayerCache) {
         console.error("window.quickmapLayerCache not found");
         return;
