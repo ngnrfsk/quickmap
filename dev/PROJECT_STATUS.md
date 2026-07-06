@@ -6,9 +6,22 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-05 **Current Working Version**: v0.9.5 **Branch**: feature/packaging-2
+**Last Updated**: 2026-07-06 **Current Working Version**: v0.9.5 **Branch**: feature/characterization-tests
 
 --------------------------------------------------------------------------------
+
+### Roadmap item 2 complete: characterization test net — 2026-07-06
+Branch `feature/characterization-tests` (stacked on approved feature/packaging-2).
+New `tests/testthat/test-characterization.R` + `helper-characterization.R` pin
+the rendered HTML of two reference maps (annual Merton dt+BL+schools 2020–2022;
+sub-annual Westminster 15-minute mock data): htmlwidgets payload method counts,
+marker counts per layer and time step (59/1, 59/276, 61/363 dt/BL per year;
+53 schools ×3; 23×3 sub-annual), shown group names, injected banner/legend/
+year-control blocks, no unreplaced `{{placeholders}}`, and no external
+script/css loads (self-contained constraint). Fixtures generate once per test
+run into tempdir (~2.6 s); tests skip if DATA_PATH fixture files are absent.
+jsonlite added to Suggests. This is the regression net for items 4 and 6.
+Demo script: scripts/260706_item2_demo_maps.R → aq_maps/260706_item2_*.html.
 
 ### Roadmap item 1 complete (v0.9.5): quickmap is an installed R package — 2026-07-05
 Branch `feature/packaging-2` (PR pending human review). Salvaged the uncommitted
