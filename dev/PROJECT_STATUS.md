@@ -10,7 +10,7 @@ editor_options:
 
 --------------------------------------------------------------------------------
 
-### Roadmap item 6 implemented (v0.9.7): time step cap + lazy loading — 2026-07-06 (PENDING human visual sign-off)
+### Roadmap item 6 complete (v0.9.7): time step cap + lazy loading — 2026-07-06 (visually signed off, PR #24 merged)
 
 Branch `feature/item6-lazy-loading`. Implements the approved Option D inside
 the package (R-only + the mandated JS controller; the item-5 Python builders
@@ -75,8 +75,8 @@ baseline), item6_merton-annual-forced-lazy_v1.html (same map forced lazy for
 side-by-side marker comparison). Signed-off baseline preserved untouched in
 aq_maps/baseline_260705_signed_off/; episode reference:
 aq_maps/item5_leaflet-episode-reference_v1.html. v0.9.6 archived to
-versions/quickmap_0_9_6.R. **PR blocks on human visual sign-off**
-(rendering-touching).
+versions/quickmap_0_9_6.R. **Human visual sign-off given and PR #24 merged
+2026-07-06.** The item6_* demo outputs are the new comparison set for item 7.
 
 ### Roadmap item 5 complete: rendering backend DECIDED — Option D (user-approved) — 2026-07-06
 
