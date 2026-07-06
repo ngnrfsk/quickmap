@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.6
+### Current Version: 0.9.7
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -365,6 +365,7 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.4**: Sub-annual temporal resolution (month/day/hour), renamed `years` → `display_times`
 -   **v0.9.5**: Proper R package installation — roxygen2 NAMESPACE/man, `devtools::install()` + `library(quickmap)` replaces `source()`; `system.file()` path resolution fixed
 -   **v0.9.6**: `quickmap()` core API consuming `qm_layer` atomic units (items 3+4); `create_pollution_map()` becomes a thin compatibility wrapper; rendered output unchanged (characterization-verified)
+-   **v0.9.7**: Time step cap + lazy loading (item 6, Option D): above 50 time steps (or ~5 MB estimated) temporal markers render as Canvas shapes restyled per step from one embedded JSON payload (`inst/controls/lazy-time-controller.js`); 200-step default cap with warn+subset; episode fixture 3.46 MB → 0.91 MB; below-threshold maps keep the pre-built-layers path unchanged
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 
