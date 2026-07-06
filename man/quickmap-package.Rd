@@ -2,7 +2,6 @@
 % Please edit documentation in R/quickmap-package.R
 \docType{package}
 \name{quickmap-package}
-\alias{quickmap}
 \alias{quickmap-package}
 \title{quickmap: Quick Air Quality Maps with Leaflet}
 \description{
