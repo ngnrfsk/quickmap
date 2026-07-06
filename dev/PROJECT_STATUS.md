@@ -6,9 +6,34 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-06 **Current Working Version**: v0.9.5 **Branch**: feature/characterization-tests
+**Last Updated**: 2026-07-06 **Current Working Version**: v0.9.5 **Branch**: feature/atomic-unit
 
 --------------------------------------------------------------------------------
+
+### Roadmap item 3 implementation: qm_layer atomic unit — 2026-07-06
+Branch `feature/atomic-unit` (stacked on characterization tests). Implements
+the user-approved rev-3 design (dev/260706_atomic_unit_recommendation.md):
+new R/qm_layer.R with `qm_layer()` constructor (contract validation with
+plain-English errors, alias normalisation siteCode→code / year_str→time_label
+/ Latitude+Longitude→lat+lon from the QM_ALIASES constant, time-column
+inference per the class→name-gate→grammar contract, time_sort POSIXct key —
+decided: stored column — and value/label/shape/name/resolution metadata as
+attributes), `qm_meta()`, `print.qm_layer()`, and wrappers `from_csv()`
+(wide-year pivot, BNG transform, school duck typing), `from_rdata()` (wraps
+the existing duck-typed loader), `from_openair()` (wraps
+convert_openair_to_spatial). Render pipeline untouched — rewiring
+create_pollution_map()/quickmap() around these is item 4. 29 new tests in
+tests/testthat/test-qm-layer.R (synthetic + DATA_PATH fixtures incl. the
+episode file: 108 hourly steps at "hour" resolution). Gate: 165 pass / 0 fail
+/ 0 skip; smoke test OK.
+
+### Item-5 brief v2 ready for approval — 2026-07-06
+Branch `chore/item5-brief` (PR #18). dev/260705_rendering_backend_candidates.md
+rewritten as the approvable comparison brief per user comments: sharing
+constraint relaxed to file-OR-link, ten user feature criteria adopted as the
+scoring checklist, plotly screened in (4th candidate), mapview/RBokeh/
+Highcharter screened out with reasons. Approving PR #18 starts the comparison;
+the final recommendation retains its own STOP.
 
 ### Roadmap item 2 complete: characterization test net — 2026-07-06
 Branch `feature/characterization-tests` (stacked on approved feature/packaging-2).
