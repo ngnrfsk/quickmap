@@ -1,77 +1,181 @@
-# Rendering backend candidates — expanded list for roadmap item 5
+# Rendering backend candidates — item-5 comparison brief (v2)
 
-**Date:** 2026-07-05
-**Status:** For user review and background research. Not yet part of the item-5
-comparison mandate in CLAUDE.md; that section still names the original two
-candidates. This document widens the field in light of technology developments
-since the original tests.
+**Date:** 2026-07-05 · **v2:** 2026-07-06 — folded in user comments: sharing
+constraint relaxed to file-OR-link, user feature criteria adopted as the
+scoring checklist, plotly screened in, RBokeh/Highcharter/mapview screened out
+with reasons.
+**Status:** awaiting user approval as the item-5 comparison brief (STOP point).
+CLAUDE.md's item-5 section still names the original two candidates and the
+"self-contained HTML — hard constraint" section still states the strict form;
+both get amended when this brief is approved.
 
-## The filter every candidate must survive
+## Purpose (user's formulation)
 
-1. **Self-contained offline HTML** (hard constraint, disqualifying) — all JS/CSS
-   inlined; the file must work as an email attachment with no network access.
-   WebGL libraries sometimes fetch glyphs, sprites, or basemap styles at
-   runtime — this is the silent failure mode to test *first* for each candidate.
-2. **CRAN-readiness** — an existing CRAN package wraps the JS, or the JS is
-   small enough to vendor into `inst/` and drive directly.
-3. **Scale target** — 500 markers × 200 time steps under ~5 MB, with smooth
-   temporal layer switching.
-4. **Migration cost** — the banner/legend/roller-menu HTML post-processing
-   system must port or be re-implementable at reasonable cost.
+Plot *time-varying point data on maps*, *coloured by value/level*, and make
+the result *shareable* with *professional-quality results* — interactive maps
+of multidimensional data.
 
-## Candidates where the field has genuinely moved
+## Sharing constraint (v2 — relaxed)
 
-### 1. deck.gl (via CRAN wrappers `rdeck` or `mapdeck`)
+Either of the following satisfies the requirement; candidates are scored on
+whichever mode(s) they support:
 
-- WebGL point rendering: 100k+ points is trivial; 500 × 200 well within reach.
-- First-class temporal filtering: `DataFilterExtension` performs time scrubbing
-  **on the GPU with zero layer rebuilding** — arguably a better architectural
-  fit for QuickMap's core problem (temporal animation of point data) than
-  either original candidate.
-- Research questions: does `rdeck`/`mapdeck` output survive
-  `selfcontained = TRUE` fully offline (glyph/sprite/basemap fetches)? Which
-  wrapper is CRAN-current and maintained? Bundle size when inlined?
+- **(a) Compact self-contained file** — no client–server relationship; works
+  as an email attachment offline (the current constraint).
+- **(b) Shareable link** — the product can be shared by emailing/WhatsApping a
+  link, without sending the file itself (e.g. a hosted static page).
 
-### 2. MapLibre GL (via CRAN `mapgl`)
+The emailable self-contained file is therefore **no longer the sole hard
+constraint** — but a candidate must deliver at least one of the two modes
+cleanly. For mode (a), WebGL libraries sometimes fetch glyphs, sprites or
+basemap styles at runtime; that silent failure is still the first thing to
+test. For mode (b), the hosting workflow (what the user must do to publish,
+and any cost) is part of the score.
 
-- Already the second candidate in CLAUDE.md; retained here for completeness.
+## Feature-parity checklist (v2 — user criteria; Leaflet currently delivers all)
+
+1. Recolour objects by time slice (current mechanism: hide/reveal a layer per
+   slice — candidates may do this natively, e.g. GPU filtering).
+2. Interactive time controller (or the ability to attach our own).
+3. Multiple symbol types in different colours on one map, plus static layers
+   overlaid on all time slices.
+4. Control of tooltips/labels attached to symbols.
+5. Polygon overlays/underlays with controllable transparency.
+6. Basemap underlays using open-licence data suitable for public use.
+7. Free or low-cost tier (free preferred).
+8. Sharing mode (a) and/or (b) above.
+9. Maintained and live, or part of the wider non-R ecosystem.
+10. Production-standard visual results.
+
+## Engineering criteria (from CLAUDE.md, unchanged)
+
+- Scale target: 500 markers × 200 time steps under ~5 MB (mode (a)) with
+  smooth temporal switching. Benchmark on the pinned characterization episode
+  fixture (108 steps × ~380 sensors, currently 3.5 MB) plus a synthetic
+  500 × 200 case.
+- CRAN-readiness of any wrapper package.
+- Migration cost of the banner/legend/roller-menu HTML post-processing.
+- Read `versions/quickmap_0_9_5_failed_svgicon_experiment.R` first (prior
+  failed size-fix attempt and why it failed).
+
+## Candidates (four-way comparison)
+
+### 1. Leaflet + Option D (no framework): Canvas renderer + embedded JSON
+
+- Plain Leaflet with a Canvas marker path plus the embedded-JSON temporal
+  controller — `dev/20250118_geojson_option_d_design.md` executed with Canvas
+  rather than SVG/DOM markers (~90% size reduction claimed).
+- Zero new dependency risk, zero post-processing migration, known
+  self-contained behaviour (mode (a) proven).
+- Cost: the custom JS controller is ours to write and maintain — accepted
+  under any option (CLAUDE.md mandates a minimal custom controller, not a
+  framework).
+
+### 2. MapLibre GL via CRAN `mapgl`
+
 - Native large-point-set rendering could make Option D unnecessary.
 - Existing local experiment: `dev/maplibre.R`, `dev/maplibre_template.html`,
   sample input `dev/data.csv`, tarball `dev/mapgl_0.4.4.tgz`.
-- Research questions: self-contained offline output (unverified — disqualifying
-  if unmet); porting cost of the banner/legend/controls post-processing.
+- Research questions: mode (a) self-contained output (unverified); mode (b)
+  hosting workflow; porting cost of banner/legend/controls post-processing.
 
-## The dark horse
+### 3. deck.gl via CRAN wrapper (`rdeck` or `mapdeck`)
 
-### 3. No framework at all — Leaflet Canvas renderer + embedded JSON
+- WebGL point rendering: 100k+ points trivial; 500 × 200 well within reach.
+- First-class temporal filtering: `DataFilterExtension` time-scrubs on the
+  GPU with zero layer rebuilding — arguably the best architectural fit for
+  the core problem (feature-checklist item 1 done natively).
+- Research questions: which wrapper is CRAN-current and maintained; mode (a)
+  offline survival (glyph/sprite/basemap fetches); inlined bundle size;
+  multi-symbol + static-overlay support (checklist item 3 — a known WebGL
+  weak spot).
 
-- Plain Leaflet with `preferCanvas`/a Canvas renderer (or raw Canvas over a
-  tile layer) plus the embedded-JSON temporal controller. This is essentially
-  Option D (`dev/20250118_geojson_option_d_design.md`), executed with a
-  Canvas rather than SVG/DOM marker path.
-- Zero new dependency risk, zero HTML post-processing migration, known
-  self-contained behaviour via `htmlwidgets::saveWidget(selfcontained = TRUE)`.
-- Cost: the custom JS controller is hand-written and maintained by us — but
-  the roadmap already mandates "a minimal custom JS controller, not a large
-  framework", so this cost is accepted under any option.
-- Prior art warning: read
-  `versions/quickmap_0_9_5_failed_svgicon_experiment.R` first — it records a
-  prior failed attempt at the file-size problem and why it failed (the failure
-  was in the SVG-icon approach, not Canvas, but the lesson transfers).
+### 4. plotly (v2 — screened in from user list)
 
-## Explicitly ruled out (recorded so it isn't relitigated)
+- Native animation frames + slider (checklist items 1–2 built in);
+  self-contained htmlwidget output (mode (a)); huge, maintained ecosystem
+  (item 9).
+- Research questions: per-frame data duplication may *inflate* rather than
+  shrink the file — measure on the episode fixture first; map-trace basemap
+  licensing/offline path (scattermap/MapLibre vs Mapbox token); layered
+  static overlays + mixed symbol shapes (item 3); label control granularity
+  (item 4).
 
-- **React / Vue / other UI frameworks**: UI frameworks, not renderers. They buy
-  component state management QuickMap doesn't need (one map + a time slider) at
-  the cost of a build toolchain and ~45 KB+ of inlined framework. The UI chrome
-  is already solved by the `{{placeholder}}` template system.
-- **CesiumJS, kepler.gl**: capable but far too heavy to inline into
-  email-attachable HTML.
+## Screened out (v2 — recorded so it isn't relitigated)
 
-## Suggested shape of the item-5 comparison
+- **mapview** (user list): wraps the *same* Leaflet backend with no temporal
+  animation — cannot change the file-size economics; it is a convenience API,
+  not an alternative renderer.
+- **RBokeh** (user list): fails criterion 9 — effectively unmaintained
+  (dormant upstream, dropped from active CRAN maintenance).
+- **Highcharter/Highmaps** (user list): fails criterion 7 for commercial use —
+  Highcharts requires a paid licence for consultancy work; also chart-first
+  rather than layered-map-first (weak on items 3/5).
+- **React / Vue / other UI frameworks**: renderers are what's needed, not
+  component state management; the UI chrome is already solved by the
+  `{{placeholder}}` template system.
+- **CesiumJS, kepler.gl**: far too heavy to inline for mode (a); mode (b)
+  hosting of kepler.gl is a data-exploration tool, not a report product.
 
-A **three-way comparison** — Leaflet + Option D (Canvas), MapLibre/mapgl, and
-deck.gl via a CRAN wrapper — running the self-contained-offline test *first*
-for each candidate, since it is the cheap disqualifier. Remaining criteria as
-already specified in CLAUDE.md: file size at 500 × 200, temporal switching,
-post-processing migration cost, CRAN-readiness.
+## Method
+
+Specification principle: this brief fixes the *invariants* — datasets,
+metrics, scope, ordering, budget — so results are comparable and the work
+bounded. It deliberately does **not** prescribe how each stack implements
+time-stepping, which wrapper package to prefer, or what the prototype code
+looks like: those are findings, to be discovered from current library
+documentation, not inputs.
+
+### Datasets (identical across all candidates — otherwise numbers are not comparable)
+
+1. **Episode fixture** — hourly PM2.5, Jan 15–20 2024, ~380 BL sensors ×
+   108 steps: `episodeJan15-20_2024_sf_all.Rdata` in `DATA_PATH`, loadable
+   via `from_rdata(..., "pm25")`. Current Leaflet output: 3,456,970 bytes
+   (pinned by `tests/testthat/test-characterization.R`).
+2. **Synthetic stress case** — 500 markers × 200 time steps (the CLAUDE.md
+   scale target), generated once and reused for every candidate.
+
+### Prototype scope (per candidate — minimal by design)
+
+Build only what proves feature-checklist items 1–3: threshold-coloured point
+markers, a working time control switching all markers per step, one static
+overlay visible across all steps, one boundary polygon. **Excluded from
+prototypes**: banner/legend/roller-menu chrome, JPG export, themes — the
+`{{placeholder}}` injection system is renderer-agnostic HTML, so porting it
+is assessed as a migration-cost *estimate* (step 4), not built four times.
+
+### Steps
+
+1. **Sharing-mode test first** for each candidate (cheap disqualifier per
+   mode): mode (a) open the generated file fully offline — watch for silent
+   glyph/sprite/basemap fetches; mode (b) record the minimal hosting workflow
+   and any cost. Run on the episode fixture only.
+2. **Benchmark** each surviving candidate on the episode fixture; build the
+   500 × 200 case **only for finalists** that pass step 1 and are not
+   obviously disqualified by step 2 results. Record per dataset, same
+   machine, same browser, cold open: output file size (mode a), seconds to
+   interactive, switching/autoplay smoothness through all steps (jank,
+   memory growth).
+3. **Score the feature-parity checklist** (criteria 1–10) per candidate,
+   from the prototype where demonstrable, else from current documentation.
+4. **Assess migration cost** of the banner/legend/controls post-processing
+   and CRAN-readiness of the wrapper dependency.
+5. Write comparison + recommendation to `dev/`, then **STOP for user approval
+   of the recommendation** before any item-6 implementation.
+
+### Budget guardrail
+
+Timebox each prototype (order of half a day, not days). If a candidate
+exceeds its box, record the blocker and the partial findings, mark it
+"not evaluated to completion", and move on — do not tunnel on the one stack
+that fights back. Prior art is mandatory pre-reading before any prototype:
+`versions/quickmap_0_9_5_failed_svgicon_experiment.R` (a previous failed
+attempt at the file-size problem). Existing MapLibre experiment:
+`dev/maplibre.R`, `dev/maplibre_template.html`, `dev/data.csv`.
+
+## Sources consulted for candidate discovery
+
+- https://r-spatial.org/projects/ · https://cran.r-project.org/web/views/Spatial.html
+- https://r-spatial.github.io/mapview/ · https://github.com/r-spatial/mapview
+- https://plotly.com
+- CRAN pages for mapgl, mapdeck, rdeck, leafgl
