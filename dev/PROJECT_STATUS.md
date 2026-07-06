@@ -6,9 +6,77 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-06 **Current Working Version**: v0.9.6 **Branch**: feature/item5-backend-comparison
+**Last Updated**: 2026-07-06 **Current Working Version**: v0.9.7 **Branch**: feature/item6-lazy-loading
 
 --------------------------------------------------------------------------------
+
+### Roadmap item 6 implemented (v0.9.7): time step cap + lazy loading — 2026-07-06 (PENDING human visual sign-off)
+
+Branch `feature/item6-lazy-loading`. Implements the approved Option D inside
+the package (R-only + the mandated JS controller; the item-5 Python builders
+remain comparison scaffolding).
+
+**What changed:**
+
+- **Lazy rendering path** — when a map has > 50 time steps or an estimated
+  pre-built size > ~5 MB (`use_lazy_rendering()`; both thresholds
+  options-overridable: `quickmap.lazy_step_threshold`,
+  `quickmap.lazy_size_threshold`), temporal markers are no longer pre-built
+  as one hidden `addMarkers()` layer set per step. Instead
+  `build_lazy_payload()` embeds one compact JSON payload
+  (`{times, thresholds, colours, naColour, layers:[{id, shape, radius,
+  nonsolid, labelMode, noHide, sites:[{code, lat, lon, label?, v:[…null]}]}]}`)
+  attached via `htmlwidgets::onRender(load_lazy_controller_js(), data=…)` in
+  `add_map_controls()`, and the new
+  **inst/controls/lazy-time-controller.js** renders one Canvas marker per
+  site (`ShapeMarker` subclass of `L.CircleMarker` drawing all QuickMap
+  symbol shapes; markers on `L.canvas()`, polygons stay on SVG per the
+  Leaflet 1.3.1 clipping bug) and restyles them per step via `setStyle`.
+  Missing values remove the marker (parity with the legacy NA filter).
+  Tooltips reproduce the legacy label modes (values/custom, hover/permanent).
+- **Roller-menu integration** — the existing menu UI is untouched;
+  `roller-menu.js` `switchToYear()` now delegates to
+  `window.quickmapTimeController` when present, and the controller publishes
+  a key-only `quickmapLayerCache` stub so menu initialisation (year list,
+  autoplay, keyboard nav) works unchanged.
+- **200-step cap** — `apply_time_step_cap()` (option
+  `quickmap.time_step_cap`) warns and subsets to the most recent steps,
+  applied to all paths.
+- **Serialization fix** — `attr(map$x, "TOJSON_ARGS") <- list(digits = 7)`
+  on lazy widgets only (htmlwidgets' default 16 digits serialized 22.8 as
+  22.800000000000001; 586 KB → 389 KB payload).
+- **Below-threshold maps unchanged** — the annual fixture still renders via
+  the pre-built path; its characterization tests pass unmodified. Static
+  JPG export always uses the legacy per-step non-interactive path, so
+  webshot2 never sees JS-restyled markers (no settle-delay issue).
+
+**Measured (episode fixture, 395 sensors × 108 hourly steps):**
+3,456,970 → 913,686 bytes (−74%); widget JSON 389 KB; step switch 0.9 ms
+(annual forced-lazy 2.8 ms); no console errors; tooltips/menu/autoplay
+verified in Chrome. The item-5 prototype's ~0.44 MB was a bare hand-built
+page; ~520 KB of the package output is the fixed leaflet/htmlwidgets/legend
+stack that every quickmap HTML (even a 2-step map) carries — payload cost is
+now ~0.4 MB for 43k site-steps vs ~2.5 MB before.
+
+**Deliberate characterization change (flagged):** the episode tests now
+assert 0 addMarkers/showGroup calls and pin the payload instead — 108 times,
+395 sites, **40,876 non-null site-step values (exact parity with the v0.9.5
+addMarkers baseline)**, threshold/colour contract; size band lowered to
+0.6–1.1 MB. Annual tests untouched. New tests:
+tests/testthat/test-item6-lazy-loading-v1.R (cap warn+subset, decision
+thresholds, payload contract incl. NA→null and Label fallback, forced-lazy
+annual: schools stay a static pre-built layer added once, dt+bl layers with
+circle/rect shapes).
+
+**Gate:** 213 pass / 0 fail / 0 skip; smoke test OK (HTML + 3 JPGs).
+Demo script scripts/item6_demo-maps_v1.R → aq_maps/item6_episode-lazy_v1.html
+(lazy, headline), item6_merton-annual_v1.html (legacy path, must match
+baseline), item6_merton-annual-forced-lazy_v1.html (same map forced lazy for
+side-by-side marker comparison). Signed-off baseline preserved untouched in
+aq_maps/baseline_260705_signed_off/; episode reference:
+aq_maps/item5_leaflet-episode-reference_v1.html. v0.9.6 archived to
+versions/quickmap_0_9_6.R. **PR blocks on human visual sign-off**
+(rendering-touching).
 
 ### Roadmap item 5 complete: rendering backend DECIDED — Option D (user-approved) — 2026-07-06
 

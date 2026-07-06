@@ -110,6 +110,13 @@ char_marker_calls <- function(payload) {
   )
 }
 
+# Lazy-rendering payload (item 6): the data attached to the onRender hook
+char_lazy_payload <- function(payload) {
+  hooks <- payload$jsHooks$render
+  stopifnot(length(hooks) == 1)
+  hooks[[1]]$data
+}
+
 char_shown_groups <- function(payload) {
   unlist(lapply(
     payload$x$calls,
