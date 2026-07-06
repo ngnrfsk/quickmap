@@ -431,14 +431,28 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
    the stabilised code, mark dev docs current vs historical, and restructure
    dev/PROJECT_STATUS.md into a maintained current-state section plus archived
    history
-10. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md (LCA visual
+10. UI polish pass (**delivers v0.9.9.5 — the last version before v1.0**) —
+    modernise the visual design of the HTML output (banner, legend, controls,
+    typography, spacing, colour) to the standard of modern web / infographic
+    design. **Starts with an analysis of design-template options** — e.g.
+    established design systems and news-graphics conventions
+    (FT/Economist/BBC-style chart chrome, GOV.UK design system), lightweight
+    CSS approaches compatible with self-contained output (no framework
+    runtime) — ending in a recommended direction with mock-ups for **user
+    approval before implementation**. Implementation lands through the
+    existing `{{placeholder}}` template/theme system; themes must remain
+    user-configurable. (Inserted 2026-07-06 after the item-5 React
+    comparison: app-framework polish is reproducible as CSS/design effort.)
+11. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md (LCA visual
     fixes, static-export subfolder generation, unified marker/text/legend scaling,
     ward/marker label consistency) — so v1.0 releases without known user-facing
-    defects. Do not work on these earlier or piecemeal; they are item 10, not
-    background tasks.
+    defects. Do not work on these earlier or piecemeal; they are the final
+    item before the v1.0 release, not background tasks.
 
-(Items 2 and 5 were inserted 2026-07-05. Dev docs written before that date use the
-previous numbering: atomic unit = 2, wrapper = 3, lazy loading = 4, wind = 5.)
+(Items 2 and 5 were inserted 2026-07-05; item 10 (UI polish) was inserted
+2026-07-06, renumbering the UI-defects item to 11. Dev docs written before
+those dates use the older numbering — in particular the item-5 comparison doc
+says "item 10" for what is now item 11.)
 
 ### Verification and human testing
 
@@ -575,7 +589,9 @@ comparison, benchmarks and feature scoring: dev/item5_backend-comparison_v1.md
 dev/item5_prototypes/). Key recorded facts for later items: MapLibre/mapgl is
 the V2 migration path (compact payload + controller pattern transfer);
 plotly's kaleido static export is a borrowable fix if webshot2 misbehaves at
-item 10; Windy API assessed and rejected for item 7 (forecast-only,
+item 11 (UI defects; the comparison doc's "item 10" refers to this item under
+the pre-2026-07-06 numbering); Windy API assessed and rejected for item 7
+(forecast-only,
 online-only, paid) — worldmet + leaflet-velocity stands. The item-5 prototype
 build scripts are comparison scaffolding (some Python); the item-6
 implementation is R-only plus the mandated JS controller.
