@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.4
+### Current Version: 0.9.5
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -122,7 +122,8 @@ Data Loading → Layer Configuration → Generic Processing → Icon Generation 
 
 ``` r
 # Interactive development in R/RStudio
-source("R/quickmap.R")
+# (install once with devtools::install(), reinstall after editing R/quickmap.R)
+library(quickmap)
 
 # Run example scripts
 source("tests/test_quickmap.R")
@@ -342,6 +343,7 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.3.20**: School label duck typing fix
 -   **v0.9.3.21**: RData duck typing (standard names → any compatible data.frame)
 -   **v0.9.4**: Sub-annual temporal resolution (month/day/hour), renamed `years` → `display_times`
+-   **v0.9.5**: Proper R package installation — roxygen2 NAMESPACE/man, `devtools::install()` + `library(quickmap)` replaces `source()`; `system.file()` path resolution fixed
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 
@@ -370,11 +372,9 @@ A CRAN-publishable R package (v1.0). The package must:
 
 ### Known bugs — fix these first
 
-1. **Path resolution**: quickmap is still sourced as a script, so `system.file()`
-   returns `""` and `get_package_dir()` (R/quickmap.R) falls back to fragile relative
-   `inst/` paths. DESCRIPTION and NAMESPACE already exist. Fix: update DESCRIPTION
-   (version, dependencies), regenerate NAMESPACE with roxygen2, then install via
-   `devtools::install()` and load with `library(quickmap)` instead of `source()`.
+(Former bug #1 — path resolution via `system.file()` — was fixed in v0.9.5
+(roadmap item 1): quickmap is now a proper installed package loaded with
+`library(quickmap)`.)
 
 (A former bug #2 — `na.strings` passed via `...` to `import_csv_data` — was fixed in
 v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
@@ -423,20 +423,19 @@ previous numbering: atomic unit = 2, wrapper = 3, lazy loading = 4, wind = 5.)
 
 **Automated gate — run after every change:**
 
-1. Unit tests: `testthat::test_dir("tests/testthat")` — must pass with no failures
-   (subject to the known-red baseline below until roadmap item 1 lands).
+1. Unit tests: `testthat::test_dir("tests/testthat")` — must pass with no failures.
 2. Smoke test: `source("tests/test_quickmap.R")` — must complete without error and
-   write an HTML map to `aq_maps/`. (Once roadmap item 1 lands and quickmap loads
-   via `library(quickmap)`, update the smoke test accordingly in the same change —
-   the gate is then the updated script.)
+   write an HTML map to `aq_maps/`. (The script loads the installed package via
+   `library(quickmap)`; reinstall with `devtools::install()` after editing
+   `R/quickmap.R`.)
 3. Prerequisite: `DATA_PATH` must point to `~/Coding/Library/data`. If the data is
    absent, STOP and report — do not refactor unverified.
 
-**Known-red baseline (as of 2026-07-04):** the testthat suite has ~11 pre-existing
-failures caused by the path-resolution bug and by tests referencing renamed
-functions (`load_banner_css`, `load_legend_css`). Roadmap item 1 includes making
-the gate green — fix or delete stale tests as part of that item. Until then, the
-gate for a change is: no *new* failures beyond that baseline.
+**Known-red baseline: cleared.** As of v0.9.5 (roadmap item 1) the testthat
+suite is green — stale tests were fixed or deleted (`test-export.R`,
+`test-parameters.R`, `test-styling.R` targeted the pre-v0.9.2 API and were
+removed; roadmap item 2's characterization net replaces their coverage). The
+gate for every change is now: no failures.
 
 The other `tests/test_*.R` scripts are historical one-off checks; do not treat them
 as a gate.

@@ -1,6 +1,6 @@
-# Source the main script
-Sys.setenv(DATA_PATH = "~/Coding/Library/data")
-source("R/quickmap.R")
+# Load the installed package (devtools::install() first if not installed)
+if (Sys.getenv("DATA_PATH") == "") Sys.setenv(DATA_PATH = "~/Coding/Library/data")
+library(quickmap)
 
 # ==============================================================================
 # MAP 1: Richmond NO2 (New API: data_sources + data_configs)
