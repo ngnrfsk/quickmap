@@ -6,9 +6,34 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-06 **Current Working Version**: v0.9.6 **Branch**: feature/quickmap-wrapper
+**Last Updated**: 2026-07-06 **Current Working Version**: v0.9.6 **Branch**: feature/item5-backend-comparison
 
 --------------------------------------------------------------------------------
+
+### Roadmap item 5 complete: rendering backend DECIDED — Option D (user-approved) — 2026-07-06
+
+Branch `feature/item5-backend-comparison`, PR #22. Four-way comparison per the
+approved brief (dev/260705_rendering_backend_candidates.md) on identical
+datasets: the pinned episode fixture (399 sensors × 108 hourly steps; Leaflet
+reference reproduced byte-exact at 3,456,970 B) and a synthetic 500×200 case.
+Full doc: **dev/item5_backend-comparison_v1.md**; prototypes and build scripts
+in dev/item5_prototypes/ (demo HTML in local aq_maps/item5_*.html, gitignored).
+
+Results: **Option D (Leaflet Canvas + embedded JSON) 0.44 MB / 0.70 MB,
+0.5 ms/step, mode (a) pass — recommended and approved.** MapLibre 1.37/1.63 MB,
+0.1 ms/step, mode (a) pass with inline raster style — recorded V2 path.
+mapdeck disqualified (token-gated basemap, bugsnag telemetry, no time control
+in saved widgets). plotly, redone to best practice after review
+(partial_bundle + partial colour-only frames; v2 script), reaches
+3.33/4.78 MB but with zero headroom and a mandatory ~53 ms full redraw per
+step (verified: redraw:false silently skips mapbox repaints).
+
+Also recorded for later items: plotly's kaleido static export is a borrowable
+fix if webshot2 flakiness persists at item 10; MapLibre persistent labels need
+glyph PBFs (offline cost); **Windy API rejected for item 7** (forecast-only,
+online-only, paid, owns the Leaflet instance) — worldmet + leaflet-velocity
+stands. Item-6 kick-off prompt: dev/item6_start-prompt_v1.md.
+Testthat suite green throughout (173 pass); no package code touched.
 
 ### Roadmap item 4 complete (v0.9.6): quickmap() core API — 2026-07-06
 Branch `feature/quickmap-wrapper`. New R/quickmap_api.R: `quickmap(layers,

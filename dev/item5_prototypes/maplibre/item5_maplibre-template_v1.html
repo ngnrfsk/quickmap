@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>{{TITLE}}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<style>{{MAPLIBRE_CSS}}</style>
+<style>
+  body { margin:0; font-family:sans-serif; display:flex; flex-direction:column; height:100vh; }
+  #map { flex-grow:1; }
+  #controls { background:rgba(255,255,255,.92); padding:8px 12px; border-radius:4px;
+    position:absolute; top:10px; right:10px; z-index:10; width:280px;
+    box-shadow:0 1px 4px rgba(0,0,0,.3); }
+  #timeLabel { font-weight:bold; text-align:center; margin-bottom:4px; }
+  input[type=range]{ width:100%; }
+  #stats { position:absolute; bottom:10px; left:10px; z-index:10;
+    background:rgba(255,255,255,.85); font:11px monospace; padding:4px 6px; }
+</style>
+<script>{{MAPLIBRE_JS}}</script>
+</head>
+<body>
+<div id="map"></div>
+<div id="controls">
+  <div id="timeLabel"></div>
+  <input type="range" id="slider" min="0" max="0" value="0"/>
+  <div style="text-align:center;margin-top:4px;"><button id="playBtn">Play</button></div>
+</div>
+<div id="stats"></div>
+<script>
+var DATA = {{DATA_JSON}};
+var BOUNDARY = {{BOUNDARY_JSON}};
+var SCHOOLS = {{SCHOOLS_JSON}};
+
+// GeoJSON: one feature per site, values array in properties (no duplication)
+var lons = [], lats = [];
+// note: nested arrays in properties are JSON-stringified by the GeoJSON
+// worker, so expressions cannot index them — use one scalar property per step
+var pointsGJ = { type: 'FeatureCollection', features: DATA.sites.map(function (s) {
+  lons.push(s.lon); lats.push(s.lat);
+  var props = { code: s.code };
+  s.v.forEach(function (x, j) { if (x !== null) props['t' + j] = x; });
+  return { type: 'Feature',
+    geometry: { type: 'Point', coordinates: [s.lon, s.lat] },
+    properties: props };
+}) };
+
+// inline style: raster OSM tiles only — no style.json / glyph / sprite fetches
+var map = new maplibregl.Map({
+  container: 'map',
+  style: {
+    version: 8,
+    sources: { osm: { type: 'raster',
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tileSize: 256, attribution: '© OpenStreetMap contributors' } },
+    layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
+  },
+  bounds: [[Math.min.apply(null, lons), Math.min.apply(null, lats)],
+           [Math.max.apply(null, lons), Math.max.apply(null, lats)]],
+  fitBoundsOptions: { padding: 40 }
+});
+
+// colour expression for time index i: step over value, null -> last colour
+function colourExpr(i) {
+  var val = ['coalesce', ['get', 't' + i], -1];
+  var stepExpr = ['step', val, DATA.colours[DATA.colours.length - 1],
+                  DATA.thresholds[0], DATA.colours[0]];
+  for (var k = 1; k < DATA.thresholds.length; k++)
+    stepExpr.push(DATA.thresholds[k], DATA.colours[k]);
+  return stepExpr;
+}
+
+map.on('load', function () {
+  map.addSource('boundary', { type: 'geojson', data: BOUNDARY });
+  map.addLayer({ id: 'boundary-fill', type: 'fill', source: 'boundary',
+    paint: { 'fill-color': '#005794', 'fill-opacity': 0.05 } });
+  map.addLayer({ id: 'boundary-line', type: 'line', source: 'boundary',
+    paint: { 'line-color': '#005794', 'line-width': 2.5 } });
+
+  map.addSource('points', { type: 'geojson', data: pointsGJ });
+  map.addLayer({ id: 'aq-points', type: 'circle', source: 'points',
+    paint: { 'circle-radius': 7, 'circle-stroke-width': 1,
+      'circle-stroke-color': '#555', 'circle-color': colourExpr(0) } });
+
+  // second symbol type without any sprite: runtime canvas-generated square icon
+  var cv = document.createElement('canvas'); cv.width = 12; cv.height = 12;
+  var cx = cv.getContext('2d');
+  cx.fillStyle = '#4a90d9'; cx.fillRect(0, 0, 12, 12);
+  cx.strokeStyle = '#1a3f6f'; cx.strokeRect(0, 0, 12, 12);
+  map.addImage('school-sq', cx.getImageData(0, 0, 12, 12));
+  map.addSource('schools', { type: 'geojson', data: SCHOOLS });
+  map.addLayer({ id: 'schools', type: 'symbol', source: 'schools',
+    layout: { 'icon-image': 'school-sq', 'icon-allow-overlap': true } });
+
+  var slider = document.getElementById('slider'),
+      label = document.getElementById('timeLabel'),
+      stats = document.getElementById('stats'),
+      playBtn = document.getElementById('playBtn');
+  slider.max = DATA.times.length - 1;
+
+  window.setTime = function (idx) {
+    var t0 = performance.now();
+    label.textContent = DATA.times[idx];
+    map.setPaintProperty('aq-points', 'circle-color', colourExpr(idx));
+    stats.textContent = 'step ' + idx + ' · setPaint ' +
+      (performance.now() - t0).toFixed(1) + ' ms';
+    window._idx = idx;
+  };
+  setTime(0);
+
+  slider.addEventListener('input', function (e) { setTime(+e.target.value); });
+  var playing = false, timer = null;
+  playBtn.addEventListener('click', function () {
+    playing = !playing;
+    playBtn.textContent = playing ? 'Pause' : 'Play';
+    if (playing) timer = setInterval(function () {
+      var v = (+slider.value + 1) % DATA.times.length;
+      slider.value = v; setTime(v);
+    }, 250); else clearInterval(timer);
+  });
+
+  // tooltip on hover
+  var popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+  map.on('mousemove', 'aq-points', function (e) {
+    var f = e.features[0];
+    var v = f.properties['t' + (window._idx || 0)];
+    if (v === undefined) v = null;
+    popup.setLngLat(f.geometry.coordinates)
+      .setHTML('<b>' + f.properties.code + '</b><br>' +
+               (v === null ? 'no data' : v + ' µg/m³')).addTo(map);
+  });
+  map.on('mouseleave', 'aq-points', function () { popup.remove(); });
+});
+</script>
+</body>
+</html>

@@ -416,12 +416,11 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
    examples, docs, vignettes, and test files must be updated in the same change.
    Plan API development with care to minimise revisions of these key files — settle
    the design before implementing rather than rewriting everything repeatedly
-5. Rendering backend decision — settle the rendering backend before any
-   lazy-loading work (see "Rendering backend decision" below). The comparison
-   brief (candidates, criteria, method, budget) was **user-approved 2026-07-06**:
-   dev/260705_rendering_backend_candidates.md is the mandate. **STOP for
-   explicit user approval of the recommendation** at the end — do not start
-   item 6 without it
+5. Rendering backend decision — **DONE, decision approved 2026-07-06: Option D**
+   (keep Leaflet; Canvas markers + embedded JSON + minimal custom JS time
+   controller). Comparison and evidence: dev/item5_backend-comparison_v1.md
+   (PR #22). MapLibre/mapgl recorded as the V2 migration path; item 6 is
+   unblocked and implements Option D
 6. Implement time step cap and lazy loading — addresses the CRITICAL HTML
    file-size blocker recorded in dev/PROJECT_STATUS.md
 7. Add wind layer support via worldmet + leaflet-velocity — its JS payload rides
@@ -566,23 +565,21 @@ size is negligible. The plugin JS must be inlined (see Self-contained constraint
 averages aligned to the displayed time steps are sufficient. For monthly/annual maps,
 use period-mean wind.
 
-### Rendering backend decision — research task before lazy loading (roadmap item 5)
+### Rendering backend decision — RESOLVED (roadmap item 5)
 
-The lazy-loading work (roadmap item 6) rewrites the core marker path
-(`create_generic_icons()`, `add_layer()`), so the rendering backend must be settled
-before that investment is made.
-
-**The comparison brief is user-approved (2026-07-06) and lives at
-dev/260705_rendering_backend_candidates.md** — candidates (Leaflet+Option D
-Canvas, MapLibre/mapgl, deck.gl via CRAN wrapper, plotly), scoring criteria,
-datasets, prototype scope, gating order, and per-candidate timebox. Run the
-comparison against that brief; it specifies invariants, not methods —
-per-stack implementation choices are findings from current documentation.
-Read `versions/quickmap_0_9_5_failed_svgicon_experiment.R` first — it records
-a prior failed attempt at the file-size problem and why it failed. Then STOP
-and wait for explicit user approval of the recommendation before starting
-item 6 — do not fold the decision and the implementation into a single PR.
-Kick-off prompt for a fresh autonomous session: dev/item5_start-prompt_v1.md.
+**Decision (user-approved 2026-07-06): Option D** — keep Leaflet; replace the
+per-marker icon serialization with Canvas-rendered markers restyled from one
+compact embedded JSON payload by a minimal custom JS time controller. Full
+comparison, benchmarks and feature scoring: dev/item5_backend-comparison_v1.md
+(brief: dev/260705_rendering_backend_candidates.md; prototypes:
+dev/item5_prototypes/). Key recorded facts for later items: MapLibre/mapgl is
+the V2 migration path (compact payload + controller pattern transfer);
+plotly's kaleido static export is a borrowable fix if webshot2 misbehaves at
+item 10; Windy API assessed and rejected for item 7 (forecast-only,
+online-only, paid) — worldmet + leaflet-velocity stands. The item-5 prototype
+build scripts are comparison scaffolding (some Python); the item-6
+implementation is R-only plus the mandated JS controller.
+Kick-off prompt for the item-6 session: dev/item6_start-prompt_v1.md.
 
 ### Time steps and file size
 
@@ -591,9 +588,10 @@ Kick-off prompt for a fresh autonomous session: dev/item5_start-prompt_v1.md.
   render layers from embedded JSON on demand in JS rather than pre-building all hidden
   Leaflet layers. An existing design covers this ground:
   `dev/20250118_geojson_option_d_design.md` ("Option D": GeoJSON + client-side JS
-  styling, ~90% size reduction). Whether Option D or a MapLibre migration is used
-  is settled by roadmap item 5 (see "Rendering backend decision" above). Either way
-  the implementation should be a minimal custom JS controller, not a large framework.
+  styling, ~90% size reduction). Roadmap item 5 settled this: **Option D, executed
+  with Canvas markers** (see "Rendering backend decision" above); measured at
+  0.44 MB on the 3.46 MB episode fixture and 0.70 MB at 500×200. The
+  implementation is a minimal custom JS controller, not a large framework.
 - Time resolution ranges from 15-minute to monthly. The cap applies regardless of resolution.
 
 ### Sharing constraint — file OR link (relaxed 2026-07-06)
