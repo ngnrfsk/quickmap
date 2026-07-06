@@ -1,7 +1,8 @@
 # QuickMap Parameter Reference
 
-Quick reference for `create_pollution_map()`. For full documentation see the Roxygen help
-(`?create_pollution_map` after loading the package).
+Quick reference for `quickmap()` and its compatibility wrapper
+`create_pollution_map()`. For full documentation see the Roxygen help
+(`?quickmap` / `?create_pollution_map` after loading the package).
 
 ## Setup
 
@@ -10,7 +11,33 @@ library(quickmap)
 Sys.setenv(DATA_PATH = "~/Coding/Library/data")
 ```
 
-## Minimal Example
+## Minimal Example (quickmap, v0.9.6+)
+
+```r
+# two lines: a usable map
+quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth")
+
+# layers can be file paths, qm_layer() objects, or data frames
+quickmap(
+  list("wandsworth_2017_2024.csv", "schools_Wandsworth.csv"),
+  boroughs    = "Wandsworth",
+  output_file = "wandsworth_2024.html"
+)
+```
+
+`quickmap()` accepts the same styling parameters as `create_pollution_map()`
+below (`colour_scale`, `title`, `theme_file`, `marker_labels`, `vignette`,
+`export_image`, …). `pollutant` is inferred from the first time-varying
+layer when omitted.
+
+**Design rule — where parameters live:** properties of a *layer* (value
+column, time column, labels, symbol shape, name) are set on the layer itself
+via `qm_layer()` / `from_csv()` / `from_rdata()` / `from_openair()`;
+properties of the *map* (boroughs, colour scale, title, theme, output) are
+`quickmap()` arguments. There are no per-layer parallel-vector arguments at
+the map level — to customise one layer of several, customise that layer.
+
+## Minimal Example (compatibility wrapper)
 
 ```r
 create_pollution_map(

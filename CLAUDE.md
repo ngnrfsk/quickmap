@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.5
+### Current Version: 0.9.6
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -132,7 +132,26 @@ source("inst/examples/create_all_borough_maps.R")
 
 ### Creating Maps
 
-Current API (v0.9.2+) uses `data_sources` list:
+Core API (v0.9.6+) is `quickmap()`, which takes file paths, `qm_layer()`
+atomic units, or data frames:
+
+``` r
+# two lines: a usable map
+quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth")
+
+# several layers plus styling
+quickmap(
+  list("merton_dt_2018_2024.csv", "bl_sensors.Rdata", "schools_Merton.csv"),
+  boroughs = "Merton",
+  colour_scale = "who_no2",
+  title = "Merton NO2",
+  output_file = "merton_no2.html"
+)
+```
+
+`create_pollution_map()` remains as a compatibility wrapper with its historic
+signature (it converts `data_sources` to `qm_layer`s and delegates to
+`quickmap()`):
 
 ``` r
 map_object <- create_pollution_map(
@@ -327,6 +346,7 @@ School data detected by School column presence. Any filename works (schools.csv,
 2. **Progressive disclosure**: common parameters are top-level; advanced or obscure ones are secondary.
 3. **Context-aware defaults**: defaults should work unmodified for 90% of use cases.
 4. **Multi-value over boolean**: prefer categorical state parameters (e.g. `marker_labels = "values_on"`) over stacks of boolean flags.
+5. **Parameters live where they belong** (user-approved 2026-07-06): properties of a *layer* (value/time/label columns, symbol shape, name) are set on the layer via `qm_layer()`/`from_*()` wrappers; properties of the *map* (boroughs, scale, title, theme, output) are `quickmap()` arguments. No per-layer parallel-vector arguments at the map level — to customise one layer of several, customise that layer.
 
 ### Code Minimalism
 
@@ -344,6 +364,7 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.3.21**: RData duck typing (standard names → any compatible data.frame)
 -   **v0.9.4**: Sub-annual temporal resolution (month/day/hour), renamed `years` → `display_times`
 -   **v0.9.5**: Proper R package installation — roxygen2 NAMESPACE/man, `devtools::install()` + `library(quickmap)` replaces `source()`; `system.file()` path resolution fixed
+-   **v0.9.6**: `quickmap()` core API consuming `qm_layer` atomic units (items 3+4); `create_pollution_map()` becomes a thin compatibility wrapper; rendered output unchanged (characterization-verified)
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 
@@ -455,18 +476,15 @@ HTML file; its appearance and behaviour must be checked by a human at defined po
   maps cannot be committed: the PR description must instead list the generating
   script, the output file paths, and what the human should visually check.
 - **Naming convention (mandatory for new artefacts):** every new test file, demo
-  script, and demonstration output must encode what it specifically tests and
-  what data it shows:
-  `[location]_[data source]_[period]_[roadmap item]_[iteration]`
-  — e.g. `richmond_bl_2024jan_item2_v1.html` (aq_maps/),
-  `merton_dt_2020-2022_item2_v1.R` (scripts/) — and testthat files name the
-  specific behaviour under test plus item and iteration, e.g.
-  `test-qmlayer-time-inference-item3-v1.R`. The goal: from the filename alone a
-  human can tell the location, the data source, the time period covered, which
-  roadmap item produced it, and which revision it is. Existing files keep their
-  names until touched; when a script or test is materially revised, bump the
-  iteration rather than overwriting the history of what the human previously
-  inspected.
+  script, and demonstration output is named
+  `[item]_[short description]_[version]`
+  — e.g. `item4_merton-annual_v1.html` (aq_maps/), `item4_demo-maps_v1.R`
+  (scripts/) — and testthat files keep the required `test-` prefix:
+  `test-item4-quickmap-api-v1.R`. The short description says what the artefact
+  shows or tests (location/data/period where that is the point, behaviour name
+  for tests). Existing files keep their names until touched; when a script or
+  test is materially revised, bump the version rather than overwriting the
+  history of what the human previously inspected.
 - Keep the previously signed-off outputs for before/after comparison — never leave
   the human with only the new set. Before regenerating, copy the last approved maps
   to a dated folder (e.g. `aq_maps/baseline_YYMMDD_signed_off/`) or use dated output

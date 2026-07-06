@@ -53,7 +53,10 @@ test_that("functions cited as existing in CLAUDE.md are defined", {
   cited <- setdiff(cited, c(planned_functions, external_functions))
 
   source_code <- paste(
-    readLines(file.path(root, "R", "quickmap.R"), warn = FALSE),
+    unlist(lapply(
+      list.files(file.path(root, "R"), pattern = "\\.R$", full.names = TRUE),
+      readLines, warn = FALSE
+    )),
     collapse = "\n"
   )
   defined_in_pkg <- vapply(

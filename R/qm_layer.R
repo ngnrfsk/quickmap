@@ -307,19 +307,23 @@ print.qm_layer <- function(x, ...) {
 #' @param file Path to the CSV (relative paths resolve against `DATA_PATH`)
 #' @param pollutant Name for the value column of temporal data (default "no2")
 #' @param name Layer name (default: the file name without extension)
+#' @param temporal Force temporal (TRUE) or static (FALSE) handling; NULL
+#'   (default) auto-detects: more than one year column means temporal
 #' @return A [qm_layer()]
 #' @family atomic unit
 #' @export
-from_csv <- function(file, pollutant = "no2", name = NULL) {
+from_csv <- function(file, pollutant = "no2", name = NULL, temporal = NULL) {
   name <- name %||% tools::file_path_sans_ext(basename(file))
   imported <- import_csv_data(file)
   data <- imported$data
 
   is_school <- "School" %in% names(data)
   year_cols <- names(data)[grepl("^\\d{4}$", names(data))]
+  temporal <- temporal %||% (!is_school && length(year_cols) > 1)
 
-  if (!is_school && length(year_cols) > 0) {
-    keep <- setdiff(names(data), year_cols)
+  if (temporal && length(year_cols) > 0) {
+    data[year_cols] <- lapply(data[year_cols],
+                              function(x) as.numeric(as.character(x)))
     data <- tidyr::pivot_longer(
       data, cols = dplyr::all_of(year_cols),
       names_to = "time_label", values_to = pollutant
