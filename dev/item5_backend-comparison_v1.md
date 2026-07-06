@@ -1,6 +1,8 @@
 # Item 5 — rendering backend comparison and recommendation (v1)
 
-**Date:** 2026-07-06 · **Branch:** `feature/item5-backend-comparison`
+**Date:** 2026-07-06 · **Revised same day:** plotly prototype re-done to best
+practice after review (see "plotly v2" notes inline) — v1 had under-sold it.
+**Branch:** `feature/item5-backend-comparison`
 **Mandate:** dev/260705_rendering_backend_candidates.md (user-approved 2026-07-06)
 **Status:** awaiting user approval of the recommendation (STOP point). Item 6
 does not start until that approval.
@@ -32,8 +34,15 @@ scripts listed at the end).
 - **deck.gl via CRAN mapdeck 0.3.5** (`deckgl/`): honest use of the CRAN
   wrapper — `add_scatterplot` (points, per-point hex colours) +
   `add_polygon`, saved self-contained. Single time step only: see findings.
-- **plotly** (`plotly/`): native animation `frame=` + slider on a
-  `scattermapbox` trace with the token-free `open-street-map` style.
+- **plotly** (`plotly/`): v1 used the naive idiom (`plot_ly(frame = ~t)`,
+  full bundle). A best-practice review found two real defects in that
+  prototype, fixed in **v2** (`item5_plotly-episode_v2.R`):
+  `partial_bundle()` (ship only the scattermapbox module, not the full
+  3.67 MB plotly.js), and hand-built **partial frames** carrying only
+  marker.color + hover text instead of duplicating lon/lat per frame.
+  v2 also surfaced a plotly.js caveat verified in Chrome: `redraw: false`
+  silently skips repainting mapbox/GL traces (the data updates, the canvas
+  does not) — `redraw: true` is mandatory, at ~53 ms per step.
 
 ## Step 1 — sharing-mode results
 
@@ -48,24 +57,27 @@ Chrome.
 | Leaflet + Option D | **Pass** | Pass (any static host) | Only `tile.openstreetmap.org` requests; all JS/CSS inline |
 | MapLibre GL | **Pass** | Pass (any static host) | Only OSM tile requests — the feared style/glyph/sprite fetches are fully avoidable with an inline raster style |
 | mapdeck (deck.gl) | **Fail as shipped** | Poor | No basemap at all without a Mapbox token (blank white page behind markers); widget silently POSTs telemetry to `sessions.bugsnag.com` — an undisclosed external call in a "self-contained" file |
-| plotly | Pass | Pass | OSM raster style works token-free; all JS inline (but see size) |
+| plotly (v2) | Pass | Pass | OSM raster style works token-free; all JS inline |
 
 ## Step 2 — benchmarks (same machine, Chrome, local HTTP serve)
 
-| Metric | Leaflet (current) | Option D | MapLibre | mapdeck | plotly |
-|---|---|---|---|---|---|
-| Episode file size | **3,456,970 B** | **439,545 B (−87%)** | 1,372,055 B (−60%) | 2,596,701 B (one step only) | 6,999,037 B (+102%) |
-| 500×200 file size | not built (≈10× episode payload) | **702,352 B** | 1,634,862 B | not built | 10,860,747 B |
-| Load → interactive, episode | **9.6 s** (256 MB heap) | 0.6 s | 0.5 s | ~1 s | 0.6 s (109 MB heap) |
-| Full 108-step sweep | n/a (autoplay visibly heavy) | 55 ms (0.5 ms/step) | 19 ms (0.2 ms/step) | n/a | not measured (per-frame redraw) |
-| Full 200-step sweep (500 sites) | — | 103 ms (0.5 ms/step) | 22 ms (0.1 ms/step) | — | — |
-| Heap after sweep | — | 57 MB / 90 MB (500×200) | 66 MB / 92 MB | — | — |
+| Metric | Leaflet (current) | Option D | MapLibre | mapdeck | plotly v1 (naive) | plotly v2 (best practice) |
+|---|---|---|---|---|---|---|
+| Episode file size | **3,456,970 B** | **439,545 B (−87%)** | 1,372,055 B (−60%) | 2,596,701 B (one step only) | 6,999,037 B | 3,325,745 B (−4%) |
+| 500×200 file size | not built (≈10× episode payload) | **702,352 B** | 1,634,862 B | not built | 10,860,747 B | 4,779,557 B |
+| Load → interactive, episode | **9.6 s** (256 MB heap) | 0.6 s | 0.5 s | ~1 s | 0.6 s | ~0.6 s |
+| Step switch | n/a (autoplay visibly heavy) | 0.5 ms | 0.1–0.2 ms | n/a | broken with redraw:false | **53 ms** (mandatory full redraw) |
+| Heap after sweep | — | 57 MB / 90 MB (500×200) | 66 MB / 92 MB | — | — | — |
 
 Both finalists hold the 500×200 target under 5 MB with an order-of-magnitude
-margin and switch steps at effectively zero cost. mapdeck and plotly were not
-taken to the stress case: mapdeck cannot time-step a saved widget at all, and
-plotly already exceeds the 5 MB cap on the smaller episode fixture (10.9 MB at
-500×200, worse than the problem it would replace).
+margin and switch steps at effectively zero cost. mapdeck cannot time-step a
+saved widget at all. plotly, done properly (v2: `partial_bundle()` + partial
+colour-only frames + `redraw: true`), improves from 7.0→3.33 MB on the episode
+and from 10.9→**4.78 MB** at 500×200 — technically under the cap, but with no
+headroom: ~2.1 MB is the trace-module bundle and the frame payload still grows
+linearly, so any additional layer or longer series breaches it. Its step
+switch costs ~53 ms (a full mapbox replot per frame — ~100× the finalists),
+which is usable for 250 ms autoplay but visibly heavier when scrubbing.
 
 ## Step 3 — feature checklist (criteria 1–10)
 
@@ -82,7 +94,7 @@ plotly already exceeds the 5 MB cap on the smaller episode fixture (10.9 MB at
 | 7 | Free/low-cost | ✔ | ✔ | ◐ needs Mapbox account for basemap | ✔ |
 | 8 | Sharing mode (a)/(b) | ✔ both | ✔ both | ✗/◐ | ✔ both but over cap |
 | 9 | Maintained / wider ecosystem | ✔ Leaflet (stable; 1.3.1 copy is old but ours to bump) | ✔ MapLibre very active; mapgl 0.5.0 (Jun 2026), tmap now builds on it | ◐ mapdeck 0.3.6 maintained but wraps Mapbox GL v1 (2019) | ✔ huge |
-| 10 | Production visual quality | ✔ matches current product | ✔ (raster OSM identical; vector styles a future upgrade) | ◐ | ✗ chart-first chrome, washed-out map traces |
+| 10 | Production visual quality | ✔ matches current product | ✔ (raster OSM identical; vector styles a future upgrade) | ◐ | ◐ v2 marker rendering matches the other backends; chart-first chrome (in-plot title/slider) still reads as a chart, not a map product |
 
 ## Step 4 — migration cost and CRAN-readiness
 
@@ -108,8 +120,16 @@ volumes QuickMap does not target (10k+ points, vector styling).
 any basemap, cannot time-step a saved widget, and phones home via bugsnag.
 Not CRAN-risky, but architecturally wrong for this product.
 
-**plotly:** CRAN-healthy but the per-frame data duplication is structural —
-it *is* the current Leaflet problem in a different wrapper, at larger sizes.
+**plotly:** CRAN-healthy, huge community, and — done to best practice — a
+legitimate pass on the sharing test. Its migration cost is the highest of the
+passing candidates though: the whole banner/legend/roller-menu system would be
+rebuilt against plotly's chart chrome (its own title/slider/buttons live
+inside the plot layout, competing with ours), partial frames require
+`plotly_build()` surgery rather than the public R API, hover text is the only
+label mechanism (no persistent marker labels), and mixed symbol shapes on map
+traces are limited. The 53 ms mandatory redraw per step and the near-cap file
+size at the 500×200 target leave no headroom for the wind layer (item 7) or
+any growth.
 
 ## Recommendation
 
@@ -132,7 +152,11 @@ Justification:
    v1.0 scope, and the file cost of carrying its 1 MB runtime is 2–3× the
    Option D total.
 4. mapdeck fails the sharing constraint and the time-control requirement
-   outright; plotly fails the size target in the wrong direction.
+   outright. plotly, after the best-practice rework (v2), passes the sharing
+   test but sits at the 5 MB cap with zero headroom, pays a mandatory ~53 ms
+   full redraw per step, and has the largest chrome-migration cost — a
+   credible general-purpose tool, but the wrong economics for this product's
+   specific target (compact emailable animation with our own UI chrome).
 
 **Second place / future path:** MapLibre via mapgl is a genuinely viable
 backend (both sharing modes pass; the glyph/sprite offline fear is resolved
@@ -154,9 +178,13 @@ against switching renderers before item 7.
 3. `python3 dev/item5_prototypes/optiond/item5_optiond-build_v1.py`
 4. `python3 dev/item5_prototypes/maplibre/item5_maplibre-build_v1.py`
 5. `Rscript dev/item5_prototypes/deckgl/item5_deckgl-episode_v1.R` (installs mapdeck)
-6. `Rscript dev/item5_prototypes/plotly/item5_plotly-episode_v1.R`
+6. `Rscript dev/item5_prototypes/plotly/item5_plotly-episode_v1.R` (naive v1,
+   kept for the record)
+7. `Rscript dev/item5_prototypes/plotly/item5_plotly-episode_v2.R`
+   (best-practice revision — the version plotly is scored on)
 
 Outputs in `aq_maps/`: `item5_leaflet-episode-reference_v1.html`,
 `item5_optiond-{episode,synthetic}_v1.html`,
 `item5_maplibre-{episode,synthetic}_v1.html`, `item5_deckgl-episode_v1.html`,
-`item5_plotly-{episode,synthetic}_v1.html`.
+`item5_plotly-{episode,synthetic}_v1.html`,
+`item5_plotly-{episode,synthetic}_v2.html`.
