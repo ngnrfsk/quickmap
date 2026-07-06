@@ -25,4 +25,5 @@ Imports:
 Suggests:
     openair,
     httr,
+    jsonlite,
     testthat (>= 3.0.0)

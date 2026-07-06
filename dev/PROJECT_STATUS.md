@@ -6,9 +6,29 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-05 **Current Working Version**: v0.9.5 **Branch**: feature/packaging-2
+**Last Updated**: 2026-07-06 **Current Working Version**: v0.9.5 **Branch**: feature/characterization-tests
 
 --------------------------------------------------------------------------------
+
+### Roadmap item 2 complete: characterization test net — 2026-07-06
+Branch `feature/characterization-tests` (stacked on approved feature/packaging-2).
+New `tests/testthat/test-characterization.R` + `helper-characterization.R` pin
+the rendered HTML of two reference maps: (a) annual Merton dt+BL+schools
+2020–2022; (b) the **canonical animation example** (inst/examples/
+episode_example.R map2 — hourly PM2.5, Jan 15–20 2024, all BL sensors,
+Wandsworth+Richmond), which reproduces the published
+parhillresearch.github.io/maps/episode.html **byte-for-byte at 3,456,970
+bytes** — the slow-loading product motivating items 5/6. Pinned: payload
+method counts, marker counts per layer and time step (annual: 59/1, 59/276,
+61/363 dt/BL per year, 53 schools ×3; episode: 108 hourly groups, 369–385
+sites/step, 40,876 site-steps), group names, injected banner/legend/
+year-control/autoplay blocks, no unreplaced `{{placeholders}}`, no external
+script/css loads (self-contained constraint), and the **3.2–3.7 MB file-size
+baseline window** that item 6 must cut (bounds to be lowered in the same
+change). Fixtures generate once per run into tempdir (suite ~41 s); tests skip
+if DATA_PATH fixture files are absent. jsonlite added to Suggests. This is the
+regression net for items 4 and 6.
+Demo script: scripts/260706_item2_demo_maps.R → aq_maps/260706_item2_*.html.
 
 ### Roadmap item 1 complete (v0.9.5): quickmap is an installed R package — 2026-07-05
 Branch `feature/packaging-2` (PR pending human review). Salvaged the uncommitted
