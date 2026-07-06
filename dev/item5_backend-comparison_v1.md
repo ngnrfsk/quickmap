@@ -198,6 +198,34 @@ mode-(a) story the prototype preserved, or inlined font ranges at real size
 cost. (3) Item 7 (below) penalises both. Net: no change to the
 recommendation.
 
+## React / app-framework comparison (added post-review, user request)
+
+A colleague's ground-up Python+React build of a similar product prompted the
+question. React is not a fifth renderer — it is a UI-state layer that still
+needs one of the compared renderers underneath (react-leaflet, react-map-gl,
+deck.gl). The comparison is therefore "should QuickMap's chrome be a React
+app?", and the answer stays no for this product:
+
+- **QuickMap's UI surface is tiny** — banner, legend, slider, play button
+  (~200 lines of vanilla JS/CSS; the roller menu already exists). React's
+  value is managing complex interacting state, which we don't have.
+- **Toolchain mismatch**: React means npm/bundler/JSX in the release
+  pipeline of a CRAN package maintained by R users, forever. The runtime
+  bundle (~45 KB gzipped core) is affordable; the build machinery is the
+  real, permanent cost.
+- **Different product shape**: a Python+React build is an *application*
+  (served, stateful); QuickMap's defining constraint is a standalone
+  emailable artifact from a two-line R call. With a server it's mode (b)
+  only, plus hosting and maintenance.
+- **"Looks great" is design, not framework**: the polish in such apps is
+  CSS/typography/spacing effort, all reproducible in the `{{placeholder}}`
+  template system. That observation motivated the UI-polish roadmap item
+  added 2026-07-06 (see CLAUDE.md).
+
+**Where React would be right**: a post-1.0 hosted "map builder" companion
+(upload CSV in a browser, get a map). The Option D JSON payload would serve
+it unchanged as the data contract.
+
 ## Wind-layer note (item 7 dependency)
 
 leaflet-velocity rides on Leaflet unchanged under Option D — another argument
