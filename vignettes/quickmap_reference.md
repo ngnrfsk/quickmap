@@ -30,6 +30,13 @@ below (`colour_scale`, `title`, `theme_file`, `marker_labels`, `vignette`,
 `export_image`, …). `pollutant` is inferred from the first time-varying
 layer when omitted.
 
+**Design rule — where parameters live:** properties of a *layer* (value
+column, time column, labels, symbol shape, name) are set on the layer itself
+via `qm_layer()` / `from_csv()` / `from_rdata()` / `from_openair()`;
+properties of the *map* (boroughs, colour scale, title, theme, output) are
+`quickmap()` arguments. There are no per-layer parallel-vector arguments at
+the map level — to customise one layer of several, customise that layer.
+
 ## Minimal Example (compatibility wrapper)
 
 ```r
