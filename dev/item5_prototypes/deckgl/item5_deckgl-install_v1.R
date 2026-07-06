@@ -1,0 +1,5 @@
+if (!requireNamespace("mapdeck", quietly = TRUE)) install.packages("mapdeck", repos = "https://cran.r-project.org")
+library(mapdeck)
+cat("mapdeck", as.character(packageVersion("mapdeck")), "\n")
+p <- find.package("mapdeck")
+cat(list.files(file.path(p, "htmlwidgets"), recursive = TRUE), sep = "\n")
