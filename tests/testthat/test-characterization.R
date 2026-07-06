@@ -73,37 +73,59 @@ test_that("annual map: self-contained (no external script/css loads)", {
 # size: the ~3.5 MB, 108-time-step product whose slow loading motivates the
 # rendering-backend decision (item 5) and lazy loading (item 6).
 
-test_that("episode map: one marker group per hourly time step", {
+# DELIBERATE FORMAT CHANGE (item 6, v0.9.7): above 50 time steps the episode
+# map now renders via the lazy embedded-JSON path — no per-step addMarkers /
+# showGroup calls; one onRender payload restyles Canvas markers in JS. The
+# marker-count parity is asserted on the payload instead (40,876 non-null
+# site-step values, matching the v0.9.5 addMarkers baseline). Flagged for
+# human visual sign-off in the item-6 PR.
+
+test_that("episode map: lazy payload replaces per-step marker groups", {
   skip_if_no_char_data()
   payload <- char_payload(char_html("char_episode.html"))
   methods <- char_methods(payload)
-  mk <- char_marker_calls(payload)
 
-  expect_equal(sum(methods == "addMarkers"), 108)      # 108 hourly steps
-  expect_equal(sum(methods == "showGroup"), 108)
+  expect_equal(sum(methods == "addMarkers"), 0)        # lazy path: no pre-built layers
+  expect_equal(sum(methods == "showGroup"), 0)
   expect_equal(sum(methods == "addProviderTiles"), 1)  # airstat theme base tiles
   expect_equal(sum(methods == "addPolygons"), 1)       # boundaries, no vignette
 
-  expect_true(all(!is.na(mk$group)))
-  expect_equal(length(unique(mk$group)), 108)
-  groups <- sort(mk$group)
-  expect_equal(groups[1], "2024-01-15 12:00")
-  expect_equal(groups[108], "2024-01-19 23:00")
+  lazy <- char_lazy_payload(payload)
+  times <- unlist(lazy$times)
+  expect_equal(length(times), 108)                     # 108 hourly steps
+  expect_equal(times[1], "2024-01-15 12:00")
+  expect_equal(times[108], "2024-01-19 23:00")
 
-  # all BL sensors across the two boroughs, per step (recorded baseline)
-  expect_true(all(mk$n >= 369 & mk$n <= 385))
-  expect_equal(sum(mk$n), 40876)
+  expect_equal(length(lazy$layers), 1)
+  sites <- lazy$layers[[1]]$sites
+  expect_equal(length(sites), 395)                     # BL sensors, both boroughs
+  expect_true(all(vapply(sites, function(s) length(s$v), 0L) == 108))
+
+  # marker parity with the v0.9.5 pre-built baseline: one non-null value per
+  # marker that the old path drew (40,876 across all steps)
+  n_values <- sum(vapply(
+    sites,
+    function(s) sum(!vapply(s$v, is.null, TRUE)),
+    0L
+  ))
+  expect_equal(n_values, 40876)
+
+  # styling contract consumed by lazy-time-controller.js
+  expect_equal(unlist(lazy$thresholds), c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50))
+  expect_equal(length(lazy$colours), 11)
+  expect_true(all(grepl("^#[0-9A-F]{6}$", unlist(lazy$colours))))
+  expect_equal(lazy$layers[[1]]$labelMode, "values")   # marker_labels = TRUE
 })
 
-test_that("episode map: file size baseline — the problem item 6 must fix", {
+test_that("episode map: file size — item 6 lazy-loading result", {
   skip_if_no_char_data()
   size <- char_file_size("char_episode.html")
 
-  # Recorded v0.9.5 baseline: 3,456,970 bytes (matches the published map).
-  # Item 6 (lazy loading) should CUT this dramatically — when it does, lower
-  # these bounds in the same change. A rise above the ceiling is a regression.
-  expect_gt(size, 3.2e6)
-  expect_lt(size, 3.7e6)
+  # v0.9.5 baseline was 3,456,970 bytes; the item-6 lazy path cuts it to
+  # ~914 KB (~520 KB of that is the fixed leaflet/htmlwidgets stack every
+  # quickmap output carries). A rise above the ceiling is a regression.
+  expect_gt(size, 6e5)
+  expect_lt(size, 1.1e6)
 })
 
 test_that("episode map: banner, time control and autoplay injected", {
