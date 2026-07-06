@@ -1,8 +1,10 @@
 # Atomic data unit — survey and recommendation (roadmap item 3)
 
-**Date**: 2026-07-06 · **Revision 2** (same day: `kind` dropped — derived, not
+**Date**: 2026-07-06 · **Revision 3** (rev 2: `kind` dropped — derived, not
 declared; time-column inference contract added; parsing placed in the `from_*`
-wrappers) · **Status**: awaiting user design approval (STOP point)
+wrappers. rev 3: naming pass — `siteCode` → `code`, `year_str` → `time_label`,
+layer `id` → `name`, coordinate duplication dropped; alias rule added) ·
+**Status**: awaiting user design approval (STOP point)
 **Author**: autonomous session, per CLAUDE.md "The atomic data unit — research
 task before implementing"
 
@@ -114,10 +116,10 @@ show grammar serving incremental learning better; it front-loads concepts.
 An sf object **that additionally carries its layer metadata as attributes and a
 class tag**: `class = c("qm_layer", "sf", "data.frame")`.
 
-Required columns (the current shape, unchanged): `siteCode`, `year_str`, one
-value column, `geometry` (+ `lat`/`lon` kept for compatibility). Static layers
+Required columns (rev-3 names; same shape as today): `code`, `time_label`
+(when time-varying), one value column, `lat`, `lon`, `geometry`. Static layers
 (schools) use the same shape with a categorical value column and no time
-variation.
+column.
 
 Attributes (set once by the wrappers, never re-inferred):
 
@@ -127,15 +129,39 @@ Attributes (set once by the wrappers, never re-inferred):
 | `time_col` | column name / NULL | year-column duck typing |
 | `shape` | `"circle"` / `"diamond"` / `"cross"` | filename/config guessing |
 | `label_col` | `"Label"` / `"School"` / NULL | column duck typing |
-| `id` | layer id string | filename auto-generation |
+| `name` | human-visible layer name | filename auto-generation |
+| `resolution` | `"year"`/`"month"`/`"day"`/`"hour"`/`"minute"` / NULL | ad-hoc format checks |
 
 *(Rev 2: the rev-1 `kind = "temporal"/"static"` attribute is removed — see
-"Derived, not declared".)*
+"Derived, not declared". Rev 3: rev-1/2 `id` renamed `name`.)*
 
 Constructor `qm_layer(data, value_col, ...)` validates the contract and fails
 with a plain-English error naming the missing column. A `print.qm_layer()`
 method summarises: `qm_layer 'merton_dt': 61 sites x 3 time steps of no2
 (circle)`.
+
+### Naming pass (rev 3) — elements are called what they are
+
+Principle: names must say what the element is, in plain language, with no
+dataset-specific heritage. Decisions:
+
+| old | rev 3 | rationale |
+|---|---|---|
+| `siteCode` | **`code`** | The stable unique key linking a marker across time steps (UK convention: codes survive name misspellings — the concept generalises, the "site" qualifier doesn't). Matches openair `importMeta()`'s `code` column, so `from_openair()` maps with zero renaming. Keeps `id` free. Rejected: `site_id` (half-generalised), `identifier` (long, adds nothing), `id_code` (redundant compound), `location_id` (wrong — co-located sensors must stay distinct), `key` (DBA jargon). |
+| `year_str` | **`time_label`** | Neither necessarily a year nor meaningfully "str". It is the display text for the time step — what the roller menu shows. |
+| *(new)* | **`time_sort`** | POSIXct sort key parsed from the label (formalises v0.9.4 sorting). Open sub-question: stored column vs derived on demand — decide at implementation. |
+| layer `id` | **`name`** | It is the human-visible layer name (legends, controls, errors) — "id" is too vague. |
+| `Longitude`/`Latitude` + `lat`/`lon` | **`lat`/`lon` only** | The contract must not carry the same fact twice. `lat`/`lon` matches openair; `geometry` remains the sf source of truth. Internal code may add transient duplicates but they are not part of the contract. |
+| pollutant value column (`no2`, `pm25`, …) | unchanged | openair convention; the column *is* the pollutant. The `value_col` attribute points at it. |
+| `Label` / `School` | unchanged (read, not renamed) | User-supplied CSV headers; the wrappers read them into `label_col`. |
+
+**Alias rule (transition)**: constructors and wrappers accept the legacy names
+as recognised aliases and normalise silently — `siteCode` → `code`, `year_str`
+→ `time_label`, `Longitude`/`Latitude` → `lat`/`lon` — so every existing RData
+file, CSV and script keeps working without edits. Aliases are normalised at
+construction (in the `from_*` parsing functions, per rev 2); downstream code
+sees only canonical names. The alias list is a documented constant, not
+scattered `if`s.
 
 ### Derived, not declared (rev 2)
 
@@ -244,12 +270,9 @@ thin compatibility wrapper (roadmap item 4).
 
 ### Open questions for the user
 
-1. **Time column name**: keep `year_str` (zero churn, misleading name for
-   sub-annual data) or rename to `time_label` in the formal contract with
-   `year_str` accepted and normalised by the constructor during transition?
-   Recommendation: rename in the contract, normalise in the constructor.
-   (Rev 2 note: under the inference contract the canonical name matters less —
-   `year_str` stays a recognised alias either way.)
+1. **Time column name**: ~~keep `year_str` or rename?~~ **Resolved in rev 3**:
+   `time_label` is canonical, `year_str` a recognised alias (see "Naming
+   pass").
 2. **Colour scale binding**: leave scales entirely to `quickmap()` styling
    (current plan, recommended) or allow an optional `scale` attribute on the
    layer as a hint? Recommendation: keep scales out of the atomic unit.
