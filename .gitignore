@@ -4,6 +4,12 @@ aq_maps/
 *.jpg
 *.png
 
+# pkgdown site (built locally; see dev/260707_manual_prospectus_v1.md 8a)
+docs/
+
+# manual screenshots are committed
+!vignettes/figures/*.png
+
 # System files
 .DS_Store
 .DS_Store?

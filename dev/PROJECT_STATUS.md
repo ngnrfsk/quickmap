@@ -6,11 +6,67 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-07 **Current Working Version**: v0.9.8 **Branch**: feature/item8-examples
+**Last Updated**: 2026-07-07 **Current Working Version**: v0.9.8 **Branch**: feature/manual-pr-a
 
 --------------------------------------------------------------------------------
 
-### Roadmap item 8 complete: examples migrated and validated — 2026-07-07 (accepted by user; PR #29 awaiting merge)
+### Manual PR A: pkgdown skeleton + first two chapters — 2026-07-07 (PR pending)
+
+Branch `feature/manual-pr-a`, off main after PRs #29/#30 merged (user
+merged both by explicit instruction, being away from desk). Implements
+PR A of the approved manual prospectus
+(dev/260707_manual_prospectus_v1.md, decisions §8a). Docs/config only —
+no R/ code changed, version stays v0.9.8.
+
+**What landed:**
+
+- **_pkgdown.yml** — bootstrap 5, navbar (Get started / Articles /
+  Reference), reference index grouped to mirror the manual (Making maps /
+  Layers / Styling / OpenAir interoperability), plus a hidden `internal`
+  section for 11 helpers that have man pages but lack
+  `@keywords internal` (flagged for item 9's roxygen cleanup — R/ was
+  deliberately not touched). Legacy .md vignettes are not pkgdown
+  articles; absorbed/retired at PR C.
+- **vignettes/quickmap.Rmd** ("Get started", the pkgdown intro tab):
+  linear five-minute path — install_github + PAT note (repo private),
+  DATA_PATH, the two-line map, reading the map, one step further. No
+  options shown, per the prospectus.
+- **vignettes/layers.Rmd** — first five-part-template feature page:
+  two-line intro → five rising examples (add sensors, name a layer via
+  from_csv, from_rdata pollutant, live OpenAir importUKAQ fetch,
+  hand-built qm_layer) → how-it-works (layer-vs-map rule, duck typing) →
+  full-detail table linking the reference + cross-cutting rules → see
+  also with OpenAir book links (prospectus §2a).
+- **scripts/manual_run-chunks_v1.R** — chunk harness: purls every
+  vignettes/*.Rmd and runs each chunk against DATA_PATH; `net-*`-labelled
+  chunks (live fetches) skip-not-fail offline; purl=FALSE excludes
+  install/setup chunks. **It caught a real doc bug on first run**: the
+  from_openair example needed `source = "aurn"` (data lacks coordinates);
+  fixed, all chunks green including the live AURN fetch.
+- **scripts/manual_screenshots_v1.R** — renders the pages' maps with
+  package defaults and captures vignettes/figures/*.png via webshot2
+  (992×744; .gitignore gains `!vignettes/figures/*.png` and `docs/`).
+- **DESCRIPTION**: Suggests += knitr, rmarkdown, pkgdown;
+  VignetteBuilder: knitr.
+
+**Found and flagged (not fixed here):** `qm_layer(shape =)` metadata is
+never consumed by `quickmap()` — default shapes come from
+`get_measurement_layers()`'s auto-cycle (temporal: circle, rect,
+triangle…; static: simple-plus, simple-cross…) or map-level
+`data_symbols`. The quickmap() roxygen design-rule text and CLAUDE.md's
+"Diamonds: Breathe London nodes" describe intent, not behaviour. The
+manual documents actual behaviour; the API gap is a candidate item-9 fix
+(either wire qm shape metadata through or drop the parameter).
+Also noted: pkgdown renders top-level CLAUDE.md to docs/CLAUDE.html —
+harmless while docs/ is local-only, revisit before any public deploy.
+
+**Verification:** chunk harness ALL OK; `pkgdown::build_site()` clean
+(docs/ gitignored, reviewer opens docs/index.html); gate 244 pass / 0
+fail / 0 skip; smoke OK. Non-rendering (docs/scripts only; no map output
+changed). Human review: read the two articles in the built site and
+check the two screenshots look right.
+
+### Roadmap item 8 complete: examples migrated and validated — 2026-07-07 (accepted by user; PR #29 merged)
 
 Branch `feature/item8-examples`. Docs/examples only — **no R/ code changed, so
 the version stays at v0.9.8** (no archive to versions/ needed). Classified

@@ -29,4 +29,8 @@ Suggests:
     httr,
     jsonlite,
     testthat (>= 3.0.0),
-    withr
+    withr,
+    knitr,
+    rmarkdown,
+    pkgdown
+VignetteBuilder: knitr
