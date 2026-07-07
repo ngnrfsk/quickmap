@@ -23,7 +23,8 @@ create_pollution_map(
   boundary_labels = NULL,
   autoplay = NULL,
   play_speed = NULL,
-  theme_file = NULL
+  theme_file = NULL,
+  wind = NULL
 )
 }
 \arguments{
@@ -65,6 +66,8 @@ static (FALSE) handling per layer (NULL = auto-detect)}
 \item{play_speed}{Autoplay interval in ms}
 
 \item{theme_file}{Path to a YAML theme file}
+
+\item{wind}{Optional wind layer (see \code{\link[=quickmap]{quickmap()}})}
 }
 \value{
 Invisible Leaflet map object; writes HTML (and optionally JPGs) to

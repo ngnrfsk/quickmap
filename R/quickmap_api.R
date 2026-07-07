@@ -78,6 +78,10 @@ as_qm_layer <- function(x, pollutant, temporal = NULL) {
 #' @param data_symbols Optional character vector of marker symbols per layer
 #'   (default: automatic assignment — solid symbols for time-varying layers,
 #'   outline symbols for static layers)
+#' @param wind Optional wind layer: a [from_worldmet()] object or a data
+#'   frame with `date`/`ws`/`wd` columns. Rendered as an animated particle
+#'   overlay (leaflet-velocity) that advances with the time control.
+#'   Interactive HTML only — omitted from static JPG exports.
 #' @return Invisible Leaflet map object; writes HTML (and optionally JPGs) to
 #'   `aq_maps/`
 #'
@@ -118,7 +122,8 @@ quickmap <- function(
   autoplay = NULL,
   play_speed = NULL,
   theme_file = NULL,
-  data_symbols = NULL
+  data_symbols = NULL,
+  wind = NULL
 ) {
   if (inherits(layers, c("qm_layer", "data.frame")) || !is.list(layers)) {
     layers <- list(layers)
@@ -160,7 +165,8 @@ quickmap <- function(
     boundary_labels = boundary_labels,
     autoplay = autoplay,
     play_speed = play_speed,
-    theme_file = theme_file
+    theme_file = theme_file,
+    wind = wind
   )
 }
 
@@ -191,6 +197,7 @@ quickmap <- function(
 #' @param autoplay Auto-advance the time control
 #' @param play_speed Autoplay interval in ms
 #' @param theme_file Path to a YAML theme file
+#' @param wind Optional wind layer (see [quickmap()])
 #' @return Invisible Leaflet map object; writes HTML (and optionally JPGs) to
 #'   `aq_maps/`
 #' @family map
@@ -214,7 +221,8 @@ create_pollution_map <- function(
   boundary_labels = NULL,
   autoplay = NULL,
   play_speed = NULL,
-  theme_file = NULL
+  theme_file = NULL,
+  wind = NULL
 ) {
   qm_layers <- lapply(seq_along(data_sources), function(i) {
     layer <- as_qm_layer(
@@ -243,6 +251,7 @@ create_pollution_map <- function(
     autoplay = autoplay,
     play_speed = play_speed,
     theme_file = theme_file,
-    data_symbols = data_symbols
+    data_symbols = data_symbols,
+    wind = wind
   )
 }
