@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.7
+### Current Version: 0.9.8
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -366,6 +366,7 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.5**: Proper R package installation — roxygen2 NAMESPACE/man, `devtools::install()` + `library(quickmap)` replaces `source()`; `system.file()` path resolution fixed
 -   **v0.9.6**: `quickmap()` core API consuming `qm_layer` atomic units (items 3+4); `create_pollution_map()` becomes a thin compatibility wrapper; rendered output unchanged (characterization-verified)
 -   **v0.9.7**: Time step cap + lazy loading (item 6, Option D): above 50 time steps (or ~5 MB estimated) temporal markers render as Canvas shapes restyled per step from one embedded JSON payload (`inst/controls/lazy-time-controller.js`); 200-step default cap with warn+subset; episode fixture 3.46 MB → 0.91 MB; below-threshold maps keep the pre-built-layers path unchanged
+-   **v0.9.8**: Wind layer (item 7): `wind` parameter on `quickmap()`/`create_pollution_map()` takes a `from_worldmet()` object or date/ws/wd data frame; period-mean U/V on a 2×2 grid per display time, rendered by vendored leaflet-velocity (`R/wind.R`, `inst/controls/wind-controller.js` + `leaflet-velocity/`), advancing with the roller menu; interactive HTML only
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 
@@ -444,6 +445,11 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
     existing `{{placeholder}}` template/theme system; themes must remain
     user-configurable. (Inserted 2026-07-06 after the item-5 React
     comparison: app-framework polish is reproducible as CSS/design effort.)
+    **Includes wind-particle styling configuration** (added 2026-07-07):
+    expose the constants currently hardcoded in
+    `inst/controls/wind-controller.js` (particle density, line width,
+    colour ramp, velocity scale) through the theme YAML system alongside
+    the other visual controls.
 11. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md (LCA visual
     fixes, static-export subfolder generation, unified marker/text/legend scaling,
     ward/marker label consistency) — so v1.0 releases without known user-facing
@@ -579,6 +585,22 @@ size is negligible. The plugin JS must be inlined (see Self-contained constraint
 **Wind data does not need to match exactly** at sub-hourly resolution — hourly or daily
 averages aligned to the displayed time steps are sufficient. For monthly/annual maps,
 use period-mean wind.
+
+**Post-1.0 roadmap: non-uniform wind fields and station auto-selection**
+(added 2026-07-07). v1.0 ships a uniform city-scale field (one
+user-specified station, 2×2 grid). The renderer already supports arbitrary
+grids — the geometry-cached fast path in the vendored leaflet-velocity
+computes per-step cost independent of grid resolution — so the post-1.0 work
+is data sourcing and payload budget, not rendering:
+
+- **Nearest-station auto-selection**: `from_worldmet()` with no station code
+  picks the nearest ISD station to the map boundary centroid (via
+  `worldmet::getMeta()`), extending naturally to nearest station**s**
+  (plural) feeding a **variable grid** — multi-station interpolation onto a
+  finer field. Gridded reanalysis (e.g. ERA5) via a `from_*` wrapper is the
+  alternative source.
+- **Payload budget**: grid cells × time steps grows the embedded JSON,
+  traded against the item-6 file-size wins.
 
 ### Rendering backend decision — RESOLVED (roadmap item 5)
 

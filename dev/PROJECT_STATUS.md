@@ -6,9 +6,64 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-06 **Current Working Version**: v0.9.7 **Branch**: feature/item6-lazy-loading
+**Last Updated**: 2026-07-07 **Current Working Version**: v0.9.8 **Branch**: feature/item7-wind-layer
 
 --------------------------------------------------------------------------------
+
+### Roadmap item 7 implemented (v0.9.8): wind layer — 2026-07-07 (PENDING human visual sign-off)
+
+Branch `feature/item7-wind-layer`. Implements the worldmet + leaflet-velocity
+plan (Windy API was assessed and rejected at item 5).
+
+**What changed:**
+
+- **`from_worldmet(data | station, year)`** (R/wind.R) returns a `qm_wind`
+  data frame: fetches via `worldmet::importNOAA()` when given a station code,
+  or accepts any data frame with `date`/`ws`/`wd`; converts to U/V by the
+  standard meteorological decomposition (u = −ws·sin(wd·π/180), v = −ws·cos).
+- **`wind` parameter** on `quickmap()`, `create_pollution_map()` and
+  `render_pollution_map()`. `build_wind_payload()` averages U/V per displayed
+  time step (format inferred from the year_str grammar via
+  `wind_time_format()`) onto a uniform 2×2 grid over the padded map bbox,
+  GRIB-style headers as leaflet-velocity expects (north→south scan); steps
+  with no observations get null frames (overlay empties rather than showing
+  stale wind); coverage messaged, zero coverage warned.
+- **leaflet-velocity 2.1.4 vendored** in inst/controls/leaflet-velocity/
+  (js+css+CSIRO licence) and attached as an htmlDependency, so
+  `saveWidget(selfcontained = TRUE)` inlines it — sharing mode (a) holds
+  (verified: no external script/css in output).
+  **inst/controls/wind-controller.js** renders/updates one
+  `L.velocityLayer`, publishes `window.quickmapWindController`;
+  roller-menu.js calls it on every time switch alongside the item-6 marker
+  controller (both lazy and legacy marker paths work with wind).
+- **Interactive HTML only** — the overlay is skipped for static_only maps
+  and never enters the JPG export path (a particle animation has no meaning
+  in a still frame). New Imports: htmltools; Suggests: worldmet.
+
+**Verified in Chrome:** particles render and animate over the episode map,
+advance with roller menu and 500 ms autoplay, no console errors. One
+transient investigated: a background-tab load can show a blank particle
+canvas until the tab is foregrounded (rAF throttling — browser behaviour,
+not a defect; particles seed within ~2 s once visible). Payload cost is
+small: episode 913,686 → 976,747 B with 108 hourly wind frames.
+
+**Demo maps** (scripts/item7_demo-maps_v1.R, real Heathrow 037720-99999
+NOAA data): aq_maps/item7_episode-wind_v1.html (lazy path + hourly wind,
+107/108 steps covered), aq_maps/item7_merton-annual-wind_v1.html (legacy
+path + annual-mean wind). Also .claude job tmp item7_episode_wind.html
+(synthetic wind, used for browser debugging).
+
+**Tests:** tests/testthat/test-item7-wind-layer-v1.R (U/V decomposition,
+input validation, time-format grammar, payload aggregation with null gaps
+and north→south headers, full map embed: velocity dep inlined + controller
+hook + self-contained). Gate: **244 pass / 0 fail / 0 skip**; smoke OK.
+Characterization tests untouched (wind is additive; no baseline changed).
+
+Also this session: `.claude/settings.json` gained `mcp__claude-in-chrome`
+in permissions.allow (user request — browser tools no longer prompt);
+gatekeeper tests still pass; permissions pretest due before next
+unattended run. v0.9.7 archived to versions/quickmap_0_9_7.R.
+**PR blocks on human visual sign-off** (rendering-touching).
 
 ### Roadmap item 6 complete (v0.9.7): time step cap + lazy loading — 2026-07-06 (visually signed off, PR #24 merged)
 

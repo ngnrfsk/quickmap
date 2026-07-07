@@ -21,7 +21,8 @@ quickmap(
   autoplay = NULL,
   play_speed = NULL,
   theme_file = NULL,
-  data_symbols = NULL
+  data_symbols = NULL,
+  wind = NULL
 )
 }
 \arguments{
@@ -63,6 +64,11 @@ first time-varying layer's value column.}
 \item{data_symbols}{Optional character vector of marker symbols per layer
 (default: automatic assignment — solid symbols for time-varying layers,
 outline symbols for static layers)}
+
+\item{wind}{Optional wind layer: a \code{\link[=from_worldmet]{from_worldmet()}} object or a data
+frame with \code{date}/\code{ws}/\code{wd} columns. Rendered as an animated particle
+overlay (leaflet-velocity) that advances with the time control.
+Interactive HTML only — omitted from static JPG exports.}
 }
 \value{
 Invisible Leaflet map object; writes HTML (and optionally JPGs) to

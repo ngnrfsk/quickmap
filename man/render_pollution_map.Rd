@@ -23,7 +23,8 @@ render_pollution_map(
   boundary_labels = NULL,
   autoplay = NULL,
   play_speed = NULL,
-  theme_file = NULL
+  theme_file = NULL,
+  wind = NULL
 )
 }
 \arguments{

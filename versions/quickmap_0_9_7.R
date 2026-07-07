@@ -2890,8 +2890,7 @@ render_pollution_map <- function(
   boundary_labels = NULL,
   autoplay = NULL,
   play_speed = NULL,
-  theme_file = NULL,
-  wind = NULL
+  theme_file = NULL
 ) {
   c(image_export, map_width_px, map_height_px) %<-%
     parse_export_params(export_image)
@@ -3050,17 +3049,6 @@ render_pollution_map <- function(
         c(map_width_px, map_height_px)
       )
     }
-  }
-
-  # Wind overlay (item 7): interactive map only — a particle animation has
-  # no meaning in a static JPG frame
-  if (!is.null(wind) && !identical(display_times, "static_only")) {
-    html_map <- add_wind_layer(
-      html_map,
-      as_qm_wind(wind),
-      display_times,
-      bbox
-    )
   }
 
   if (!is.null(output_file)) {
