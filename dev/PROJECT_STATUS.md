@@ -10,7 +10,7 @@ editor_options:
 
 --------------------------------------------------------------------------------
 
-### Roadmap item 8 complete: examples migrated and validated — 2026-07-07 (PR pending)
+### Roadmap item 8 complete: examples migrated and validated — 2026-07-07 (accepted by user; PR #29 awaiting merge)
 
 Branch `feature/item8-examples`. Docs/examples only — **no R/ code changed, so
 the version stays at v0.9.8** (no archive to versions/ needed). Classified
