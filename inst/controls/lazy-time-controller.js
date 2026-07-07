@@ -144,26 +144,73 @@ function(el, x, data) {
     });
   });
 
+  // Colour crossfade (M2, 2026-07-07): persisting markers tween from their
+  // current colour to the new step's colour over FADE_MS instead of snapping.
+  var FADE_MS = 250;
+  var fadeToken = 0;
+
+  function hexToRgb(hex) {
+    return [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16),
+            parseInt(hex.slice(5, 7), 16)];
+  }
+
+  function mix(from, to, t) {
+    return 'rgb(' + Math.round(from[0] + (to[0] - from[0]) * t) + ',' +
+      Math.round(from[1] + (to[1] - from[1]) * t) + ',' +
+      Math.round(from[2] + (to[2] - from[2]) * t) + ')';
+  }
+
+  function applyColour(entry, css) {
+    entry.marker.setStyle(
+      entry.layer.nonsolid ? { color: css } : { fillColor: css }
+    );
+  }
+
   function setTime(timeLabel) {
     var idx = times.indexOf(String(timeLabel));
     if (idx === -1) { return; }
+    var token = ++fadeToken; // cancels any tween still running
+    var fading = [];
+
     all.forEach(function (entry) {
       var v = entry.site.v[idx];
       if (v === null || v === undefined) {
         if (map.hasLayer(entry.marker)) { map.removeLayer(entry.marker); }
+        entry.rgb = null;
         return;
       }
-      var c = colourFor(v);
-      entry.marker.setStyle(
-        entry.layer.nonsolid ? { color: c } : { fillColor: c }
-      );
+      var target = hexToRgb(colourFor(v));
       if (entry.layer.labelMode === 'values') {
         entry.marker.setTooltipContent(Math.round(v) + ' ug/m3');
       } else if (entry.layer.labelMode === 'custom') {
         entry.marker.setTooltipContent(entry.site.label || '');
       }
-      if (!map.hasLayer(entry.marker)) { entry.marker.addTo(map); }
+      if (!map.hasLayer(entry.marker) || !entry.rgb) {
+        // appearing marker: no colour history to fade from
+        entry.rgb = target;
+        applyColour(entry, mix(target, target, 0));
+        entry.marker.addTo(map);
+        return;
+      }
+      if (entry.rgb[0] !== target[0] || entry.rgb[1] !== target[1] ||
+          entry.rgb[2] !== target[2]) {
+        fading.push({ entry: entry, from: entry.rgb, to: target });
+        entry.rgb = target;
+      }
     });
+
+    if (fading.length === 0) { return; }
+    var t0 = performance.now();
+
+    function tick(now) {
+      if (token !== fadeToken) { return; }
+      var t = Math.min((now - t0) / FADE_MS, 1);
+      fading.forEach(function (f) {
+        applyColour(f.entry, mix(f.from, f.to, t));
+      });
+      if (t < 1) { requestAnimationFrame(tick); }
+    }
+    requestAnimationFrame(tick);
   }
 
   // roller-menu integration: switchToYear() delegates to this controller,

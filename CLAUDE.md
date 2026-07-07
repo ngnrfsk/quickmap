@@ -581,6 +581,15 @@ size is negligible. The plugin JS must be inlined (see Self-contained constraint
 averages aligned to the displayed time steps are sufficient. For monthly/annual maps,
 use period-mean wind.
 
+**Post-1.0 roadmap: non-uniform wind fields** (added 2026-07-07). v1.0 ships a
+uniform city-scale field (one representative station, 2×2 grid). The renderer
+already supports arbitrary grids — the geometry-cached fast path in the
+vendored leaflet-velocity computes per-step cost independent of grid
+resolution — so the post-1.0 work is data sourcing and payload budget, not
+rendering: multi-station interpolation or gridded reanalysis (e.g. ERA5) via a
+`from_*` wrapper, and payload growth (grid cells × time steps) traded against
+the item-6 file-size wins.
+
 ### Rendering backend decision — RESOLVED (roadmap item 5)
 
 **Decision (user-approved 2026-07-06): Option D** — keep Leaflet; replace the
