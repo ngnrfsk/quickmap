@@ -19,7 +19,7 @@ quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth")
 
 # layers can be file paths, qm_layer() objects, or data frames
 quickmap(
-  list("wandsworth_2017_2024.csv", "schools_Wandsworth.csv"),
+  list("wandsworth_2017_2024.csv", "schools_wandsworth.csv"),
   boroughs    = "Wandsworth",
   output_file = "wandsworth_2024.html"
 )
@@ -41,9 +41,9 @@ the map level — to customise one layer of several, customise that layer.
 
 ```r
 create_pollution_map(
-  data_sources  = list("wandsworth_2017_2024.csv", "schools_Wandsworth.csv"),
+  data_sources  = list("wandsworth_2017_2024.csv", "schools_wandsworth.csv"),
   boroughs      = "Wandsworth",
-  output_file   = "wandsworth_2024"
+  output_file   = "wandsworth_2024.html"
 )
 ```
 
@@ -60,7 +60,7 @@ create_pollution_map(
   pollutant      = "no2",
   display_times  = NULL,          # all available years
   colour_scale   = "who_no2",
-  output_file    = "wandsworth_no2",
+  output_file    = "wandsworth_no2.html",
   export_image   = TRUE,
   styling_type   = "html",
   title          = "Wandsworth NO2 Annual Mean",
@@ -89,7 +89,7 @@ Default assignments by data type: diffusion tubes → circle, Breathe London sen
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `output_file` | `"pollution_map.html"` | Filename without extension — saved to `aq_maps/` |
+| `output_file` | `"pollution_map.html"` (`"quickmap.html"` for `quickmap()`) | HTML file name including extension — saved to `aq_maps/` |
 | `export_image` | `NULL` | `NULL` = HTML only, `TRUE` = 1200×1200 JPG, `c(w, h)` = custom dimensions |
 
 ### Map Content
@@ -144,6 +144,29 @@ Label content is duck-typed from the data: `School` column → school names; `La
 | `autoplay` | `NULL` | `TRUE` auto-starts time animation on load (falls back to theme) |
 | `play_speed` | `NULL` | Milliseconds per frame during animation (falls back to theme) |
 
+**Time steps and file size (v0.9.7+):** maps are capped at 200 time steps
+(warns and keeps the most recent). Above 50 steps (or ~5 MB estimated
+output) temporal markers switch automatically to a compact embedded-JSON
+Canvas rendering path — same appearance and controls, much smaller file.
+No parameters needed; thresholds are options-overridable
+(`quickmap.time_step_cap`, `quickmap.lazy_step_threshold`,
+`quickmap.lazy_size_threshold`).
+
+### Wind (v0.9.8+)
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `wind` | `NULL` | A `from_worldmet()` object or a data frame with `date`/`ws`/`wd` columns. Rendered as an animated particle overlay advancing with the time control. Interactive HTML only — omitted from JPG exports |
+
+```r
+# hourly met data from NOAA ISD (needs the worldmet package + network)
+heathrow <- from_worldmet(station = "037720-99999", year = 2024)
+quickmap("episode_data.Rdata", boroughs = "Richmond", wind = heathrow)
+```
+
+Wind is averaged per displayed time step (period-mean for monthly/annual
+maps) onto a uniform city-scale field.
+
 ## Colour Scales
 
 Defined in `inst/config/scales/`. Pass the name (without `.yaml`) to `colour_scale`.
@@ -152,6 +175,8 @@ Defined in `inst/config/scales/`. Pass the name (without `.yaml`) to `colour_sca
 |------|-----------|-------------|
 | `who_no2` | NO2 | WHO guideline bands (default) |
 | `stripes_no2` | NO2 | Stripe-style NO2 scale |
+| `stripes_pm25` | PM2.5 | Stripe-style PM2.5 scale |
+| `airstat_no2` | NO2 | AirStat NO2 scale |
 | `gla_pm25` | PM2.5 | GLA PM2.5 bands |
 | `lbw_no2` | NO2 | London Borough of Wandsworth |
 | `lbrut_no2` | NO2 | London Borough of Richmond upon Thames |
@@ -194,5 +219,5 @@ Object duck-typed in order: `dataOAformat` → `data` → `oa_data` → `sensor_
 
 ---
 
-**Version**: QuickMap v0.9.4  
-**Last updated**: 2026-07-02
+**Version**: QuickMap v0.9.8  
+**Last updated**: 2026-07-07

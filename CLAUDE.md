@@ -127,7 +127,7 @@ library(quickmap)
 
 # Run example scripts
 source("tests/test_quickmap.R")
-source("inst/examples/create_all_borough_maps.R")
+source("inst/examples/quickmap_create_RSP_maps.R")
 ```
 
 ### Creating Maps
