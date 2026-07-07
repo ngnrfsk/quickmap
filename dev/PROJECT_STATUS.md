@@ -6,9 +6,68 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-07 **Current Working Version**: v0.9.8 **Branch**: feature/item7-wind-layer
+**Last Updated**: 2026-07-07 **Current Working Version**: v0.9.8 **Branch**: feature/item8-examples
 
 --------------------------------------------------------------------------------
+
+### Roadmap item 8 complete: examples migrated and validated — 2026-07-07 (accepted by user; PR #29 awaiting merge)
+
+Branch `feature/item8-examples`. Docs/examples only — **no R/ code changed, so
+the version stays at v0.9.8** (no archive to versions/ needed). Classified
+**non-rendering**: the merge bar is green automated tests + visually unchanged
+output, proven mechanically — the migrated canonical episode call
+(`quickmap()` + `from_rdata(name = "bl_sensors")`) renders **byte-identically**
+to the historic `create_pollution_map()` form (915,422 bytes, identical after
+normalising the random htmlwidgets element id, which differs between any two
+runs of any form).
+
+**inst/examples/ migrated and RUN against DATA_PATH fixtures:**
+
+- `episode_example.R` (canonical animation example) — `library(quickmap)` +
+  `quickmap()`; fixture-prep block now guarded by `file.exists()` (fixtures
+  exist, so runs skip it; prep borrows internal `quickmap:::get_boundary_sf`).
+  map1 now uses the script's own Jan-15-20 Richmond fixture (the old call
+  pointed at the differently-windowed `episodeJan2024_sf_Richmond.Rdata` —
+  an inconsistency, now fixed). Commented-out wind variant added (Heathrow
+  037720-99999, requireNamespace-guarded). Ran clean.
+- `test_episode_example.R` (Jan 12-20 variant) — same treatment; ran clean
+  (180 steps → lazy path).
+- `quickmap_create_RSP_maps.R` — 6 maps migrated to `quickmap()` with plain
+  file-path layers (auto names/shapes). Fixed two latent breakages: map1
+  passed nonexistent parameter `theme = "airstat"` (would error — script was
+  unrunnable as committed) and map4 referenced placeholder file
+  `your_schools_Merton.csv`. All 6 maps ran clean ("no Label column" warnings
+  are pre-existing data-driven behaviour).
+- `quickmap_create_wandsworth_new_sensors.R` — migrated, ran clean.
+- `missing_data_stats.R`, `prepare_bl_data_with_missing.R` — data-prep, no
+  QuickMap API calls: header annotation only (noting their stale hardcoded
+  paths), not migrated, not run.
+
+**Vignettes:** `quickmap_reference.md` refreshed to v0.9.8 (wind section,
+lazy-loading/200-step-cap note, stripes_pm25 + airstat_no2 scales,
+output_file extension fact corrected against code, schools filename case).
+`251123_theme_system_guide.md` — examples moved off the pre-v0.9.2
+`diffusion_tube_file` parameter to `quickmap()`; dead references fixed.
+`251126_CONFIGS.md` — the documented `inst/config/data_sources/` YAML system,
+`data_configs`/`icon_shapes` parameters and `write_data_source_config()` do
+not exist in the code; marked HISTORICAL with a status note, code section
+rewritten to the current per-layer API, network reference material kept.
+`251029_MIGRATION_EXAMPLE_v0.9.0.md` — marked HISTORICAL. CLAUDE.md: fixed
+stale `source("inst/examples/create_all_borough_maps.R")` pointer
+(file does not exist) → `quickmap_create_RSP_maps.R`; test-consistency green.
+
+**New demo script** `scripts/item8_worked-examples_v1.R` (the runnable
+documentation of record) → aq_maps/: `item8_wandsworth-twoline_v1.html`
+(two-line call), `item8_merton-theme_v1.html` (multi-layer + merton theme),
+`item8_episode-lazy_v1.html` (108-step lazy animation),
+`item8_episode-wind_v1.html` (real Heathrow NOAA wind, 107/108 steps).
+Signed-off item6/item7 outputs preserved in
+`aq_maps/baseline_260707_item8_signed_off/` for comparison.
+
+**Gate:** 244 pass / 0 fail / 0 skip; smoke test OK (HTML + 3 JPGs);
+characterization suite untouched and green (helper deliberately keeps
+pinning `create_pollution_map()`). tests/test_*.R one-off scripts left as
+historical per CLAUDE.md.
 
 ### Roadmap item 7 complete (v0.9.8): wind layer — 2026-07-07 (visually signed off, PR #26 merged)
 

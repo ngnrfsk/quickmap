@@ -1,63 +1,53 @@
-library(data.table)
-source("R/quickmap.R")
+# Canonical animation example: hourly PM2.5 episode, Jan 15-20 2024, all
+# Breathe London sensors across Wandsworth + Richmond. map2 below is the
+# reference map pinned by tests/testthat/test-characterization.R — its
+# rendered output must stay stable across refactors.
+#
+# Migrated to the quickmap() API (roadmap item 8, v0.9.8). The historic
+# create_pollution_map() call it replaces is a supported compatibility
+# wrapper; see ?create_pollution_map.
+library(quickmap)
 
-# Load data
-load("~/Coding/Library/data/bl_imperial_210122-250422.Rdata")
+# ---- one-off data preparation ----------------------------------------------
+# Builds the episode fixtures from the full hourly BL export. The fixtures
+# already exist in DATA_PATH, so this block is skipped on normal runs.
+data_path <- Sys.getenv("DATA_PATH")
+fixture_all <- file.path(data_path, "episodeJan15-20_2024_sf_all.Rdata")
+fixture_richmond <- file.path(data_path, "episodeJan15-20_2024_sf_richmond.Rdata")
 
-start_time <- as.POSIXct("2024-01-15 12:00:00", tz = "UTC")
-end_time <- as.POSIXct("2024-01-20 00:00:00", tz = "UTC")
+if (!file.exists(fixture_all)) {
+  load(file.path(data_path, "bl_imperial_210122-250422.Rdata"))
 
-# Subset and add required 'code' column
-subset_data <- subset(dataOAformat, date >= start_time & date < end_time)
-subset_data$code <- subset_data$siteCode # ADD THIS LINE
+  start_time <- as.POSIXct("2024-01-15 12:00:00", tz = "UTC")
+  end_time <- as.POSIXct("2024-01-20 00:00:00", tz = "UTC")
 
-# Convert to spatial
-subset_data_sf_all <- convert_openair_to_spatial(
-  subset_data,
-  pollutant = "pm25",
-  avg.time = "hour"
-)
-#|>
-# select(-year)
+  subset_data <- subset(dataOAformat, date >= start_time & date < end_time)
+  subset_data$code <- subset_data$siteCode
 
-subset_data_sf_all$year <- NULL
+  subset_data_sf_all <- convert_openair_to_spatial(
+    subset_data,
+    pollutant = "pm25",
+    avg.time = "hour"
+  )
+  subset_data_sf_all$year <- NULL
 
-#names(subset_data_sf_all)[names(subset_data_sf_all) == "year_str"] <- "year"
+  # get_boundary_sf() is internal — the prep step borrows it to clip the
+  # Richmond-only fixture
+  borough_sf <- quickmap:::get_boundary_sf("Richmond")
+  subset_data_sf_richmond <- sf::st_filter(subset_data_sf_all, borough_sf)
 
-# Load borough boundary
-borough_sf <- get_boundary_sf("Richmond")
+  save(subset_data_sf_all, file = fixture_all)
+  save(subset_data_sf_richmond, file = fixture_richmond)
+}
 
-# Filter points inside borough
-subset_data_sf_richmond <- st_filter(subset_data_sf_all, borough_sf)
-
-# Check output
-print(head(subset_data_sf_richmond$year_str))
-print(paste("Unique times:", length(unique(subset_data_sf_richmond$year_str))))
-
-# Save
-save(
-  subset_data_sf_all,
-  file = "~/Coding/Library/data/episodeJan15-20_2024_sf_all.Rdata"
-)
-save(
-  subset_data_sf_richmond,
-  file = "~/Coding/Library/data/episodeJan15-20_2024_sf_richmond.Rdata"
-)
-
-#rm(dataOAformat)
-#display_times <- unique(subset_data_sf_richmond$year)
-# Create map - use NULL for theme or full path
-map1_test <- create_pollution_map(
-  data_sources = list("episodeJan2024_sf_Richmond.Rdata"),
-  data_ids = c("bl_sensors"),
+# ---- map 1: Richmond only, default theme ------------------------------------
+map1_test <- quickmap(
+  from_rdata("episodeJan15-20_2024_sf_richmond.Rdata", "pm25",
+             name = "bl_sensors"),
   boroughs = "Richmond",
-  pollutant = "pm25",
-  #  display_times = display_times,
   colour_scale = "stripes_pm25",
-  theme_file = NULL, # Use default theme for now
   output_file = "map1_test_episode_240115-20.html",
   title = "PM2.5 Episode: Jan 15-20, 2024",
-  styling_type = "html",
   vignette = TRUE,
   marker_labels = TRUE,
   banner_colour = "#005794",
@@ -66,17 +56,15 @@ map1_test <- create_pollution_map(
   play_speed = 500
 )
 
-map2_test <- create_pollution_map(
-  data_sources = list("episodeJan15-20_2024_sf_all.Rdata"),
-  data_ids = c("bl_sensors"),
+# ---- map 2: both boroughs, airstat theme (the pinned reference map) ---------
+map2_test <- quickmap(
+  from_rdata("episodeJan15-20_2024_sf_all.Rdata", "pm25",
+             name = "bl_sensors"),
   boroughs = c("Wandsworth", "Richmond"),
-  pollutant = "pm25",
-  #  display_times = display_times,
   colour_scale = "stripes_pm25",
-  theme_file = "inst/themes/airstat.yaml", # Use default theme for now
+  theme_file = system.file("themes", "airstat.yaml", package = "quickmap"),
   output_file = "map2_test_episode_240115-20.html",
   title = "PM2.5 Episode: Jan 15-20, 2024",
-  styling_type = "html",
   vignette = FALSE,
   marker_labels = TRUE,
   banner_colour = "#005794",
@@ -84,3 +72,25 @@ map2_test <- create_pollution_map(
   autoplay = TRUE,
   play_speed = 500
 )
+
+# ---- optional wind overlay (v0.9.8) ------------------------------------------
+# The same episode with an animated wind layer from Heathrow ISD data.
+# Needs the worldmet package and a network connection:
+# if (requireNamespace("worldmet", quietly = TRUE)) {
+#   heathrow <- from_worldmet(station = "037720-99999", year = 2024)
+#   heathrow <- heathrow[format(heathrow$date, "%Y-%m") == "2024-01", ]
+#   quickmap(
+#     from_rdata("episodeJan15-20_2024_sf_all.Rdata", "pm25",
+#                name = "bl_sensors"),
+#     boroughs = c("Wandsworth", "Richmond"),
+#     colour_scale = "stripes_pm25",
+#     theme_file = system.file("themes", "airstat.yaml", package = "quickmap"),
+#     output_file = "map2_test_episode_240115-20_wind.html",
+#     title = "PM2.5 Episode: Jan 15-20, 2024",
+#     marker_labels = TRUE,
+#     banner_colour = "#005794",
+#     autoplay = TRUE,
+#     play_speed = 500,
+#     wind = heathrow
+#   )
+# }

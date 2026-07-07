@@ -1,5 +1,9 @@
 # prepare_bl_data_with_missing.R
 #
+# Data-prep script — contains no QuickMap API calls, so it was not migrated
+# at roadmap item 8 (v0.9.8). Note: its hardcoded library_path and
+# project_path_name predate the current layout and need editing before use.
+#
 # Purpose: Calculate missing data percentages for NO2 and PM2.5 from hourly data
 #          and add missing_no2 and missing_pm25 columns to BL annual statistics
 #
