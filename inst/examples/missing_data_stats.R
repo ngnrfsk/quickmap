@@ -1,3 +1,7 @@
+# Data-prep/reporting script — contains no QuickMap API calls, so it was not
+# migrated at roadmap item 8 (v0.9.8). Note: its hardcoded library_path and
+# project_path_name predate the current layout and need editing before use.
+#
 # 2025 data summaries generation script Notes its clear that
 # openair_breathe_london_1_0.R doesn't work properly. Doesn't even load its
 # libraries FFS Found a solution to turning the disastrously structured

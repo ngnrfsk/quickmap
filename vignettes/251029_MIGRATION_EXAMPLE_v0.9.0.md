@@ -1,5 +1,12 @@
 # Migration Example: create_all_borough_maps.R v0.8.x → v0.9.0
 
+> **HISTORICAL DOCUMENT** (marked 2026-07-07, v0.9.8). This describes the
+> v0.8.x → v0.9.0 migration only. Several parameters shown here as targets
+> (`diffusion_tube_file`, `sensor_file`, `years`) were themselves replaced in
+> later releases (`data_sources` in v0.9.2, `display_times` in v0.9.4, and
+> the `quickmap()` core API in v0.9.6). For the current API see
+> `vignettes/quickmap_reference.md`.
+
 ## Parameter Mapping Summary
 
 | v0.8.x Parameter | v0.9.0 Parameter | Change Type | Notes |

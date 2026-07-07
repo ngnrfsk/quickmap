@@ -1,13 +1,21 @@
 # Configuration Files
 
+> **Status (2026-07-07, v0.9.8):** the `inst/config/data_sources/` YAML
+> system described below was removed from the codebase — layer type, shape
+> and temporal handling are now decided by duck typing and carried on the
+> `qm_layer()` atomic unit (see `?qm_layer`, `?from_csv`, `?from_rdata`).
+> The "Using Configurations in Code" section has been updated to the
+> current API. The monitoring-network reference material (temporal
+> resolutions, providers, sources) remains valid and is kept for reference;
+> the YAML config examples are **historical**.
 
-## Data Source Configuration Files
+## Data Source Configuration Files (HISTORICAL — removed)
 
-QuickMap v0.9.2+ uses an enhanced data source configuration meta data
+QuickMap v0.9.2 used an enhanced data source configuration meta data
 
 ## Overview
 
-Data source configurations define monitoring network characteristics and enable:
+Data source configurations were intended to define monitoring network characteristics and enable:
 - Icon shape selection for map markers
 - Network metadata storage (temporal resolution, pollutants, providers)
 - Future OpenAir API integration
@@ -195,45 +203,30 @@ monitoring_type: static_poi
 provider: "Local Authority"
 ```
 
-## Using Configurations in Code
+## Using Configurations in Code (current API, v0.9.8)
 
-### Option 1: Use Config Files (Default)
+Layer characteristics live on the layer itself, not in config files:
+
+### Option 1: Duck typing (default)
 
 ```r
-create_pollution_map(
-  data_sources = list(dt_file, bl_file, school_file),
-  data_configs = c("dt_sites", "bl_nodes", "schools"),
-  boroughs = "Merton",
-  pollutant = "no2"
+quickmap(
+  list(dt_file, bl_file, school_file),
+  boroughs = "Merton"
 )
+# shapes auto-assign: tubes circle, sensors diamond, schools cross
 ```
 
-### Option 2: Override Icon Shapes
+### Option 2: Override per layer
 
 ```r
-create_pollution_map(
-  data_sources = list(dt_file, bl_file, school_file),
-  data_configs = c("dt_sites", "bl_nodes", "schools"),
-  icon_shapes = c("star", "plus", "triangle"),  # Overrides config files
-  boroughs = "Merton",
-  pollutant = "no2"
-)
-```
-
-### Option 3: Create New Config Programmatically
-
-```r
-write_data_source_config(
-  id = "laqn_sites",
-  label = "LAQN Monitoring Sites",
-  icon_shape = "diamond",
-  static = FALSE,
-  min_period = "hourly",
-  available_aggregations = c("hourly", "daily", "monthly", "annual"),
-  pollutants = c("no2", "pm10", "pm25", "o3"),
-  openair_import_function = "importImperial",
-  monitoring_type = "continuous_automatic",
-  provider = "Imperial College London ERG"
+quickmap(
+  list(
+    from_csv(dt_file, name = "Diffusion Tubes"),
+    from_rdata(bl_file, "no2", name = "LAQN Sites"),
+    qm_layer(my_data, value_col = "no2", shape = "cross")
+  ),
+  boroughs = "Merton"
 )
 ```
 
@@ -281,5 +274,5 @@ The enhanced metadata enables future features:
 
 ---
 
-**Version**: QuickMap v0.9.2+
-**Last Updated**: 2025-11-26
+**Version**: QuickMap v0.9.2 (config system since removed; status note and code section updated for v0.9.8)
+**Last Updated**: 2026-07-07
