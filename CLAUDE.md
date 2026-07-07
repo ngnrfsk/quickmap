@@ -461,6 +461,16 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
 those dates use the older numbering — in particular the item-5 comparison doc
 says "item 10" for what is now item 11.)
 
+**Post-1.0: ecosystem integrations** (added 2026-07-07; full survey with
+integration shapes, risks and suggested ordering:
+dev/260707_v2_integration_candidates.md). Five well-maintained, large-user-base
+suites to link into after v1.0, each landing as a `from_*()` wrapper or layer
+type, never as a map-API change — in suggested pickup order: ERA5 reanalysis
+wind via ecmwfr (completes the non-uniform wind thread below), saqgetr
+(European AQ observations, openair-compatible), OpenAQ (global AQ platform),
+the Mazama AirMonitor/AirSensor suite (US regulatory + PurpleAir), and
+stars/terra raster underlays (modelled surfaces beneath measured markers).
+
 ### Verification and human testing
 
 **Automated gate — run after every change:**
