@@ -10,11 +10,13 @@ editor_options:
 
 --------------------------------------------------------------------------------
 
-### Manual PR A: pkgdown skeleton + first two chapters — 2026-07-07 (PR pending)
+### Manual phase 1 (PR #31): pkgdown skeleton + first two chapters — 2026-07-07 (PR pending)
 
 Branch `feature/manual-pr-a`, off main after PRs #29/#30 merged (user
 merged both by explicit instruction, being away from desk). Implements
-PR A of the approved manual prospectus
+phase 1 of the approved manual prospectus (the manual is user-directed
+work adjacent to the roadmap, not a roadmap item; its stages are "manual
+phases 1–3" — early drafts said "PR A/B/C")
 (dev/260707_manual_prospectus_v1.md, decisions §8a). Docs/config only —
 no R/ code changed, version stays v0.9.8.
 
@@ -26,7 +28,7 @@ no R/ code changed, version stays v0.9.8.
   section for 11 helpers that have man pages but lack
   `@keywords internal` (flagged for item 9's roxygen cleanup — R/ was
   deliberately not touched). Legacy .md vignettes are not pkgdown
-  articles; absorbed/retired at PR C.
+  articles; absorbed/retired at manual phase 3.
 - **vignettes/quickmap.Rmd** ("Get started", the pkgdown intro tab):
   linear five-minute path — install_github + PAT note (repo private),
   DATA_PATH, the two-line map, reading the map, one step further. No
