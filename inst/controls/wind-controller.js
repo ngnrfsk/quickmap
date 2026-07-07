@@ -14,15 +14,20 @@ function(el, x, data) {
       return;
     }
     if (layer) {
-      layer.setData(frame);
+      // patched plugin: swaps the wind field under the running particle
+      // animation — no restart, so stepping stays smooth
+      layer.updateData(frame);
       return;
     }
     layer = L.velocityLayer({
       data: frame,
       maxVelocity: data.maxVelocity,
       velocityScale: 0.01,
-      lineWidth: 2,
-      particleMultiplier: 1 / 250,
+      lineWidth: 1,
+      particleMultiplier: 1 / 500,
+      // muted slate ramp: speed stays readable without competing with markers
+      colorScale: ['#b7c3cd', '#9fb0be', '#879cb0', '#7089a1', '#587693',
+                   '#416384', '#295076'],
       displayValues: false
     }).addTo(map);
   }

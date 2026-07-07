@@ -88,12 +88,13 @@ build_wind_payload <- function(wind, display_times, bbox) {
   fmt <- wind_time_format(times[1])
   wind_key <- format(wind$date, fmt, tz = attr(wind$date, "tzone") %||% "UTC")
 
-  pad_x <- max(unname(bbox["xmax"] - bbox["xmin"]), 0.05) * 0.5
-  pad_y <- max(unname(bbox["ymax"] - bbox["ymin"]), 0.05) * 0.5
-  lo1 <- unname(bbox["xmin"]) - pad_x
-  lo2 <- unname(bbox["xmax"]) + pad_x
-  la1 <- unname(bbox["ymax"]) + pad_y  # velocity grids scan north -> south
-  la2 <- unname(bbox["ymin"]) - pad_y
+  # Uniform field, so widening the grid is free: +-3 degrees keeps particles
+  # over the whole viewport at any plausible zoom-out (issue (a), 2026-07-07)
+  pad <- 3
+  lo1 <- unname(bbox["xmin"]) - pad
+  lo2 <- unname(bbox["xmax"]) + pad
+  la1 <- unname(bbox["ymax"]) + pad  # velocity grids scan north -> south
+  la2 <- unname(bbox["ymin"]) - pad
 
   header <- function(parameter_number) {
     list(
@@ -144,8 +145,10 @@ velocity_dependency <- function() {
   htmltools::htmlDependency(
     name = "leaflet-velocity",
     version = "2.1.4",
+    # unminified build carrying the QUICKMAP updateData patch (in-place wind
+    # swap without particle reset) — see LICENSE.md alongside
     src = file.path(get_package_dir("controls"), "leaflet-velocity"),
-    script = "leaflet-velocity.min.js",
+    script = "leaflet-velocity.js",
     stylesheet = "leaflet-velocity.min.css"
   )
 }
