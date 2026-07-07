@@ -1,6 +1,10 @@
 # QuickMap Theme System Guide
 
-**Date:** 2025-01-22 **Version:** 0.9.0.4+ **Feature:** YAML-based theme configuration system
+**Date:** 2025-01-22 (API examples updated 2026-07-07 for v0.9.8)
+**Version:** 0.9.0.4+ **Feature:** YAML-based theme configuration system
+
+> Examples below use `quickmap()` (v0.9.6+). `theme_file` works identically
+> with the `create_pollution_map()` compatibility wrapper.
 
 ------------------------------------------------------------------------
 
@@ -109,8 +113,8 @@ theme$controls$autoplay     # FALSE
 Apply all theme settings to a map:
 
 ``` r
-create_pollution_map(
-  diffusion_tube_file = "data.csv",
+quickmap(
+  "data.csv",
   boroughs = "Merton",
   theme_file = "inst/themes/merton.yaml"
   # All styling automatically applied from theme:
@@ -129,8 +133,8 @@ Use theme with parameter overrides:
 ``` r
 theme <- load_theme("inst/themes/merton.yaml")
 
-create_pollution_map(
-  diffusion_tube_file = "data.csv",
+quickmap(
+  "data.csv",
   boroughs = "Merton",
   theme_file = "inst/themes/merton.yaml",
   banner_colour = theme$palette$green,  # Override to green
@@ -146,8 +150,8 @@ Use palette colors without applying full theme:
 ``` r
 theme <- load_theme("inst/themes/wandsworth.yaml")
 
-create_pollution_map(
-  diffusion_tube_file = "data.csv",
+quickmap(
+  "data.csv",
   boroughs = "Wandsworth",
   banner_colour = theme$palette$orange,
   title = "Custom Title",
@@ -177,7 +181,7 @@ ggplot(data, aes(x = year, y = no2)) +
 
 ## Parameter Override Priority
 
-When calling `create_pollution_map()`, parameters are resolved in this order:
+When calling `quickmap()` (or `create_pollution_map()`), parameters are resolved in this order:
 
 1.  **Explicit parameters** (highest) - values passed directly to function
 2.  **Theme file values** (medium) - values from YAML if `theme_file` specified
@@ -186,14 +190,16 @@ When calling `create_pollution_map()`, parameters are resolved in this order:
 **Example:**
 
 ``` r
-create_pollution_map(
+quickmap(
+  "data.csv",
+  boroughs = "Merton",
   theme_file = "inst/themes/merton.yaml",  # Sets banner_colour = "#5F3E94"
-  banner_colour = "#078141"                        # OVERRIDES to green
+  banner_colour = "#078141"                # OVERRIDES to green
 )
 # Result: banner is GREEN (explicit parameter wins)
 ```
 
-**Implementation** (R/quickmap_clean.R:2008-2030):
+**Implementation** (`R/quickmap.R`, theme resolution in the render pipeline):
 
 ``` r
 theme <- load_theme(theme_file)
@@ -272,8 +278,8 @@ print(theme)
 show_borough_colours("my_borough")
 
 # Test in map
-create_pollution_map(
-  diffusion_tube_file = "test_data.csv",
+quickmap(
+  "test_data.csv",
   boroughs = "Your Borough",
   theme_file = "inst/themes/my_borough.yaml"
 )
@@ -346,8 +352,8 @@ wandsworth_banner <- all_themes$wandsworth$banner$background
 # Generate maps for all themes
 for (theme_name in names(all_themes)) {
   theme_file <- file.path(themes_dir, paste0(theme_name, ".yaml"))
-  create_pollution_map(
-    diffusion_tube_file = "data.csv",
+  quickmap(
+    "data.csv",
     boroughs = "All",
     theme_file = theme_file,
     output_file = paste0("map_", theme_name, ".html")
@@ -393,9 +399,11 @@ print(theme$banner$background)  # Should print hex color like "#5F3E94"
 
 # Check parameter override order
 # Explicit parameters ALWAYS override theme values
-create_pollution_map(
+quickmap(
+  "data.csv",
+  boroughs = "Merton",
   theme_file = "inst/themes/merton.yaml",  # Sets purple banner
-  banner_colour = "#FF0000"                        # OVERRIDES to red
+  banner_colour = "#FF0000"                # OVERRIDES to red
 )
 ```
 
@@ -415,6 +423,5 @@ yaml::read_yaml("inst/themes/my_theme.yaml")
 
 ## See Also
 
--   `vignettes/v0.9.0_parameter_changes.md` - Parameter simplification in v0.9.0
--   `dev/STREAMLINE_SUMMARY.md` - Complete refactoring summary (streamline branch)
+-   `vignettes/quickmap_reference.md` - Parameter quick reference
 -   `inst/config/scales/` - YAML color scale definitions for pollution thresholds
