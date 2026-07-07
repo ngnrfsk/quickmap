@@ -10,7 +10,19 @@ editor_options:
 
 --------------------------------------------------------------------------------
 
-### Roadmap item 7 implemented (v0.9.8): wind layer — 2026-07-07 (PENDING human visual sign-off)
+### Roadmap item 7 complete (v0.9.8): wind layer — 2026-07-07 (visually signed off, PR #26 merged)
+
+Sign-off followed one feedback round: (a) wind grid widened to ±3° (particles
+cover the viewport at any zoom); (b) particle density 1/500 (user-tuned),
+lineWidth 1, muted slate colour ramp; (c) smoothness — patched the vendored
+(now unminified) leaflet-velocity so wind frames swap under the running
+particle animation without reseeding, with a geometry cache (per-cell
+lat/lng + distortion matrix recorded during the full pass) making per-step
+field rebuilds ~20–30 ms instead of 358 ms, resolution-independent; and the
+lazy-time-controller markers crossfade colour over 250 ms instead of
+snapping. Roadmap notes added: nearest-station auto-selection + variable
+grid (multi-station) post-1.0; wind-particle styling configuration folded
+into item 10.
 
 Branch `feature/item7-wind-layer`. Implements the worldmet + leaflet-velocity
 plan (Windy API was assessed and rejected at item 5).
