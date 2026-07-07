@@ -157,6 +157,19 @@ exists.
 
 Each PR: green gate + chunk harness + human eyeball of the built site.
 
+## 8a. Pre-drafting decisions (user, 2026-07-07)
+
+- **Base:** PR A branches off main after PRs #29 (item 8) and #30 (this
+  prospectus) merge — no stacking.
+- **Install story (Get started):** `devtools::install_github()` with a
+  one-line PAT note (repo currently private); reword at v1.0/CRAN.
+- **Hosting:** local `pkgdown::build_site()` only, `docs/` gitignored;
+  reviewer opens `docs/index.html`. Pages deployment deferred until the
+  repo is public (private-repo Pages needs a paid plan) — supersedes the
+  §3 GitHub Pages line for now.
+- **Screenshots:** package defaults (OSM tiles, who_no2) everywhere except
+  the Styling page, which shows themes.
+
 ## 9. Approval record
 
 Approved by user 2026-07-07, with the OpenAir-integration amendment (§2a)
