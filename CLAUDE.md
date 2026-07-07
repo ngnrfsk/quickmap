@@ -445,6 +445,11 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
     existing `{{placeholder}}` template/theme system; themes must remain
     user-configurable. (Inserted 2026-07-06 after the item-5 React
     comparison: app-framework polish is reproducible as CSS/design effort.)
+    **Includes wind-particle styling configuration** (added 2026-07-07):
+    expose the constants currently hardcoded in
+    `inst/controls/wind-controller.js` (particle density, line width,
+    colour ramp, velocity scale) through the theme YAML system alongside
+    the other visual controls.
 11. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md (LCA visual
     fixes, static-export subfolder generation, unified marker/text/legend scaling,
     ward/marker label consistency) — so v1.0 releases without known user-facing
@@ -581,14 +586,21 @@ size is negligible. The plugin JS must be inlined (see Self-contained constraint
 averages aligned to the displayed time steps are sufficient. For monthly/annual maps,
 use period-mean wind.
 
-**Post-1.0 roadmap: non-uniform wind fields** (added 2026-07-07). v1.0 ships a
-uniform city-scale field (one representative station, 2×2 grid). The renderer
-already supports arbitrary grids — the geometry-cached fast path in the
-vendored leaflet-velocity computes per-step cost independent of grid
-resolution — so the post-1.0 work is data sourcing and payload budget, not
-rendering: multi-station interpolation or gridded reanalysis (e.g. ERA5) via a
-`from_*` wrapper, and payload growth (grid cells × time steps) traded against
-the item-6 file-size wins.
+**Post-1.0 roadmap: non-uniform wind fields and station auto-selection**
+(added 2026-07-07). v1.0 ships a uniform city-scale field (one
+user-specified station, 2×2 grid). The renderer already supports arbitrary
+grids — the geometry-cached fast path in the vendored leaflet-velocity
+computes per-step cost independent of grid resolution — so the post-1.0 work
+is data sourcing and payload budget, not rendering:
+
+- **Nearest-station auto-selection**: `from_worldmet()` with no station code
+  picks the nearest ISD station to the map boundary centroid (via
+  `worldmet::getMeta()`), extending naturally to nearest station**s**
+  (plural) feeding a **variable grid** — multi-station interpolation onto a
+  finer field. Gridded reanalysis (e.g. ERA5) via a `from_*` wrapper is the
+  alternative source.
+- **Payload budget**: grid cells × time steps grows the embedded JSON,
+  traded against the item-6 file-size wins.
 
 ### Rendering backend decision — RESOLVED (roadmap item 5)
 
