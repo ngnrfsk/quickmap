@@ -20,6 +20,10 @@
 
   function switchToYear(selectedYear, years) {
     try {
+      // Wind overlay (item 7) advances with every time switch
+      if (window.quickmapWindController) {
+        window.quickmapWindController.setTime(selectedYear);
+      }
       // Lazy-loading mode (item 6): a time controller restyles Canvas markers
       // in place; the layer cache is an empty stub that only supplies keys
       if (window.quickmapTimeController) {

@@ -76,7 +76,8 @@
       "Bash(echo:*)",
       "Bash(pwd)",
       "Bash(date:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "mcp__claude-in-chrome"
     ],
     "deny": [
       "Bash(git push origin main)",
