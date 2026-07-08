@@ -68,6 +68,27 @@ test_that("qm shape 'cross' renders as the outline simple-cross symbol", {
 })
 
 test_that("qm_layer rejects unknown shapes and accepts NULL", {
-  expect_error(shape_test_layer("a", shape = "hexagon"))
+  expect_error(shape_test_layer("a", shape = "hexagon"), "Valid shapes")
   expect_null(qm_meta(shape_test_layer("a"))$shape)
+})
+
+test_that("friendly shape names normalise; renderer names pass through", {
+  expect_equal(qm_meta(shape_test_layer("a", "square"))$shape, "rect")
+  expect_equal(qm_meta(shape_test_layer("a", "star"))$shape, "simple-star")
+  expect_equal(qm_meta(shape_test_layer("a", "plus"))$shape, "simple-plus")
+  expect_equal(qm_meta(shape_test_layer("a", "stadium"))$shape, "stadium")
+  expect_equal(qm_meta(shape_test_layer("a", "triangle"))$shape, "triangle")
+})
+
+test_that("full-vocabulary shapes reach the rendered payload", {
+  testthat::skip_if_not_installed("jsonlite")
+
+  lazy <- shape_map_payload(list(
+    shape_test_layer("a", shape = "star"),
+    shape_test_layer("b", shape = "square")
+  ))
+  expect_equal(
+    vapply(lazy$layers, function(l) l$shape, ""),
+    c("simple-star", "rect")
+  )
 })

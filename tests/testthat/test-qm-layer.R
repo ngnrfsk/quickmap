@@ -182,7 +182,7 @@ test_that("from_csv builds a static cross layer from schools", {
 
   layer <- from_csv("schools_Merton.csv")
   m <- qm_meta(layer)
-  expect_equal(m$shape, "cross")
+  expect_equal(m$shape, "simple-cross") # friendly "cross" stored renderer-canonical
   expect_equal(m$label_col, "School")
   expect_null(m$time_col)
 })
