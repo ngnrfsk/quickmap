@@ -17,6 +17,22 @@ QM_ALIASES <- list(
 # Pollutant columns recognised when value_col is not given
 QM_KNOWN_POLLUTANTS <- c("no2", "pm25", "pm10", "nox", "no", "o3", "so2", "co")
 
+# Friendly shape names accepted by qm_layer(), normalised to the renderer's
+# vocabulary; any exact renderer shape name (see validate_and_fix_icon_shape)
+# is also accepted as-is.
+QM_SHAPE_ALIASES <- c(
+  square = "rect",
+  cross = "simple-cross",
+  star = "simple-star",
+  plus = "simple-plus"
+)
+
+#' @keywords internal
+qm_normalise_shape <- function(shape) {
+  if (shape %in% names(QM_SHAPE_ALIASES)) shape <- QM_SHAPE_ALIASES[[shape]]
+  validate_and_fix_icon_shape(shape)
+}
+
 # Time-column name gate: these names earn a parse attempt (case-insensitive)
 QM_TIME_NAMES <- c("date", "time", "datetime", "time_label", "year_str")
 
@@ -148,10 +164,13 @@ qm_find_time_col <- function(data, time_col = NULL) {
 #'   the grammar. Pass explicitly for non-date orderings (e.g. diurnal hours).
 #' @param label_col Name of the column supplying marker labels (NULL = none;
 #'   inferred from `Label` or `School` columns when present)
-#' @param shape Marker symbol: "circle", "diamond" or "cross". NULL (default)
-#'   lets the map assign one automatically (solid symbols for time-varying
-#'   layers, outline symbols for static layers, cycling in layer order).
-#'   A map-level `data_symbols` argument to [quickmap()] overrides this.
+#' @param shape Marker symbol. Friendly names "circle", "square", "diamond",
+#'   "triangle", "cross", "star" and "plus" are accepted, as is any exact
+#'   renderer shape name (e.g. "stadium", "plus-circle" — invalid names
+#'   error with the full list). NULL (default) lets the map assign one
+#'   automatically (solid symbols for time-varying layers, outline symbols
+#'   for static layers, cycling in layer order). A map-level `data_symbols`
+#'   argument to [quickmap()] overrides this.
 #' @param name Human-visible layer name (legends, controls, errors)
 #' @return The data as a `qm_layer` (still an sf data.frame)
 #' @family atomic unit
@@ -164,7 +183,7 @@ qm_layer <- function(
   shape = NULL,
   name = "layer"
 ) {
-  if (!is.null(shape)) shape <- match.arg(shape, c("circle", "diamond", "cross"))
+  if (!is.null(shape)) shape <- qm_normalise_shape(shape)
   if (!is.data.frame(data) || nrow(data) == 0) {
     stop("data must be a non-empty data.frame or sf object", call. = FALSE)
   }

@@ -42,9 +42,20 @@ aq_maps/item9_merton-shapes_v1.html and item9_episode-diamonds_v1.html,
 compared against baseline_260707_item8_signed_off/. Agent-side webshot
 check confirms circles/diamonds/crosses render.
 
+**Widened 2026-07-08 (same PR, user request):** `qm_layer(shape=)` accepts
+the full renderer vocabulary, not just circle/diamond/cross — friendly
+names (square, star, plus, cross, triangle…) normalise via
+`QM_SHAPE_ALIASES`/`qm_normalise_shape()` to renderer-canonical names
+(square→rect, cross→simple-cross, star→simple-star, plus→simple-plus);
+any exact renderer name passes through; unknown names error with the full
+list. Shapes are stored canonical, so quickmap() passes them straight
+through. Demo: aq_maps/item9_custom-shapes_v1.html (star/square/triangle/
+plus, webshot-verified; script bumped to scripts/item9_demo-maps_v2.R).
+
 **Tests:** new tests/testthat/test-item9-layer-shapes-v1.R (meta shapes
 honoured, data_symbols precedence, cross→simple-cross + nonsolid, NULL
-default, invalid shape rejected). Updated expectations flagged as
+default, invalid shape rejected, alias normalisation, full-vocabulary
+payload). Updated expectations flagged as
 deliberate: test-item6 forced-lazy shapes c("circle","rect") →
 c("circle","diamond"); test-qm-layer default shape NULL + print "(auto
 shape)". Gate: **250 pass / 0 fail / 0 skip**; smoke OK. Version

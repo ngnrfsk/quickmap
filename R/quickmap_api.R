@@ -151,17 +151,14 @@ quickmap <- function(
   ids <- make.unique(ids, sep = "_")
 
   # Per-layer shape metadata (item 9): honour qm_layer(shape=) unless the
-  # map-level data_symbols override is given. NA entries (layers with no
+  # map-level data_symbols override is given. Shapes are stored
+  # renderer-canonical by qm_normalise_shape(); NA entries (layers with no
   # explicit shape) fall back to the renderer's auto-cycle.
   if (is.null(data_symbols)) {
     meta_shapes <- vapply(qm_layers, function(l) {
       qm_meta(l)$shape %||% NA_character_
     }, "")
-    if (any(!is.na(meta_shapes))) {
-      symbol_map <- c(circle = "circle", diamond = "diamond",
-                      cross = "simple-cross")
-      data_symbols <- unname(symbol_map[meta_shapes])
-    }
+    if (any(!is.na(meta_shapes))) data_symbols <- meta_shapes
   }
 
   render_pollution_map(

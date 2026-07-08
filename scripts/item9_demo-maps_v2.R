@@ -1,5 +1,6 @@
 # Item 9 shape-wiring demonstration maps (v0.9.8.1).
-# Run from the repo root: Rscript scripts/item9_demo-maps_v1.R
+# v2: adds map 3 (full shape vocabulary via qm_layer(shape=)).
+# Run from the repo root: Rscript scripts/item9_demo-maps_v2.R
 # Compare against the signed-off set in aq_maps/baseline_260707_item8_signed_off/:
 #  - item9_merton-shapes_v1.html vs item6_merton-annual_v1.html
 #    (BL sensors: squares -> diamonds; schools: plus -> simple-cross)
@@ -39,6 +40,31 @@ quickmap(
   play_speed = 500
 )
 
-for (f in c("item9_merton-shapes_v1.html", "item9_episode-diamonds_v1.html")) {
+# 3. Full shape vocabulary: one small synthetic map, four layers, each with
+#    an explicitly chosen shape (star, square, triangle, plus).
+demo_layer <- function(prefix, shape, base_lat) {
+  d <- data.frame(
+    code = paste0(prefix, 1:4),
+    year_str = "2024",
+    no2 = c(12, 22, 33, 44),
+    lat = base_lat,
+    lon = seq(-0.24, -0.15, length.out = 4)
+  )
+  qm_layer(d, shape = shape, name = paste0(shape, " layer"))
+}
+quickmap(
+  list(
+    demo_layer("st", "star", 51.470),
+    demo_layer("sq", "square", 51.455),
+    demo_layer("tr", "triangle", 51.440),
+    demo_layer("pl", "plus", 51.425)
+  ),
+  boroughs = "Wandsworth",
+  output_file = "item9_custom-shapes_v1.html",
+  title = "Item 9: custom shapes per layer (star / square / triangle / plus)"
+)
+
+for (f in c("item9_merton-shapes_v1.html", "item9_episode-diamonds_v1.html",
+            "item9_custom-shapes_v1.html")) {
   cat(f, file.size(file.path("aq_maps", f)), "bytes\n")
 }
