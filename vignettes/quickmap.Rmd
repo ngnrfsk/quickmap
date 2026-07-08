@@ -14,11 +14,9 @@ knitr::opts_chunk$set(eval = FALSE)
 QuickMap turns air quality data you already have — a diffusion tube CSV, a
 sensor-network export, a live [OpenAir](https://openair-project.github.io/book/)
 data pull — into a professional interactive map you can email or publish.
-No deep R knowledge required: two lines produce a usable map, and every
-extra parameter is optional.
-
-This page is the five-minute path. It deliberately shows no options; the
-rest of the manual adds them one at a time.
+No deep R knowledge required: two lines produce a usable map, every extra
+parameter is optional, and the rest of the manual adds them one at a
+time. Five minutes from here you will have made your first map.
 
 ## 1. Install
 

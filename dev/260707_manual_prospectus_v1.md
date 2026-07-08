@@ -101,11 +101,21 @@ wherever data enters the picture:
 
 ## 4. Page template (every feature chapter)
 
-1. **In two lines** — minimal complete call + one screenshot. No options.
-2. **Worked examples, rising complexity** — 3–5 examples, each adding *one*
-   idea, each with a sentence saying what was added and why you'd want it.
-3. **How it works** *(optional, short)* — the mental model (e.g. "layers own
-   layer properties; the map owns map properties").
+**Revised 2026-07-08 (user-approved):** the template is governed by six
+normative principles P1–P6 in dev/260708_page_template_review_v1.md —
+key information first with zero page-meta-text; the first example is part
+of the unheaded opening; every example states its input requirements in
+one sentence where it stands; headings are assertions naming the API
+element; strict one-new-idea-per-example reveals; three reading depths on
+one page. Structure:
+
+1. **Opening (unheaded)** — the concept in 1–2 substantive sentences,
+   flowing directly into the minimal complete call + screenshot, with a
+   one-sentence statement of what the input must contain.
+2. **Worked examples, rising complexity** — 3–6 reveals, each adding *one*
+   idea named by its assertion heading ("Stack any number of sources —
+   the `layers` list").
+3. **How it works** *(optional, short)* — the mental model.
 4. **Full detail** — curated parameter/function table linking into the
    reference; cross-cutting rules; edge cases and gotchas (e.g. the `Label`
    silent-drop).

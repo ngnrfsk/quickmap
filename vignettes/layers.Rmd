@@ -11,10 +11,11 @@ vignette: >
 knitr::opts_chunk$set(eval = FALSE)
 ```
 
-A QuickMap map is a stack of **layers** — one per data source. This page
-takes you from two layers to hand-built ones.
-
-## In two lines
+A QuickMap map is a stack of **layers**, one per data source. Measurement
+layers (tubes, sensors) draw as solid coloured symbols and drive the time
+animation; context layers (schools, hospitals, proposed sites) draw as
+outline symbols on top. The stack is the first argument of `quickmap()` —
+a single file, or a list:
 
 ```{r two-lines}
 library(quickmap)
@@ -22,13 +23,17 @@ quickmap(list("merton_dt_2018_2024.csv", "schools_Merton.csv"),
          boroughs = "Merton")
 ```
 
-Two files in a list, one map: diffusion tubes coloured by pollution level,
-schools as crosses on top. QuickMap recognises what each file contains and
-styles it accordingly — you did not have to say which was which.
+The tubes CSV needs `Easting`, `Northing` and one column per year of
+readings; the schools CSV needs `Easting`, `Northing` and a `School`
+column. QuickMap recognises what each file contains from its columns —
+you did not have to say which was which. (Full input specifications:
+the *Your data* chapter.)
 
 ## Worked examples
 
-### Add a sensor network
+Each example below adds one idea to the previous one.
+
+### Stack any number of sources — the `layers` list
 
 ```{r three-layers}
 quickmap(
@@ -42,14 +47,15 @@ quickmap(
 )
 ```
 
-Each layer keeps its own symbol shape, so readers can tell a reference
-diffusion tube from a low-cost sensor at a glance. The year menu shows
-every year found in *any* layer; layers without data for a year simply sit
-that year out.
+The new input: an RData sensor export, needing `siteCode`, `lat`, `lon`,
+a year column and a pollutant column (`no2` here). Each layer keeps its
+own symbol, so readers can tell a reference tube from a low-cost sensor
+at a glance. The year menu shows every year found in *any* layer; layers
+without data for a year simply sit that year out.
 
 ![Three layers on one map: circles (tubes), diamonds (sensors), crosses (schools)](figures/layers-multilayer.png)
 
-### Name a layer
+### Name a layer where you build it — `from_csv(name = )`
 
 The legend and controls name layers after their filenames. To choose the
 name yourself, build the layer with `from_csv()` instead of a bare path:
@@ -67,9 +73,10 @@ quickmap(
 This is the general pattern for customising one layer of several: **wrap
 that layer, leave the rest alone**.
 
-### Choose the pollutant in an RData layer
+### Pick each layer's pollutant — `from_rdata(file, pollutant)`
 
-Sensor files usually carry several pollutants. `from_rdata()` picks one:
+Sensor files usually carry several pollutants; the second argument of
+`from_rdata()` selects one:
 
 ```{r rdata-pollutant}
 quickmap(
@@ -80,11 +87,11 @@ quickmap(
 )
 ```
 
-### Fetch data live with OpenAir
+### Skip the file: fetch data live — `from_openair()`
 
-No file at all: the [openair package](https://openair-project.github.io/openair/)
+The [openair package](https://openair-project.github.io/openair/)
 downloads UK monitoring data, and `from_openair()` turns its output
-straight into a layer.
+straight into a layer:
 
 ```{r net-openair-live}
 library(openair)
@@ -96,14 +103,17 @@ quickmap(
 )
 ```
 
-`avg.time` uses openair's own vocabulary ("year", "month", "day", "hour").
-See the [OpenAir book](https://openair-project.github.io/book/) for
-everything `importUKAQ()` can fetch — networks, years, multiple sites.
+This example carries a second, smaller idea: `avg.time = "month"`
+aggregates the hourly download to monthly means before mapping —
+the vocabulary ("year", "month", "day", "hour") is openair's own. See
+the [OpenAir book](https://openair-project.github.io/book/) for
+everything `importUKAQ()` can fetch.
 
-### Build a layer from your own data frame
+### Map a data frame you built yourself — `qm_layer()`
 
 Any data frame with a site code, coordinates and a value column can be a
-layer — this is how you map data QuickMap has never heard of:
+layer — this is how you map data QuickMap has never heard of. Required
+columns: `code`, `lat`, `lon` and one value column:
 
 ```{r hand-built}
 my_sites <- data.frame(
@@ -115,10 +125,9 @@ my_sites <- data.frame(
 quickmap(qm_layer(my_sites, name = "My survey"), boroughs = "Wandsworth")
 ```
 
-### Choose a marker shape
+### Each layer carries its own symbol — `qm_layer(shape = )`
 
-Every layer can carry its own symbol — handy when two layers would
-otherwise look alike:
+Handy when two layers would otherwise look alike:
 
 ```{r choose-shape}
 quickmap(

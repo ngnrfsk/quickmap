@@ -33,9 +33,12 @@ Check:
 
 - [ ] Get started reads as a genuine five-minute path for a nervous R
       beginner — no options, no jargon, nothing to decide.
-- [ ] Layers follows the agreed page shape: two-line intro → six examples
-      each adding one idea (incl. the new "Choose a marker shape") →
-      "How it works" → detail table → see-also.
+- [ ] Layers follows the approved template principles
+      (dev/260708_page_template_review_v1.md): opening teaches the
+      concept with no "this page…" meta-text and flows unheaded into the
+      first example; every example says in one sentence what its input
+      must contain; each heading is an assertion naming the API element;
+      each of the six reveals adds exactly one idea.
       You should feel the point where you could stop reading.
 - [ ] The two screenshots look right (default purple banner, WHO legend;
       the multi-layer map shows circles + diamonds + crosses).

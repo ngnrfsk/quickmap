@@ -1,8 +1,8 @@
 # Page-template review v1 — against software-didactics best practice
 
-**Date:** 2026-07-08 · **Status:** awaiting user approval, then folded into
-the manual plan (dev/260707_manual_prospectus_v1.md §4) and applied to the
-existing pages.
+**Date:** 2026-07-08 · **Status:** APPROVED (user, 2026-07-08) — folded
+into the manual plan (dev/260707_manual_prospectus_v1.md §4) and applied
+to the two existing pages in the same change.
 **Trigger:** user comments on the Layers page (PR #33), generalised here
 into template rules, tested against the didactics literature, and fed back
 for approval.
