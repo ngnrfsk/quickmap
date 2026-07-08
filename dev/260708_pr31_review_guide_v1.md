@@ -1,8 +1,9 @@
-# Review guide: PR #31 — manual phase 1 (pkgdown skeleton + first two chapters)
+# Review guide: manual phase 1 (pkgdown skeleton + first two chapters)
 
-**PR:** https://github.com/ngnrfsk/quickmap/pull/31
-**Branch:** `feature/manual-pr-a` · **Scope:** docs/config/scripts only — no
-R/ code changed, version stays 0.9.8.
+**PR:** https://github.com/ngnrfsk/quickmap/pull/33 (v2 — supersedes the
+closed PR #31; same content plus the approved shape corrections)
+**Branch:** `feature/manual-phase1-v2` · **Scope:** docs/config/scripts only —
+no R/ code changed, version stays 0.9.8.1.
 
 Everything below is already on your disk on the PR branch; the site is
 already built. No setup needed unless a link fails (see "If a link is
@@ -32,11 +33,12 @@ Check:
 
 - [ ] Get started reads as a genuine five-minute path for a nervous R
       beginner — no options, no jargon, nothing to decide.
-- [ ] Layers follows the agreed page shape: two-line intro → five examples
-      each adding one idea → "How it works" → detail table → see-also.
+- [ ] Layers follows the agreed page shape: two-line intro → six examples
+      each adding one idea (incl. the new "Choose a marker shape") →
+      "How it works" → detail table → see-also.
       You should feel the point where you could stop reading.
 - [ ] The two screenshots look right (default purple banner, WHO legend;
-      the multi-layer map shows circles + squares + crosses).
+      the multi-layer map shows circles + diamonds + crosses).
 - [ ] OpenAir links appear where data enters (your amendment): the live
       `importUKAQ()` example on Layers, OpenAir book links in see-also.
 - [ ] Reference index groups make sense (Making maps / Layers / Styling /
