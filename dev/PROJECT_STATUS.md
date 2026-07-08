@@ -10,7 +10,7 @@ editor_options:
 
 --------------------------------------------------------------------------------
 
-### Item 9 partial fix (v0.9.8.1): qm_layer shape metadata wired to renderer — 2026-07-08 (PR pending, BLOCKS on visual sign-off)
+### Item 9 partial fix (v0.9.8.1): qm_layer shape metadata wired to renderer — 2026-07-08 (visually signed off 2026-07-08; PR #32 awaiting merge)
 
 Branch `feature/item9-layer-shapes`. Resolves the gap found during manual
 phase 1 (user approved option (a), 2026-07-08): `qm_layer(shape=)` was
