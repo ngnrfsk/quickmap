@@ -148,7 +148,10 @@ qm_find_time_col <- function(data, time_col = NULL) {
 #'   the grammar. Pass explicitly for non-date orderings (e.g. diurnal hours).
 #' @param label_col Name of the column supplying marker labels (NULL = none;
 #'   inferred from `Label` or `School` columns when present)
-#' @param shape Marker symbol: "circle" (default), "diamond" or "cross"
+#' @param shape Marker symbol: "circle", "diamond" or "cross". NULL (default)
+#'   lets the map assign one automatically (solid symbols for time-varying
+#'   layers, outline symbols for static layers, cycling in layer order).
+#'   A map-level `data_symbols` argument to [quickmap()] overrides this.
 #' @param name Human-visible layer name (legends, controls, errors)
 #' @return The data as a `qm_layer` (still an sf data.frame)
 #' @family atomic unit
@@ -158,10 +161,10 @@ qm_layer <- function(
   value_col = NULL,
   time_col = NULL,
   label_col = NULL,
-  shape = c("circle", "diamond", "cross"),
+  shape = NULL,
   name = "layer"
 ) {
-  shape <- match.arg(shape)
+  if (!is.null(shape)) shape <- match.arg(shape, c("circle", "diamond", "cross"))
   if (!is.data.frame(data) || nrow(data) == 0) {
     stop("data must be a non-empty data.frame or sf object", call. = FALSE)
   }
@@ -290,7 +293,7 @@ print.qm_layer <- function(x, ...) {
     if (temporal) sprintf(" x %d time steps [%s]", n_steps,
                           m$resolution %||% "custom order") else " (static)",
     m$value_col,
-    m$shape
+    m$shape %||% "auto shape"
   ))
   NextMethod()
 }
@@ -336,14 +339,15 @@ from_csv <- function(file, pollutant = "no2", name = NULL, temporal = NULL) {
                     name = name))
   }
 
-  # static/contextual layer (schools etc.)
+  # static/contextual layer (schools etc.); non-school static layers leave
+  # shape NULL so the map assigns an outline symbol
   sf_data <- transform_to_wgs84(data)
   sf_data$code <- if ("School" %in% names(sf_data)) sf_data$School else
     paste0("site_", seq_len(nrow(sf_data)))
   qm_layer(
     sf_data,
     value_col = if ("Level" %in% names(sf_data)) "Level" else NULL,
-    shape = if (is_school) "cross" else "circle",
+    shape = if (is_school) "cross" else NULL,
     name = name
   )
 }

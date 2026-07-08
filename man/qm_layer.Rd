@@ -9,7 +9,7 @@ qm_layer(
   value_col = NULL,
   time_col = NULL,
   label_col = NULL,
-  shape = c("circle", "diamond", "cross"),
+  shape = NULL,
   name = "layer"
 )
 }
@@ -27,7 +27,10 @@ the grammar. Pass explicitly for non-date orderings (e.g. diurnal hours).}
 \item{label_col}{Name of the column supplying marker labels (NULL = none;
 inferred from \code{Label} or \code{School} columns when present)}
 
-\item{shape}{Marker symbol: "circle" (default), "diamond" or "cross"}
+\item{shape}{Marker symbol: "circle", "diamond" or "cross". NULL (default)
+lets the map assign one automatically (solid symbols for time-varying
+layers, outline symbols for static layers, cycling in layer order).
+A map-level \code{data_symbols} argument to \code{\link[=quickmap]{quickmap()}} overrides this.}
 
 \item{name}{Human-visible layer name (legends, controls, errors)}
 }

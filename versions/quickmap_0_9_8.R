@@ -2236,10 +2236,8 @@ get_measurement_layers <- function(
     # Detect if static (no year_str column) - do this before symbol assignment
     is_static <- enabled && !("year_str" %in% names(data_obj))
 
-    # Symbol: use data_symbols or auto-cycle based on static/dynamic type.
-    # NA entries mean "no shape set for this layer" — fall to the cycle.
-    symbol <- if (!is.null(data_symbols) && i <= length(data_symbols) &&
-                    !is.na(data_symbols[i])) {
+    # Symbol: use data_symbols or auto-cycle based on static/dynamic type
+    symbol <- if (!is.null(data_symbols) && i <= length(data_symbols)) {
       data_symbols[i]
     } else if (is_static) {
       static_counter <- static_counter + 1

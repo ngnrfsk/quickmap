@@ -6,9 +6,55 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-07 **Current Working Version**: v0.9.8 **Branch**: feature/item8-examples
+**Last Updated**: 2026-07-08 **Current Working Version**: v0.9.8.1 **Branch**: feature/item9-layer-shapes
 
 --------------------------------------------------------------------------------
+
+### Item 9 partial fix (v0.9.8.1): qm_layer shape metadata wired to renderer — 2026-07-08 (PR pending, BLOCKS on visual sign-off)
+
+Branch `feature/item9-layer-shapes`. Resolves the gap found during manual
+phase 1 (user approved option (a), 2026-07-08): `qm_layer(shape=)` was
+recorded but never consumed — shapes came only from
+`get_measurement_layers()`'s auto-cycle or map-level `data_symbols`.
+
+**What changed (R/ code; v0.9.7-era quickmap.R archived as
+versions/quickmap_0_9_8.R):**
+
+- `quickmap()` now derives per-layer symbols from `qm_meta(layer)$shape`
+  when `data_symbols` is not given (qm "cross" maps to the outline
+  "simple-cross" renderer symbol). Precedence: **data_symbols > layer
+  shape metadata > auto-cycle**.
+- `qm_layer(shape=)` default changed from "circle" to **NULL = auto** (so
+  hand-built layers keep cycling unless the user chooses); explicit
+  shapes validated against circle/diamond/cross. `from_csv()` static
+  non-school layers now leave shape NULL (previously a misleading
+  "circle" that was never used); tubes stay explicit circle, schools
+  cross, `from_rdata()`/`from_openair()` diamond.
+- `get_measurement_layers()` treats NA entries in data_symbols as unset
+  (falls to the cycle).
+
+**Deliberate rendering change (needs human sign-off):** default multi-layer
+maps now follow the long-documented convention — tubes circles, sensor
+networks **diamonds** (previously squares/rect from the cycle), schools
+**simple-cross ✖** (previously simple-plus). The episode map's BL sensors
+change circles → diamonds. Demo maps (scripts/item9_demo-maps_v1.R):
+aq_maps/item9_merton-shapes_v1.html and item9_episode-diamonds_v1.html,
+compared against baseline_260707_item8_signed_off/. Agent-side webshot
+check confirms circles/diamonds/crosses render.
+
+**Tests:** new tests/testthat/test-item9-layer-shapes-v1.R (meta shapes
+honoured, data_symbols precedence, cross→simple-cross + nonsolid, NULL
+default, invalid shape rejected). Updated expectations flagged as
+deliberate: test-item6 forced-lazy shapes c("circle","rect") →
+c("circle","diamond"); test-qm-layer default shape NULL + print "(auto
+shape)". Gate: **250 pass / 0 fail / 0 skip**; smoke OK. Version
+0.9.8.1 in DESCRIPTION + CLAUDE.md (consistency test green).
+
+**Follow-ups:** PR #31's Layers page documents the old behaviour — update
+its "Full detail" shape bullet and regenerate the multi-layer screenshot
+after both PRs merge (manual phase 2 will do this if not sooner). The
+remaining item-9 work (R CMD CHECK, @keywords internal sweep, full docs
+audit) is untouched.
 
 ### Roadmap item 8 complete: examples migrated and validated — 2026-07-07 (accepted by user; PR #29 awaiting merge)
 
