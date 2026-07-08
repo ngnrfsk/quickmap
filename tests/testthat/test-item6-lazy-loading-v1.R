@@ -135,6 +135,9 @@ test_that("forced-lazy annual map keeps static schools layer and both temporal l
   expect_length(lazy$layers, 2)                        # dt + bl sensors
   expect_equal(
     vapply(lazy$layers, function(l) l$shape, ""),
-    c("circle", "rect")                                # default symbol cycle
+    # DELIBERATE CHANGE (item 9, v0.9.8.1): layer shape metadata is now
+    # honoured — from_csv tubes are circles, from_rdata sensors diamonds
+    # (previously the auto-cycle gave circle/rect).
+    c("circle", "diamond")
   )
 })

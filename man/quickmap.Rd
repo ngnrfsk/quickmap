@@ -61,9 +61,12 @@ first time-varying layer's value column.}
 
 \item{theme_file}{Path to a YAML theme file}
 
-\item{data_symbols}{Optional character vector of marker symbols per layer
-(default: automatic assignment — solid symbols for time-varying layers,
-outline symbols for static layers)}
+\item{data_symbols}{Optional character vector of marker symbols per layer.
+Overrides the shapes carried by the layers themselves
+(\code{qm_layer(shape=)} and the \verb{from_*()} conventions: tubes circle,
+sensors diamond, schools cross). Layers with no shape set get an
+automatic assignment — solid symbols for time-varying layers, outline
+symbols for static layers}
 
 \item{wind}{Optional wind layer: a \code{\link[=from_worldmet]{from_worldmet()}} object or a data
 frame with \code{date}/\code{ws}/\code{wd} columns. Rendered as an animated particle

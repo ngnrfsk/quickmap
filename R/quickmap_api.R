@@ -75,9 +75,12 @@ as_qm_layer <- function(x, pollutant, temporal = NULL) {
 #' @param autoplay Auto-advance the time control
 #' @param play_speed Autoplay interval in ms
 #' @param theme_file Path to a YAML theme file
-#' @param data_symbols Optional character vector of marker symbols per layer
-#'   (default: automatic assignment — solid symbols for time-varying layers,
-#'   outline symbols for static layers)
+#' @param data_symbols Optional character vector of marker symbols per layer.
+#'   Overrides the shapes carried by the layers themselves
+#'   (`qm_layer(shape=)` and the `from_*()` conventions: tubes circle,
+#'   sensors diamond, schools cross). Layers with no shape set get an
+#'   automatic assignment — solid symbols for time-varying layers, outline
+#'   symbols for static layers
 #' @param wind Optional wind layer: a [from_worldmet()] object or a data
 #'   frame with `date`/`ws`/`wd` columns. Rendered as an animated particle
 #'   overlay (leaflet-velocity) that advances with the time control.
@@ -146,6 +149,17 @@ quickmap <- function(
   legacy <- lapply(qm_layers, qm_to_legacy)
   ids <- vapply(qm_layers, function(l) qm_meta(l)$name, "")
   ids <- make.unique(ids, sep = "_")
+
+  # Per-layer shape metadata (item 9): honour qm_layer(shape=) unless the
+  # map-level data_symbols override is given. Shapes are stored
+  # renderer-canonical by qm_normalise_shape(); NA entries (layers with no
+  # explicit shape) fall back to the renderer's auto-cycle.
+  if (is.null(data_symbols)) {
+    meta_shapes <- vapply(qm_layers, function(l) {
+      qm_meta(l)$shape %||% NA_character_
+    }, "")
+    if (any(!is.na(meta_shapes))) data_symbols <- meta_shapes
+  }
 
   render_pollution_map(
     data_sources = legacy,
