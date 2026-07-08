@@ -149,17 +149,23 @@ exists.
 
 ## 8. Sequencing and effort
 
-1. **PR A — skeleton:** `_pkgdown.yml`, navbar, Get started + Layers pages
+(Naming, clarified 2026-07-08: these are **manual phases 1–3** — the
+manual is user-directed work adjacent to the roadmap, not a roadmap item,
+so its phases are named "manual phase N" to avoid colliding with roadmap
+item numbers or GitHub PR numbers. Earlier drafts said "PR A/B/C"; phase 1
+landed as GitHub PR #31.)
+
+1. **Phase 1 — skeleton:** `_pkgdown.yml`, navbar, Get started + Layers pages
    (the tone-setting pair), chunk-runner harness. *~1 session.*
-2. **PR B — core:** Data, Styling/themes, Time/animation. *~1 session.*
-3. **PR C — completion:** Wind, Sharing, Recipes, R-users page; absorb/retire
+2. **Phase 2 — core:** Data, Styling/themes, Time/animation. *~1 session.*
+3. **Phase 3 — completion:** Wind, Sharing, Recipes, R-users page; absorb/retire
    old vignettes; Pages deployment. *~1 session.*
 
 Each PR: green gate + chunk harness + human eyeball of the built site.
 
 ## 8a. Pre-drafting decisions (user, 2026-07-07)
 
-- **Base:** PR A branches off main after PRs #29 (item 8) and #30 (this
+- **Base:** manual phase 1 branches off main after PRs #29 (item 8) and #30 (this
   prospectus) merge — no stacking.
 - **Install story (Get started):** `devtools::install_github()` with a
   one-line PAT note (repo currently private); reword at v1.0/CRAN.

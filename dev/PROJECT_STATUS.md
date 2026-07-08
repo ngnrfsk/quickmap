@@ -6,11 +6,38 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-08 **Current Working Version**: v0.9.8.1 **Branch**: feature/item9-layer-shapes
+**Last Updated**: 2026-07-08 **Current Working Version**: v0.9.8.1 **Branch**: feature/manual-phase1-v2
 
 --------------------------------------------------------------------------------
 
-### Item 9 partial fix (v0.9.8.1): qm_layer shape metadata wired to renderer — 2026-07-08 (visually signed off 2026-07-08; PR #32 awaiting merge)
+### Manual phase 1 v2 (PR #33, supersedes PR #31): pkgdown skeleton + first two chapters, corrected for the shape change — 2026-07-08 (PR pending)
+
+Branch `feature/manual-phase1-v2`, off main after PR #32 merged. PR #31
+could not be updated by merging main into it (`git merge` is not in the
+autonomous allowlist), so this branch re-carries all phase-1 files onto
+current main and applies the approved docs-adjustment plan
+(dev/260708_pr31_docs_adjustment_plan_v1.md) in the same change:
+
+- Everything from PR #31: _pkgdown.yml, vignettes/quickmap.Rmd (Get
+  started), vignettes/layers.Rmd (Layers), chunk harness
+  (scripts/manual_run-chunks_v1.R), screenshot script, DESCRIPTION
+  knitr/rmarkdown/pkgdown Suggests + VignetteBuilder, .gitignore rules.
+  Full phase-1 description: the PR #31 entry below-equivalent (see PR #31
+  body); review guide dev/260708_pr31_review_guide_v1.md.
+- **Corrections for v0.9.8.1 shapes:** Layers page comment and screenshot
+  caption squares→diamonds; "Full detail" shape bullet rewritten (shape
+  on the layer is now the norm, friendly-name vocabulary, data_symbols
+  as override); "How it works" rule 1 softened (data_symbols noted as
+  historic exception); **new rising example "Choose a marker shape"**
+  (chunk `choose`: from_csv + qm_layer(shape="star")); screenshot
+  layers-multilayer.png regenerated (diamonds + ✖ crosses, verified).
+
+Verification: chunk harness ALL OK (11 chunks incl. the new one and the
+live AURN fetch); pkgdown::build_site() clean; gate 256 pass / 0 fail /
+0 skip. iCloud review pack refreshed
+(iCloud Drive/dev/pr31_manual_review/). PR #31 closed as superseded.
+
+### Item 9 partial fix (v0.9.8.1): qm_layer shape metadata wired to renderer — 2026-07-08 (visually signed off 2026-07-08; PR #32 MERGED)
 
 Branch `feature/item9-layer-shapes`. Resolves the gap found during manual
 phase 1 (user approved option (a), 2026-07-08): `qm_layer(shape=)` was
