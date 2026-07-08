@@ -4,6 +4,9 @@ aq_maps/
 *.jpg
 *.png
 
+# pkgdown site (built locally, never committed)
+docs/
+
 # System files
 .DS_Store
 .DS_Store?

@@ -24,7 +24,7 @@ test_that("qm_layer builds from a plain data.frame with lat/lon", {
   expect_equal(m$value_col, "no2")
   expect_equal(m$time_col, "time_label")
   expect_equal(m$name, "test")
-  expect_equal(m$shape, "circle")
+  expect_null(m$shape) # no explicit shape: the map assigns one (item 9)
   expect_equal(m$resolution, "year")
   expect_true("time_sort" %in% names(layer))
   expect_s3_class(layer$time_sort, "POSIXct")
@@ -154,7 +154,7 @@ test_that("Label and School columns become label_col", {
 
 test_that("print summarises sites, steps, value and shape", {
   out <- capture.output(print(qm_layer(synthetic_df(), name = "merton_dt")))
-  expect_match(out[1], "qm_layer 'merton_dt': 3 sites x 2 time steps \\[year\\] of no2 \\(circle\\)")
+  expect_match(out[1], "qm_layer 'merton_dt': 3 sites x 2 time steps \\[year\\] of no2 \\(auto shape\\)")
 
   static <- synthetic_df()[1:3, ]
   static$time_label <- NULL
@@ -182,7 +182,7 @@ test_that("from_csv builds a static cross layer from schools", {
 
   layer <- from_csv("schools_Merton.csv")
   m <- qm_meta(layer)
-  expect_equal(m$shape, "cross")
+  expect_equal(m$shape, "simple-cross") # friendly "cross" stored renderer-canonical
   expect_equal(m$label_col, "School")
   expect_null(m$time_col)
 })
