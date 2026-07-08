@@ -45,6 +45,50 @@ All four are achievable with the existing {{placeholder}} template/theme
 system, self-contained (no framework runtime); fonts are the only asset
 question (see MCQ 2). Themes stay user-configurable regardless.
 
+### 2a. Live examples of each direction (added 2026-07-09, user request)
+
+Look at each on the device you'd review maps on. What to notice is the
+*chrome* — titles, legends, controls — not the data.
+
+**A. News-graphics:**
+- FT Visual & Data Journalism gallery: https://ig.ft.com/ — kicker-style
+  titles, hairline rules, muted palette; the Covid tracker
+  (https://ig.ft.com/coronavirus-chart/) is the canonical free example
+- The Economist Graphic Detail: https://www.economist.com/graphic-detail —
+  thin ramp legends, small-caps headers, restrained red accent
+- BBC News visual journalism, e.g. election maps at
+  https://www.bbc.co.uk/news/election/2024/uk/results — plain sans,
+  labels-outside-colour legends
+  *(FT/Economist article pages may be paywalled; the chrome is visible
+  before any paywall interstitial.)*
+
+**B. GOV.UK civic:**
+- Check for flooding live map: https://check-for-flooding.service.gov.uk/?v=map-live
+  — black-on-white, thin accent, big focus states, map as a service
+- UKHSA (ex-coronavirus) dashboard interactive map:
+  https://coronavirus.data.gov.uk/details/interactive-map — the civic
+  dashboard idiom
+- DEFRA UK-AIR monitoring map: https://uk-air.defra.gov.uk/interactive-map
+  — your own domain's incumbent look (dated; useful as the thing QuickMap
+  outclasses)
+
+**C. Modern product/dashboard:**
+- PurpleAir map: https://map.purpleair.com — floating rounded cards over
+  the map, system fonts, soft shadows
+- IQAir world map: https://www.iqair.com/air-quality-map — polished
+  commercial AQ chrome, pill-shaped legend
+- Windy: https://www.windy.com — controls-as-overlays taken to the
+  maximum (also relevant to wind-particle styling, MCQ 9)
+
+**D. Minimal cartographic:**
+- Our World in Data grapher maps, e.g.
+  https://ourworldindata.org/grapher/death-rates-from-air-pollution —
+  chrome nearly invisible, typography does the work, thin ramp legend
+- Felt: https://felt.com/gallery — pale basemaps, data-forward, minimal
+  floating UI
+- Electricity Maps: https://app.electricitymaps.com — dark-minimal
+  variant; shows how far "map dominates" can go
+
 ## 3. The MCQs — answer with letters (e.g. "1A, 2B, …"); every question
 also accepts "other: …"
 
