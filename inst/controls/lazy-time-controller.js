@@ -166,7 +166,9 @@ function(el, x, data) {
     );
   }
 
-  function setTime(timeLabel) {
+  function setTime(timeLabel, instant) {
+    // instant=true (item 10): the slider suppresses the crossfade while
+    // drag-scrubbing so colours track the thumb without lag
     var idx = times.indexOf(String(timeLabel));
     if (idx === -1) { return; }
     var token = ++fadeToken; // cancels any tween still running
@@ -200,6 +202,10 @@ function(el, x, data) {
     });
 
     if (fading.length === 0) { return; }
+    if (instant === true) {
+      fading.forEach(function (f) { applyColour(f.entry, mix(f.to, f.to, 0)); });
+      return;
+    }
     var t0 = performance.now();
 
     function tick(now) {

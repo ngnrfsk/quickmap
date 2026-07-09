@@ -33,8 +33,9 @@ test_that("build_legend_css handles image mode", {
   expect_false(identical(interactive_css, image_css))
 })
 
-test_that("load_roller_menu_control replaces placeholders", {
-  control <- quickmap:::load_roller_menu_control(
+test_that("load_time_slider_control replaces placeholders", {
+  # item 10: the roller menu was replaced by the bottom time slider
+  control <- quickmap:::load_time_slider_control(
     banner_colour = "#FF0000",
     autoplay = TRUE,
     play_speed = 1000

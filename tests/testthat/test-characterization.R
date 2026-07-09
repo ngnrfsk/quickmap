@@ -54,8 +54,10 @@ test_that("annual map: banner, legend and year control are injected", {
   expect_true(grepl("Characterization annual", html, fixed = TRUE))
   expect_true(grepl('id="mapLegend"', html, fixed = TRUE))
   expect_true(grepl('class="legend-container"', html, fixed = TRUE))
+  # DELIBERATE CHANGE (item 10, v0.9.9.5): the roller dropdown (yearList)
+  # was replaced by the bottom time slider (sliderTrack).
   expect_true(grepl('id="yearControl"', html, fixed = TRUE))
-  expect_true(grepl('id="yearList"', html, fixed = TRUE))
+  expect_true(grepl('id="sliderTrack"', html, fixed = TRUE))
   expect_true(grepl('id="playPauseButton"', html, fixed = TRUE))
 })
 
