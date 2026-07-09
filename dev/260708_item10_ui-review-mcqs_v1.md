@@ -1,7 +1,14 @@
 # Roadmap item 10 (UI visual polish → v0.9.9.5): interface review + user MCQs
 
-**Date:** 2026-07-08 · **Status:** STOPPED awaiting user answers to the
-MCQs in §3. Per the roadmap, item 10 starts with an analysis of
+**Date:** 2026-07-08 · **Status:** answers received 2026-07-09 —
+**settled: Q1 = UKHSA/BBC/OWID-inspired direction, Q2 = A (system
+fonts), Q5 = B (keep footnote symbols, restyled), Q7 = A (neutral chrome,
+brand accents), Q10 = real-data mock-ups.** Q3/Q4/Q6/Q8/Q9 answered
+"show examples": rendered mock-ups built by
+scripts/item10_mock-base-maps_v1.R + item10_mockups_v1.py +
+item10_wind-mockups_v1.py → aq_maps/item10_*_v1.html, copied with a
+choice README to iCloud dev/item10_ui_review/mockups/. Awaiting the
+user's picks. Per the roadmap, item 10 starts with an analysis of
 design-template options ending in a recommended direction with mock-ups
 for user approval before implementation — the MCQs below scope that
 recommendation; mock-ups follow the answers.
