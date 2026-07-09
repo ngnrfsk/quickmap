@@ -133,6 +133,21 @@ build_wind_payload <- function(wind, display_times, bbox) {
   )
 }
 
+#' Particle styling for the wind overlay (item 10): theme-controlled, with
+#' the approved speed-ramp defaults. Maps theme keys to leaflet-velocity
+#' option names.
+#' @keywords internal
+wind_style_options <- function(wind_style = NULL) {
+  defaults <- get_default_theme()$wind
+  s <- utils::modifyList(defaults, wind_style %||% list())
+  list(
+    colorScale = I(unlist(s$colour_ramp)),
+    particleMultiplier = s$particle_density,
+    lineWidth = s$line_width,
+    velocityScale = s$velocity_scale
+  )
+}
+
 #' @keywords internal
 load_wind_controller_js <- function() {
   read_template_file(
@@ -155,8 +170,9 @@ velocity_dependency <- function() {
 
 #' Attach the wind overlay to an interactive map widget
 #' @keywords internal
-add_wind_layer <- function(map, wind, display_times, bbox) {
+add_wind_layer <- function(map, wind, display_times, bbox, wind_style = NULL) {
   payload <- build_wind_payload(wind, display_times, bbox)
+  payload$style <- wind_style_options(wind_style)
   map$dependencies <- c(map$dependencies, list(velocity_dependency()))
   htmlwidgets::onRender(map, load_wind_controller_js(), data = payload)
 }

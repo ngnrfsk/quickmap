@@ -19,15 +19,17 @@ function(el, x, data) {
       layer.updateData(frame);
       return;
     }
+    // item 10: styling comes from the theme via the payload (speed-ramp
+    // default); the literals below are only a fallback for old payloads
+    var style = data.style || {};
     layer = L.velocityLayer({
       data: frame,
       maxVelocity: data.maxVelocity,
-      velocityScale: 0.01,
-      lineWidth: 1,
-      particleMultiplier: 1 / 500,
-      // muted slate ramp: speed stays readable without competing with markers
-      colorScale: ['#b7c3cd', '#9fb0be', '#879cb0', '#7089a1', '#587693',
-                   '#416384', '#295076'],
+      velocityScale: style.velocityScale || 0.01,
+      lineWidth: style.lineWidth || 1,
+      particleMultiplier: style.particleMultiplier || 1 / 500,
+      colorScale: style.colorScale || ['#3288bd', '#66c2a5', '#abdda4',
+                                       '#fee08b', '#f46d43', '#d53e4f'],
       displayValues: false
     }).addTo(map);
   }
