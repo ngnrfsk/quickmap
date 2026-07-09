@@ -1709,7 +1709,7 @@ save_html_and_style <- function(
 }
 
 #' @keywords internal
-load_roller_menu_control <- function(
+load_time_slider_control <- function(
   banner_colour = "#2c3e50",
   autoplay = FALSE,
   play_speed = 500,
@@ -1718,57 +1718,36 @@ load_roller_menu_control <- function(
 ) {
   controls_dir <- get_package_dir("controls")
 
-  html_file <- file.path(controls_dir, "roller-menu.html")
-  css_file <- file.path(controls_dir, "roller-menu.css")
-  js_file <- file.path(controls_dir, "roller-menu.js")
-
-  html_content <- read_template_file(html_file)
-  css_content <- read_template_file(css_file)
-  js_content <- read_template_file(js_file)
-
+  # Static export: no interaction — just a quiet label pill naming the
+  # rendered time step
   if (image_mode) {
-    html_content <- gsub(
-      '<button id="playPauseButton"[^>]*>.*?</button>',
-      '',
-      html_content
-    )
-    html_content <- gsub(
-      '<span class="arrow">▼</span>',
-      '',
-      html_content
-    )
-    if (!is.null(display_times) && length(display_times) > 0) {
-      time_text <- as.character(display_times[1])
-      html_content <- gsub(
-        '<span id="selectedYear"></span>',
-        sprintf('<span id="selectedYear">%s</span>', time_text),
-        html_content
-      )
-    }
+    time_text <- if (!is.null(display_times) && length(display_times) > 0) {
+      as.character(display_times[1])
+    } else ""
+    return(sprintf(
+      paste0(
+        '\n<div id="yearControl" style="position: absolute; top: 1.2rem;',
+        ' right: 1.2rem; z-index: 1000; background: rgba(255,255,255,0.95);',
+        ' border: 1px solid #ddd; border-radius: 0.5rem;',
+        ' padding: 0.45rem 0.9rem; font-weight: 650; font-size: 1.1rem;',
+        ' font-family: system-ui, -apple-system, sans-serif;',
+        ' box-shadow: 0 1px 4px rgba(0,0,0,0.15);">%s</div>\n'
+      ),
+      time_text
+    ))
   }
 
-  accent_light <- lighten_color(banner_colour, 15)
-  hover_tint <- lighten_color(banner_colour, 85)
-
-  css_content <- sprintf(
-    css_content,
-    banner_colour,
-    banner_colour,
-    accent_light,
-    accent_light,
-    "#ffffff",
-    banner_colour,
-    banner_colour,
-    accent_light,
-    accent_light,
-    "#ffffff",
-    banner_colour,
-    hover_tint,
-    accent_light,
-    hover_tint,
-    hover_tint,
-    banner_colour
+  html_content <- read_template_file(
+    file.path(controls_dir, "time-slider.html")
   )
+  css_content <- apply_template_replacements(
+    read_template_file(file.path(controls_dir, "time-slider.css")),
+    list(
+      "{{accent}}" = banner_colour,
+      "{{accent_light}}" = lighten_color(banner_colour, 15)
+    )
+  )
+  js_content <- read_template_file(file.path(controls_dir, "time-slider.js"))
 
   config_script <- sprintf(
     'window.quickmapConfig = {autoplay: %s, playSpeed: %d};',
@@ -1776,7 +1755,7 @@ load_roller_menu_control <- function(
     as.integer(play_speed)
   )
 
-  combined <- sprintf(
+  sprintf(
     '
 %s
 
@@ -1797,8 +1776,6 @@ load_roller_menu_control <- function(
     config_script,
     js_content
   )
-
-  return(combined)
 }
 
 #' @keywords internal
@@ -2076,7 +2053,7 @@ inject_banner_legend_controls <- function(
 
   # Only add time control if we have temporal data
   if (!identical(display_times, "static_only")) {
-    roller_menu_html <- load_roller_menu_control(
+    time_control_html <- load_time_slider_control(
       banner_colour,
       autoplay,
       play_speed,
@@ -2084,12 +2061,12 @@ inject_banner_legend_controls <- function(
       display_times
     )
   } else {
-    roller_menu_html <- ""
+    time_control_html <- ""
   }
 
   legend_html <- generate_legend_html(scale_name, collapsed_mobile, data_max)
 
-  combined_html <- paste0(roller_menu_html, "\n", legend_html)
+  combined_html <- paste0(time_control_html, "\n", legend_html)
   html_text <- sub("</body>", paste0(combined_html, "</body>"), html_text)
 
   writeLines(html_text, html_file)

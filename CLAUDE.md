@@ -214,7 +214,7 @@ commands (see "Permissions and command style" below).
 External configuration files in `inst/` directory:
 - **`inst/banner/`**: Banner CSS template with {{placeholder}} substitution
 - **`inst/legend/`**: Legend CSS template with {{placeholder}} substitution
-- **`inst/controls/`**: Year control HTML/CSS/JS (roller menu)
+- **`inst/controls/`**: Time control HTML/CSS/JS (bottom slider, v0.9.9.5+)
 - **`inst/config/scales/`**: YAML colour scale definitions
 - **`inst/themes/`**: YAML theme configuration files
 
@@ -283,7 +283,7 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 - Better readability than sprintf positional parameters
 - Self-documenting template structure
 - No parameter counting errors
-- Used in: `build_banner_css()`, `build_legend_css()`, `load_roller_menu_control()`
+- Used in: `build_banner_css()`, `build_legend_css()`, `load_time_slider_control()`
 - A missing `{{placeholder}}` in a template is a hard error (`apply_template_replacements()`)
 
 ## UI Enhancement System
@@ -301,13 +301,16 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 -   **Flexbox layout**: Banner/map/legend components
 -   **Mobile optimized**: Responsive font sizes and padding
 
-### Year Control Menu
+### Time Slider Control (v0.9.9.5+)
 
--   **Touch-friendly**: Collapsible dropdown menu for year selection
--   **Dynamic years**: Automatically populated from available data
--   **Banner theming**: Colors derived from `banner_colour` parameter
--   **Mobile responsive**: rem-based sizing for all screen sizes
--   **Files**: `inst/controls/roller-menu.html`, `.css`, `.js`
+-   **Bottom-centre slider card**: play button, ‹ › fine-step buttons,
+    draggable track (drag = coarse seek with crossfade suppressed,
+    arrows = exact), current step labelled above the thumb
+-   **Dynamic time steps**: populated from the layer cache / lazy payload
+-   **Neutral chrome**: brand colour as accent only (play button, fill)
+-   **Keyboard**: arrows step, Home/End jump, Space play/pause
+-   **Files**: `inst/controls/time-slider.html`, `.css`, `.js`
+    (replaced the pre-v0.9.9.5 roller dropdown)
 
 ## File Structure & Outputs
 
