@@ -6,9 +6,63 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-08 **Current Working Version**: v0.9.8.1 **Branch**: feature/item9-layer-shapes
+**Last Updated**: 2026-07-09 **Current Working Version**: v0.9.9.5 **Branch**: feature/item10-ui-polish
 
 --------------------------------------------------------------------------------
+
+### Roadmap item 10 (v0.9.9.5): UI visual polish implemented — 2026-07-09 (visually SIGNED OFF 2026-07-09 after two review rounds: vignette restored in demos, episode demo on OSM tiles; PR #35 awaiting merge)
+
+Branch `feature/item10-ui-polish` (stacked on chore/item10-ui-review, which
+holds the element review, MCQ decisions and approved mock-ups). Design was
+user-approved 2026-07-09 against real-data mocks
+(aq_maps/item10_assembled-*.html); implementation plan
+dev/260709_item10_implementation_plan_v1.md. Pre-change quickmap.R archived
+as versions/quickmap_0_9_8_1.R.
+
+**Stage 1 — CSS/theme surface:** "strip" banner default (white,
+left-aligned, brand rule; `banner.style: strip|bar` theme key, both modes),
+system font stack, thin colour-ramp legend (labels outside colours,
+footnote key as pills; generate_legend_html rewritten), neutral chrome
+(legend header white, brand tint on hover), default tiles CartoDB.Positron
+(OSM via theme), wind styling exposed through theme YAML (`wind:`
+colour_ramp/particle_density/line_width/velocity_scale →
+wind_style_options() → payload.style; speed-ramp default;
+wind-controller.js reads payload.style with fallbacks).
+
+**Stage 2 — time slider:** inst/controls/time-slider.{html,css,js} replaces
+roller-menu.* (deleted): bottom-centre card, play + ‹ › fine-step buttons,
+pointer-capture drag scrubbing (passes instant=true so
+lazy-time-controller.js skips its 250 ms crossfade — new optional param),
+current-step label above thumb, Home/End/arrow keys, autoplay/play_speed,
+tab-hidden pause, single-step mode, image-mode static label pill;
+load_roller_menu_control() → load_time_slider_control() ({{placeholder}}
+CSS). Same integration contract (quickmapTimeController / layer cache /
+wind controller).
+
+**Stage 3 — static export scaling repaired** (bug logged 2026-07-05):
+the inert regex substitutions replaced by root font-size scaling
+(`html { font-size: 16*sf px }`) — all chrome is rem-based so banner,
+legend and time label scale together; legend-image.css rewritten for the
+ramp (700px vs 2000px exports verified proportionate).
+
+**Verified in Chrome** (localhost, episode map): drag scrubbing updates
+markers live with the step label, play/pause animates and icon toggles,
+speed-ramp wind advances with the slider, zero console errors on load or
+interaction.
+
+**Deliberate characterization changes (flagged in tests):** default tiles
+addTiles→addProviderTiles (annual + item4 tests); yearList→sliderTrack
+(control block test). New tests: tests/testthat/test-item10-ui-polish-v1.R
+(banner styles, ramp structure incl. symbols, theme defaults, wind style
+merge). Gate: **278 pass / 0 fail / 0 skip**; smoke OK; consistency green.
+
+**Demo maps** (scripts/item10_demo-maps_v1.R): item10_final-annual_v1.html
+(all defaults), item10_final-episode-wind_v1.html (108-step slider +
+speed-ramp Heathrow wind, autoplay), item10_final-bar-osm_v1.html (the
+XOR theme options: bar banner + OSM tiles). Static exports:
+item10_stage3-export-{700,2000}_2022.jpg. Compare with approved mocks
+item10_assembled-*.html and baseline_260707_item8_signed_off/.
+**PR blocks on human visual sign-off** (rendering-touching).
 
 ### Item 9 partial fix (v0.9.8.1): qm_layer shape metadata wired to renderer — 2026-07-08 (visually signed off 2026-07-08; PR #32 awaiting merge)
 

@@ -1,18 +1,19 @@
 /* Global reset and flexbox layout for banner/map/legend system */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; font-family: Arial, sans-serif; overflow: hidden; }
+html, body {
+  height: 100%;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  overflow: hidden;
+}
 body { display: flex; flex-direction: column; }
 
-/* Banner styles - Interactive mode */
+/* Banner - Interactive mode; visual style ("strip" or "bar") injected below */
 .banner {
-  background: {{banner_bg}};
-  color: white;
-  padding: 1.25rem;
-  text-align: center;
-  font-size: 1.3rem;
-  line-height: 1.3em;
+  line-height: 1.35;
   flex-shrink: 0;
 }
+
+{{banner_style_css}}
 
 /* Map container */
 .map-container { flex: 1; position: relative; min-height: 0; }

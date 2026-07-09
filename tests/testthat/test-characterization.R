@@ -16,7 +16,10 @@ test_that("annual map: payload method counts are stable", {
   payload <- char_payload(char_html("char_annual.html"))
   methods <- char_methods(payload)
 
-  expect_equal(sum(methods == "addTiles"), 1)
+  # DELIBERATE CHANGE (item 10, v0.9.9.5): default base tiles are now
+  # CartoDB.Positron (addProviderTiles), not OSM (addTiles).
+  expect_equal(sum(methods == "addTiles"), 0)
+  expect_equal(sum(methods == "addProviderTiles"), 1)
   expect_equal(sum(methods == "addPolygons"), 2) # borough boundary + vignette
   expect_equal(sum(methods == "addMarkers"), 9)  # (dt + bl + schools) x 3 years
   expect_equal(sum(methods == "showGroup"), 3)
@@ -51,8 +54,10 @@ test_that("annual map: banner, legend and year control are injected", {
   expect_true(grepl("Characterization annual", html, fixed = TRUE))
   expect_true(grepl('id="mapLegend"', html, fixed = TRUE))
   expect_true(grepl('class="legend-container"', html, fixed = TRUE))
+  # DELIBERATE CHANGE (item 10, v0.9.9.5): the roller dropdown (yearList)
+  # was replaced by the bottom time slider (sliderTrack).
   expect_true(grepl('id="yearControl"', html, fixed = TRUE))
-  expect_true(grepl('id="yearList"', html, fixed = TRUE))
+  expect_true(grepl('id="sliderTrack"', html, fixed = TRUE))
   expect_true(grepl('id="playPauseButton"', html, fixed = TRUE))
 })
 

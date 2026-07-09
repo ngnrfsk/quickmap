@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.8.1
+### Current Version: 0.9.9.5
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -214,7 +214,7 @@ commands (see "Permissions and command style" below).
 External configuration files in `inst/` directory:
 - **`inst/banner/`**: Banner CSS template with {{placeholder}} substitution
 - **`inst/legend/`**: Legend CSS template with {{placeholder}} substitution
-- **`inst/controls/`**: Year control HTML/CSS/JS (roller menu)
+- **`inst/controls/`**: Time control HTML/CSS/JS (bottom slider, v0.9.9.5+)
 - **`inst/config/scales/`**: YAML colour scale definitions
 - **`inst/themes/`**: YAML theme configuration files
 
@@ -283,7 +283,7 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 - Better readability than sprintf positional parameters
 - Self-documenting template structure
 - No parameter counting errors
-- Used in: `build_banner_css()`, `build_legend_css()`, `load_roller_menu_control()`
+- Used in: `build_banner_css()`, `build_legend_css()`, `load_time_slider_control()`
 - A missing `{{placeholder}}` in a template is a hard error (`apply_template_replacements()`)
 
 ## UI Enhancement System
@@ -301,13 +301,16 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 -   **Flexbox layout**: Banner/map/legend components
 -   **Mobile optimized**: Responsive font sizes and padding
 
-### Year Control Menu
+### Time Slider Control (v0.9.9.5+)
 
--   **Touch-friendly**: Collapsible dropdown menu for year selection
--   **Dynamic years**: Automatically populated from available data
--   **Banner theming**: Colors derived from `banner_colour` parameter
--   **Mobile responsive**: rem-based sizing for all screen sizes
--   **Files**: `inst/controls/roller-menu.html`, `.css`, `.js`
+-   **Bottom-centre slider card**: play button, ‹ › fine-step buttons,
+    draggable track (drag = coarse seek with crossfade suppressed,
+    arrows = exact), current step labelled above the thumb
+-   **Dynamic time steps**: populated from the layer cache / lazy payload
+-   **Neutral chrome**: brand colour as accent only (play button, fill)
+-   **Keyboard**: arrows step, Home/End jump, Space play/pause
+-   **Files**: `inst/controls/time-slider.html`, `.css`, `.js`
+    (replaced the pre-v0.9.9.5 roller dropdown)
 
 ## File Structure & Outputs
 
@@ -368,6 +371,7 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.7**: Time step cap + lazy loading (item 6, Option D): above 50 time steps (or ~5 MB estimated) temporal markers render as Canvas shapes restyled per step from one embedded JSON payload (`inst/controls/lazy-time-controller.js`); 200-step default cap with warn+subset; episode fixture 3.46 MB → 0.91 MB; below-threshold maps keep the pre-built-layers path unchanged
 -   **v0.9.8**: Wind layer (item 7): `wind` parameter on `quickmap()`/`create_pollution_map()` takes a `from_worldmet()` object or date/ws/wd data frame; period-mean U/V on a 2×2 grid per display time, rendered by vendored leaflet-velocity (`R/wind.R`, `inst/controls/wind-controller.js` + `leaflet-velocity/`), advancing with the roller menu; interactive HTML only
 -   **v0.9.8.1**: Layer shape wiring (item 9, partial): `qm_layer(shape=)` and the `from_*()` shape conventions (tubes circle, sensors diamond, schools cross) now reach the renderer; precedence is map-level `data_symbols` > layer shape metadata > automatic cycle; `qm_layer()` shape default is NULL (auto-assign); qm "cross" renders as the outline simple-cross symbol
+-   **v0.9.9.5**: UI visual polish (item 10, user-approved design): slim "strip" banner default (`banner.style: strip|bar` theme key), thin colour-ramp legend with labels outside the colours and the footnote key as pills, neutral chrome with brand-colour accents, system font stack, `CartoDB.Positron` default tiles, bottom time-slider control with fine-step arrows/drag scrubbing/keyboard (`inst/controls/time-slider.*`, replacing the roller menu), wind-particle styling exposed through theme YAML (`wind:` section, speed-ramp default), and the static-export chrome-scaling repair (root font-size scaling)
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 
@@ -461,6 +465,13 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
 2026-07-06, renumbering the UI-defects item to 11. Dev docs written before
 those dates use the older numbering — in particular the item-5 comparison doc
 says "item 10" for what is now item 11.)
+
+**Post-1.0: wind styling presets (optional)** (added 2026-07-09, user
+decision at item 10). Item 10 ships the speed-ramp colour scale as the
+wind default with the constants theme-exposed; recorded as optional future
+development: a preset library (muted slate, high-contrast dark, custom
+ramps), speed-scaled line width/opacity, and per-theme ramp selection —
+all ride the same theme-YAML surface, no renderer work.
 
 **Post-1.0: ecosystem integrations** (added 2026-07-07; full survey with
 integration shapes, risks and suggested ordering:
