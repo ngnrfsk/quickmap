@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.8.1
+### Current Version: 0.9.9.5
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -371,6 +371,7 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.7**: Time step cap + lazy loading (item 6, Option D): above 50 time steps (or ~5 MB estimated) temporal markers render as Canvas shapes restyled per step from one embedded JSON payload (`inst/controls/lazy-time-controller.js`); 200-step default cap with warn+subset; episode fixture 3.46 MB → 0.91 MB; below-threshold maps keep the pre-built-layers path unchanged
 -   **v0.9.8**: Wind layer (item 7): `wind` parameter on `quickmap()`/`create_pollution_map()` takes a `from_worldmet()` object or date/ws/wd data frame; period-mean U/V on a 2×2 grid per display time, rendered by vendored leaflet-velocity (`R/wind.R`, `inst/controls/wind-controller.js` + `leaflet-velocity/`), advancing with the roller menu; interactive HTML only
 -   **v0.9.8.1**: Layer shape wiring (item 9, partial): `qm_layer(shape=)` and the `from_*()` shape conventions (tubes circle, sensors diamond, schools cross) now reach the renderer; precedence is map-level `data_symbols` > layer shape metadata > automatic cycle; `qm_layer()` shape default is NULL (auto-assign); qm "cross" renders as the outline simple-cross symbol
+-   **v0.9.9.5**: UI visual polish (item 10, user-approved design): slim "strip" banner default (`banner.style: strip|bar` theme key), thin colour-ramp legend with labels outside the colours and the footnote key as pills, neutral chrome with brand-colour accents, system font stack, `CartoDB.Positron` default tiles, bottom time-slider control with fine-step arrows/drag scrubbing/keyboard (`inst/controls/time-slider.*`, replacing the roller menu), wind-particle styling exposed through theme YAML (`wind:` section, speed-ramp default), and the static-export chrome-scaling repair (root font-size scaling)
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 
