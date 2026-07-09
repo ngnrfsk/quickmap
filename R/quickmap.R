@@ -1997,40 +1997,16 @@ inject_banner_legend_controls <- function(
     width <- image_dimensions[1]
     height <- image_dimensions[2]
 
-    # Calculate scale factor (1200px = baseline) using geometric mean for balanced scaling
+    # Unified chrome scaling (item 10, fixes the inert substitutions logged
+    # 2026-07-05): every chrome size is rem-based, so scaling the root
+    # font-size scales banner, legend and time label together. Geometric
+    # mean keeps 1920x1080 and 800x600 balanced against the 1200x1200
+    # baseline.
     scale_factor <- sqrt((width * height) / (IMAGE_X * IMAGE_Y))
-    # For 1920x1080: sqrt((1920*1080)/(1200*1200)) = sqrt(1.44) = 1.2 (balanced scaling)
-    # For 800x600: sqrt((800*600)/(1200*1200)) = sqrt(0.33) = 0.58 (proportional reduction)
-
-    banner_font_size <- 1.8 * scale_factor
-    symbol_size <- 1.3 * scale_factor
-    header_font_size <- 1.2 * scale_factor
-    legend_font_size <- 1.0 * scale_factor
-
-    legend_padding <- 1.0 * scale_factor
-    legend_gap <- 1.0 * scale_factor
-    legend_max_height <- 18.75 * scale_factor
-    header_padding <- 1.5 * scale_factor
-    banner_padding <- 2.0 * scale_factor
-
-    custom_css <- apply_template_replacements(
+    custom_css <- paste0(
       custom_css,
-      list(
-        "1\\.8rem" = paste0(banner_font_size, "rem"),
-        "1\\.3rem" = paste0(symbol_size, "rem"),
-        "1\\.2rem" = paste0(header_font_size, "rem"),
-        "1rem" = paste0(legend_font_size, "rem"),
-        "18\\.75rem" = paste0(legend_max_height, "rem"),
-        "padding: 1\\.5rem 2rem" = paste0(
-          "padding: ",
-          header_padding,
-          "rem ",
-          banner_padding,
-          "rem"
-        ),
-        "padding: 1rem" = paste0("padding: ", legend_padding, "rem"),
-        "gap: 1rem" = paste0("gap: ", legend_gap, "rem")
-      )
+      sprintf("\n<style>\nhtml { font-size: %.2fpx; }\n</style>\n",
+              16 * scale_factor)
     )
   }
 
