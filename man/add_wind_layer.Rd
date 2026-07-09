@@ -4,7 +4,7 @@
 \alias{add_wind_layer}
 \title{Attach the wind overlay to an interactive map widget}
 \usage{
-add_wind_layer(map, wind, display_times, bbox)
+add_wind_layer(map, wind, display_times, bbox, wind_style = NULL)
 }
 \description{
 Attach the wind overlay to an interactive map widget
