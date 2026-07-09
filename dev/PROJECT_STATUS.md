@@ -10,7 +10,7 @@ editor_options:
 
 --------------------------------------------------------------------------------
 
-### Roadmap item 10 (v0.9.9.5): UI visual polish implemented — 2026-07-09 (PR pending, BLOCKS on visual sign-off)
+### Roadmap item 10 (v0.9.9.5): UI visual polish implemented — 2026-07-09 (visually SIGNED OFF 2026-07-09 after two review rounds: vignette restored in demos, episode demo on OSM tiles; PR #35 awaiting merge)
 
 Branch `feature/item10-ui-polish` (stacked on chore/item10-ui-review, which
 holds the element review, MCQ decisions and approved mock-ups). Design was
