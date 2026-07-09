@@ -3,7 +3,8 @@
 # v1 passed vignette = FALSE everywhere (a leftover from the mock-up chain),
 # which the user caught at review. The episode map stays vignette-free,
 # matching its baseline.
-# Run from the repo root: Rscript scripts/item10_demo-maps_v2.R
+# v3: episode animation uses OSM tiles (user request 2026-07-09).
+# Run from the repo root: Rscript scripts/item10_demo-maps_v3.R
 # Compare against the approved mocks in aq_maps/item10_assembled-*.html and
 # the pre-item-10 baseline in aq_maps/baseline_260707_item8_signed_off/.
 library(quickmap)
@@ -39,11 +40,14 @@ if (requireNamespace("worldmet", quietly = TRUE)) {
 } else {
   heathrow <- NULL
 }
+episode_theme <- tempfile(fileext = ".yaml")
+writeLines(c("map:", '  base_tiles: "OpenStreetMap"'), episode_theme)
 quickmap(
   from_rdata("episodeJan15-20_2024_sf_all.Rdata", "pm25", name = "bl_sensors"),
   boroughs = c("Wandsworth", "Richmond"),
   colour_scale = "stripes_pm25",
-  output_file = "item10_final-episode-wind_v1.html",
+  theme_file = episode_theme,
+  output_file = "item10_final-episode-wind_v2.html",
   title = "PM2.5 Episode: Jan 15-20, 2024",
   vignette = FALSE,
   marker_labels = TRUE,
@@ -72,7 +76,7 @@ suppressWarnings(quickmap(
   marker_labels = "labels"
 ))
 
-for (f in c("item10_final-annual_v2.html", "item10_final-episode-wind_v1.html",
+for (f in c("item10_final-annual_v2.html", "item10_final-episode-wind_v2.html",
             "item10_final-bar-osm_v2.html")) {
   cat(f, file.size(file.path("aq_maps", f)), "bytes\n")
 }
