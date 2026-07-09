@@ -1121,8 +1121,7 @@ get_default_theme <- function() {
     banner = list(
       background = "#5F3E94",
       text_color = "white",
-      title = "Air Quality Map",
-      style = "strip"
+      title = "Air Quality Map"
     ),
     legend = list(
       show = TRUE,
@@ -1130,7 +1129,7 @@ get_default_theme <- function() {
     ),
     map = list(
       vignette = TRUE,
-      base_tiles = "CartoDB.Positron",
+      base_tiles = NULL,
       zoom_level = NULL,
       boundary_labels = FALSE,
       marker_labels = FALSE
@@ -1140,16 +1139,6 @@ get_default_theme <- function() {
       play_speed = 500,
       background = NULL,
       text_color = NULL
-    ),
-    # Item 10: wind-particle styling, threaded into the leaflet-velocity
-    # payload (see build_wind_payload). colour_ramp maps to colorScale,
-    # particle_density to particleMultiplier.
-    wind = list(
-      colour_ramp = c("#3288bd", "#66c2a5", "#abdda4", "#fee08b",
-                      "#f46d43", "#d53e4f"),
-      particle_density = 1 / 500,
-      line_width = 1,
-      velocity_scale = 0.01
     )
   )
 }
@@ -1380,12 +1369,10 @@ generate_legend_html <- function(
 
   hex_colors <- convert_colors_to_hex(legend_scale$colours)
 
-  # Ramp legend (item 10, approved design): a thin row of colour blocks
-  # with the range labels outside (below) the colours, plus the restyled
-  # footnote-symbol key.
+  max_width <- calculate_max_range_width(legend_scale$labels)
+
   symbol_index <- 1
-  ramp_blocks <- list()
-  ramp_labels <- list()
+  legend_items <- list()
   symbol_key_items <- list()
 
   for (i in seq_along(hex_colors)) {
@@ -1397,33 +1384,33 @@ generate_legend_html <- function(
       range_with_symbol <- paste0(parsed$range, " ", symbol)
       symbol_index <- symbol_index + 1
 
+      padded_range <- sprintf(paste0("%-", max_width, "s"), range_with_symbol)
+
+      symbol_text <- paste(symbol, parsed$description)
+      padded_symbol_text <- sprintf(
+        paste0("%-", max_width + 10, "s"),
+        symbol_text
+      )
+
       symbol_key_items[[length(symbol_key_items) + 1]] <- sprintf(
         '      <span style="background: %s; color: %s;">%s</span>',
         hex_colors[i],
         text_color,
-        paste(symbol, parsed$description)
+        padded_symbol_text
       )
     } else {
-      range_with_symbol <- parsed$range
+      padded_range <- sprintf(paste0("%-", max_width, "s"), parsed$range)
     }
 
-    ramp_blocks[[i]] <- sprintf(
-      '        <div class="ramp-block" style="background: %s;"></div>',
-      hex_colors[i]
-    )
-    ramp_labels[[i]] <- sprintf(
-      '        <div class="ramp-label">%s</div>',
-      range_with_symbol
+    legend_items[[i]] <- sprintf(
+      '      <div class="legend-item"><span style="background: %s; color: %s;">%s</span></div>',
+      hex_colors[i],
+      text_color,
+      padded_range
     )
   }
 
-  legend_items_html <- paste0(
-    '      <div class="legend-ramp">\n',
-    paste(unlist(ramp_blocks), collapse = "\n"),
-    '\n      </div>\n      <div class="legend-ramp-labels">\n',
-    paste(unlist(ramp_labels), collapse = "\n"),
-    '\n      </div>'
-  )
+  legend_items_html <- paste(legend_items, collapse = "\n")
 
   if (length(symbol_key_items) > 0) {
     symbol_key_html <- paste(symbol_key_items, collapse = "\n")
@@ -1496,40 +1483,14 @@ get_contrast_text_color <- function(color) {
 }
 
 #' @keywords internal
-build_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE,
-                             banner_style = "strip") {
+build_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   banner_dir <- get_package_dir("banner")
   css_variant <- if (image_mode) "banner-image.css" else
     "banner-interactive.css"
   css_file <- file.path(banner_dir, css_variant)
   css_content <- read_template_file(css_file)
 
-  # Item 10 (approved design): "strip" (default) is a slim white title bar
-  # with a brand-colour rule; "bar" keeps the brand-colour block, refined.
-  style_css <- switch(
-    banner_style,
-    strip = if (image_mode) {
-      paste0(".banner { background: #ffffff; color: #111111; text-align: left;",
-             " padding: 1.1rem 1.6rem 1rem; font-size: 1.7rem;",
-             " border-bottom: 5px solid ", banner_colour, "; }")
-    } else {
-      paste0(".banner { background: #ffffff; color: #111111; text-align: left;",
-             " padding: 0.6rem 1.25rem 0.55rem; font-size: 1.05rem;",
-             " font-weight: 650;",
-             " border-bottom: 3px solid ", banner_colour, "; }")
-    },
-    bar = if (image_mode) {
-      paste0(".banner { background: ", banner_colour, "; color: white;",
-             " text-align: left; padding: 1.6rem; font-size: 1.8rem; }")
-    } else {
-      paste0(".banner { background: ", banner_colour, "; color: white;",
-             " text-align: left; padding: 0.7rem 1.25rem; font-size: 1.1rem;",
-             " font-weight: 600; }")
-    },
-    stop("Unknown banner style '", banner_style, "'. Use \"strip\" or \"bar\".")
-  )
-
-  replacements <- list("{{banner_style_css}}" = style_css)
+  replacements <- list("{{banner_bg}}" = banner_colour)
 
   if (!image_mode) {
     mobile_file <- file.path(banner_dir, "mobile.css")
@@ -1548,11 +1509,12 @@ build_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   css_file <- file.path(legend_dir, css_variant)
   css_content <- read_template_file(css_file)
 
-  # Item 10 (approved design): neutral chrome — the legend header no longer
-  # tints with the brand colour; hover uses a faint brand-tinted wash.
+  legend_header_bg <- lighten_color(banner_colour, 85)
+  legend_header_hover <- lighten_color(banner_colour, 75)
+
   replacements <- list(
-    "{{legend_header_bg}}" = "#ffffff",
-    "{{legend_header_hover}}" = lighten_color(banner_colour, 92)
+    "{{legend_header_bg}}" = legend_header_bg,
+    "{{legend_header_hover}}" = legend_header_hover
   )
 
   if (!image_mode) {
@@ -1613,8 +1575,7 @@ finalize_and_save_map <- function(
   play_speed,
   data_max,
   image_dimensions = NULL,
-  lazy_payload = NULL,
-  banner_style = "strip"
+  lazy_payload = NULL
 ) {
   map <- add_map_controls(
     map,
@@ -1643,8 +1604,7 @@ finalize_and_save_map <- function(
     autoplay,
     play_speed,
     data_max,
-    display_times,
-    banner_style
+    display_times
   )
 
   if (!is.null(image_dimensions)) {
@@ -1675,8 +1635,7 @@ save_html_and_style <- function(
   autoplay,
   play_speed,
   data_max,
-  display_times = NULL,
-  banner_style = "strip"
+  display_times = NULL
 ) {
   htmlwidgets::saveWidget(
     map,
@@ -1697,8 +1656,7 @@ save_html_and_style <- function(
       autoplay = autoplay,
       play_speed = play_speed,
       data_max = data_max,
-      display_times = display_times,
-      banner_style = banner_style
+      display_times = display_times
     )
   }
 
@@ -1986,8 +1944,7 @@ inject_banner_legend_controls <- function(
   autoplay = FALSE,
   play_speed = 500,
   data_max = NULL,
-  display_times = NULL,
-  banner_style = "strip"
+  display_times = NULL
 ) {
   if (!file.exists(html_file)) {
     stop("HTML file not found: ", html_file)
@@ -2010,7 +1967,7 @@ inject_banner_legend_controls <- function(
 
   viewport_meta <- '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
 
-  banner_css <- build_banner_css(banner_colour, image_mode, banner_style)
+  banner_css <- build_banner_css(banner_colour, image_mode)
 
   legend_css <- build_legend_css(banner_colour, image_mode)
 
@@ -2962,8 +2919,6 @@ render_pollution_map <- function(
       play_speed %||% theme$controls$play_speed,
       theme$map$base_tiles
     )
-  banner_style <- theme$banner$style %||% "strip"
-  wind_style <- theme$wind
 
   borough_sf <- get_boundary_sf(boroughs)
   if (is.null(borough_sf)) return()
@@ -3094,9 +3049,7 @@ render_pollution_map <- function(
         autoplay,
         play_speed,
         data_max,
-        c(map_width_px, map_height_px),
-        NULL,
-        banner_style
+        c(map_width_px, map_height_px)
       )
     }
   }
@@ -3108,8 +3061,7 @@ render_pollution_map <- function(
       html_map,
       as_qm_wind(wind),
       display_times,
-      bbox,
-      wind_style
+      bbox
     )
   }
 
@@ -3136,8 +3088,7 @@ render_pollution_map <- function(
       play_speed,
       data_max,
       NULL,
-      lazy_payload,
-      banner_style
+      lazy_payload
     )
   } else {
     html_map <- add_map_controls(

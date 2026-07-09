@@ -1,7 +1,7 @@
 /* Small phones (320-374px) */
 @media (max-width: 374px) {
   .banner {
-    padding: 0.5rem 0.25rem;
+    padding: 0.45rem 0.75rem 0.4rem;
     font-size: 0.9rem;
     line-height: 1.2em;
   }
@@ -10,7 +10,7 @@
 /* Standard phones (375-480px) */
 @media (min-width: 375px) and (max-width: 480px) {
   .banner {
-    padding: 0.625rem 0.375rem;
+    padding: 0.5rem 0.85rem 0.45rem;
     font-size: 1rem;
     line-height: 1.25em;
   }
@@ -19,8 +19,8 @@
 /* Landscape phones */
 @media (max-width: 850px) and (orientation: landscape) {
   .banner {
-    padding: 0.75rem 0.5rem;
-    font-size: 1.1rem;
+    padding: 0.55rem 1rem 0.5rem;
+    font-size: 1rem;
     line-height: 1.3em;
   }
 }

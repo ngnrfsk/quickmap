@@ -25,7 +25,8 @@ test_that("two-line quickmap() call produces a map", {
   )
   payload <- api_payload("merton_dt_2018-2024_item4_v1.html")
   methods <- char_methods(payload)
-  expect_equal(sum(methods == "addTiles"), 1)
+  # item 10: default tiles are CartoDB.Positron via addProviderTiles
+  expect_equal(sum(methods == "addProviderTiles"), 1)
   expect_gt(sum(methods == "addMarkers"), 0)
 })
 
