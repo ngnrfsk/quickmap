@@ -462,6 +462,13 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
 those dates use the older numbering — in particular the item-5 comparison doc
 says "item 10" for what is now item 11.)
 
+**Post-1.0: wind styling presets (optional)** (added 2026-07-09, user
+decision at item 10). Item 10 ships the speed-ramp colour scale as the
+wind default with the constants theme-exposed; recorded as optional future
+development: a preset library (muted slate, high-contrast dark, custom
+ramps), speed-scaled line width/opacity, and per-theme ramp selection —
+all ride the same theme-YAML surface, no renderer work.
+
 **Post-1.0: ecosystem integrations** (added 2026-07-07; full survey with
 integration shapes, risks and suggested ordering:
 dev/260707_v2_integration_candidates.md). Five well-maintained, large-user-base

@@ -149,6 +149,38 @@ A. 2–3 real rendered maps with the new CSS applied (one direction, variants) �
 B. Static image mock-ups of several directions side-by-side first
 C. Skip mock-ups, iterate live on one map with feedback rounds
 
+## 3a. Decisions round 2 (user, 2026-07-09) and the slider rationality test
+
+- **Q3 banner: A and B as XOR theme options** — slim strip and refined
+  colour bar both implemented, selectable per theme; strip proposed as
+  default.
+- **Q4 legend: A (thin ramp)** — chosen for mobile.
+- **Q6 time control: bottom slider**, subject to the rationality test the
+  user requested. **Verdict: rational, adopt with three design guards.**
+  Reasoning: at the real scale (108–200 hourly steps) the alternatives
+  fail structurally — a dropdown becomes a 200-item scroll list, a
+  stepper needs up to 200 taps for random access; only a slider gives
+  position-in-period, direct random access and scrubbing, and it is the
+  video-player convention every user already knows. Touch feasibility:
+  marker restyling measures 0.9–2.8 ms/step so live scrubbing is well
+  within budget. The genuine weakness is thumb precision — at 108 steps
+  on a ~24rem track each step is ~3 px. Guards: (1) fine-step ‹ ›
+  buttons flank the track (drag = coarse, arrows = exact); (2) the
+  current step label sits above the thumb at all times; (3) the 250 ms
+  colour crossfade is suppressed during drag. Degrades gracefully to
+  detents for 3-year annual maps.
+- **Q8 tiles: A and B as XOR theme options** (Positron proposed default;
+  any Leaflet provider name remains usable via `map.base_tiles`).
+- **Q9 wind: speed-ramp default** (visibility rises with wind speed),
+  implemented so ramps are swappable — see the post-1.0 note added to
+  CLAUDE.md (wind styling presets as optional future development).
+
+**Assembled design mocks** (scripts/item10_assembled-mockups_v1.py):
+aq_maps/item10_assembled-annual_v1.html and
+item10_assembled-episode-wind_v1.html — the complete look on real data,
+awaiting final design sign-off before implementation. Slider remains a
+visual mock until implementation.
+
 ## 4. After the answers
 
 Mock-ups per MCQ 10 → user approval → implementation through the
