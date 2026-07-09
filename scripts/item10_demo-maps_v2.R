@@ -1,5 +1,9 @@
 # Item 10 final demonstration maps (v0.9.9.5, approved design implemented).
-# Run from the repo root: Rscript scripts/item10_demo-maps_v1.R
+# v2: vignette restored to the default (ON) for the annual and theme demos —
+# v1 passed vignette = FALSE everywhere (a leftover from the mock-up chain),
+# which the user caught at review. The episode map stays vignette-free,
+# matching its baseline.
+# Run from the repo root: Rscript scripts/item10_demo-maps_v2.R
 # Compare against the approved mocks in aq_maps/item10_assembled-*.html and
 # the pre-item-10 baseline in aq_maps/baseline_260707_item8_signed_off/.
 library(quickmap)
@@ -14,9 +18,8 @@ suppressWarnings(quickmap(
   ),
   boroughs = "Merton",
   display_times = 2020:2022,
-  output_file = "item10_final-annual_v1.html",
+  output_file = "item10_final-annual_v2.html",
   title = "Merton NO2 Annual Mean, 2020-2022",
-  vignette = FALSE,
   marker_labels = "labels"
 ))
 
@@ -57,20 +60,19 @@ writeLines(c(
   "banner:",
   '  style: "bar"',
   "map:",
-  '  base_tiles: "OpenStreetMap"',
-  "  vignette: false"
+  '  base_tiles: "OpenStreetMap"'
 ), bar_theme)
 suppressWarnings(quickmap(
   list("merton_dt_2018_2024.csv", "schools_Merton.csv"),
   boroughs = "Merton",
   display_times = 2020:2022,
   theme_file = bar_theme,
-  output_file = "item10_final-bar-osm_v1.html",
+  output_file = "item10_final-bar-osm_v2.html",
   title = "Theme options: bar banner + OSM tiles",
   marker_labels = "labels"
 ))
 
-for (f in c("item10_final-annual_v1.html", "item10_final-episode-wind_v1.html",
-            "item10_final-bar-osm_v1.html")) {
+for (f in c("item10_final-annual_v2.html", "item10_final-episode-wind_v1.html",
+            "item10_final-bar-osm_v2.html")) {
   cat(f, file.size(file.path("aq_maps", f)), "bytes\n")
 }
