@@ -7,6 +7,9 @@ aq_maps/
 # pkgdown site (built locally, never committed)
 docs/
 
+# manual screenshots are committed
+!vignettes/figures/*.png
+
 # System files
 .DS_Store
 .DS_Store?
