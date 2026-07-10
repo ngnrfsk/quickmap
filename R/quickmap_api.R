@@ -59,7 +59,8 @@ as_qm_layer <- function(x, pollutant, temporal = NULL) {
 #' @param layers One layer or a list of layers. Each element may be a file
 #'   path (CSV or RData, resolved against `DATA_PATH`), a [qm_layer()], or a
 #'   data.frame/sf object (converted via [qm_layer()]).
-#' @param boroughs Character vector of borough names (or "All")
+#' @param boroughs Character vector of borough names (or "All"). NULL
+#'   (default) draws no boundary and fits the map to the data.
 #' @param pollutant Pollutant to display. NULL (default) infers it from the
 #'   first time-varying layer's value column.
 #' @param display_times Time periods to display (NULL = all available)
@@ -110,7 +111,7 @@ as_qm_layer <- function(x, pollutant, temporal = NULL) {
 #' @export
 quickmap <- function(
   layers,
-  boroughs,
+  boroughs = NULL,
   pollutant = NULL,
   display_times = NULL,
   colour_scale = "who_no2",
@@ -198,7 +199,8 @@ quickmap <- function(
 #'   static (FALSE) handling per layer (NULL = auto-detect)
 #' @param output_file HTML file name written into `aq_maps/`
 #' @param export_image NULL, TRUE, or c(width, height) for JPG export
-#' @param boroughs Character vector of borough names (or "All")
+#' @param boroughs Character vector of borough names (or "All"). NULL
+#'   (default) draws no boundary and fits the map to the data.
 #' @param pollutant Pollutant to display (e.g. "no2", "pm25")
 #' @param display_times Time periods to display (NULL = all available)
 #' @param title Banner title
@@ -223,7 +225,7 @@ create_pollution_map <- function(
   data_dynamic = NULL,
   output_file = "pollution_map.html",
   export_image = NULL,
-  boroughs,
+  boroughs = NULL,
   pollutant = "no2",
   display_times = NULL,
   title = NULL,

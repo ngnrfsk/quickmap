@@ -17,6 +17,10 @@ as an [OpenAir](https://openair-project.github.io/book/) data pull. Maps
 are self-contained files, so you can email them or put them on a website,
 and compact, fast animations are easy to create.
 
+This page builds one step at a time, from the most basic map to an
+animated pollution episode with a live wind overlay. The maps shown are
+real QuickMap output — click, drag and play with them.
+
 ## 1. Install
 
 Install from GitHub:
@@ -31,19 +35,17 @@ devtools::install_github("ngnrfsk/quickmap")
 > settings, then run `Sys.setenv(GITHUB_PAT = "your-token")` first. This
 > step disappears when the package is released.
 
-## 2. Make a simple map
+## 2. Make your first map — one argument
 
 ```{r first-map, purl = FALSE}
 library(quickmap)                           # load the quickmap library
 quickmap(
-  "~/my_data/wandsworth_2017_2024_csv.csv", # diffusion tube data
-  boroughs = "Wandsworth"                   # the borough boundary to draw
+  "~/my_data/wandsworth_2017_2024_csv.csv"  # diffusion tube data
 )
 ```
 
-To make a map, `quickmap()` needs two things: the measurement data, and
-which borough boundary to draw. The data here is an ordinary diffusion
-tube spreadsheet saved as CSV:
+One input — the measurement data — is all `quickmap()` needs. The data
+here is an ordinary diffusion tube spreadsheet saved as CSV:
 
 | Easting | Northing | 2017 | 2018 | ... | 2024 | Label |
 |---------|----------|------|------|-----|------|-------|
@@ -55,17 +57,50 @@ Anything else is optional. (Full input specifications: the* Your data
 *chapter.)*
 
 QuickMap converts the coordinates, colours each site by the WHO NO2
-bands, draws the borough boundary, and writes `aq_maps/quickmap.html` —
+bands, fits the view to the data, and writes `aq_maps/quickmap.html` —
 a single self-contained file. Open it in any browser, attach it to an
 email, or put it on a website (it does need an internet connection to
-download the background map).
+download the background map). Here is that exact file:
 
-![Your first map: Wandsworth diffusion tubes, coloured by WHO NO2 bands](figures/getstarted-first-map.png)
+<iframe src="maps/getstarted-first.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="First map: Wandsworth diffusion tubes, no boundary"></iframe>
 
-## 3. Save typing: tell QuickMap where your data lives
+## 3. Draw a borough boundary
+
+Air quality reporting is usually about a place; naming it draws its
+boundary and frames the map around it:
+
+```{r boundary, purl = FALSE}
+quickmap(
+  "~/my_data/wandsworth_2017_2024_csv.csv",
+  boroughs = "Wandsworth"                   # the boundary to draw
+)
+```
+
+`boroughs` takes one name, several (`c("Wandsworth", "Richmond")`), or
+`"All"` for every London borough.
+
+<iframe src="maps/getstarted-boundary.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The same map with the Wandsworth boundary and vignette"></iframe>
+
+## 4. The vignette — focus attention inside the boundary
+
+Notice the map above dims everything outside Wandsworth. That is the
+**vignette**, on by default whenever a boundary is drawn, so the reader's
+eye goes to the area the map is about. To show the surroundings at full
+brightness instead:
+
+```{r vignette, purl = FALSE}
+quickmap(
+  "~/my_data/wandsworth_2017_2024_csv.csv",
+  boroughs = "Wandsworth",
+  vignette = FALSE                          # no dimming outside the boundary
+)
+```
+
+## 5. Save typing: tell QuickMap where your data lives
 
 Optional, but worth doing once: if your data files sit in one folder, set
-`DATA_PATH` and use bare filenames everywhere:
+`DATA_PATH` and use bare filenames everywhere (the rest of this page
+assumes it is set):
 
 ```{r datapath, purl = FALSE}
 Sys.setenv(
@@ -77,7 +112,7 @@ quickmap(
 )
 ```
 
-## 4. Reading the map
+## 6. Reading the map
 
 - **Symbols** are monitoring sites, coloured by pollution level — green
   is good, red is bad. Hover for details.
@@ -87,7 +122,7 @@ quickmap(
   several year columns. Drag it, step with ‹ ›, or press play to animate.
 - **The banner** (top) is the map's title — added next.
 
-## 5. Add a title and choose the file name
+## 7. Add a title and choose the file name
 
 Maps usually need a title for the banner, and a file name you'll
 recognise later:
@@ -102,11 +137,34 @@ quickmap(
 )
 ```
 
-## 6. Make a sophisticated animation
+## 8. Combine several measurement networks
+
+Different monitoring networks — and context like schools — go on one map
+by listing the files. Each network keeps its own symbol (tubes circles,
+sensors diamonds, schools crosses), so readers can tell them apart:
+
+```{r networks}
+quickmap(
+  list(
+    "merton_dt_2018_2024.csv",                             # diffusion tubes
+    "bl_imperial_annualised_2021_2025_with_missing.Rdata", # sensor network
+    "schools_Merton.csv"                                   # school locations
+  ),
+  boroughs = "Merton",
+  title = "Merton NO2: tubes, sensors and schools"
+)
+```
+
+<iframe src="maps/getstarted-networks.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Three networks on one map"></iframe>
+
+Naming layers, choosing each network's pollutant and symbol, and mapping
+your own data frames: the [Layers](layers.html) chapter.
+
+## 9. Make a sophisticated animation
 
 The same call scales from eight annual frames to a full pollution
 episode. This maps five days of hourly sensor data — 108 time steps —
-and starts playing by itself:
+and starts playing by itself. Press play, or drag the slider:
 
 ```{r animation}
 quickmap(
@@ -122,16 +180,60 @@ quickmap(
 )
 ```
 
-![The finished animation: 108 hourly steps, playing on open, scrubbable with the slider](figures/getstarted-episode.png)
+<iframe src="maps/getstarted-episode.html" width="100%" height="480" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="108-step hourly animation"></iframe>
 
 Above 50 time steps QuickMap automatically switches to a compact storage
 format, so even this five-day hourly animation stays around 1 MB — small
-enough to email. (An animated wind overlay can ride on top — see the
+enough to email.
+
+## 10. Add live wind to the animation
+
+Where did the pollution come from? An animated wind-particle overlay
+answers that at a glance. `from_worldmet()` fetches real weather-station
+data (here Heathrow) from NOAA, and the particles advance with the time
+slider:
+
+```{r net-wind}
+heathrow <- from_worldmet(station = "037720-99999", # Heathrow station id
+                          year = 2024)              # fetches from NOAA
+quickmap(
+  from_rdata("episodeJan15-20_2024_sf_all.Rdata", "pm25", name = "Sensors"),
+  boroughs     = c("Wandsworth", "Richmond"),
+  colour_scale = "stripes_pm25",
+  title        = "PM2.5 Episode with wind: Jan 15-20, 2024",
+  output_file  = "episode_wind.html",
+  autoplay     = TRUE,
+  play_speed   = 500,
+  wind         = heathrow                           # the wind overlay
+)
+```
+
+<iframe src="maps/getstarted-wind.html" width="100%" height="480" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The animation with a live wind-particle overlay"></iframe>
+
+Wind particles are coloured by wind speed. (Requires the `worldmet`
+package and an internet connection for the NOAA fetch; more in the
 *Wind* chapter.)
+
+## More things QuickMap can do
+
+One line each; every one has a chapter or help page:
+
+- **Colour scales** — WHO bands, GLA PM2.5, borough-specific scales:
+  `colour_scale = "gla_pm25"` (`?load_colour_scale`).
+- **Themes** — banner style (white strip or colour bar), base map tiles
+  (pale or OpenStreetMap), colours, autoplay — one reusable YAML file:
+  `theme_file = "my_theme.yaml"` (`?load_theme`).
+- **Symbol labels** — values or site names, on hover or always:
+  `marker_labels = "labels"`.
+- **Static JPG export** for reports: `export_image = c(1600, 1200)` —
+  text and legend scale with the image size.
+- **Choose the time steps**: `display_times = 2020:2022`.
+- **Map your own data frame** with `qm_layer()` — any data with a site
+  code, coordinates and values ([Layers](layers.html)).
 
 ## Where next
 
-- **[Layers](layers.html)** — put tubes, sensors and schools on one map.
+- **[Layers](layers.html)** — networks, naming, symbols, your own data.
 - **Function help** — `?quickmap` lists every parameter.
 - **Fetching data with OpenAir** — no data file yet? The
   [OpenAir project](https://openair-project.github.io/book/) can download

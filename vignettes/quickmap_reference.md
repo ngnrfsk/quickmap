@@ -96,7 +96,7 @@ Default assignments by data type: diffusion tubes → circle, Breathe London sen
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `boroughs` | *(required)* | Borough name(s) for boundary display and data filtering |
+| `boroughs` | `NULL` | Borough name(s) for boundary display; `NULL` draws no boundary and fits the map to the data |
 | `pollutant` | `"no2"` | `"no2"` or `"pm25"` |
 | `display_times` | `NULL` | Time periods to show — `NULL` uses all periods found in data |
 | `colour_scale` | `"who_no2"` | Colour scale name (see [Colour Scales](#colour-scales) below) |
