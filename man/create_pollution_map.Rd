@@ -11,7 +11,7 @@ create_pollution_map(
   data_dynamic = NULL,
   output_file = "pollution_map.html",
   export_image = NULL,
-  boroughs,
+  boroughs = NULL,
   pollutant = "no2",
   display_times = NULL,
   title = NULL,
@@ -41,7 +41,8 @@ static (FALSE) handling per layer (NULL = auto-detect)}
 
 \item{export_image}{NULL, TRUE, or c(width, height) for JPG export}
 
-\item{boroughs}{Character vector of borough names (or "All")}
+\item{boroughs}{Character vector of borough names (or "All"). NULL
+(default) draws no boundary and fits the map to the data.}
 
 \item{pollutant}{Pollutant to display (e.g. "no2", "pm25")}
 
