@@ -3,8 +3,11 @@
 **Date:** 2026-07-09 · **Source:** user's sub-edited Get started page
 (iCloud dev/pr31_manual_review/quickmap_v3.Rmd) compared against the
 original (vignettes/quickmap.Rmd on feature/manual-phase1-v2).
-**Status:** inferred principles P8–P15 below, awaiting user approval;
-no pages redrafted yet. Extends P1–P6 (approved, v1 doc) and the codified
+**Status:** P8–P15 APPROVED (user, 2026-07-10) and applied to both pages
+in the same change. F1 decided: `boroughs` STAYS REQUIRED (user,
+2026-07-10) — documented as required; no item-9 API change. Also per
+user: the Get started page now builds from the most basic map up to a
+sophisticated 108-step animation (new §6 + figure). Extends P1–P6 (approved, v1 doc) and the codified
 P3′–P7 (v2 doc, also awaiting approval).
 
 The sub-edit used three marks — `[[fluff]]`, `{{will date}}`,

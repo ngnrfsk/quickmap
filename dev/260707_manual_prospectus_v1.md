@@ -101,6 +101,14 @@ wherever data enters the picture:
 
 ## 4. Page template (every feature chapter)
 
+**Revised again 2026-07-10 (user-approved):** principles P3′–P7
+(dev/260708_page_template_review_v2.md; P7 bundled-data deferred to
+phase 2) and P8–P15 (dev/260709_page_template_review_v3.md — inline
+comments on every code line, no product pitch, no rotting statements,
+necessity ordering, goal-named headings, motivate-then-show, input shown
+as a table, one vocabulary: "symbols") now govern every page alongside
+P1–P6. `boroughs` stays a required argument (user decision 2026-07-10).
+
 **Revised 2026-07-08 (user-approved):** the template is governed by six
 normative principles P1–P6 in dev/260708_page_template_review_v1.md —
 key information first with zero page-meta-text; the first example is part
