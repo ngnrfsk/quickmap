@@ -139,6 +139,7 @@ one page. Structure:
 | 2 | **Layers** (multi-layer maps; `from_csv`/`from_rdata`/`from_openair`; `qm_layer()` for hand-built data; shapes, names, labels) | qm_layer roxygen; item8 worked-examples §2; RSP maps example |
 | 3 | **Styling and themes** (colour scales incl. YAML anatomy; themes; banner/legend; precedence rules) | 251123 theme guide; scales section of quickmap_reference.md |
 | 3a | **Labels** (added 2026-07-11 by the P22 page-worthiness test: five modes, duck-typed content values/Label/School, empty-Label silent-drop gotcha, anchor for item-11 label-consistency work) | quickmap_reference.md labels section; Get started step 8 |
+| 3b | **Boundaries** (added 2026-07-11, P22 re-audit: names/"All"/boundary_labels/vignette option family; anchor for item-11 ward-and-marker labelling consistency) | Get started steps 3–4; boundaries.yaml config |
 | 4 | **Time and animation** (display_times, resolutions, roller menu, autoplay; 200-step cap and the lazy path as a "how it works" note) | episode_example.R; item6 facts |
 | 5 | **Wind** (from_worldmet, data-frame input, station choice; interactive-only caveat) | R/wind.R roxygen; item7/item8 demos |
 | 6 | **Sharing and export** (self-contained HTML, email constraints, JPG export, hosting a link) | export params; sharing-constraint text |

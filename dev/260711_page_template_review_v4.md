@@ -80,7 +80,15 @@ Audit of current features against P22 (validates the chapter map):
 | Layer system (from_*, qm_layer) | 1,2 | own page ✓ (Layers, exists) |
 | Static export | 1 (sizes/modes), 4 (item-11 subfolder defect) | own page — folded into planned Sharing & export ✓ |
 | Symbols/shapes | 1 | section ✓ (inside Layers) |
-| Boundaries/vignette | 1 only (on/off, names) | section ✓ (Get started steps 3–4) |
+| Boundaries/vignette | 1, 4 — RESCORED 2026-07-11: options family (names / "All" / boundary_labels / vignette) plus the item-11 ward-and-marker labelling work needing a home | **own page (NEW — added to chapter map, phase 2)** |
+
+**Re-audit note (2026-07-11 third round):** the user found the boundary
+step silent on `boundary_labels` — the gap-sweep that followed also added
+per-step-JPG and default-size facts to the export step and
+`banner_colour` to the title step. Re-running P22 with the fuller feature
+picture moved Boundaries from "section" to "own page" (criteria 1 + 4).
+Lesson folded into practice: run the P22 audit only AFTER listing every
+parameter a feature owns — under-enumeration under-scores.
 
 A labels step (marker_labels = TRUE with a live hover map) was added to
 Get started in this change; the Labels page joins the phase-2 chapter
