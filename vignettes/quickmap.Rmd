@@ -71,8 +71,17 @@ download the background map). Here is that exact file:
 
 <iframe src="maps/getstarted-first.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="First map: Wandsworth diffusion tubes, no boundary"></iframe>
 
-*Colour bands come from a colour scale (`who_no2` by default) — swap it
-with `colour_scale =`, as Part 2 does.*
+**Reading the map:**
+
+- **Symbols** are monitoring sites, coloured by pollution level — green
+  is good, red is bad. Hover for details. (Values or site names can be
+  shown permanently with `marker_labels = "values_on"` or `"labels_on"`.)
+- **The legend** (along the bottom) names each colour band. The bands
+  come from a colour scale (`who_no2` by default) — swap it with
+  `colour_scale =`, as Part 2 does. Click the legend header to collapse it.
+- **The time slider** (bottom of the map) appears because your CSV had
+  several year columns. Drag it, step with ‹ ›, or press play to animate.
+- **The banner** (top) is the map's title — customised in step 7.
 
 ## 3. Draw a borough boundary
 
@@ -150,18 +159,7 @@ quickmap(
 *`display_times` also subsets interactive maps — pick any years, months
 or hours present in the data.*
 
-## 7. Reading the map
-
-- **Symbols** are monitoring sites, coloured by pollution level — green
-  is good, red is bad. Hover for details. (Values or site names can be
-  shown permanently with `marker_labels = "values_on"` or `"labels_on"`.)
-- **The legend** (along the bottom) names each colour band. Click its
-  header to collapse it.
-- **The time slider** (bottom of the map) appears because your CSV had
-  several year columns. Drag it, step with ‹ ›, or press play to animate.
-- **The banner** (top) is the map's title — added next.
-
-## 8. Add a title and choose the file name
+## 7. Add a title and choose the file name
 
 Maps usually need a title for the banner, and a file name you'll
 recognise later:
@@ -180,7 +178,7 @@ quickmap(
 *The banner's style (white strip or colour bar) and colours are theme
 settings (`?load_theme`).*
 
-## 9. Combine several measurement networks
+## 8. Combine several measurement networks
 
 Different monitoring networks — and context like schools — go on one map
 by listing the files. Each network keeps its own symbol, and putting the
@@ -210,7 +208,7 @@ list to add sources".*
 A new dataset (five days of hourly sensor readings during a January 2024
 pollution episode), and two steps.
 
-## 10. Animate a pollution episode
+## 9. Animate a pollution episode
 
 This maps 108 hourly time steps and starts playing by itself. Press play,
 or drag the slider:
@@ -236,7 +234,7 @@ format, so even this five-day hourly animation stays around 1 MB — small
 enough to email. *Colour scales for other pollutants and boroughs:
 `?load_colour_scale`.*
 
-## 11. Add live wind to the animation
+## 10. Add live wind to the animation
 
 Where did the pollution come from? An animated wind-particle overlay
 answers that at a glance. `from_worldmet()` fetches real weather-station
