@@ -101,11 +101,29 @@ wherever data enters the picture:
 
 ## 4. Page template (every feature chapter)
 
-1. **In two lines** — minimal complete call + one screenshot. No options.
-2. **Worked examples, rising complexity** — 3–5 examples, each adding *one*
-   idea, each with a sentence saying what was added and why you'd want it.
-3. **How it works** *(optional, short)* — the mental model (e.g. "layers own
-   layer properties; the map owns map properties").
+**Revised again 2026-07-10 (user-approved):** principles P3′–P7
+(dev/260708_page_template_review_v2.md; P7 bundled-data deferred to
+phase 2) and P8–P15 (dev/260709_page_template_review_v3.md — inline
+comments on every code line, no product pitch, no rotting statements,
+necessity ordering, goal-named headings, motivate-then-show, input shown
+as a table, one vocabulary: "symbols") now govern every page alongside
+P1–P6. `boroughs` stays a required argument (user decision 2026-07-10).
+
+**Revised 2026-07-08 (user-approved):** the template is governed by six
+normative principles P1–P6 in dev/260708_page_template_review_v1.md —
+key information first with zero page-meta-text; the first example is part
+of the unheaded opening; every example states its input requirements in
+one sentence where it stands; headings are assertions naming the API
+element; strict one-new-idea-per-example reveals; three reading depths on
+one page. Structure:
+
+1. **Opening (unheaded)** — the concept in 1–2 substantive sentences,
+   flowing directly into the minimal complete call + screenshot, with a
+   one-sentence statement of what the input must contain.
+2. **Worked examples, rising complexity** — 3–6 reveals, each adding *one*
+   idea named by its assertion heading ("Stack any number of sources —
+   the `layers` list").
+3. **How it works** *(optional, short)* — the mental model.
 4. **Full detail** — curated parameter/function table linking into the
    reference; cross-cutting rules; edge cases and gotchas (e.g. the `Label`
    silent-drop).
@@ -120,6 +138,8 @@ wherever data enters the picture:
 | 1 | **Your data** (CSV tubes, RData sensors, schools/contextual, data frames; duck-typing rules; coordinate systems; **"Fetching data with OpenAir" section: worked importUKAQ/importAURN/importImperial/importNOAA extractions ending in from_openair()/from_worldmet(), per §2a**) | quickmap_reference.md data-format tables; CONFIGS network reference material; OpenAir book links |
 | 2 | **Layers** (multi-layer maps; `from_csv`/`from_rdata`/`from_openair`; `qm_layer()` for hand-built data; shapes, names, labels) | qm_layer roxygen; item8 worked-examples §2; RSP maps example |
 | 3 | **Styling and themes** (colour scales incl. YAML anatomy; themes; banner/legend; precedence rules) | 251123 theme guide; scales section of quickmap_reference.md |
+| 3a | **Labels** (added 2026-07-11 by the P22 page-worthiness test: five modes, duck-typed content values/Label/School, empty-Label silent-drop gotcha, anchor for item-11 label-consistency work) | quickmap_reference.md labels section; Get started step 8 |
+| 3b | **Boundaries** (added 2026-07-11, P22 re-audit: names/"All"/boundary_labels/vignette option family; anchor for item-11 ward-and-marker labelling consistency) | Get started steps 3–4; boundaries.yaml config |
 | 4 | **Time and animation** (display_times, resolutions, roller menu, autoplay; 200-step cap and the lazy path as a "how it works" note) | episode_example.R; item6 facts |
 | 5 | **Wind** (from_worldmet, data-frame input, station choice; interactive-only caveat) | R/wind.R roxygen; item7/item8 demos |
 | 6 | **Sharing and export** (self-contained HTML, email constraints, JPG export, hosting a link) | export params; sharing-constraint text |
@@ -149,17 +169,23 @@ exists.
 
 ## 8. Sequencing and effort
 
-1. **PR A — skeleton:** `_pkgdown.yml`, navbar, Get started + Layers pages
+(Naming, clarified 2026-07-08: these are **manual phases 1–3** — the
+manual is user-directed work adjacent to the roadmap, not a roadmap item,
+so its phases are named "manual phase N" to avoid colliding with roadmap
+item numbers or GitHub PR numbers. Earlier drafts said "PR A/B/C"; phase 1
+landed as GitHub PR #31.)
+
+1. **Phase 1 — skeleton:** `_pkgdown.yml`, navbar, Get started + Layers pages
    (the tone-setting pair), chunk-runner harness. *~1 session.*
-2. **PR B — core:** Data, Styling/themes, Time/animation. *~1 session.*
-3. **PR C — completion:** Wind, Sharing, Recipes, R-users page; absorb/retire
+2. **Phase 2 — core:** Data, Styling/themes, Time/animation. *~1 session.*
+3. **Phase 3 — completion:** Wind, Sharing, Recipes, R-users page; absorb/retire
    old vignettes; Pages deployment. *~1 session.*
 
 Each PR: green gate + chunk harness + human eyeball of the built site.
 
 ## 8a. Pre-drafting decisions (user, 2026-07-07)
 
-- **Base:** PR A branches off main after PRs #29 (item 8) and #30 (this
+- **Base:** manual phase 1 branches off main after PRs #29 (item 8) and #30 (this
   prospectus) merge — no stacking.
 - **Install story (Get started):** `devtools::install_github()` with a
   one-line PAT note (repo currently private); reword at v1.0/CRAN.

@@ -1,0 +1,60 @@
+# pkgdown configuration — see dev/260707_manual_prospectus_v1.md.
+# Build locally with pkgdown::build_site(); docs/ is gitignored (§8a:
+# no Pages deployment while the repo is private).
+url: ~
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left: [intro, articles, reference]
+    right: [search, github]
+
+# Note: the legacy .md notes in vignettes/ (quickmap_reference, theme guide,
+# CONFIGS, v0.9.0 migration) are plain markdown, not .Rmd — pkgdown does not
+# treat them as articles. They are absorbed/retired at manual PR C.
+articles:
+- title: The manual
+  navbar: ~
+  contents:
+  - layers
+
+reference:
+- title: Making maps
+  contents:
+  - quickmap
+  - create_pollution_map
+- title: Layers — the atomic unit
+  contents:
+  - qm_layer
+  - qm_meta
+  - from_csv
+  - from_rdata
+  - from_openair
+  - from_worldmet
+- title: Styling
+  contents:
+  - load_theme
+  - load_colour_scale
+  - show_borough_colours
+- title: OpenAir interoperability
+  contents:
+  - convert_openair_to_spatial
+  - get_openair_metadata
+  - clear_openair_metadata_cache
+# Helpers documented without @keywords internal (roxygen cleanup belongs to
+# roadmap item 9); the special "internal" title hides them from the index.
+- title: internal
+  contents:
+  - add_boundary_polygons
+  - calculate_max_range_width
+  - convert_colors_to_hex
+  - generate_legend_html
+  - geocode_uk_postcodes
+  - get_contrast_text_color
+  - get_data_maximum
+  - get_symbol_for_index
+  - inject_banner_legend_controls
+  - lighten_color
+  - parse_legend_label

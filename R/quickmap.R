@@ -1129,8 +1129,10 @@ get_default_theme <- function() {
       background = "white"
     ),
     map = list(
+      # default reverted to OSM 2026-07-11 (user): the vignette dimming is
+      # too faint on the pale Positron tiles; Positron stays a theme option
       vignette = TRUE,
-      base_tiles = "CartoDB.Positron",
+      base_tiles = NULL,
       zoom_level = NULL,
       boundary_labels = FALSE,
       marker_labels = FALSE
@@ -2781,8 +2783,32 @@ determine_times_and_viewport <- function(
     NULL
   }
 
-  vignette_overlay <- if (vignette) create_vignette_overlay(borough_sf)
-  bbox <- st_bbox(borough_sf)
+  # boroughs are optional (2026-07-10): without a boundary the viewport
+  # fits the data and there is nothing to vignette
+  vignette_overlay <- if (vignette && !is.null(borough_sf)) {
+    create_vignette_overlay(borough_sf)
+  }
+  bbox <- if (!is.null(borough_sf)) {
+    st_bbox(borough_sf)
+  } else {
+    layer_boxes <- lapply(
+      Filter(Negate(is.null), spatial_data$all_data),
+      st_bbox
+    )
+    if (length(layer_boxes) == 0) {
+      stop("No data layers to fit the map to and no boroughs given.",
+           call. = FALSE)
+    }
+    structure(
+      c(
+        xmin = min(vapply(layer_boxes, `[[`, 0, "xmin")),
+        ymin = min(vapply(layer_boxes, `[[`, 0, "ymin")),
+        xmax = max(vapply(layer_boxes, `[[`, 0, "xmax")),
+        ymax = max(vapply(layer_boxes, `[[`, 0, "ymax"))
+      ),
+      class = "bbox"
+    )
+  }
 
   if (is.null(primary_data)) {
     display_times <- requested_times %||% "static_only"
@@ -2816,7 +2842,8 @@ determine_times_and_viewport <- function(
 #' @param data_dynamic Logical vector indicating temporal (TRUE) vs static (FALSE) layers (default: NULL, auto-detected).
 #' @param output_file Output filename (without extension). Saved to 'aq_maps/' directory.
 #' @param export_image NULL (no export), TRUE (export 1200x1200), or c(width, height) vector for custom dimensions.
-#' @param boroughs Borough name(s) for boundary display and data filtering (required).
+#' @param boroughs Borough name(s) for boundary display. NULL (default) draws
+#'   no boundary and fits the map to the data.
 #' @param pollutant Pollutant type: "no2" or "pm25" (default: "no2").
 #' @param display_times Time periods to display (e.g., "2023", "2023-01", "2023-01-15 10:00").
 #'   NULL uses all available periods from data. Must match year_str format in data.
@@ -2876,7 +2903,7 @@ render_pollution_map <- function(
   data_dynamic = NULL,
   output_file = "pollution_map.html",
   export_image = NULL,
-  boroughs,
+  boroughs = NULL,
   pollutant = "no2",
   display_times = NULL,
   title = NULL,
@@ -2918,8 +2945,15 @@ render_pollution_map <- function(
   banner_style <- theme$banner$style %||% "strip"
   wind_style <- theme$wind
 
-  borough_sf <- get_boundary_sf(boroughs)
-  if (is.null(borough_sf)) return()
+  # boroughs are optional (2026-07-10): NULL means no boundary is drawn,
+  # the viewport fits the data, and the vignette is meaningless
+  if (is.null(boroughs)) {
+    borough_sf <- NULL
+    vignette <- FALSE
+  } else {
+    borough_sf <- get_boundary_sf(boroughs)
+    if (is.null(borough_sf)) return()
+  }
 
   if (!dir.exists("aq_maps")) dir.create("aq_maps", showWarnings = TRUE)
 

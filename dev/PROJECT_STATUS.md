@@ -6,9 +6,38 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-09 **Current Working Version**: v0.9.9.5 **Branch**: feature/item10-ui-polish
+**Last Updated**: 2026-07-10 **Current Working Version**: v0.9.9.5 **Branch**: feature/manual-phase1-v3
 
 --------------------------------------------------------------------------------
+
+### Manual phase 1 v3 (PR replaces #33): pages rebuilt to P8–P15 on post-item-10 main — 2026-07-10 (PR pending)
+
+Branch `feature/manual-phase1-v3` (off main after PR #35; the v2 branch
+predated items 9/10 and `git merge` is not allowlisted, so files were
+re-carried — same manoeuvre as v1→v2). Carries all phase-1 content plus:
+
+- **Template principles P8–P15** (user-approved 2026-07-10, inferred from
+  the user's sub-edit of Get started — dev/260709_page_template_review_v3.md):
+  inline `#` comments on every code line, no product pitch, no
+  silently-rotting statements, sections ordered by necessity (DATA_PATH
+  after the first map), goal-named headings, motivate-then-show, input
+  shown as a table with a minimums caption, one vocabulary ("symbols").
+  P3′–P7 folded in too (P7 bundled data deferred to phase 2).
+  **F1 decided: `boroughs` stays required.** F2: tiles-need-internet
+  caveat stated.
+- **Get started rebuilt** from the user's sub-edited text: Install →
+  first map (full path, CSV shown as table) → DATA_PATH shortcut →
+  reading the map → add title/filename → **§6 sophisticated animation**
+  (user request: the page builds from the most basic map to the 108-step
+  hourly episode with autoplay; new figure getstarted-episode.png).
+- **Layers reworked** to the same principles (comments, goal headings,
+  motivations, "symbols" vocabulary).
+- All three screenshots regenerated with the v0.9.9.5 look
+  (scripts/manual_screenshots_v2.R).
+
+Verification: chunk harness ALL OK (12 chunks incl. the animation and the
+live AURN fetch); pkgdown build clean; gate green on this branch (main's
+post-item-10 tests). iCloud pack refreshed. PR #33 closed as superseded.
 
 ### Roadmap item 10 (v0.9.9.5): UI visual polish implemented — 2026-07-09 (visually SIGNED OFF 2026-07-09 after two review rounds: vignette restored in demos, episode demo on OSM tiles; PR #35 awaiting merge)
 
