@@ -1129,8 +1129,10 @@ get_default_theme <- function() {
       background = "white"
     ),
     map = list(
+      # default reverted to OSM 2026-07-11 (user): the vignette dimming is
+      # too faint on the pale Positron tiles; Positron stays a theme option
       vignette = TRUE,
-      base_tiles = "CartoDB.Positron",
+      base_tiles = NULL,
       zoom_level = NULL,
       boundary_labels = FALSE,
       marker_labels = FALSE

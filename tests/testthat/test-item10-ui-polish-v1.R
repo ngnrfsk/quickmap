@@ -25,9 +25,11 @@ test_that("generate_legend_html emits the ramp structure with symbols kept", {
   expect_match(html, 'class="legend-key"', fixed = TRUE)
 })
 
-test_that("default theme: Positron tiles, strip banner, wind styling block", {
+test_that("default theme: OSM tiles, strip banner, wind styling block", {
   theme <- quickmap:::get_default_theme()
-  expect_equal(theme$map$base_tiles, "CartoDB.Positron")
+  # 2026-07-11: default reverted to OSM (NULL) — vignette too faint on
+  # Positron; Positron remains a theme option
+  expect_null(theme$map$base_tiles)
   expect_equal(theme$banner$style, "strip")
   expect_equal(length(theme$wind$colour_ramp), 6)
   expect_equal(theme$wind$particle_density, 1 / 500)
