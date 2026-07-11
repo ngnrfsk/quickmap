@@ -6,9 +6,30 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-10 **Current Working Version**: v0.9.9.5 **Branch**: feature/manual-phase1-v3
+**Last Updated**: 2026-07-11 **Current Working Version**: v0.9.9.7 **Branch**: feature/manual-phase2
 
 --------------------------------------------------------------------------------
+
+### Manual phases 2+3: the complete manual — 2026-07-11 (PR pending)
+
+Branch `feature/manual-phase2` (off main after PR #36 merged; phase 1 was
+approved by the user after seven review rounds that also produced
+template principles P8–P22 — see dev/260708..260711_page_template_review
+docs — and two code changes: boroughs optional in v0.9.9.6, OSM default
+tiles restored in v0.9.9.7).
+
+**Nine new chapters** (vignettes/*.Rmd), written to P1–P22 with live
+embedded maps, grouped in the navbar: *Working with maps* — your-data
+(incl. the §2a OpenAir extraction section: importUKAQ, importImperial,
+from_worldmet, all harness-run), layers, labels, boundaries, styling;
+*Animation and beyond* — time, wind, sharing; *Going further* — recipes
+(4 copy-paste jobs incl. live fetch-to-map), r-users (qm_layer contract,
+time grammar, wrapper note). Legacy .md vignettes retired to
+vignettes/archive/ (quickmap_reference.md fully absorbed).
+scripts/manual_assets_v4.R generates all 17 embedded maps.
+
+Verification: chunk harness ALL OK across all 11 pages (incl. network
+chunks); pkgdown build clean; gate 283 pass / 0 fail / 0 skip.
 
 ### Manual phase 1 v3 (PR replaces #33): pages rebuilt to P8–P15 on post-item-10 main — 2026-07-10 (PR pending)
 

@@ -4,7 +4,8 @@
 # v2 (2026-07-11 restructure): adds the vignette-off, static-export and
 # titled examples; symbol glyphs in multi-symbol banner titles.
 # v3: adds the labels example (marker_labels = TRUE, hover values).
-# Run from the repo root: Rscript scripts/manual_assets_v3.R
+# v4 (phase 2/3): maps for the Labels, Boundaries and Styling chapters.
+# Run from the repo root: Rscript scripts/manual_assets_v4.R
 library(quickmap)
 
 dir.create("vignettes/maps", showWarnings = FALSE)
@@ -110,6 +111,60 @@ if (requireNamespace("worldmet", quietly = TRUE)) {
     emit("getstarted-wind.html")
   }
 }
+
+# Labels chapter ---------------------------------------------------------------
+quickmap("wandsworth_2017_2024_csv.csv",
+         boroughs = "Wandsworth", marker_labels = TRUE,
+         output_file = "labels-hover.html")
+emit("labels-hover.html")
+
+quickmap("wandsworth_2017_2024_csv.csv",
+         boroughs = "Wandsworth", marker_labels = "values_on",
+         output_file = "labels-values-on.html")
+emit("labels-values-on.html")
+
+suppressWarnings(quickmap(
+  list("merton_dt_2018_2024.csv", "schools_Merton.csv"),
+  boroughs = "Merton", marker_labels = "labels",
+  output_file = "labels-names.html"
+))
+emit("labels-names.html")
+
+# Boundaries chapter ------------------------------------------------------------
+quickmap(
+  from_rdata("bl_imperial_annualised_2021_2025_with_missing.Rdata", "no2",
+             name = "Sensors"),
+  boroughs = c("Merton", "Wandsworth"),
+  output_file = "boundaries-two.html"
+)
+emit("boundaries-two.html")
+
+quickmap(
+  from_rdata("bl_imperial_annualised_2021_2025_with_missing.Rdata", "no2",
+             name = "Sensors"),
+  boroughs = c("Merton", "Wandsworth"),
+  boundary_labels = TRUE,
+  output_file = "boundaries-labelled.html"
+)
+emit("boundaries-labelled.html")
+
+# Styling chapter ---------------------------------------------------------------
+quickmap(
+  from_rdata("bl_imperial_annualised_2021_2025_with_missing.Rdata", "pm25",
+             name = "Sensors"),
+  boroughs = "Merton",
+  colour_scale = "gla_pm25",
+  output_file = "styling-scale.html"
+)
+emit("styling-scale.html")
+
+quickmap(
+  "merton_dt_2018_2024.csv",
+  boroughs = "Merton",
+  theme_file = system.file("themes", "merton.yaml", package = "quickmap"),
+  output_file = "styling-theme.html"
+)
+emit("styling-theme.html")
 
 # Layers page: the three-layer example (symbol glyphs in the title) -----------
 suppressWarnings(quickmap(

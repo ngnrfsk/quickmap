@@ -1,0 +1,180 @@
+---
+title: "Your data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Your data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+QuickMap reads four kinds of input: diffusion tube spreadsheets (CSV),
+context CSVs such as school lists, sensor-network exports (RData), and
+data frames you build in R — including live downloads via the
+[OpenAir](https://openair-project.github.io/book/) tools. QuickMap
+recognises which is which from the columns, never from the file name.
+This page gives the exact requirements for each, then worked downloads
+for when you have no file at all.
+
+## 1. Diffusion tube CSVs
+
+```{r csv, purl = FALSE}
+library(quickmap)                           # load the quickmap library
+quickmap("~/my_data/wandsworth_2017_2024_csv.csv")  # tubes -> a map
+```
+
+| Easting | Northing | 2017 | 2018 | ... | 2024 | Label |
+|---------|----------|------|------|-----|------|-------|
+| 528900  | 172431   | 33   | 31   | ... | 15.9 | 11b Elmbourne Road |
+| 530129  | 177727   |      | 49   | ... | 22.9 | 1 Nine Elms |
+
+*Minimum required: `Easting`, `Northing` (British National Grid — QuickMap
+converts them) and at least one four-digit year column. Blank cells are
+fine: the site sits that year out.*
+
+- A `Label` column supplies site names for labels
+  ([Labels](labels.html)).
+- **Gotcha:** if a `Label` column exists, rows whose label cell is empty
+  are dropped from the map entirely.
+- Any other column is carried along silently.
+
+## 2. Context CSVs (schools and other places)
+
+```{r schools, purl = FALSE}
+quickmap(
+  list("~/my_data/merton_dt_2018_2024.csv",
+       "~/my_data/schools_Merton.csv"),     # context layer on top
+  boroughs = "Merton"
+)
+```
+
+| School | Easting | Northing | Level |
+|--------|---------|----------|-------|
+| Abbotsbury Primary School | 525622 | 167783 | Primary |
+| All Saints' CofE Primary School | 526473 | 170427 | Primary |
+
+*Minimum required: `Easting`, `Northing`, `School`. A `School` column is
+what makes QuickMap treat the file as a context layer (outline symbols,
+no time steps); its text becomes the site's label. `Level` colours
+schools categorically with the `schools` colour scale.*
+
+## 3. Sensor-network exports (RData)
+
+```{r rdata}
+library(quickmap)
+quickmap(
+  from_rdata("bl_imperial_annualised_2021_2025_with_missing.Rdata",
+             "no2",                          # the pollutant column to map
+             name = "Breathe London"),
+  boroughs = "Merton"
+)
+```
+
+An RData file must contain a data frame in the long, OpenAir-style
+layout — one row per site per time step:
+
+| siteCode | year | no2  | pm25 | lat     | lon      |
+|----------|------|------|------|---------|----------|
+| CLDP0001 | 2021 | 28.1 | 11.2 | 51.4102 | -0.1907  |
+| CLDP0001 | 2022 | 25.4 | 10.6 | 51.4102 | -0.1907  |
+
+*Minimum required: `siteCode`, `lat`, `lon` (WGS84), a time column
+(`year`, `date` or `year_str`) and the pollutant column you name.*
+
+- QuickMap searches the file for a compatible data frame by its columns
+  (standard object names first, then the largest match) — the object's
+  name doesn't matter.
+- Datetime columns set the animation's resolution automatically: hourly
+  data animates hourly, annual data annually
+  ([Time and animation](time.html)).
+
+## 4. Data frames you built yourself
+
+Anything already in R — a model output, a spreadsheet you cleaned, an API
+result — becomes a layer with `qm_layer()`:
+
+```{r hand-built}
+my_sites <- data.frame(
+  code = c("A", "B", "C"),                 # a stable id per site (required)
+  lat  = c(51.44, 51.45, 51.46),           # latitude, WGS84 (required)
+  lon  = c(-0.17, -0.19, -0.21),           # longitude, WGS84 (required)
+  no2  = c(18, 27, 41)                     # the values to map (required)
+)
+quickmap(qm_layer(my_sites, name = "My survey"))
+```
+
+The full column contract (time columns, labels, value inference):
+[Layers](layers.html) step 5 and `?qm_layer`.
+
+## 5. No file at all: fetch data with the OpenAir tools
+
+QuickMap is the spatial companion to
+[OpenAir](https://openair-project.github.io/book/), whose packages
+download UK (and worldwide) monitoring data. Each download drops
+straight into `quickmap()`.
+
+### Reference monitors (AURN) — `openair::importUKAQ()`
+
+```{r net-aurn}
+library(openair)                           # the OpenAir data tools
+kc1 <- importUKAQ(site = "kc1",            # North Kensington site code
+                  year = 2023)             # one year of hourly data
+quickmap(
+  from_openair(kc1,
+               pollutant = "no2",          # pollutant column to map
+               avg.time = "month",         # aggregate hours -> monthly means
+               source = "aurn",            # network, for coordinate lookup
+               name = "AURN"),
+  boroughs = "All"
+)
+```
+
+Site codes and what each network measures:
+[the OpenAir book](https://openair-project.github.io/book/sections/data-access/UK-air-quality-data.html).
+
+### London networks (LAQN / Breathe London) — `openair::importImperial()`
+
+```{r net-imperial, purl = FALSE}
+laqn <- importImperial(site = "wm0",       # a LAQN site code
+                       year = 2023)
+quickmap(
+  from_openair(laqn, pollutant = "no2", avg.time = "month",
+               source = "kcl", name = "LAQN"),
+  boroughs = "All"
+)
+```
+
+### Weather for the wind overlay — `worldmet::importNOAA()`
+
+```{r net-noaa}
+heathrow <- from_worldmet(station = "037720-99999", # Heathrow station id
+                          year = 2024)              # fetches from NOAA
+```
+
+`from_worldmet()` wraps the download and conversion in one call; find
+station ids with `worldmet::getMeta()`. Used in
+[Get started](quickmap.html) step 11 and the [Wind](wind.html) chapter.
+
+## 6. How recognition works
+
+Content decides, not filenames (duck typing):
+
+| The file has… | QuickMap treats it as |
+|---|---|
+| year columns (`2017`, `2018`, …) | temporal tube layer (solid symbols, time slider) |
+| a `School` column | context layer (outline symbols, no time steps) |
+| `siteCode` + pollutant + coordinates | sensor-network layer |
+
+Rename your files freely; nothing is inferred from names. To overrule the
+detection, build the layer explicitly with `from_csv(temporal = )` or
+`qm_layer()`.
+
+## See also
+
+- [Get started](quickmap.html) — the first map, step by step.
+- [Layers](layers.html) — combining these inputs on one map.
+- `?from_csv`, `?from_rdata`, `?from_openair`, `?from_worldmet` — the
+  full contracts.

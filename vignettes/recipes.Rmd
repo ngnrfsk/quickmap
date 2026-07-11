@@ -1,0 +1,102 @@
+---
+title: "Recipes"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Recipes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+Complete, copy-paste starting points for common jobs. Each recipe is one
+call; swap in your files and names.
+
+## 1. The annual borough report map
+
+Tubes + sensors + schools, borough theme, labels on hover, JPG for the
+report — the standard local-authority deliverable:
+
+```{r recipe-report}
+library(quickmap)                          # load the quickmap library
+quickmap(
+  list(
+    "merton_dt_2018_2024.csv",                             # diffusion tubes
+    "bl_imperial_annualised_2021_2025_with_missing.Rdata", # sensor network
+    "schools_Merton.csv"                                   # schools
+  ),
+  boroughs      = "Merton",
+  title         = "Merton NO2: ● tubes ◆ sensors ✖ schools",
+  theme_file    = system.file("themes", "merton.yaml",
+                              package = "quickmap"),
+  marker_labels = "labels",                # names on hover
+  display_times = 2020:2022,
+  export_image  = TRUE,                    # a JPG per year, 1200x1200
+  output_file   = "merton_report.html"
+)
+```
+
+## 2. The pollution-episode animation
+
+Hourly sensor data across two boroughs, autoplaying, with wind:
+
+```{r recipe-episode, purl = FALSE}
+heathrow <- from_worldmet(station = "037720-99999", year = 2024)
+quickmap(
+  from_rdata("episodeJan15-20_2024_sf_all.Rdata", "pm25", name = "Sensors"),
+  boroughs     = c("Wandsworth", "Richmond"),
+  colour_scale = "stripes_pm25",
+  title        = "PM2.5 Episode: Jan 15-20, 2024",
+  autoplay     = TRUE,
+  play_speed   = 500,
+  wind         = heathrow,
+  output_file  = "episode.html"
+)
+```
+
+## 3. Proposed monitoring sites over existing ones
+
+Site-selection maps: current networks plus a static CSV of proposed
+locations (any CSV with `Easting`/`Northing` and no year columns is a
+context layer):
+
+```{r recipe-proposed}
+quickmap(
+  list(
+    "wandsworth_2017_2024_csv.csv",        # existing tubes
+    "bl_imperial_annualised_2021_2025_with_missing.Rdata", # existing sensors
+    "wandsworth_proposed_sensors.csv"      # proposed sites (static CSV)
+  ),
+  boroughs      = "Wandsworth",
+  title         = "Wandsworth sites: ● tubes ◆ sensors ✖ proposed",
+  marker_labels = "labels",
+  output_file   = "wandsworth_sites.html"
+)
+```
+
+## 4. Straight from the internet: fetch-to-map with OpenAir
+
+No local data at all — download a year of reference-monitor data and map
+it monthly, in one pipeline:
+
+```{r net-recipe-fetch}
+library(openair)                           # the OpenAir data tools
+quickmap(
+  from_openair(importUKAQ(site = "kc1", year = 2023), # download AURN data
+               pollutant = "no2",
+               avg.time = "month",         # monthly means
+               source = "aurn",
+               name = "AURN"),
+  boroughs    = "All",
+  title       = "North Kensington NO2, monthly 2023",
+  output_file = "kc1_monthly.html"
+)
+```
+
+## See also
+
+- [Get started](quickmap.html) — what each parameter here does, step by
+  step.
+- [Your data](your-data.html) §5 — more OpenAir extraction patterns.

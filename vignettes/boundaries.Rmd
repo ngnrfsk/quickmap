@@ -1,0 +1,87 @@
+---
+title: "Boundaries"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Boundaries}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+A boundary says what a map is *about*: it draws the area's outline,
+frames the view around it, and switches on the vignette that dims
+everything else. Without one, the map simply fits the data:
+
+```{r one-borough}
+library(quickmap)                          # load the quickmap library
+quickmap(
+  "wandsworth_2017_2024_csv.csv",
+  boroughs = "Wandsworth"                  # the boundary to draw
+)
+```
+
+## 1. One, several, or all
+
+```{r two-boroughs}
+quickmap(
+  from_rdata("bl_imperial_annualised_2021_2025_with_missing.Rdata", "no2",
+             name = "Sensors"),
+  boroughs = c("Merton", "Wandsworth")     # NEW: two boundaries
+)
+```
+
+<iframe src="maps/boundaries-two.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Two borough boundaries on one map"></iframe>
+
+`boroughs = "All"` draws every London borough. Minor misspellings of
+common names are corrected automatically; an unrecognised name lists the
+valid ones.
+
+## 2. Write the names on the map
+
+On a multi-area map, label the areas themselves:
+
+```{r boundary-labels}
+quickmap(
+  from_rdata("bl_imperial_annualised_2021_2025_with_missing.Rdata", "no2",
+             name = "Sensors"),
+  boroughs = c("Merton", "Wandsworth"),
+  boundary_labels = TRUE                   # NEW: area names on the map
+)
+```
+
+<iframe src="maps/boundaries-labelled.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Borough names written on the map"></iframe>
+
+## 3. The vignette
+
+With a boundary drawn, everything outside it is dimmed by default, so
+the reader's eye goes to the area in question. `vignette = FALSE` shows
+the surroundings at full brightness; the dimming colour follows the
+map's theme ([Styling and themes](styling.html)).
+
+```{r vignette-off}
+quickmap(
+  "wandsworth_2017_2024_csv.csv",
+  boroughs = "Wandsworth",
+  vignette = FALSE                         # NEW: no dimming outside
+)
+```
+
+## 4. No boundary at all
+
+Leave `boroughs` out and no outline is drawn, no vignette applies, and
+the view fits the data — right for data that isn't about one
+administrative area:
+
+```{r no-boundary}
+quickmap("wandsworth_2017_2024_csv.csv")   # data-only map
+```
+
+## See also
+
+- [Get started](quickmap.html) steps 3–4 — boundaries in the build-up.
+- Ward-level boundaries and finer-grained labelling are on the roadmap
+  (pre-v1.0 defect list) — this page will grow with them.
+- `?quickmap` — `boroughs`, `boundary_labels`, `vignette`.
