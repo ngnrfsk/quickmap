@@ -40,3 +40,22 @@ styling → wind step.
 **Layout parity:** all manual pages use numbered `##` section headings
 (Layers renumbered 1–8 in this change), so cross-references can cite
 step numbers.
+
+## Addendum 2026-07-11 (second round)
+
+**P21 — Situational correctness.** Every statement adjacent to an example
+must describe the behaviour of *that example as shown*. A capability the
+example does not exercise is phrased as a possibility with a pointer:
+not "Hover for details" (false for a map with labels off) but "Labels can
+be added that appear on hover — step 8". Before publishing a page, read
+each claim against its embedded map: would a reader trying it see exactly
+that? Violations found and fixed in this sweep: the hover claim (step 2)
+and "press play" on an autoplaying animation (step 10 → "pause it…").
+
+**Labels get a step and, recommended, their own page.** A labels step
+(marker_labels = TRUE with a live hover map) added to Get started. The
+user asked whether labels deserve a dedicated vignette: recommendation
+YES — a short page — because they carry five modes, duck-typed content
+(values / Label / School), the empty-Label silent-drop gotcha, and the
+item-11 label-consistency work will need somewhere to document itself.
+Proposed for the phase-2 chapter map, pending user approval.

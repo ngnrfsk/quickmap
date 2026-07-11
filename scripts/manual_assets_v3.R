@@ -3,7 +3,8 @@
 # pkgdown::build_site()) plus static assets.
 # v2 (2026-07-11 restructure): adds the vignette-off, static-export and
 # titled examples; symbol glyphs in multi-symbol banner titles.
-# Run from the repo root: Rscript scripts/manual_assets_v2.R
+# v3: adds the labels example (marker_labels = TRUE, hover values).
+# Run from the repo root: Rscript scripts/manual_assets_v3.R
 library(quickmap)
 
 dir.create("vignettes/maps", showWarnings = FALSE)
@@ -51,6 +52,14 @@ quickmap("wandsworth_2017_2024_csv.csv",
          title       = "Wandsworth NO2, 2017-2024",
          output_file = "getstarted-titled.html")
 emit("getstarted-titled.html")
+
+# 8. + hover labels
+quickmap("wandsworth_2017_2024_csv.csv",
+         boroughs      = "Wandsworth",
+         title         = "Wandsworth NO2, 2017-2024",
+         marker_labels = TRUE,
+         output_file   = "getstarted-labels.html")
+emit("getstarted-labels.html")
 
 # 9. several measurement networks; symbol glyphs in the banner title
 suppressWarnings(quickmap(
