@@ -6,7 +6,7 @@
 \usage{
 quickmap(
   layers,
-  boroughs,
+  boroughs = NULL,
   pollutant = NULL,
   display_times = NULL,
   colour_scale = "who_no2",
@@ -30,7 +30,8 @@ quickmap(
 path (CSV or RData, resolved against \code{DATA_PATH}), a \code{\link[=qm_layer]{qm_layer()}}, or a
 data.frame/sf object (converted via \code{\link[=qm_layer]{qm_layer()}}).}
 
-\item{boroughs}{Character vector of borough names (or "All")}
+\item{boroughs}{Character vector of borough names (or "All"). NULL
+(default) draws no boundary and fits the map to the data.}
 
 \item{pollutant}{Pollutant to display. NULL (default) infers it from the
 first time-varying layer's value column.}

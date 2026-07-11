@@ -1,6 +1,6 @@
 Package: quickmap
 Title: Quick Air Quality Maps with Leaflet
-Version: 0.9.9.5
+Version: 0.9.9.7
 Authors@R: person("Iarla", "Kilbane-Dawe", email = "iarlakd@gmail.com", role = c("aut", "cre"))
 Description: Creates interactive and static air quality maps showing pollution
     data (NO2, PM2.5) overlaid with school locations and borough boundaries.
@@ -29,4 +29,8 @@ Suggests:
     httr,
     jsonlite,
     testthat (>= 3.0.0),
-    withr
+    withr,
+    knitr,
+    rmarkdown,
+    pkgdown
+VignetteBuilder: knitr

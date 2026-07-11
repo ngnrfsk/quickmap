@@ -11,7 +11,7 @@ render_pollution_map(
   data_dynamic = NULL,
   output_file = "pollution_map.html",
   export_image = NULL,
-  boroughs,
+  boroughs = NULL,
   pollutant = "no2",
   display_times = NULL,
   title = NULL,
@@ -42,7 +42,8 @@ Valid: "circle", "diamond", "cross", "square", "triangle", "star", "plus".}
 
 \item{export_image}{NULL (no export), TRUE (export 1200x1200), or c(width, height) vector for custom dimensions.}
 
-\item{boroughs}{Borough name(s) for boundary display and data filtering (required).}
+\item{boroughs}{Borough name(s) for boundary display. NULL (default) draws
+no boundary and fits the map to the data.}
 
 \item{pollutant}{Pollutant type: "no2" or "pm25" (default: "no2").}
 

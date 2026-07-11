@@ -1,0 +1,214 @@
+---
+title: "Layers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Layers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+A QuickMap map is a stack of **layers**, one per data source. Measurement
+layers (tubes, sensors) draw as solid coloured symbols and drive the time
+animation; context layers (schools, hospitals, proposed sites) draw as
+outline symbols on top. The stack is the first argument of `quickmap()` —
+a single file, or a list:
+
+```{r two-lines}
+library(quickmap)                          # load the quickmap library
+quickmap(
+  list("merton_dt_2018_2024.csv",          # diffusion tube data
+       "schools_Merton.csv"),              # school locations
+  boroughs = "Merton"                      # the borough boundary to draw
+)
+```
+
+The tubes CSV needs `Easting`, `Northing` and one column per year of
+readings; the schools CSV needs `Easting`, `Northing` and a `School`
+column. QuickMap recognises what each file contains from its columns —
+you did not have to say which was which. (Full input specifications:
+the *Your data* chapter.)
+
+Each numbered step below adds one idea to the previous one.
+
+## 1. Use the `layers` list to add sources
+
+Comparing monitoring networks, or adding context around them, means
+putting more sources on one map — just extend the list:
+
+```{r three-layers}
+quickmap(
+  list(
+    "merton_dt_2018_2024.csv",                            # tubes -> circles
+    "bl_imperial_annualised_2021_2025_with_missing.Rdata", # sensors -> diamonds
+    "schools_Merton.csv"                                   # schools -> crosses
+  ),
+  boroughs = "Merton",                     # the borough boundary to draw
+  title = "Merton NO2: ● tubes ◆ sensors ✖ schools" # symbols key the banner
+)
+```
+
+The new input: an RData sensor export, needing `siteCode`, `lat`, `lon`,
+a year column and a pollutant column (`no2` here). Each layer keeps its
+own symbol, so readers can tell a reference tube from a low-cost sensor
+at a glance. The time slider covers every year found in *any* layer;
+layers without data for a year simply sit that year out.
+
+<iframe src="maps/layers-multilayer.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Three layers on one map: circles (tubes), diamonds (sensors), crosses (schools)"></iframe>
+
+## 2. Name a layer with `from_csv(name = )`
+
+The legend and controls name layers after their filenames. To choose the
+name yourself, build the layer with `from_csv()` instead of a bare path:
+
+```{r named-layer}
+quickmap(
+  list(
+    from_csv("merton_dt_2018_2024.csv",
+             name = "Council tubes"),      # your name, not the filename
+    "schools_Merton.csv"                   # untouched layers stay as paths
+  ),
+  boroughs = "Merton"
+)
+```
+
+This is the general pattern for customising one layer of several: **wrap
+that layer, leave the rest alone**.
+
+## 3. Choose each layer's pollutant with `from_rdata()`
+
+Sensor files usually carry several pollutants; the second argument of
+`from_rdata()` selects one:
+
+```{r rdata-pollutant}
+quickmap(
+  from_rdata("bl_imperial_annualised_2021_2025_with_missing.Rdata",
+             "pm25",                       # the pollutant column to map
+             name = "Breathe London"),
+  boroughs = "Merton",
+  colour_scale = "gla_pm25"                # a PM2.5 colour scale
+)
+```
+
+## 4. Fetch data live with `from_openair()`
+
+No file at all: the [openair package](https://openair-project.github.io/openair/)
+downloads UK monitoring data, and `from_openair()` turns its output
+straight into a layer:
+
+```{r net-openair-live}
+library(openair)                           # the OpenAir data tools
+kc1 <- importUKAQ(site = "kc1",            # North Kensington AURN site
+                  year = 2023)             # one year of hourly data
+quickmap(
+  from_openair(kc1,
+               pollutant = "no2",          # pollutant column to map
+               avg.time = "month",         # aggregate hours -> monthly means
+               source = "aurn",            # network, for coordinate lookup
+               name = "AURN"),             # layer name for the map
+  boroughs = "All"                         # all London borough boundaries
+)
+```
+
+This example carries a second, smaller idea: `avg.time = "month"`
+aggregates the hourly download to monthly means before mapping —
+the vocabulary ("year", "month", "day", "hour") is openair's own. See
+the [OpenAir book](https://openair-project.github.io/book/) for
+everything `importUKAQ()` can fetch.
+
+## 5. Map your own data frame with `qm_layer()`
+
+Any data frame with a site code, coordinates and a value column can be a
+layer — this is how you map data QuickMap has never heard of:
+
+```{r hand-built}
+my_sites <- data.frame(
+  code = c("A", "B", "C"),                 # a stable id per site (required)
+  lat  = c(51.44, 51.45, 51.46),           # latitude, WGS84 (required)
+  lon  = c(-0.17, -0.19, -0.21),           # longitude, WGS84 (required)
+  no2  = c(18, 27, 41)                     # the values to map (required)
+)
+quickmap(
+  qm_layer(my_sites, name = "My survey"),  # wrap the data frame as a layer
+  boroughs = "Wandsworth"
+)
+```
+
+## 6. Choose each layer's symbol with `qm_layer(shape = )`
+
+When two layers would otherwise look alike, give one a different symbol:
+
+```{r choose-shape}
+quickmap(
+  list(
+    from_csv("merton_dt_2018_2024.csv",
+             name = "Council tubes"),      # circles (the tube default)
+    qm_layer(my_sites,
+             shape = "star",               # this layer draws as stars
+             name = "My survey")
+  ),
+  boroughs = "Merton"
+)
+```
+
+Friendly names work: `"circle"`, `"square"`, `"diamond"`, `"triangle"`,
+`"cross"`, `"star"`, `"plus"` — a misspelling gives an error listing every
+valid name.
+
+## 7. How it works
+
+Two rules carry the whole system:
+
+1. **Layer properties live on the layer; map properties live on
+   `quickmap()`.** A layer's value column, time column, labels, symbol
+   shape and name are set by `qm_layer()` or a `from_*()` wrapper. The
+   map's boroughs, colour scale, title, theme and output file are
+   `quickmap()` arguments. (One historic exception survives: the
+   map-level `data_symbols` vector, kept as an override.)
+2. **Content decides, not filenames (duck typing).** A CSV with a `School`
+   column is a school layer; a CSV with several year columns (`2017`,
+   `2018`, …) is a temporal tube layer; an RData file is searched for a
+   compatible sensor table. Rename your files freely.
+
+## 8. Full detail
+
+| Function | Builds a layer from | Key arguments |
+|---|---|---|
+| `from_csv()` | CSV file (tubes or schools) | `pollutant`, `name`, `temporal` |
+| `from_rdata()` | RData sensor export | `pollutant`, `name`, `data_object_name` |
+| `from_openair()` | openair tibble | `pollutant`, `avg.time`, `source`, `name` |
+| `qm_layer()` | any data frame / sf object | `value_col`, `time_col`, `label_col`, `shape`, `name` |
+| `qm_meta()` | — | inspect a layer's metadata |
+
+See each function's help page (e.g. `?qm_layer`) for the complete
+contract. Cross-cutting behaviour that no single help page owns:
+
+- **Required identity column:** every layer needs a stable site identifier —
+  `code` (or legacy `siteCode`) for data frames; CSVs get one generated
+  from coordinates or the `Label` column.
+- **Column aliases:** `siteCode`→`code`, `year_str`→`time_label`,
+  `Latitude`/`Longitude`→`lat`/`lon` are accepted and normalised.
+- **Shapes** (v0.9.8.1+): set per layer with `qm_layer(shape = )`, or
+  inherited from the `from_*()` conventions (tubes circle, sensors
+  diamond, schools cross). Layers with no shape get an automatic
+  assignment — solid symbols for time-varying layers, outline symbols
+  for static ones, cycling in layer order. A map-level
+  `quickmap(data_symbols = c(...))` vector (one shape per layer)
+  overrides everything.
+- **Gotcha — the `Label` column:** in a CSV with a `Label` column, rows
+  whose label cell is empty are dropped from the map entirely.
+- **Coordinates:** CSVs use British National Grid (`Easting`/`Northing`);
+  data frames use WGS84 `lat`/`lon`; sf objects keep their CRS.
+
+## See also
+
+- [Get started](quickmap.html) — the first map, step by step, up to a
+  full animation.
+- `?quickmap` — every map-level parameter.
+- [OpenAir book](https://openair-project.github.io/book/) and
+  [worldmet](https://openair-project.github.io/worldmet/) — fetching
+  measurement and met data (worked extraction examples arrive with the
+  *Your data* chapter).

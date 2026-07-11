@@ -1,0 +1,14 @@
+/* Manual layout (user request 2026-07-11): visual space above section
+   headings so the numbered steps read as separate blocks. */
+main h2 {
+  margin-top: 3rem;
+}
+
+main h3 {
+  margin-top: 2.25rem;
+}
+
+/* Embedded live maps */
+main iframe {
+  margin: 0.5rem 0 1rem;
+}
