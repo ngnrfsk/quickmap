@@ -52,10 +52,36 @@ each claim against its embedded map: would a reader trying it see exactly
 that? Violations found and fixed in this sweep: the hover claim (step 2)
 and "press play" on an autoplaying animation (step 10 → "pause it…").
 
-**Labels get a step and, recommended, their own page.** A labels step
-(marker_labels = TRUE with a live hover map) added to Get started. The
-user asked whether labels deserve a dedicated vignette: recommendation
-YES — a short page — because they carry five modes, duck-typed content
-(values / Label / School), the empty-Label silent-drop gotcha, and the
-item-11 label-consistency work will need somewhere to document itself.
-Proposed for the phase-2 chapter map, pending user approval.
+**P22 — The page-worthiness test** (generalised from the labels case at
+the user's direction, 2026-07-11). A feature earns its **own page** when
+it meets at least TWO of these four criteria; exactly one criterion →
+a **section** inside an existing chapter; none → an inline pointer at
+the point of use is enough:
+
+1. **Multiple user-facing modes or options** the reader must choose
+   between (labels: five modes).
+2. **Invisible inference** — behaviour decided by duck typing or
+   defaults the user must be able to predict (labels: values vs `Label`
+   vs `School` content).
+3. **Documented gotchas / sharp edges** (labels: the empty-`Label`
+   silent-drop).
+4. **An anchor for planned work** that will need a documentation home
+   (labels: the item-11 label-consistency fixes).
+
+Audit of current features against P22 (validates the chapter map):
+
+| Feature | Criteria met | Verdict |
+|---|---|---|
+| Labels | 1,2,3,4 | **own page (NEW — added to chapter map)** |
+| Data input formats | 2,3 | own page ✓ (Your data, planned) |
+| Themes + colour scales | 1,2 | own page ✓ (Styling, planned) |
+| Time/animation (display_times, cap, lazy) | 1,2 | own page ✓ (Time, planned) |
+| Wind | 1,4 (post-1.0 presets) | own page ✓ (Wind, planned) |
+| Layer system (from_*, qm_layer) | 1,2 | own page ✓ (Layers, exists) |
+| Static export | 1 (sizes/modes), 4 (item-11 subfolder defect) | own page — folded into planned Sharing & export ✓ |
+| Symbols/shapes | 1 | section ✓ (inside Layers) |
+| Boundaries/vignette | 1 only (on/off, names) | section ✓ (Get started steps 3–4) |
+
+A labels step (marker_labels = TRUE with a live hover map) was added to
+Get started in this change; the Labels page joins the phase-2 chapter
+map.
