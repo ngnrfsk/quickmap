@@ -61,6 +61,16 @@ and help file. Recommendation: **symbols** (matches `data_symbols`, the
 symbol chart, and the user's instinct); "marker" survives only inside
 API names that already use it (`marker_labels`) until item 9 review.
 
+*Rationale confirmed 2026-07-11 (user terminology check):* "symbol" is
+the term of cartography ("point symbol", "symbology"), statistical
+graphics (R's plotting symbols/pch) and the air-quality literature
+("monitoring sites, shown as symbols"); "marker" is web-mapping
+implementation jargon (Leaflet's `L.marker`, from Google Maps pins).
+House phrasing: **"monitoring sites, shown as symbols."** Queued for the
+item-9 API pass (user decision pending): rename `marker_labels` →
+`symbol_labels` with the old name aliased, resolving the
+marker_labels/data_symbols inconsistency.
+
 ## Two findings that go beyond wording
 
 **F1 — The user annotated `boroughs` as "(optional)" — today it is
