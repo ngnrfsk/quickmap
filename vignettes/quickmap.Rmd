@@ -95,18 +95,21 @@ quickmap(
 
 The map above dims everything outside Wandsworth. That is the
 **vignette**, on by default whenever a boundary is drawn, so the reader's
-eye goes to the area the map is about. To show the surroundings at full
-brightness instead:
+eye goes to the area the map is about. Written out explicitly:
 
 ```{r vignette, purl = FALSE}
 quickmap(
   "~/my_data/wandsworth_2017_2024_csv.csv",
   boroughs = "Wandsworth",
-  vignette = FALSE                          # NEW: no dimming outside
-)
+  vignette = TRUE                           # NEW: dim outside the boundary
+)                                           #      (the default with a boundary)
 ```
 
-<iframe src="maps/getstarted-vignette-off.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The same map with the vignette turned off"></iframe>
+<iframe src="maps/getstarted-boundary.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Vignette on: dimmed outside the boundary"></iframe>
+
+Set `vignette = FALSE` to show the surroundings at full brightness:
+
+<iframe src="maps/getstarted-vignette-off.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Vignette off: full brightness everywhere"></iframe>
 
 *The vignette's colour follows the map's theme — themes bundle all such
 choices into one reusable YAML file (`?load_theme`).*
