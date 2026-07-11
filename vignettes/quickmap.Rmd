@@ -94,8 +94,14 @@ quickmap(
 )
 ```
 
-`boroughs` takes one name, several (`c("Wandsworth", "Richmond")`), or
-`"All"` for every London borough.
+**More on boundaries:**
+
+- `boroughs` takes one name, several (`c("Wandsworth", "Richmond")`), or
+  `"All"` for every London borough.
+- The area's name can be written on the map with
+  `boundary_labels = TRUE` — useful on multi-borough maps.
+- The boundary also drives the next step's vignette and the map's
+  framing.
 
 <iframe src="maps/getstarted-boundary.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The same map with the Wandsworth boundary and vignette"></iframe>
 
@@ -155,8 +161,10 @@ quickmap(
 
 ![The exported JPG: 1200×900, ready for a report](maps/getstarted-export.jpg)
 
-*`display_times` also subsets interactive maps — pick any years, months
-or hours present in the data.*
+*With several time steps selected you get one JPG per step;
+`export_image = TRUE` uses the default 1200×1200. `display_times` also
+subsets interactive maps — pick any years, months or hours present in
+the data.*
 
 ## 7. Add a title and choose the file name
 
@@ -174,8 +182,9 @@ quickmap(
 
 <iframe src="maps/getstarted-titled.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The map with its banner title"></iframe>
 
-*The banner's style (white strip or colour bar) and colours are theme
-settings (`?load_theme`).*
+*The accent colour under the title can be set directly with
+`banner_colour =`; the banner's style (white strip or colour bar) and
+the full colour scheme are theme settings (`?load_theme`).*
 
 ## 8. Add labels to the symbols
 
