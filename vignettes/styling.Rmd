@@ -1,0 +1,130 @@
+---
+title: "Styling and themes"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Styling and themes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+Two systems style a QuickMap map: a **colour scale** decides what the
+data's colours mean, and a **theme** decides how everything else looks —
+banner, background tiles, vignette, controls. Both are plain YAML files
+you can copy and edit.
+
+```{r scale}
+library(quickmap)                          # load the quickmap library
+quickmap(
+  from_rdata("bl_imperial_annualised_2021_2025_with_missing.Rdata",
+             "pm25",                       # a PM2.5 map...
+             name = "Sensors"),
+  boroughs     = "Merton",
+  colour_scale = "gla_pm25"                # ...needs a PM2.5 scale
+)
+```
+
+<iframe src="maps/styling-scale.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="PM2.5 mapped with the GLA scale"></iframe>
+
+## 1. The bundled colour scales
+
+| Name | Pollutant | Bands |
+|------|-----------|-------|
+| `who_no2` (default) | NO2 | WHO guideline bands |
+| `stripes_no2` | NO2 | stripe-style |
+| `stripes_pm25` | PM2.5 | stripe-style |
+| `airstat_no2` | NO2 | AirStat |
+| `gla_pm25` | PM2.5 | GLA |
+| `lbw_no2`, `lbrut_no2`, `lbm_no2` | NO2 | borough-specific (Wandsworth, Richmond, Merton) |
+| `deltas` | any | year-on-year change |
+| `schools` | — | categorical (school type) |
+
+`load_colour_scale("who_no2")` shows any scale's definition.
+
+## 2. Anatomy of a scale — make your own
+
+A scale is one YAML file: thresholds, colours, labels. Copy a bundled one
+(`inst/config/scales/` in the package) and edit:
+
+```yaml
+name: my_no2
+title: "NO2, µg/m³"
+pollutant: NO2
+thresholds: [0, 10, 20, 40, .Inf]
+colours: ["green", "yellow", "orange", "red", "white"]
+labels: ["< 10: Good", "10-20: Fair", "20-40: Poor", "> 40: Bad", "No data"]
+```
+
+The legend is generated from this file — labels with a description after
+the range (like "10: Good") gain a footnote symbol and appear in the
+legend's key row.
+
+## 3. Themes — one file for the whole look
+
+A theme bundles every visual choice so a series of maps stays consistent:
+
+```{r theme}
+quickmap(
+  "merton_dt_2018_2024.csv",
+  boroughs   = "Merton",
+  theme_file = system.file("themes", "merton.yaml", # NEW: a bundled theme
+                           package = "quickmap")
+)
+```
+
+<iframe src="maps/styling-theme.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The Merton borough theme"></iframe>
+
+The theme file's sections:
+
+```yaml
+banner:
+  style: "strip"          # "strip" (white, brand rule) or "bar" (colour block)
+  background: "#5F3E94"   # the brand colour
+  title: "Merton Air Quality"
+map:
+  vignette: true
+  base_tiles: null        # null = OpenStreetMap; or e.g. "CartoDB.Positron"
+  boundary_labels: false
+controls:
+  autoplay: false
+  play_speed: 500
+wind:                     # wind-particle styling (see the Wind chapter)
+  particle_density: 0.002
+  line_width: 1
+```
+
+Bundled themes: `merton`, `wandsworth`, `richmond`, `airstat`,
+`high_contrast` (`show_borough_colours()` lists them with their
+palettes).
+
+## 4. Who wins: parameter, theme, or default
+
+Explicit `quickmap()` arguments beat the theme; the theme beats the
+built-in defaults. So a theme sets the house style, and any single map
+can override one thing:
+
+```{r precedence, purl = FALSE}
+quickmap(
+  "merton_dt_2018_2024.csv",
+  boroughs      = "Merton",
+  theme_file    = "my_theme.yaml",         # house style...
+  banner_colour = "#078141"                # ...this map's banner differs
+)
+```
+
+## 5. The background tiles
+
+`map: base_tiles:` in the theme takes any
+[Leaflet provider name](https://leaflet-extras.github.io/leaflet-providers/preview/).
+The default (OpenStreetMap) carries the vignette well; the pale
+`"CartoDB.Positron"` suits dense data.
+
+## See also
+
+- [Get started](quickmap.html) steps 4 and 7 — vignette colour and
+  `banner_colour` in the build-up.
+- [Wind](wind.html) — the theme's `wind:` section.
+- `?load_theme`, `?load_colour_scale`, `?show_borough_colours`.

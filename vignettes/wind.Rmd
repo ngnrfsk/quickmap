@@ -1,0 +1,101 @@
+---
+title: "Wind"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Wind}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+Where did the pollution come from? An animated wind-particle overlay
+answers that at a glance: streaks flow with the wind, coloured by speed,
+and advance with the time slider. One parameter adds it:
+
+```{r net-wind}
+library(quickmap)                          # load the quickmap library
+heathrow <- from_worldmet(station = "037720-99999", # Heathrow station id
+                          year = 2024)              # fetches from NOAA
+quickmap(
+  from_rdata("episodeJan15-20_2024_sf_all.Rdata", "pm25", name = "Sensors"),
+  boroughs     = c("Wandsworth", "Richmond"),
+  colour_scale = "stripes_pm25",
+  autoplay     = TRUE,
+  play_speed   = 500,
+  wind         = heathrow                  # the wind overlay
+)
+```
+
+<iframe src="maps/getstarted-wind.html" width="100%" height="480" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Wind particles over the episode animation"></iframe>
+
+## 1. Where the wind data comes from
+
+`from_worldmet()` downloads hourly weather-station records from NOAA's
+worldwide archive (via the `worldmet` package — install it and be online
+for the fetch). Find a station near your map:
+
+```{r net-getmeta}
+worldmet::getMeta(lat = 51.47, lon = -0.45) # stations near Heathrow,
+                                            # with their ids
+```
+
+For a city-scale map, one representative station is enough — the overlay
+shows the period-average wind for each time step.
+
+## 2. Bring your own wind data
+
+Any data frame with `date`, `ws` (wind speed) and `wd` (wind direction)
+columns works — from your own met station, a model, or a file:
+
+```{r own-wind, purl = FALSE}
+my_wind <- data.frame(
+  date = as.POSIXct("2024-01-15 12:00", tz = "UTC") + 3600 * 0:23,
+  ws   = 5,                                # m/s
+  wd   = 225                               # degrees (from the south-west)
+)
+quickmap(
+  from_rdata("episodeJan15-20_2024_sf_all.Rdata", "pm25", name = "Sensors"),
+  boroughs = c("Wandsworth", "Richmond"),
+  wind     = my_wind
+)
+```
+
+Wind hours are matched to the map's time steps automatically (period
+means for monthly or annual maps); steps with no wind data show no
+particles rather than stale ones.
+
+## 3. Styling the particles
+
+The theme's `wind:` section controls the look
+([Styling and themes](styling.html)):
+
+```yaml
+wind:
+  colour_ramp: ["#3288bd", "#66c2a5", "#abdda4",   # blue -> red with speed
+                "#fee08b", "#f46d43", "#d53e4f"]
+  particle_density: 0.002
+  line_width: 1
+  velocity_scale: 0.01
+```
+
+The default ramp colours particles by wind speed. On busy backgrounds a
+darker single-colour ramp or a heavier `line_width` stands out more.
+
+## 4. Limits worth knowing
+
+- **Interactive maps only** — a particle animation has no meaning in a
+  static JPG, so exports omit it.
+- The overlay is a uniform city-scale field from one station;
+  multi-station and gridded (ERA5) wind fields are on the post-1.0
+  roadmap.
+- A background browser tab may pause the particles until it is
+  foregrounded (a browser behaviour, not a defect).
+
+## See also
+
+- [Get started](quickmap.html) step 11 — wind in the build-up.
+- [Time and animation](time.html) — the slider the particles follow.
+- `?from_worldmet` — the full contract.

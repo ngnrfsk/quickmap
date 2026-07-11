@@ -11,14 +11,28 @@ navbar:
     left: [intro, articles, reference]
     right: [search, github]
 
-# Note: the legacy .md notes in vignettes/ (quickmap_reference, theme guide,
-# CONFIGS, v0.9.0 migration) are plain markdown, not .Rmd — pkgdown does not
-# treat them as articles. They are absorbed/retired at manual PR C.
+# Legacy .md notes retired to vignettes/archive/ (phase 3, 2026-07-11):
+# their content is absorbed into the chapters below.
 articles:
-- title: The manual
-  navbar: ~
+- title: Working with maps
+  navbar: Working with maps
   contents:
+  - your-data
   - layers
+  - labels
+  - boundaries
+  - styling
+- title: Animation and beyond
+  navbar: Animation and beyond
+  contents:
+  - time
+  - wind
+  - sharing
+- title: Going further
+  navbar: Going further
+  contents:
+  - recipes
+  - r-users
 
 reference:
 - title: Making maps
