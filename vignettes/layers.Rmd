@@ -32,11 +32,9 @@ column. QuickMap recognises what each file contains from its columns —
 you did not have to say which was which. (Full input specifications:
 the *Your data* chapter.)
 
-## Worked examples
+Each numbered step below adds one idea to the previous one.
 
-Each example below adds one idea to the previous one.
-
-### Use the `layers` list to add sources
+## 1. Use the `layers` list to add sources
 
 Comparing monitoring networks, or adding context around them, means
 putting more sources on one map — just extend the list:
@@ -49,7 +47,7 @@ quickmap(
     "schools_Merton.csv"                                   # schools -> crosses
   ),
   boroughs = "Merton",                     # the borough boundary to draw
-  title = "Merton NO2: tubes, sensors and schools" # banner text
+  title = "Merton NO2: ● tubes ◆ sensors ✖ schools" # symbols key the banner
 )
 ```
 
@@ -61,7 +59,7 @@ layers without data for a year simply sit that year out.
 
 <iframe src="maps/layers-multilayer.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Three layers on one map: circles (tubes), diamonds (sensors), crosses (schools)"></iframe>
 
-### Name a layer with `from_csv(name = )`
+## 2. Name a layer with `from_csv(name = )`
 
 The legend and controls name layers after their filenames. To choose the
 name yourself, build the layer with `from_csv()` instead of a bare path:
@@ -80,7 +78,7 @@ quickmap(
 This is the general pattern for customising one layer of several: **wrap
 that layer, leave the rest alone**.
 
-### Choose each layer's pollutant with `from_rdata()`
+## 3. Choose each layer's pollutant with `from_rdata()`
 
 Sensor files usually carry several pollutants; the second argument of
 `from_rdata()` selects one:
@@ -95,7 +93,7 @@ quickmap(
 )
 ```
 
-### Fetch data live with `from_openair()`
+## 4. Fetch data live with `from_openair()`
 
 No file at all: the [openair package](https://openair-project.github.io/openair/)
 downloads UK monitoring data, and `from_openair()` turns its output
@@ -121,7 +119,7 @@ the vocabulary ("year", "month", "day", "hour") is openair's own. See
 the [OpenAir book](https://openair-project.github.io/book/) for
 everything `importUKAQ()` can fetch.
 
-### Map your own data frame with `qm_layer()`
+## 5. Map your own data frame with `qm_layer()`
 
 Any data frame with a site code, coordinates and a value column can be a
 layer — this is how you map data QuickMap has never heard of:
@@ -139,7 +137,7 @@ quickmap(
 )
 ```
 
-### Choose each layer's symbol with `qm_layer(shape = )`
+## 6. Choose each layer's symbol with `qm_layer(shape = )`
 
 When two layers would otherwise look alike, give one a different symbol:
 
@@ -160,7 +158,7 @@ Friendly names work: `"circle"`, `"square"`, `"diamond"`, `"triangle"`,
 `"cross"`, `"star"`, `"plus"` — a misspelling gives an error listing every
 valid name.
 
-## How it works
+## 7. How it works
 
 Two rules carry the whole system:
 
@@ -175,7 +173,7 @@ Two rules carry the whole system:
    `2018`, …) is a temporal tube layer; an RData file is searched for a
    compatible sensor table. Rename your files freely.
 
-## Full detail
+## 8. Full detail
 
 | Function | Builds a layer from | Key arguments |
 |---|---|---|
