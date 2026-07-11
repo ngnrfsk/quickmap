@@ -74,8 +74,7 @@ download the background map). Here is that exact file:
 **Reading the map:**
 
 - **Symbols** are monitoring sites, coloured by pollution level — green
-  is good, red is bad. Hover for details. (Values or site names can be
-  shown permanently with `marker_labels = "values_on"` or `"labels_on"`.)
+  is good, red is bad. Labels can be added that appear on hover — step 8.
 - **The legend** (along the bottom) names each colour band. The bands
   come from a colour scale (`who_no2` by default) — swap it with
   `colour_scale =`, as Part 2 does. Click the legend header to collapse it.
@@ -178,7 +177,28 @@ quickmap(
 *The banner's style (white strip or colour bar) and colours are theme
 settings (`?load_theme`).*
 
-## 8. Combine several measurement networks
+## 8. Add labels to the symbols
+
+Readers often want the number behind a colour. `marker_labels = TRUE`
+shows each site's value when you hover over its symbol — try it on the
+map below:
+
+```{r labels}
+quickmap(
+  "wandsworth_2017_2024_csv.csv",
+  boroughs      = "Wandsworth",
+  title         = "Wandsworth NO2, 2017-2024",
+  marker_labels = TRUE                       # NEW: values appear on hover
+)
+```
+
+<iframe src="maps/getstarted-labels.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Hover a symbol to see its value"></iframe>
+
+*Labels have five modes — off, values on hover, values always shown, and
+site names (from a `Label` or `School` column) on hover or always shown:
+`marker_labels = "values_on"`, `"labels"`, `"labels_on"` (`?quickmap`).*
+
+## 9. Combine several measurement networks
 
 Different monitoring networks — and context like schools — go on one map
 by listing the files. Each network keeps its own symbol, and putting the
@@ -208,10 +228,10 @@ list to add sources".*
 A new dataset (five days of hourly sensor readings during a January 2024
 pollution episode), and two steps.
 
-## 9. Animate a pollution episode
+## 10. Animate a pollution episode
 
-This maps 108 hourly time steps and starts playing by itself. Press play,
-or drag the slider:
+This maps 108 hourly time steps and starts playing by itself — pause it
+with the round button, or drag the slider to any hour:
 
 ```{r animation}
 quickmap(
@@ -234,7 +254,7 @@ format, so even this five-day hourly animation stays around 1 MB — small
 enough to email. *Colour scales for other pollutants and boroughs:
 `?load_colour_scale`.*
 
-## 10. Add live wind to the animation
+## 11. Add live wind to the animation
 
 Where did the pollution come from? An animated wind-particle overlay
 answers that at a glance. `from_worldmet()` fetches real weather-station
