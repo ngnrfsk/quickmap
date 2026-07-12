@@ -123,11 +123,11 @@ quickmap("wandsworth_2017_2024_csv.csv",
          output_file = "labels-values-on.html")
 emit("labels-values-on.html")
 
-suppressWarnings(quickmap(
-  list("merton_dt_2018_2024.csv", "schools_Merton.csv"),
-  boroughs = "Merton", marker_labels = "labels",
+quickmap(
+  list("wandsworth_2017_2024_csv_full_labels.csv", "schools_wandsworth.csv"),
+  boroughs = "Wandsworth", marker_labels = "labels",
   output_file = "labels-names.html"
-))
+)
 emit("labels-names.html")
 
 # Boundaries chapter ------------------------------------------------------------
