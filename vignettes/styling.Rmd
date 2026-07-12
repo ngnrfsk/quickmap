@@ -19,7 +19,7 @@ you can copy and edit.
 ```{r scale}
 library(quickmap)                          # load the quickmap library
 quickmap(
-  from_rdata("bl_imperial_annualised_2021_2025_with_missing.Rdata",
+  from_rdata("sensors.RData",
              "pm25",                       # a PM2.5 map...
              name = "Sensors"),
   boroughs     = "Merton",
@@ -70,7 +70,7 @@ A theme bundles every visual choice so a series of maps stays consistent:
 
 ```{r theme}
 quickmap(
-  "merton_dt_2018_2024.csv",
+  "tubes_merton.csv",
   boroughs   = "Merton",
   theme_file = system.file("themes", "merton.yaml", # NEW: a bundled theme
                            package = "quickmap")
@@ -96,8 +96,8 @@ controls:
   autoplay: false
   play_speed: 500
 wind:                     # wind-particle styling (see the Wind chapter)
-  particle_density: 0.002
-  line_width: 1
+  particle_density: 0.0033
+  line_width: 1.5
 ```
 
 Bundled themes: `merton`, `wandsworth`, `richmond`, `airstat`,
@@ -112,7 +112,7 @@ can override one thing:
 
 ```{r precedence, purl = FALSE}
 quickmap(
-  "merton_dt_2018_2024.csv",
+  "tubes_merton.csv",
   boroughs      = "Merton",
   theme_file    = "my_theme.yaml",         # house style...
   banner_colour = "#078141"                # ...this map's banner differs

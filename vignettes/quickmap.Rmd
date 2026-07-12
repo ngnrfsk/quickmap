@@ -47,7 +47,7 @@ line per step.
 ```{r first-map, purl = FALSE}
 library(quickmap)                           # load the quickmap library
 quickmap(
-  "~/my_data/wandsworth_2017_2024_csv.csv"  # diffusion tube data
+  "~/my_data/tubes.csv"  # diffusion tube data
 )
 ```
 
@@ -89,7 +89,7 @@ boundary and frames the map around it:
 
 ```{r boundary, purl = FALSE}
 quickmap(
-  "~/my_data/wandsworth_2017_2024_csv.csv",
+  "~/my_data/tubes.csv",
   boroughs = "Wandsworth"                   # NEW: the boundary to draw
 )
 ```
@@ -113,7 +113,7 @@ eye goes to the area the map is about. Written out explicitly:
 
 ```{r vignette, purl = FALSE}
 quickmap(
-  "~/my_data/wandsworth_2017_2024_csv.csv",
+  "~/my_data/tubes.csv",
   boroughs = "Wandsworth",
   vignette = TRUE                           # NEW: dim outside the boundary
 )                                           #      (the default with a boundary)
@@ -139,7 +139,7 @@ Sys.setenv(
   DATA_PATH = "~/my_data"                  # folder where your data lives
 )
 quickmap(
-  "wandsworth_2017_2024_csv.csv",          # NEW: just the filename
+  "tubes.csv",          # NEW: just the filename
   boroughs = "Wandsworth"
 )
 ```
@@ -152,7 +152,7 @@ HTML, at any size — text and legend scale with the image:
 ```{r export}
 library(quickmap)                          # (already loaded if you followed above)
 quickmap(
-  "wandsworth_2017_2024_csv.csv",
+  "tubes.csv",
   boroughs      = "Wandsworth",
   display_times = "2024",                  # NEW: one year -> one image
   export_image  = c(1200, 900)             # NEW: JPG width x height, pixels
@@ -173,7 +173,7 @@ recognise later:
 
 ```{r step-further}
 quickmap(
-  "wandsworth_2017_2024_csv.csv",
+  "tubes.csv",
   boroughs    = "Wandsworth",
   title       = "Wandsworth NO2, 2017-2024", # NEW: banner text
   output_file = "wandsworth_no2.html"        # NEW: file written to aq_maps/
@@ -194,7 +194,7 @@ map below:
 
 ```{r labels}
 quickmap(
-  "wandsworth_2017_2024_csv.csv",
+  "tubes.csv",
   boroughs      = "Wandsworth",
   title         = "Wandsworth NO2, 2017-2024",
   marker_labels = TRUE                       # NEW: values appear on hover
@@ -216,9 +216,9 @@ symbols in the title turns the banner into a key:
 ```{r networks}
 quickmap(
   list(
-    "merton_dt_2018_2024.csv",                             # diffusion tubes
-    "bl_imperial_annualised_2021_2025_with_missing.Rdata", # sensor network
-    "schools_Merton.csv"                                   # school locations
+    "tubes_merton.csv",                             # diffusion tubes
+    "sensors.RData", # sensor network
+    "schools.csv"                                   # school locations
   ),
   boroughs = "Merton",
   title = "Merton NO2: ● tubes ◆ sensors ✖ schools" # NEW: symbols as a key
@@ -247,7 +247,7 @@ with the round button, or drag the slider to any hour:
 
 ```{r animation}
 quickmap(
-  from_rdata("episodeJan15-20_2024_sf_all.Rdata", # hourly sensor export
+  from_rdata("episode.RData", # hourly sensor export
              "pm25",                              # pollutant to map
              name = "Sensors"),                   # layer name for the map
   boroughs     = c("Wandsworth", "Richmond"),     # two boundaries
@@ -277,7 +277,7 @@ slider:
 heathrow <- from_worldmet(station = "037720-99999", # Heathrow station id
                           year = 2024)              # fetches from NOAA
 quickmap(
-  from_rdata("episodeJan15-20_2024_sf_all.Rdata", "pm25", name = "Sensors"),
+  from_rdata("episode.RData", "pm25", name = "Sensors"),
   boroughs     = c("Wandsworth", "Richmond"),
   colour_scale = "stripes_pm25",
   title        = "PM2.5 Episode with wind: Jan 15-20, 2024",

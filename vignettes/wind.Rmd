@@ -20,7 +20,7 @@ library(quickmap)                          # load the quickmap library
 heathrow <- from_worldmet(station = "037720-99999", # Heathrow station id
                           year = 2024)              # fetches from NOAA
 quickmap(
-  from_rdata("episodeJan15-20_2024_sf_all.Rdata", "pm25", name = "Sensors"),
+  from_rdata("episode.RData", "pm25", name = "Sensors"),
   boroughs     = c("Wandsworth", "Richmond"),
   colour_scale = "stripes_pm25",
   autoplay     = TRUE,
@@ -57,7 +57,7 @@ my_wind <- data.frame(
   wd   = 225                               # degrees (from the south-west)
 )
 quickmap(
-  from_rdata("episodeJan15-20_2024_sf_all.Rdata", "pm25", name = "Sensors"),
+  from_rdata("episode.RData", "pm25", name = "Sensors"),
   boroughs = c("Wandsworth", "Richmond"),
   wind     = my_wind
 )
@@ -74,15 +74,16 @@ The theme's `wind:` section controls the look
 
 ```yaml
 wind:
-  colour_ramp: ["#3288bd", "#66c2a5", "#abdda4",   # blue -> red with speed
-                "#fee08b", "#f46d43", "#d53e4f"]
-  particle_density: 0.002
-  line_width: 1
+  colour_ramp: ["#4575b4", "#74add1", "#8fc3a7",   # blue -> red with speed
+                "#fdae61", "#f46d43", "#d73027"]
+  particle_density: 0.0033
+  line_width: 1.5
   velocity_scale: 0.01
 ```
 
-The default ramp colours particles by wind speed. On busy backgrounds a
-darker single-colour ramp or a heavier `line_width` stands out more.
+The default ramp colours particles by wind speed, starting at a visible
+mid-blue so calm periods still read. On very busy backgrounds a darker
+single-colour ramp or a heavier `line_width` stands out more.
 
 ## 4. Limits worth knowing
 

@@ -23,9 +23,9 @@ report — the standard local-authority deliverable:
 library(quickmap)                          # load the quickmap library
 quickmap(
   list(
-    "merton_dt_2018_2024.csv",                             # diffusion tubes
-    "bl_imperial_annualised_2021_2025_with_missing.Rdata", # sensor network
-    "schools_Merton.csv"                                   # schools
+    "tubes_merton.csv",                             # diffusion tubes
+    "sensors.RData", # sensor network
+    "schools.csv"                                   # schools
   ),
   boroughs      = "Merton",
   title         = "Merton NO2: ● tubes ◆ sensors ✖ schools",
@@ -47,7 +47,7 @@ Hourly sensor data across two boroughs, autoplaying, with wind:
 ```{r recipe-episode, purl = FALSE}
 heathrow <- from_worldmet(station = "037720-99999", year = 2024)
 quickmap(
-  from_rdata("episodeJan15-20_2024_sf_all.Rdata", "pm25", name = "Sensors"),
+  from_rdata("episode.RData", "pm25", name = "Sensors"),
   boroughs     = c("Wandsworth", "Richmond"),
   colour_scale = "stripes_pm25",
   title        = "PM2.5 Episode: Jan 15-20, 2024",
@@ -67,9 +67,9 @@ context layer):
 ```{r recipe-proposed}
 quickmap(
   list(
-    "wandsworth_2017_2024_csv.csv",        # existing tubes
-    "bl_imperial_annualised_2021_2025_with_missing.Rdata", # existing sensors
-    "wandsworth_proposed_sensors.csv"      # proposed sites (static CSV;
+    "tubes.csv",        # existing tubes
+    "sensors.RData", # existing sensors
+    "proposed_sites.csv"      # proposed sites (static CSV;
                                            # its School column supplies names)
   ),
   boroughs      = "Wandsworth",

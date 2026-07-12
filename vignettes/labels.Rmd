@@ -18,7 +18,7 @@ appears:
 ```{r hover-values}
 library(quickmap)                          # load the quickmap library
 quickmap(
-  "wandsworth_2017_2024_csv.csv",
+  "tubes.csv",
   boroughs      = "Wandsworth",
   marker_labels = TRUE                     # values appear on hover
 )
@@ -43,7 +43,7 @@ public page — show the values permanently:
 
 ```{r values-on}
 quickmap(
-  "wandsworth_2017_2024_csv.csv",
+  "tubes.csv",
   boroughs      = "Wandsworth",
   marker_labels = "values_on"              # NEW: values always shown
 )
@@ -58,7 +58,7 @@ parameter, just the right column:
 
 ```{r names}
 quickmap(
-  list("wandsworth_2017_2024_csv_full_labels.csv", # tubes WITH a Label column
+  list("tubes_labelled.csv", # tubes WITH a Label column
        "schools_wandsworth.csv"),                  # schools (School column)
   boroughs      = "Wandsworth",
   marker_labels = "labels"                 # NEW: names on hover

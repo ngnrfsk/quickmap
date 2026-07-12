@@ -20,8 +20,8 @@ a single file, or a list:
 ```{r two-lines}
 library(quickmap)                          # load the quickmap library
 quickmap(
-  list("merton_dt_2018_2024.csv",          # diffusion tube data
-       "schools_Merton.csv"),              # school locations
+  list("tubes_merton.csv",          # diffusion tube data
+       "schools.csv"),              # school locations
   boroughs = "Merton"                      # the borough boundary to draw
 )
 ```
@@ -42,9 +42,9 @@ putting more sources on one map — just extend the list:
 ```{r three-layers}
 quickmap(
   list(
-    "merton_dt_2018_2024.csv",                            # tubes -> circles
-    "bl_imperial_annualised_2021_2025_with_missing.Rdata", # sensors -> diamonds
-    "schools_Merton.csv"                                   # schools -> crosses
+    "tubes_merton.csv",                            # tubes -> circles
+    "sensors.RData", # sensors -> diamonds
+    "schools.csv"                                   # schools -> crosses
   ),
   boroughs = "Merton",                     # the borough boundary to draw
   title = "Merton NO2: ● tubes ◆ sensors ✖ schools" # symbols key the banner
@@ -67,9 +67,9 @@ name yourself, build the layer with `from_csv()` instead of a bare path:
 ```{r named-layer}
 quickmap(
   list(
-    from_csv("merton_dt_2018_2024.csv",
+    from_csv("tubes_merton.csv",
              name = "Council tubes"),      # your name, not the filename
-    "schools_Merton.csv"                   # untouched layers stay as paths
+    "schools.csv"                   # untouched layers stay as paths
   ),
   boroughs = "Merton"
 )
@@ -85,7 +85,7 @@ Sensor files usually carry several pollutants; the second argument of
 
 ```{r rdata-pollutant}
 quickmap(
-  from_rdata("bl_imperial_annualised_2021_2025_with_missing.Rdata",
+  from_rdata("sensors.RData",
              "pm25",                       # the pollutant column to map
              name = "Breathe London"),
   boroughs = "Merton",
@@ -144,7 +144,7 @@ When two layers would otherwise look alike, give one a different symbol:
 ```{r choose-shape}
 quickmap(
   list(
-    from_csv("merton_dt_2018_2024.csv",
+    from_csv("tubes_merton.csv",
              name = "Council tubes"),      # circles (the tube default)
     qm_layer(my_sites,
              shape = "star",               # this layer draws as stars

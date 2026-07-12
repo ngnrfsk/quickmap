@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.9.7
+### Current Version: 0.9.9.8
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -374,6 +374,7 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.9.5**: UI visual polish (item 10, user-approved design): slim "strip" banner default (`banner.style: strip|bar` theme key), thin colour-ramp legend with labels outside the colours and the footnote key as pills, neutral chrome with brand-colour accents, system font stack, `CartoDB.Positron` default tiles, bottom time-slider control with fine-step arrows/drag scrubbing/keyboard (`inst/controls/time-slider.*`, replacing the roller menu), wind-particle styling exposed through theme YAML (`wind:` section, speed-ramp default), and the static-export chrome-scaling repair (root font-size scaling)
 -   **v0.9.9.6**: `boroughs` is optional (user decision 2026-07-10, reversing the 07-10 morning decision): NULL (now the default) draws no boundary, disables the vignette and fits the viewport to the data — a one-argument `quickmap("data.csv")` call works
 -   **v0.9.9.7**: default base tiles reverted to OSM (user decision 2026-07-11): the vignette dimming is too faint on the pale CartoDB.Positron tiles that v0.9.9.5 made the default; Positron remains a one-line theme option (`map.base_tiles`)
+-   **v0.9.9.8**: small fixes from the traced API catalogue (dev/260712_api_catalogue_v1.md): non-matching `display_times` now warns naming the available steps; `styling_type` validated against "html"/"none"; roxygen corrected (output_file used verbatim; data_symbols accepts all 18 renderer names)
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 

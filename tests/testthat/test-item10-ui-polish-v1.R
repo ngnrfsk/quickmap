@@ -32,13 +32,14 @@ test_that("default theme: OSM tiles, strip banner, wind styling block", {
   expect_null(theme$map$base_tiles)
   expect_equal(theme$banner$style, "strip")
   expect_equal(length(theme$wind$colour_ramp), 6)
-  expect_equal(theme$wind$particle_density, 1 / 500)
+  expect_equal(theme$wind$particle_density, 1 / 300)
 })
 
 test_that("wind_style_options applies theme overrides over speed-ramp defaults", {
   defaults <- quickmap:::wind_style_options(NULL)
-  expect_equal(unclass(defaults$colorScale)[1], "#3288bd")
-  expect_equal(defaults$particleMultiplier, 1 / 500)
+  # visibility-tuned defaults (2026-07-12): darker low-speed blue, denser
+  expect_equal(unclass(defaults$colorScale)[1], "#4575b4")
+  expect_equal(defaults$particleMultiplier, 1 / 300)
 
   custom <- quickmap:::wind_style_options(list(
     line_width = 2, colour_ramp = c("#111111", "#222222")
