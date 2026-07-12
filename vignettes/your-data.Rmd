@@ -84,9 +84,10 @@ layout — one row per site per time step:
 *Minimum required: `siteCode`, `lat`, `lon` (WGS84), a time column
 (`year`, `date` or `year_str`) and the pollutant column you name.*
 
-- QuickMap searches the file for a compatible data frame by its columns
-  (standard object names first, then the largest match) — the object's
-  name doesn't matter.
+- QuickMap finds a compatible data frame inside the file by its columns:
+  standard object names are checked first, then the largest match — so
+  any object name works, and `from_rdata(data_object_name = )` picks one
+  explicitly.
 - Datetime columns set the animation's resolution automatically: hourly
   data animates hourly, annual data annually
   ([Time and animation](time.html)).

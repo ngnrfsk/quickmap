@@ -58,9 +58,9 @@ parameter, just the right column:
 
 ```{r names}
 quickmap(
-  list("merton_dt_2018_2024.csv",
-       "schools_Merton.csv"),
-  boroughs      = "Merton",
+  list("wandsworth_2017_2024_csv_full_labels.csv", # tubes WITH a Label column
+       "schools_wandsworth.csv"),                  # schools (School column)
+  boroughs      = "Wandsworth",
   marker_labels = "labels"                 # NEW: names on hover
 )
 ```
