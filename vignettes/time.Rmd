@@ -19,7 +19,7 @@ its own resolution (hourly, daily, monthly). Nothing to configure:
 ```{r animation}
 library(quickmap)                          # load the quickmap library
 quickmap(
-  from_rdata("episodeJan15-20_2024_sf_all.Rdata", # hourly sensor export
+  from_rdata("episode.RData", # hourly sensor export
              "pm25", name = "Sensors"),
   boroughs     = c("Wandsworth", "Richmond"),
   colour_scale = "stripes_pm25",
@@ -44,7 +44,7 @@ way the data writes them:
 
 ```{r subset}
 quickmap(
-  "wandsworth_2017_2024_csv.csv",
+  "tubes.csv",
   boroughs      = "Wandsworth",
   display_times = 2020:2022                # NEW: three of the eight years
 )

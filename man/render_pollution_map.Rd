@@ -33,12 +33,17 @@ or RData (sensor data). Prepends DATA_PATH if set.}
 
 \item{data_ids}{Character vector of layer IDs (default: NULL, auto-generated from filenames).}
 
-\item{data_symbols}{Character vector of marker symbols (default: NULL, auto-cycles through defaults).
-Valid: "circle", "diamond", "cross", "square", "triangle", "star", "plus".}
+\item{data_symbols}{Character vector of marker symbols, one per layer
+(default: NULL — layer shape metadata, else the automatic cycle).
+Accepts the friendly names "circle", "diamond", "cross", "square",
+"triangle", "star", "plus" and every renderer symbol name (18 in all;
+an unknown name errors with the full list).}
 
 \item{data_dynamic}{Logical vector indicating temporal (TRUE) vs static (FALSE) layers (default: NULL, auto-detected).}
 
-\item{output_file}{Output filename (without extension). Saved to 'aq_maps/' directory.}
+\item{output_file}{Output file name, used verbatim (include the .html
+extension). Saved to the 'aq_maps/' directory; NULL returns the widget
+without writing a file.}
 
 \item{export_image}{NULL (no export), TRUE (export 1200x1200), or c(width, height) vector for custom dimensions.}
 

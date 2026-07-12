@@ -23,7 +23,7 @@ for when you have no file at all.
 
 ```{r csv, purl = FALSE}
 library(quickmap)                           # load the quickmap library
-quickmap("~/my_data/wandsworth_2017_2024_csv.csv")  # tubes -> a map
+quickmap("~/my_data/tubes.csv")  # tubes -> a map
 ```
 
 | Easting | Northing | 2017 | 2018 | ... | 2024 | Label |
@@ -45,8 +45,8 @@ fine: the site sits that year out.*
 
 ```{r schools, purl = FALSE}
 quickmap(
-  list("~/my_data/merton_dt_2018_2024.csv",
-       "~/my_data/schools_Merton.csv"),     # context layer on top
+  list("~/my_data/tubes_merton.csv",
+       "~/my_data/schools.csv"),     # context layer on top
   boroughs = "Merton"
 )
 ```
@@ -66,7 +66,7 @@ schools categorically with the `schools` colour scale.*
 ```{r rdata}
 library(quickmap)
 quickmap(
-  from_rdata("bl_imperial_annualised_2021_2025_with_missing.Rdata",
+  from_rdata("sensors.RData",
              "no2",                          # the pollutant column to map
              name = "Breathe London"),
   boroughs = "Merton"

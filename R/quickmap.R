@@ -1145,12 +1145,14 @@ get_default_theme <- function() {
     ),
     # Item 10: wind-particle styling, threaded into the leaflet-velocity
     # payload (see build_wind_payload). colour_ramp maps to colorScale,
-    # particle_density to particleMultiplier.
+    # particle_density to particleMultiplier. Defaults tuned 2026-07-12:
+    # calm episodes sit at the ramp's low end, so it starts at a visible
+    # mid-blue, with heavier lines and more particles for busy basemaps.
     wind = list(
-      colour_ramp = c("#3288bd", "#66c2a5", "#abdda4", "#fee08b",
-                      "#f46d43", "#d53e4f"),
-      particle_density = 1 / 500,
-      line_width = 1,
+      colour_ramp = c("#4575b4", "#74add1", "#8fc3a7", "#fdae61",
+                      "#f46d43", "#d73027"),
+      particle_density = 1 / 300,
+      line_width = 1.5,
       velocity_scale = 0.01
     )
   )
@@ -2819,6 +2821,13 @@ determine_times_and_viewport <- function(
     } else {
       intersect(requested_times, available_times)
     }
+    if (length(display_times) == 0) {
+      warning(
+        "None of the requested display_times match the data. Available: ",
+        paste(sort(available_times), collapse = ", "),
+        call. = FALSE
+      )
+    }
   }
 
   list(
@@ -2837,10 +2846,15 @@ determine_times_and_viewport <- function(
 #' @param data_sources List of file paths or sf objects. Files can be CSV (diffusion tubes, schools)
 #'   or RData (sensor data). Prepends DATA_PATH if set.
 #' @param data_ids Character vector of layer IDs (default: NULL, auto-generated from filenames).
-#' @param data_symbols Character vector of marker symbols (default: NULL, auto-cycles through defaults).
-#'   Valid: "circle", "diamond", "cross", "square", "triangle", "star", "plus".
+#' @param data_symbols Character vector of marker symbols, one per layer
+#'   (default: NULL — layer shape metadata, else the automatic cycle).
+#'   Accepts the friendly names "circle", "diamond", "cross", "square",
+#'   "triangle", "star", "plus" and every renderer symbol name (18 in all;
+#'   an unknown name errors with the full list).
 #' @param data_dynamic Logical vector indicating temporal (TRUE) vs static (FALSE) layers (default: NULL, auto-detected).
-#' @param output_file Output filename (without extension). Saved to 'aq_maps/' directory.
+#' @param output_file Output file name, used verbatim (include the .html
+#'   extension). Saved to the 'aq_maps/' directory; NULL returns the widget
+#'   without writing a file.
 #' @param export_image NULL (no export), TRUE (export 1200x1200), or c(width, height) vector for custom dimensions.
 #' @param boroughs Borough name(s) for boundary display. NULL (default) draws
 #'   no boundary and fits the map to the data.
@@ -2918,6 +2932,9 @@ render_pollution_map <- function(
   theme_file = NULL,
   wind = NULL
 ) {
+  if (!styling_type %in% c("html", "none")) {
+    stop('styling_type must be "html" or "none".', call. = FALSE)
+  }
   c(image_export, map_width_px, map_height_px) %<-%
     parse_export_params(export_image)
   show_banner <- (styling_type == "html")
