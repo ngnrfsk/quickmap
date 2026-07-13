@@ -63,6 +63,20 @@ NSE false-positives from dplyr/data.table code (`siteCode`, `year`,
   tags are the real fix).
 - Full docs-vs-code audit and dev/PROJECT_STATUS.md restructure
   (current-state section + archived history), per the roadmap item text.
+  (Restructure done early, 2026-07-13 — plain-language rewrite; the
+  docs-vs-code audit remains, with dev/260712_api_catalogue_v1.md as its
+  worklist.)
+- Ship small teaching-data extracts inside the package (inst/extdata) so
+  manual examples and R CMD CHECK examples run on any machine — the
+  second half of template principle P7; the DATA_PATH copies
+  (scripts/manual_data_v3.R) are the interim.
+- pkgdown renders the top-level CLAUDE.md into the built site
+  (docs/CLAUDE.html) — exclude it before the site is ever deployed
+  publicly.
+- `marker_labels` → `symbol_labels` rename with the old name aliased
+  (aligns API with the "symbols" terminology; also resolves the
+  marker_labels/data_symbols inconsistency). USER DECISION — on the
+  PROJECT_STATUS ledger.
 
 ## Suggested fix order (each with full gate)
 
