@@ -1,234 +1,123 @@
 ---
-editor_options: 
-  markdown: 
+editor_options:
+  markdown:
     wrap: 80
 ---
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-11 **Current Working Version**: v0.9.9.7 **Branch**: feature/manual-phase2
+**Last Updated**: 2026-07-13 **Current Version**: v0.9.9.8
 
 --------------------------------------------------------------------------------
 
-### Manual phases 2+3: the complete manual — 2026-07-11 (PR pending)
+## Where the project stands
 
-Branch `feature/manual-phase2` (off main after PR #36 merged; phase 1 was
-approved by the user after seven review rounds that also produced
-template principles P8–P22 — see dev/260708..260711_page_template_review
-docs — and two code changes: boroughs optional in v0.9.9.6, OSM default
-tiles restored in v0.9.9.7).
+QuickMap is at v0.9.9.8, close to v1.0. Working and signed off: the new
+map look (white title strip, colour-ramp legend, draggable time slider),
+optional borough boundaries, per-layer symbol choice, the wind overlay,
+small email-able animations, and a complete ten-chapter user manual
+built as a website with live example maps.
 
-**Nine new chapters** (vignettes/*.Rmd), written to P1–P22 with live
-embedded maps, grouped in the navbar: *Working with maps* — your-data
-(incl. the §2a OpenAir extraction section: importUKAQ, importImperial,
-from_worldmet, all harness-run), layers, labels, boundaries, styling;
-*Animation and beyond* — time, wind, sharing; *Going further* — recipes
-(4 copy-paste jobs incl. live fetch-to-map), r-users (qm_layer contract,
-time grammar, wrapper note). Legacy .md vignettes retired to
-vignettes/archive/ (quickmap_reference.md fully absorbed).
-scripts/manual_assets_v4.R generates all 17 embedded maps.
+**Waiting on Iarla:**
 
-Verification: chunk harness ALL OK across all 11 pages (incl. network
-chunks); pkgdown build clean; gate 283 pass / 0 fail / 0 skip.
+1. Review and approve the complete manual (PR #37 —
+   https://github.com/ngnrfsk/quickmap/pull/37; read it at
+   file:///Users/iarla/Coding/quickmap/docs/index.html or iCloud Drive →
+   dev → pr31_manual_review).
+2. Decide whether to rename `marker_labels` to `symbol_labels` (old name
+   kept working) during the final tidy-up.
 
-### Manual phase 1 v3 (PR replaces #33): pages rebuilt to P8–P15 on post-item-10 main — 2026-07-10 (PR pending)
+**Left before v1.0:** the final code tidy-up (roadmap item 9: make the
+package pass R's formal check, five known small issues listed in
+dev/260708_item9_check-baseline_v1.md) and the known screen-defect list
+(roadmap item 11, below), which now includes stopping maps from burning
+CPU when they're in a background tab.
 
-Branch `feature/manual-phase1-v3` (off main after PR #35; the v2 branch
-predated items 9/10 and `git merge` is not allowlisted, so files were
-re-carried — same manoeuvre as v1→v2). Carries all phase-1 content plus:
+--------------------------------------------------------------------------------
 
-- **Template principles P8–P15** (user-approved 2026-07-10, inferred from
-  the user's sub-edit of Get started — dev/260709_page_template_review_v3.md):
-  inline `#` comments on every code line, no product pitch, no
-  silently-rotting statements, sections ordered by necessity (DATA_PATH
-  after the first map), goal-named headings, motivate-then-show, input
-  shown as a table with a minimums caption, one vocabulary ("symbols").
-  P3′–P7 folded in too (P7 bundled data deferred to phase 2).
-  **F1 decided: `boroughs` stays required.** F2: tiles-need-internet
-  caveat stated.
-- **Get started rebuilt** from the user's sub-edited text: Install →
-  first map (full path, CSV shown as table) → DATA_PATH shortcut →
-  reading the map → add title/filename → **§6 sophisticated animation**
-  (user request: the page builds from the most basic map to the 108-step
-  hourly episode with autoplay; new figure getstarted-episode.png).
-- **Layers reworked** to the same principles (comments, goal headings,
-  motivations, "symbols" vocabulary).
-- All three screenshots regenerated with the v0.9.9.5 look
-  (scripts/manual_screenshots_v2.R).
+## Recent work, newest first
 
-Verification: chunk harness ALL OK (12 chunks incl. the animation and the
-live AURN fetch); pkgdown build clean; gate green on this branch (main's
-post-item-10 tests). iCloud pack refreshed. PR #33 closed as superseded.
+### 12–13 July — Manual corrections; a data file destroyed and restored
 
-### Roadmap item 10 (v0.9.9.5): UI visual polish implemented — 2026-07-09 (visually SIGNED OFF 2026-07-09 after two review rounds: vignette restored in demos, episode demo on OSM tiles; PR #35 awaiting merge)
+The manual's example files were renamed so the borough is part of every
+name (tubes_wandsworth.csv, schools_merton.csv, sensors_london.RData and
+so on) — Iarla's correction: the borough is important information. Five
+small bugs found by tracing the code were fixed (unhelpful silences now
+warn, two wrong help texts corrected). The wind particles missing from
+the manual's step-11 map were diagnosed in the browser and fixed: a
+crash inside the wind plugin was silently killing the animation, and the
+calm-week wind colours were too faint to see — both repaired, particles
+now clearly visible.
 
-Branch `feature/item10-ui-polish` (stacked on chore/item10-ui-review, which
-holds the element review, MCQ decisions and approved mock-ups). Design was
-user-approved 2026-07-09 against real-data mocks
-(aq_maps/item10_assembled-*.html); implementation plan
-dev/260709_item10_implementation_plan_v1.md. Pre-change quickmap.R archived
-as versions/quickmap_0_9_8_1.R.
+**Incident, disclosed:** while renaming, a script copied
+schools_Merton.csv onto schools_merton.csv — on a Mac those are the same
+file, so the original was wiped to zero bytes. It was fully restored
+from an old copy in the 241122 quickmap folder and the restoration is
+proven by the test suite (which counts exactly 53 schools on the
+reference map). The script now refuses any copy where the names differ
+only by capitalisation.
 
-**Stage 1 — CSS/theme surface:** "strip" banner default (white,
-left-aligned, brand rule; `banner.style: strip|bar` theme key, both modes),
-system font stack, thin colour-ramp legend (labels outside colours,
-footnote key as pills; generate_legend_html rewritten), neutral chrome
-(legend header white, brand tint on hover), default tiles CartoDB.Positron
-(OSM via theme), wind styling exposed through theme YAML (`wind:`
-colour_ramp/particle_density/line_width/velocity_scale →
-wind_style_options() → payload.style; speed-ramp default;
-wind-controller.js reads payload.style with fallbacks).
+*Detail: dev/archive/PROJECT_STATUS_technical_260707-13.md and the
+commits on branch feature/manual-phase2.*
 
-**Stage 2 — time slider:** inst/controls/time-slider.{html,css,js} replaces
-roller-menu.* (deleted): bottom-centre card, play + ‹ › fine-step buttons,
-pointer-capture drag scrubbing (passes instant=true so
-lazy-time-controller.js skips its 250 ms crossfade — new optional param),
-current-step label above thumb, Home/End/arrow keys, autoplay/play_speed,
-tab-hidden pause, single-step mode, image-mode static label pill;
-load_roller_menu_control() → load_time_slider_control() ({{placeholder}}
-CSS). Same integration contract (quickmapTimeController / layer cache /
-wind controller).
+### 11 July — The complete manual
 
-**Stage 3 — static export scaling repaired** (bug logged 2026-07-05):
-the inert regex substitutions replaced by root font-size scaling
-(`html { font-size: 16*sf px }`) — all chrome is rem-based so banner,
-legend and time label scale together; legend-image.css rewritten for the
-ramp (700px vs 2000px exports verified proportionate).
+Nine new chapters joined the approved Get started and Layers pages:
+Your data, Labels, Boundaries, Styling and themes, Time and animation,
+Wind, Sharing and export, Recipes, and a page for experienced R users.
+Every chapter embeds real working maps you can click and play; every
+code example was executed against real data before publishing. The four
+old documentation notes were retired to an archive folder. Open as
+PR #37, awaiting Iarla's review.
 
-**Verified in Chrome** (localhost, episode map): drag scrubbing updates
-markers live with the step label, play/pause animates and icon toggles,
-speed-ramp wind advances with the slider, zero console errors on load or
-interaction.
+Also on 11 July, from Iarla's page reviews: examples regrouped into two
+step-by-step builds (a report map, then an animation), a static-export
+step and a labels step added, symbols put into banner titles as a key,
+and two writing rules adopted — say only what the shown map actually
+does, and give a feature its own chapter when it's complex enough (the
+test that promoted Labels and Boundaries to chapters).
 
-**Deliberate characterization changes (flagged in tests):** default tiles
-addTiles→addProviderTiles (annual + item4 tests); yearList→sliderTrack
-(control block test). New tests: tests/testthat/test-item10-ui-polish-v1.R
-(banner styles, ramp structure incl. symbols, theme defaults, wind style
-merge). Gate: **278 pass / 0 fail / 0 skip**; smoke OK; consistency green.
+*Detail: the archive file above; principles in
+dev/260708..0711_page_template_review_v1..v4.md.*
 
-**Demo maps** (scripts/item10_demo-maps_v1.R): item10_final-annual_v1.html
-(all defaults), item10_final-episode-wind_v1.html (108-step slider +
-speed-ramp Heathrow wind, autoplay), item10_final-bar-osm_v1.html (the
-XOR theme options: bar banner + OSM tiles). Static exports:
-item10_stage3-export-{700,2000}_2022.jpg. Compare with approved mocks
-item10_assembled-*.html and baseline_260707_item8_signed_off/.
-**PR blocks on human visual sign-off** (rendering-touching).
+### 10 July — Two decisions changed the code
 
-### Item 9 partial fix (v0.9.8.1): qm_layer shape metadata wired to renderer — 2026-07-08 (visually signed off 2026-07-08; PR #32 awaiting merge)
+Iarla reversed the morning's decision: `boroughs` is now optional — a
+one-line quickmap("data.csv") works, with the view fitted to the data
+(v0.9.9.6). And the default background map went back to OpenStreetMap
+(v0.9.9.7): the boundary vignette was too faint on the pale tiles that
+the redesign had chosen; the pale look stays available as a one-line
+theme option.
 
-Branch `feature/item9-layer-shapes`. Resolves the gap found during manual
-phase 1 (user approved option (a), 2026-07-08): `qm_layer(shape=)` was
-recorded but never consumed — shapes came only from
-`get_measurement_layers()`'s auto-cycle or map-level `data_symbols`.
+### 9 July — The new look (roadmap item 10, v0.9.9.5) — signed off
 
-**What changed (R/ code; v0.9.7-era quickmap.R archived as
-versions/quickmap_0_9_8.R):**
+The redesign Iarla approved from mock-ups was built for real: white
+title strip (colour bar still available), thin colour-ramp legend,
+draggable bottom time slider replacing the old dropdown (drag to scrub,
+arrows for one step, play button), neutral colours with the borough
+colour as accent, wind-particle styling moved into theme files, and a
+long-standing bug fixed so exported JPGs scale their text with the image
+size. Verified live in a browser and signed off after two rounds
+(vignette restored in the demos; the long animation shown on OSM).
+Merged as PR #35.
 
-- `quickmap()` now derives per-layer symbols from `qm_meta(layer)$shape`
-  when `data_symbols` is not given (qm "cross" maps to the outline
-  "simple-cross" renderer symbol). Precedence: **data_symbols > layer
-  shape metadata > auto-cycle**.
-- `qm_layer(shape=)` default changed from "circle" to **NULL = auto** (so
-  hand-built layers keep cycling unless the user chooses); explicit
-  shapes validated against circle/diamond/cross. `from_csv()` static
-  non-school layers now leave shape NULL (previously a misleading
-  "circle" that was never used); tubes stay explicit circle, schools
-  cross, `from_rdata()`/`from_openair()` diamond.
-- `get_measurement_layers()` treats NA entries in data_symbols as unset
-  (falls to the cycle).
+### 8 July — Symbol settings actually work now (v0.9.8.1) — signed off
 
-**Deliberate rendering change (needs human sign-off):** default multi-layer
-maps now follow the long-documented convention — tubes circles, sensor
-networks **diamonds** (previously squares/rect from the cycle), schools
-**simple-cross ✖** (previously simple-plus). The episode map's BL sensors
-change circles → diamonds. Demo maps (scripts/item9_demo-maps_v1.R):
-aq_maps/item9_merton-shapes_v1.html and item9_episode-diamonds_v1.html,
-compared against baseline_260707_item8_signed_off/. Agent-side webshot
-check confirms circles/diamonds/crosses render.
+Writing the manual exposed that choosing a symbol on a layer
+(qm_layer(shape = "diamond")) did nothing — the setting was recorded and
+ignored. Fixed: layer symbol choices now reach the map, the documented
+convention holds (tubes circles, sensors diamonds, schools crosses), and
+all 18 symbol names work with friendly spellings. Merged as PR #32.
 
-**Widened 2026-07-08 (same PR, user request):** `qm_layer(shape=)` accepts
-the full renderer vocabulary, not just circle/diamond/cross — friendly
-names (square, star, plus, cross, triangle…) normalise via
-`QM_SHAPE_ALIASES`/`qm_normalise_shape()` to renderer-canonical names
-(square→rect, cross→simple-cross, star→simple-star, plus→simple-plus);
-any exact renderer name passes through; unknown names error with the full
-list. Shapes are stored canonical, so quickmap() passes them straight
-through. Demo: aq_maps/item9_custom-shapes_v1.html (star/square/triangle/
-plus, webshot-verified; script bumped to scripts/item9_demo-maps_v2.R).
+### 7 July — Examples brought up to date (roadmap item 8) — merged
 
-**Tests:** new tests/testthat/test-item9-layer-shapes-v1.R (meta shapes
-honoured, data_symbols precedence, cross→simple-cross + nonsolid, NULL
-default, invalid shape rejected, alias normalisation, full-vocabulary
-payload). Updated expectations flagged as
-deliberate: test-item6 forced-lazy shapes c("circle","rect") →
-c("circle","diamond"); test-qm-layer default shape NULL + print "(auto
-shape)". Gate: **250 pass / 0 fail / 0 skip**; smoke OK. Version
-0.9.8.1 in DESCRIPTION + CLAUDE.md (consistency test green).
+Every example script and documentation note was moved to the current
+quickmap() interface and actually run against the test data; two example
+scripts that could never have run as committed were fixed. Proven safe:
+the canonical animation renders byte-for-byte identically through the
+new interface. Merged as PR #29.
 
-**Follow-ups:** PR #31's Layers page documents the old behaviour — update
-its "Full detail" shape bullet and regenerate the multi-layer screenshot
-after both PRs merge (manual phase 2 will do this if not sooner). The
-remaining item-9 work (R CMD CHECK, @keywords internal sweep, full docs
-audit) is untouched.
-
-### Roadmap item 8 complete: examples migrated and validated — 2026-07-07 (accepted by user; PR #29 awaiting merge)
-
-Branch `feature/item8-examples`. Docs/examples only — **no R/ code changed, so
-the version stays at v0.9.8** (no archive to versions/ needed). Classified
-**non-rendering**: the merge bar is green automated tests + visually unchanged
-output, proven mechanically — the migrated canonical episode call
-(`quickmap()` + `from_rdata(name = "bl_sensors")`) renders **byte-identically**
-to the historic `create_pollution_map()` form (915,422 bytes, identical after
-normalising the random htmlwidgets element id, which differs between any two
-runs of any form).
-
-**inst/examples/ migrated and RUN against DATA_PATH fixtures:**
-
-- `episode_example.R` (canonical animation example) — `library(quickmap)` +
-  `quickmap()`; fixture-prep block now guarded by `file.exists()` (fixtures
-  exist, so runs skip it; prep borrows internal `quickmap:::get_boundary_sf`).
-  map1 now uses the script's own Jan-15-20 Richmond fixture (the old call
-  pointed at the differently-windowed `episodeJan2024_sf_Richmond.Rdata` —
-  an inconsistency, now fixed). Commented-out wind variant added (Heathrow
-  037720-99999, requireNamespace-guarded). Ran clean.
-- `test_episode_example.R` (Jan 12-20 variant) — same treatment; ran clean
-  (180 steps → lazy path).
-- `quickmap_create_RSP_maps.R` — 6 maps migrated to `quickmap()` with plain
-  file-path layers (auto names/shapes). Fixed two latent breakages: map1
-  passed nonexistent parameter `theme = "airstat"` (would error — script was
-  unrunnable as committed) and map4 referenced placeholder file
-  `your_schools_Merton.csv`. All 6 maps ran clean ("no Label column" warnings
-  are pre-existing data-driven behaviour).
-- `quickmap_create_wandsworth_new_sensors.R` — migrated, ran clean.
-- `missing_data_stats.R`, `prepare_bl_data_with_missing.R` — data-prep, no
-  QuickMap API calls: header annotation only (noting their stale hardcoded
-  paths), not migrated, not run.
-
-**Vignettes:** `quickmap_reference.md` refreshed to v0.9.8 (wind section,
-lazy-loading/200-step-cap note, stripes_pm25 + airstat_no2 scales,
-output_file extension fact corrected against code, schools filename case).
-`251123_theme_system_guide.md` — examples moved off the pre-v0.9.2
-`diffusion_tube_file` parameter to `quickmap()`; dead references fixed.
-`251126_CONFIGS.md` — the documented `inst/config/data_sources/` YAML system,
-`data_configs`/`icon_shapes` parameters and `write_data_source_config()` do
-not exist in the code; marked HISTORICAL with a status note, code section
-rewritten to the current per-layer API, network reference material kept.
-`251029_MIGRATION_EXAMPLE_v0.9.0.md` — marked HISTORICAL. CLAUDE.md: fixed
-stale `source("inst/examples/create_all_borough_maps.R")` pointer
-(file does not exist) → `quickmap_create_RSP_maps.R`; test-consistency green.
-
-**New demo script** `scripts/item8_worked-examples_v1.R` (the runnable
-documentation of record) → aq_maps/: `item8_wandsworth-twoline_v1.html`
-(two-line call), `item8_merton-theme_v1.html` (multi-layer + merton theme),
-`item8_episode-lazy_v1.html` (108-step lazy animation),
-`item8_episode-wind_v1.html` (real Heathrow NOAA wind, 107/108 steps).
-Signed-off item6/item7 outputs preserved in
-`aq_maps/baseline_260707_item8_signed_off/` for comparison.
-
-**Gate:** 244 pass / 0 fail / 0 skip; smoke test OK (HTML + 3 JPGs);
-characterization suite untouched and green (helper deliberately keeps
-pinning `create_pollution_map()`). tests/test_*.R one-off scripts left as
-historical per CLAUDE.md.
+*Older entries below are unchanged.*
 
 ### Roadmap item 7 complete (v0.9.8): wind layer — 2026-07-07 (visually signed off, PR #26 merged)
 
