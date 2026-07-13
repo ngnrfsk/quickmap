@@ -21,7 +21,7 @@ a single file, or a list:
 library(quickmap)                          # load the quickmap library
 quickmap(
   list("tubes_merton.csv",          # diffusion tube data
-       "schools.csv"),              # school locations
+       "schools_merton.csv"),              # school locations
   boroughs = "Merton"                      # the borough boundary to draw
 )
 ```
@@ -43,8 +43,8 @@ putting more sources on one map — just extend the list:
 quickmap(
   list(
     "tubes_merton.csv",                            # tubes -> circles
-    "sensors.RData", # sensors -> diamonds
-    "schools.csv"                                   # schools -> crosses
+    "sensors_london.RData", # sensors -> diamonds
+    "schools_merton.csv"                                   # schools -> crosses
   ),
   boroughs = "Merton",                     # the borough boundary to draw
   title = "Merton NO2: ● tubes ◆ sensors ✖ schools" # symbols key the banner
@@ -69,7 +69,7 @@ quickmap(
   list(
     from_csv("tubes_merton.csv",
              name = "Council tubes"),      # your name, not the filename
-    "schools.csv"                   # untouched layers stay as paths
+    "schools_merton.csv"                   # untouched layers stay as paths
   ),
   boroughs = "Merton"
 )
@@ -85,7 +85,7 @@ Sensor files usually carry several pollutants; the second argument of
 
 ```{r rdata-pollutant}
 quickmap(
-  from_rdata("sensors.RData",
+  from_rdata("sensors_london.RData",
              "pm25",                       # the pollutant column to map
              name = "Breathe London"),
   boroughs = "Merton",

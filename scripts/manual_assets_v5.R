@@ -19,25 +19,25 @@ emit <- function(f) {
 # Part 1 base: Wandsworth diffusion tubes ------------------------------------
 
 # 2. one argument, no boundary
-quickmap("tubes.csv",
+quickmap("tubes_wandsworth.csv",
          output_file = "getstarted-first.html")
 emit("getstarted-first.html")
 
 # 3. + boundary (vignette on by default)
-quickmap("tubes.csv",
+quickmap("tubes_wandsworth.csv",
          boroughs = "Wandsworth",
          output_file = "getstarted-boundary.html")
 emit("getstarted-boundary.html")
 
 # 4. vignette off, for contrast
-quickmap("tubes.csv",
+quickmap("tubes_wandsworth.csv",
          boroughs = "Wandsworth",
          vignette = FALSE,
          output_file = "getstarted-vignette-off.html")
 emit("getstarted-vignette-off.html")
 
 # 6. static export (one year -> one JPG)
-quickmap("tubes.csv",
+quickmap("tubes_wandsworth.csv",
          boroughs = "Wandsworth",
          display_times = "2024",
          export_image = c(1200, 900),
@@ -48,14 +48,14 @@ cat("getstarted-export.jpg",
     file.size("vignettes/maps/getstarted-export.jpg"), "bytes\n")
 
 # 8. + title and file name
-quickmap("tubes.csv",
+quickmap("tubes_wandsworth.csv",
          boroughs    = "Wandsworth",
          title       = "Wandsworth NO2, 2017-2024",
          output_file = "getstarted-titled.html")
 emit("getstarted-titled.html")
 
 # 8. + hover labels
-quickmap("tubes.csv",
+quickmap("tubes_wandsworth.csv",
          boroughs      = "Wandsworth",
          title         = "Wandsworth NO2, 2017-2024",
          marker_labels = TRUE,
@@ -66,8 +66,8 @@ emit("getstarted-labels.html")
 suppressWarnings(quickmap(
   list(
     "tubes_merton.csv",
-    "sensors.RData",
-    "schools.csv"
+    "sensors_london.RData",
+    "schools_merton.csv"
   ),
   boroughs = "Merton",
   title = "Merton NO2: ● tubes ◆ sensors ✖ schools",
@@ -79,7 +79,7 @@ emit("getstarted-networks.html")
 
 # 10. animation
 quickmap(
-  from_rdata("episode.RData", "pm25", name = "Sensors"),
+  from_rdata("episode_london.RData", "pm25", name = "Sensors"),
   boroughs     = c("Wandsworth", "Richmond"),
   colour_scale = "stripes_pm25",
   title        = "PM2.5 Episode: Jan 15-20, 2024",
@@ -98,7 +98,7 @@ if (requireNamespace("worldmet", quietly = TRUE)) {
   if (!is.null(heathrow)) {
     heathrow <- heathrow[format(heathrow$date, "%Y-%m") == "2024-01", ]
     quickmap(
-      from_rdata("episode.RData", "pm25",
+      from_rdata("episode_london.RData", "pm25",
                  name = "Sensors"),
       boroughs     = c("Wandsworth", "Richmond"),
       colour_scale = "stripes_pm25",
@@ -113,18 +113,18 @@ if (requireNamespace("worldmet", quietly = TRUE)) {
 }
 
 # Labels chapter ---------------------------------------------------------------
-quickmap("tubes.csv",
+quickmap("tubes_wandsworth.csv",
          boroughs = "Wandsworth", marker_labels = TRUE,
          output_file = "labels-hover.html")
 emit("labels-hover.html")
 
-quickmap("tubes.csv",
+quickmap("tubes_wandsworth.csv",
          boroughs = "Wandsworth", marker_labels = "values_on",
          output_file = "labels-values-on.html")
 emit("labels-values-on.html")
 
 quickmap(
-  list("tubes_labelled.csv", "schools_wandsworth.csv"),
+  list("tubes_wandsworth_labelled.csv", "schools_wandsworth.csv"),
   boroughs = "Wandsworth", marker_labels = "labels",
   output_file = "labels-names.html"
 )
@@ -132,7 +132,7 @@ emit("labels-names.html")
 
 # Boundaries chapter ------------------------------------------------------------
 quickmap(
-  from_rdata("sensors.RData", "no2",
+  from_rdata("sensors_london.RData", "no2",
              name = "Sensors"),
   boroughs = c("Merton", "Wandsworth"),
   output_file = "boundaries-two.html"
@@ -140,7 +140,7 @@ quickmap(
 emit("boundaries-two.html")
 
 quickmap(
-  from_rdata("sensors.RData", "no2",
+  from_rdata("sensors_london.RData", "no2",
              name = "Sensors"),
   boroughs = c("Merton", "Wandsworth"),
   boundary_labels = TRUE,
@@ -150,7 +150,7 @@ emit("boundaries-labelled.html")
 
 # Styling chapter ---------------------------------------------------------------
 quickmap(
-  from_rdata("sensors.RData", "pm25",
+  from_rdata("sensors_london.RData", "pm25",
              name = "Sensors"),
   boroughs = "Merton",
   colour_scale = "gla_pm25",
@@ -170,8 +170,8 @@ emit("styling-theme.html")
 suppressWarnings(quickmap(
   list(
     "tubes_merton.csv",
-    "sensors.RData",
-    "schools.csv"
+    "sensors_london.RData",
+    "schools_merton.csv"
   ),
   boroughs = "Merton",
   title = "Merton NO2: ● tubes ◆ sensors ✖ schools",

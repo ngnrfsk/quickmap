@@ -19,7 +19,7 @@ you can copy and edit.
 ```{r scale}
 library(quickmap)                          # load the quickmap library
 quickmap(
-  from_rdata("sensors.RData",
+  from_rdata("sensors_london.RData",
              "pm25",                       # a PM2.5 map...
              name = "Sensors"),
   boroughs     = "Merton",

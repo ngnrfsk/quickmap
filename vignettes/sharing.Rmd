@@ -36,7 +36,7 @@ Reports and slides need still images:
 ```{r export}
 library(quickmap)                          # load the quickmap library
 quickmap(
-  "tubes.csv",
+  "tubes_wandsworth.csv",
   boroughs      = "Wandsworth",
   display_times = "2024",                  # one step -> one image
   export_image  = c(1200, 900)             # JPG width x height, pixels
