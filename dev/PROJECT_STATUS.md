@@ -24,8 +24,10 @@ built as a website with live example maps.
    https://github.com/ngnrfsk/quickmap/pull/37; read it at
    file:///Users/iarla/Coding/quickmap/docs/index.html or iCloud Drive →
    dev → pr31_manual_review).
-2. Decide whether to rename `marker_labels` to `symbol_labels` (old name
-   kept working) during the final tidy-up.
+
+*(Decided 13 July: `marker_labels` will be renamed to `symbol_labels`
+with the old name kept working — happens in the final tidy-up,
+roadmap item 9.)*
 
 **Left before v1.0:** the final code tidy-up (roadmap item 9: make the
 package pass R's formal check, five known small issues listed in
