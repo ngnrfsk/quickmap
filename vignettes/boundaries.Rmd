@@ -18,7 +18,7 @@ everything else. Without one, the map simply fits the data:
 ```{r one-borough}
 library(quickmap)                          # load the quickmap library
 quickmap(
-  "tubes.csv",
+  "tubes_wandsworth.csv",
   boroughs = "Wandsworth"                  # the boundary to draw
 )
 ```
@@ -27,7 +27,7 @@ quickmap(
 
 ```{r two-boroughs}
 quickmap(
-  from_rdata("sensors.RData", "no2",
+  from_rdata("sensors_london.RData", "no2",
              name = "Sensors"),
   boroughs = c("Merton", "Wandsworth")     # NEW: two boundaries
 )
@@ -45,7 +45,7 @@ On a multi-area map, label the areas themselves:
 
 ```{r boundary-labels}
 quickmap(
-  from_rdata("sensors.RData", "no2",
+  from_rdata("sensors_london.RData", "no2",
              name = "Sensors"),
   boroughs = c("Merton", "Wandsworth"),
   boundary_labels = TRUE                   # NEW: area names on the map
@@ -63,7 +63,7 @@ map's theme ([Styling and themes](styling.html)).
 
 ```{r vignette-off}
 quickmap(
-  "tubes.csv",
+  "tubes_wandsworth.csv",
   boroughs = "Wandsworth",
   vignette = FALSE                         # NEW: no dimming outside
 )
@@ -76,7 +76,7 @@ the view fits the data — right for data that isn't about one
 administrative area:
 
 ```{r no-boundary}
-quickmap("tubes.csv")   # data-only map
+quickmap("tubes_wandsworth.csv")   # data-only map
 ```
 
 ## See also

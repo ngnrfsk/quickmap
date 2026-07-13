@@ -830,6 +830,14 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
     text, and legends
 10. Ward and Marker Labeling Consistency - Make ward and marker labels
     consistent between static and interactive maps
+11. Background CPU/memory (added 2026-07-12, user report — pre-1.0):
+    interactive maps keep animating when not visible, hogging CPU and
+    memory. Pause ALL animation work — wind particles, marker
+    crossfades, autoplay timers — when the page/tab is hidden
+    (visibilitychange; the slider's autoplay already does this) AND when
+    the map's container or embedding iframe is off-viewport
+    (IntersectionObserver in time-slider.js / wind-controller.js /
+    lazy-time-controller.js). Resume seamlessly on return.
 
 ### Medium Priority Issues
 

@@ -458,7 +458,12 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
     `inst/controls/wind-controller.js` (particle density, line width,
     colour ramp, velocity scale) through the theme YAML system alongside
     the other visual controls.
-11. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md (LCA visual
+11. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md
+    (including the background CPU/memory defect added 2026-07-12: HTML
+    maps must pause ALL animation work — wind particles, marker
+    crossfades, autoplay — when the page, tab or embedding iframe is
+    hidden or off-viewport, via visibilitychange + IntersectionObserver;
+    today's maps are a CPU and memory hog in the background) (LCA visual
     fixes, static-export subfolder generation, unified marker/text/legend scaling,
     ward/marker label consistency) — so v1.0 releases without known user-facing
     defects. Do not work on these earlier or piecemeal; they are the final

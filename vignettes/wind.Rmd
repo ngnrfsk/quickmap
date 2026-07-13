@@ -20,7 +20,7 @@ library(quickmap)                          # load the quickmap library
 heathrow <- from_worldmet(station = "037720-99999", # Heathrow station id
                           year = 2024)              # fetches from NOAA
 quickmap(
-  from_rdata("episode.RData", "pm25", name = "Sensors"),
+  from_rdata("episode_london.RData", "pm25", name = "Sensors"),
   boroughs     = c("Wandsworth", "Richmond"),
   colour_scale = "stripes_pm25",
   autoplay     = TRUE,
@@ -57,7 +57,7 @@ my_wind <- data.frame(
   wd   = 225                               # degrees (from the south-west)
 )
 quickmap(
-  from_rdata("episode.RData", "pm25", name = "Sensors"),
+  from_rdata("episode_london.RData", "pm25", name = "Sensors"),
   boroughs = c("Wandsworth", "Richmond"),
   wind     = my_wind
 )
