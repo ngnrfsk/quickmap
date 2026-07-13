@@ -75,8 +75,11 @@ NSE false-positives from dplyr/data.table code (`siteCode`, `year`,
   publicly.
 - `marker_labels` → `symbol_labels` rename with the old name aliased
   (aligns API with the "symbols" terminology; also resolves the
-  marker_labels/data_symbols inconsistency). USER DECISION — on the
-  PROJECT_STATUS ledger.
+  marker_labels/data_symbols inconsistency). **DECIDED 2026-07-13 (user,
+  option a): do the rename with the alias, in this item.** Scope when
+  implementing: parameter on quickmap()/create_pollution_map(), roxygen,
+  manual pages and theme key `map.marker_labels` (add `symbol_labels`
+  equivalent), deprecation-free alias behaviour, tests.
 
 ## Suggested fix order (each with full gate)
 
