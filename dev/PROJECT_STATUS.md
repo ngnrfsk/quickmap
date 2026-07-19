@@ -6,7 +6,7 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-13 **Current Version**: v0.9.9.8
+**Last Updated**: 2026-07-19 **Current Version**: v0.9.9.8
 
 --------------------------------------------------------------------------------
 
@@ -38,6 +38,16 @@ CPU when they're in a background tab.
 --------------------------------------------------------------------------------
 
 ## Recent work, newest first
+
+### 14–19 July — Housekeeping only; still waiting on the manual review
+
+No project code changed. A visual editor had silently re-wrapped two
+dev notes on saving — the reformat was reverted before commit, and
+editor workspace files are now ignored by git. The GitHub command-line
+tool was found signed in to the wrong account (parhillresearch), which
+made it unable to see this repository; it was switched back to ngnrfsk.
+The one open item is unchanged: Iarla to review the complete manual
+(PR #37) — see "Waiting on Iarla" above.
 
 ### 12–13 July — Manual corrections; a data file destroyed and restored
 
