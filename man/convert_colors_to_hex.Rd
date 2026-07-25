@@ -17,6 +17,8 @@ Convert R color names to hex codes
 }
 \seealso{
 Other colour: 
+\code{\link{assign_colour}()},
+\code{\link{get_colour_legend}()},
 \code{\link{get_contrast_text_color}()},
 \code{\link{lighten_color}()}
 }

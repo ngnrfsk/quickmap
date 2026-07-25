@@ -75,6 +75,9 @@ NULL uses all available periods from data. Must match year_str format in data.}
 \item{play_speed}{Milliseconds per year during animation. Default: NULL (uses theme).}
 
 \item{theme_file}{Path to YAML theme file (default: NULL). See inst/themes/ for examples.}
+
+\item{wind}{Wind data for the particle overlay: a \code{from_worldmet()}
+object or a data frame of date/ws/wd. Interactive HTML only.}
 }
 \value{
 Invisible Leaflet map object. Side effects: Saves HTML to \code{aq_maps/}.
@@ -86,7 +89,8 @@ schools overlay. Generates both interactive HTML maps and static JPG exports.
 }
 \details{
 \strong{Data Files:} CSV files (diffusion tubes, schools) require Easting/Northing columns.
-RData files (sensors) require 'dataOAformat' object. School data auto-detected by School column.
+RData files (sensors) are searched for a compatible data.frame by column, whatever the object
+is called (see \code{load_rdata_file()}). School data auto-detected by School column.
 
 \strong{Coordinates:} Input British National Grid (EPSG:27700), output WGS84 (EPSG:4326).
 

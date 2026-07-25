@@ -2,9 +2,15 @@
 # quickmap() is the core entry point consuming qm_layer atomic units;
 # create_pollution_map() is a thin compatibility wrapper over it.
 
-# Downgrade a qm_layer to the column names the render pipeline consumes
-# (year_str/siteCode/Longitude/Latitude). Purely additive: canonical columns
-# stay, so this disappears when the pipeline itself adopts the qm contract.
+#' Downgrade a qm_layer to the column names the render pipeline consumes
+#'
+#' The renderer predates the `qm_layer` contract and still reads `year_str`,
+#' `siteCode`, `Longitude` and `Latitude`. This adds those names alongside the
+#' canonical ones rather than replacing them, so nothing is lost and the whole
+#' function disappears once the renderer adopts the contract directly.
+#'
+#' @param layer A [qm_layer()] object
+#' @return An sf data.frame with the renderer's column names added
 #' @keywords internal
 qm_to_legacy <- function(layer) {
   m <- qm_meta(layer)
@@ -24,7 +30,16 @@ qm_to_legacy <- function(layer) {
   data
 }
 
-# Normalise one element of `layers` to a qm_layer
+#' Normalise one element of `layers` to a qm_layer
+#'
+#' `quickmap()` accepts a mixture of file paths, data frames and ready-made
+#' layers so that a beginner never has to construct anything; this is where
+#' that mixture becomes one type. A file path is routed by its extension.
+#'
+#' @param x A [qm_layer()], a CSV/RData file path, or a data.frame/sf object
+#' @param pollutant Pollutant name, passed to the file readers
+#' @param temporal Optional override of the time-varying guess for CSVs
+#' @return A [qm_layer()]
 #' @keywords internal
 as_qm_layer <- function(x, pollutant, temporal = NULL) {
   if (inherits(x, "qm_layer")) return(x)
@@ -129,6 +144,10 @@ quickmap <- function(
   data_symbols = NULL,
   wind = NULL
 ) {
+  # A single layer may be passed unwrapped — quickmap("data.csv") is the
+  # two-line call the package is built around. Note the data.frame test comes
+  # first: a data.frame is also a list, and would otherwise be split into
+  # one "layer" per column.
   if (inherits(layers, c("qm_layer", "data.frame")) || !is.list(layers)) {
     layers <- list(layers)
   }
@@ -148,6 +167,8 @@ quickmap <- function(
   }
 
   legacy <- lapply(qm_layers, qm_to_legacy)
+  # Layer names become Leaflet group names, which must be distinct; two files
+  # of the same name in different folders would otherwise collide
   ids <- vapply(qm_layers, function(l) qm_meta(l)$name, "")
   ids <- make.unique(ids, sep = "_")
 
