@@ -39,6 +39,27 @@ CPU when they're in a background tab.
 
 ## Recent work, newest first
 
+### 25 July — The code prepared for a line-by-line read
+
+Iarla asked whether the project was ready for a very close, step-by-step
+read of the code alongside the written record. The written record was;
+the code was not, for three reasons, all now fixed on branch
+feature/item9-doc-prep:
+
+- A 115-line commented-out copy of an old function sat in the middle of
+  quickmap.R, with the help text describing it attached to the dead copy
+  rather than to the live function below it. Removed.
+- 24 of the 60 functions in quickmap.R had no description at all,
+  including the largest and least obvious ones. All 60 now have one, and
+  a further two in the public-API file were written out fully.
+- The longest functions had almost no signposting. The main function is
+  now divided into seven labelled steps, and the file opens with a
+  contents list of its eleven sections, so a reader can find their place.
+
+Nothing the computer executes was changed: stripping the comments from
+the old and new files leaves two identical files. All 287 tests pass and
+the smoke test produces its maps as before.
+
 ### 14–19 July — Housekeeping only; still waiting on the manual review
 
 No project code changed. A visual editor had silently re-wrapped two

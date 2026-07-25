@@ -17,7 +17,9 @@ Calculate contrast text color for background using WCAG luminance formula
 }
 \seealso{
 Other colour: 
+\code{\link{assign_colour}()},
 \code{\link{convert_colors_to_hex}()},
+\code{\link{get_colour_legend}()},
 \code{\link{lighten_color}()}
 }
 \concept{colour}

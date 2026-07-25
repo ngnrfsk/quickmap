@@ -1,8 +1,27 @@
 # quickmap - Air Quality Mapping for R
-# Version 0.9.5  2026/07/04
-# v0.9.5: R package installation - devtools::install() + library(quickmap)
-# v0.9.4: Sub-annual temporal resolution - month/day/hour support, renamed years→display_times
-# v0.9.3.21: RData duck typing - standard names, then any compatible data.frame
+#
+# The rendering engine. The public entry points live in quickmap_api.R
+# (quickmap(), create_pollution_map()); the layer type lives in qm_layer.R;
+# the wind overlay in wind.R.
+#
+# Sections of this file, in order:
+#   1. Small helpers and the {{placeholder}} template system
+#   2. OpenAir data: metadata lookup and conversion to spatial form
+#   3. Data loading: CSV, RData, boundaries, coordinate transformation
+#   4. Colour scales and themes
+#   5. Legend and banner: HTML and CSS generation
+#   6. Saving and static export
+#   7. Time control and the lazy embedded payload (roadmap item 6)
+#   8. HTML post-processing: injecting banner, legend and controls
+#   9. Symbols and layers
+#  10. Map assembly: boundaries, viewport, base map
+#  11. Orchestration: render_pollution_map()
+#
+# The overall flow is the pipeline described in CLAUDE.md:
+#   load data -> configure layers -> process generically -> make icons -> render
+#
+# Version history is in CLAUDE.md; archived copies of this file are in
+# versions/.
 
 # NULL coalescing operator
 `%||%` <- function(x, y) if (is.null(x)) y else x
@@ -14,16 +33,42 @@ IMAGE_Y <- 1200
 IMAGE_AREA <- IMAGE_X * IMAGE_Y
 
 # Helper functions for DRY code patterns
+
+#' Locate a directory inside the installed package
+#'
+#' Falls back to the source-tree path (`inst/<subdir>`) so the code also runs
+#' from a working copy that has not been installed.
+#'
+#' @param subdir Sub-directory of `inst/`, e.g. "controls" or "themes"
+#' @return Path to the directory
+#' @keywords internal
 get_package_dir <- function(subdir) {
   dir <- system.file(subdir, package = "quickmap")
   if (dir == "") dir <- file.path("inst", subdir)
   return(dir)
 }
 
+#' Read a CSS/JS/HTML template file into a single string
+#'
+#' @param filepath Path to the template file
+#' @return The file contents as one newline-joined string
+#' @keywords internal
 read_template_file <- function(filepath) {
   paste(readLines(filepath, warn = FALSE), collapse = "\n")
 }
 
+#' Substitute {{placeholder}} values into a template
+#'
+#' The `{{name}}` pattern is the project's template convention (see CLAUDE.md,
+#' "Named Placeholder Pattern"). A `{{name}}` key that is not present in the
+#' template is a hard error rather than a silent no-op: silently skipping it
+#' would ship the literal text "{{name}}" into the user's HTML.
+#'
+#' @param template Template string from [read_template_file()]
+#' @param replacements Named list; names are the placeholders (usually
+#'   `{{...}}`), values the text to insert
+#' @return The template with all replacements applied
+#' @keywords internal
 apply_template_replacements <- function(template, replacements) {
   result <- template
   for (placeholder in names(replacements)) {
@@ -41,6 +86,8 @@ apply_template_replacements <- function(template, replacements) {
   }
   return(result)
 }
+
+# == 2. OpenAir data ==========================================================
 
 # OpenAir Metadata Cache System
 # Session-level cache for site coordinates from importMeta()
@@ -191,7 +238,8 @@ convert_openair_to_spatial <- function(
   pollutant,
   avg.time = "year"
 ) {
-  # Validate inputs
+  # -- Input checks: column names differ between OpenAir and quickmap, so
+  # both spellings are accepted rather than made the user's problem ---------
   if (!is.data.frame(data) || nrow(data) == 0) {
     stop("data must be a non-empty data.frame", call. = FALSE)
   }
@@ -242,6 +290,8 @@ convert_openair_to_spatial <- function(
     has_coords <- FALSE
   }
 
+  # -- Coordinates: some OpenAir imports carry none, so they are looked up
+  # from the network's site metadata by site code --------------------------
   if (!has_coords) {
     # Need to fetch metadata - requires code column for OpenAir lookup
     if (is.null(source)) {
@@ -292,6 +342,10 @@ convert_openair_to_spatial <- function(
     }
   }
 
+  # -- Aggregation to the requested resolution ------------------------------
+  # `year_str` is the string the time control displays and the rest of the
+  # pipeline groups by; its format is what distinguishes an annual map from a
+  # monthly, daily or hourly one.
   # Temporal aggregation using dplyr (preserves grouping columns)
   if (avg.time == "year") {
     # Annual aggregation
@@ -347,7 +401,10 @@ convert_openair_to_spatial <- function(
     )
   }
 
-  # Add lat/lon aliases for compatibility
+  # -- To sf, keeping plain coordinate columns too --------------------------
+  # Four names for two numbers is redundant, but lat/lon and
+  # Longitude/Latitude are both read elsewhere in the pipeline; unifying them
+  # is an item-9 tidy-up, not a change to make in passing.
   aggregated$lat <- aggregated$latitude
   aggregated$lon <- aggregated$longitude
 
@@ -374,6 +431,12 @@ convert_openair_to_spatial <- function(
   return(sf_data)
 }
 
+#' Check that OpenAir-format data has the columns the pipeline needs
+#'
+#' @param data data.frame in OpenAir long format
+#' @param pollutant Pollutant column name, e.g. "no2"
+#' @return TRUE invisibly; stops with the missing column names otherwise
+#' @keywords internal
 validate_oa_data <- function(data, pollutant) {
   required_cols <- c("siteCode", "year", pollutant, "lat", "lon")
   missing_cols <- setdiff(required_cols, names(data))
@@ -387,6 +450,17 @@ validate_oa_data <- function(data, pollutant) {
   return(TRUE)
 }
 
+#' Aggregate OpenAir-format data to annual site means and convert to sf
+#'
+#' Drops site-years with more than `MISSING_DATA_THRESHOLD` percent missing
+#' data (warning as it does so), averages the pollutant per site per year, and
+#' returns spatial points carrying both the geometry and plain
+#' `Longitude`/`Latitude` columns (the renderer uses the plain columns).
+#'
+#' @param data data.frame in OpenAir long format
+#' @param pollutant Pollutant column name, e.g. "no2"
+#' @return sf object with one row per site per year, plus `year_str`
+#' @keywords internal
 process_oa_data <- function(data, pollutant) {
   validate_oa_data(data, pollutant)
 
@@ -431,6 +505,16 @@ process_oa_data <- function(data, pollutant) {
   return(processed_data)
 }
 
+# == 3. Data loading ==========================================================
+
+#' Dispatch a data file to the loader for its type
+#'
+#' @param file_path Path to the file, or the literal "none" for no layer
+#' @param file_type "csv" or "rdata"
+#' @param required_cols Columns the CSV must contain (CSV only)
+#' @param pollutant Pollutant name (RData only)
+#' @return The loader's result, or NULL when `file_path` is "none"
+#' @keywords internal
 load_data_file <- function(
   file_path,
   file_type,
@@ -447,122 +531,26 @@ load_data_file <- function(
   )
 }
 
-#' Load RData file with duck typing
+#' Load an RData file and find the sensor data inside it by duck typing
 #'
-#' Three-strategy loader: (1) explicit data_object_name, (2) standard names
-#' (dataOAformat/data/oa_data/sensor_data), (3) any compatible data.frame (largest)
+#' An RData file may hold several objects under any names, so the object to map
+#' is identified by its columns rather than its name: either the object named in
+#' `data_object_name`, or — failing that — the largest data.frame carrying
+#' `siteCode`, the pollutant, `lat`, `lon` and one temporal column.
+#'
+#' The temporal column decides how the data is treated, in precedence order:
+#' `year_str` means the data has already been through
+#' [convert_openair_to_spatial()] and is converted straight to sf; a datetime
+#' column (`date`/`date_time`/`time`/`datetime`/`timestamp`) is aggregated by
+#' the resolution inferred from the median gap between timestamps; a bare `year`
+#' column is the annual fallback.
 #'
 #' @param file_path Path to RData file (relative to DATA_PATH)
 #' @param pollutant Pollutant name (e.g., "no2", "pm25")
 #' @param data_object_name Optional: explicit object name in RData file
-#' @return Processed sensor data
+#' @return An sf object in long format with `year_str`, `Longitude` and
+#'   `Latitude` columns
 #' @keywords internal
-# load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
-#   # Explicit param → standard names (dataOAformat/data/oa_data/sensor_data) → largest compatible data.frame
-#   # Priority order ensures backward compatibility with OpenAir conventions while enabling duck typing for non-standard files
-#   env <- new.env()
-#   load(
-#     file.path(Sys.getenv("DATA_PATH"), file_path),
-#     envir = env,
-#     verbose = TRUE
-#   )
-
-# obj_names <- ls(envir = env)
-# required_cols <- c("siteCode", "year", pollutant, "lat", "lon")
-#
-# # Helper: validate and use object
-# use_object <- function(obj, name) {
-#   if (!is.data.frame(obj)) {
-#     stop("Object '", name, "' is not a data.frame", call. = FALSE)
-#   }
-#   if (!all(required_cols %in% names(obj))) {
-#     stop(
-#       "Object '",
-#       name,
-#       "' missing columns: ",
-#       paste(setdiff(required_cols, names(obj)), collapse = ", "),
-#       call. = FALSE
-#     )
-#   }
-#   message("Using sensor data: ", name, " (", nrow(obj), " rows)")
-#
-#   # If year_str exists, data is already processed (e.g., from convert_openair_to_spatial)
-#   # Just convert to sf without re-aggregating (preserves sub-annual resolution)
-#   if ("year_str" %in% names(obj)) {
-#     sf_obj <- st_as_sf(obj, coords = c("lon", "lat"), crs = 4326)
-#     coords <- st_coordinates(sf_obj)
-#     sf_obj$Longitude <- coords[, 1]
-#     sf_obj$Latitude <- coords[, 2]
-#     return(sf_obj)
-#   }
-#
-#   return(process_oa_data(obj, pollutant))
-# }
-
-# If Explicit user choice (if data_object_name specified)
-#   if (!is.null(data_object_name)) {
-#     if (!exists(data_object_name, envir = env)) {
-#       stop(
-#         "Object '",
-#         data_object_name,
-#         "' not found.\n",
-#         "Available: ",
-#         paste(obj_names, collapse = ", "),
-#         call. = FALSE
-#       )
-#     }
-#     return(use_object(get(data_object_name, envir = env), data_object_name))
-#   }
-#
-#   # Else screen for standard names (backward compatible)
-#   standard_names <- c("dataOAformat", "data", "sensor_data", "measurements")
-#   for (sname in standard_names) {
-#     if (exists(sname, envir = env)) {
-#       obj <- get(sname, envir = env)
-#       if (is.data.frame(obj) && all(required_cols %in% names(obj))) {
-#         return(use_object(obj, sname))
-#       }
-#     }
-#   }
-#
-#   # Else duck typing (largest compatible data.frame)
-#   compatible <- list()
-#   for (obj_name in obj_names) {
-#     obj <- get(obj_name, envir = env)
-#     if (is.data.frame(obj) && all(required_cols %in% names(obj))) {
-#       compatible[[obj_name]] <- list(data = obj, nrow = nrow(obj))
-#     }
-#   }
-#
-#   if (length(compatible) == 0) {
-#     stop(
-#       "No compatible sensor data in: ",
-#       basename(file_path),
-#       "\n",
-#       "Expected: data.frame with [",
-#       paste(required_cols, collapse = ", "),
-#       "]\n",
-#       "Found: ",
-#       paste(obj_names, collapse = ", "),
-#       call. = FALSE
-#     )
-#   }
-#
-#   sizes <- sapply(compatible, function(x) x$nrow)
-#   selected <- names(which.max(sizes))
-#
-#   if (length(compatible) > 1) {
-#     message(
-#       "Found ",
-#       length(compatible),
-#       " compatible objects, using largest: ",
-#       selected
-#     )
-#   }
-#
-#   return(use_object(compatible[[selected]]$data, selected))
-# }
-
 load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
   # Explicit param → duck typing (largest compatible data.frame)
   env <- new.env()
@@ -721,8 +709,19 @@ load_rdata_file <- function(file_path, pollutant, data_object_name = NULL) {
 }
 
 
+#' Pivot wide year columns into long format
+#'
+#' Diffusion-tube CSVs hold one column per time period ("2017", "2018", ...).
+#' This turns them into one row per site per period, which is the shape the rest
+#' of the pipeline works in.
+#'
+#' @param data data.frame with one column per time period
+#' @param time_pattern Regex identifying the time columns; the default matches a
+#'   four-digit year
+#' @param pollutant Name to give the value column
+#' @return Long-format data.frame with a `year` date column
+#' @keywords internal
 get_temporal_data <- function(
-  #
   data,
   time_pattern = "\\d{4}",
   pollutant = "no2"
@@ -860,6 +859,18 @@ geocode_uk_postcodes <- function(postcodes) {
   result
 }
 
+#' Read a diffusion-tube or schools CSV
+#'
+#' Relative paths are resolved against DATA_PATH. Leading "X" characters that
+#' `read.csv()` adds to numeric column names ("X2017") are stripped, so year
+#' columns keep the names the user gave them. Rows missing any required column
+#' (or a `Label`, where one is present) are dropped.
+#'
+#' @param file_path Path to the CSV, absolute or relative to DATA_PATH
+#' @param required_cols Columns that must be present and non-missing
+#' @return List of `data` (the data.frame) and `value_columns` (everything that
+#'   is not a required column — the year columns for tube data)
+#' @keywords internal
 import_csv_data <- function(
   file_path,
   required_cols = c("Easting", "Northing")
@@ -894,6 +905,19 @@ import_csv_data <- function(
 
 
 # TODO (see dev/FUTURE_ENHANCEMENTS.md #2): Add boundary_names validation
+
+#' Look up boundary polygons by name
+#'
+#' Names are matched case-insensitively, after the spelling corrections listed
+#' in `inst/config/boundaries.yaml` (which fix the common informal names). The
+#' single name "all" returns every boundary. An unmatched name stops with the
+#' full list of accepted names — the user cannot be expected to guess the
+#' dataset's exact spelling.
+#'
+#' @param boundary_names Character vector of boundary names, or "all"
+#' @param crs Target coordinate system; 4326 (WGS84) for Leaflet
+#' @return sf object of the matching polygons
+#' @keywords internal
 get_boundary_sf <- function(boundary_names, crs = 4326) {
   config <- load_yaml_config("boundaries")
 
@@ -935,6 +959,19 @@ get_boundary_sf <- function(boundary_names, crs = 4326) {
     st_transform(crs = crs)
 }
 
+#' Convert British National Grid coordinates to WGS84 points
+#'
+#' UK survey data arrives as Easting/Northing (EPSG:27700); Leaflet needs
+#' latitude and longitude. Both the sf geometry and plain
+#' `Longitude`/`Latitude` columns are returned, because the renderer reads the
+#' plain columns.
+#'
+#' @param df data.frame with easting and northing columns
+#' @param easting,northing Column names holding the grid references
+#' @param crs_from Source coordinate system; 27700 is the British National Grid
+#' @return sf object in WGS84, with `year_str` added when `df` has a `year`
+#'   column
+#' @keywords internal
 transform_to_wgs84 <- function(
   df,
   easting = "Easting",
@@ -958,6 +995,15 @@ transform_to_wgs84 <- function(
   sf_obj
 }
 
+#' Build the dimming shape that sits outside the boundary
+#'
+#' The vignette is drawn as a single polygon: a rectangle much larger than the
+#' boundary, with the boundary itself punched out of it. Filling that shape
+#' dims everything beyond the mapped area while leaving the area itself clear.
+#'
+#' @param spatial_feature sf boundary object
+#' @return sfc polygon covering everything outside the boundary
+#' @keywords internal
 create_vignette_overlay <- function(spatial_feature) {
   tryCatch(
     {
@@ -980,6 +1026,8 @@ create_vignette_overlay <- function(spatial_feature) {
     }
   )
 }
+
+# == 4. Colour scales and themes ==============================================
 
 #' Show borough theme colours
 #'
@@ -1202,6 +1250,12 @@ load_theme <- function(theme_file = NULL) {
   modifyList(defaults, theme)
 }
 
+#' Extract the legend fields from a colour scale
+#'
+#' @param scale Name of a YAML scale in `inst/config/scales/`
+#' @return List of `colors`, `labels`, `title` and `thresholds`
+#' @family colour
+#' @keywords internal
 get_colour_legend <- function(scale = "lbrut_no2") {
   scale_data <- load_colour_scale(scale)
 
@@ -1213,6 +1267,16 @@ get_colour_legend <- function(scale = "lbrut_no2") {
   )
 }
 
+#' Pick the band colour for one measured value
+#'
+#' Missing or non-numeric values return white, which the scales label as
+#' "insufficient data" rather than as a low reading.
+#'
+#' @param value A single measured value
+#' @param scale Name of a YAML scale in `inst/config/scales/`
+#' @return Colour name or hex code
+#' @family colour
+#' @keywords internal
 assign_colour <- function(value, scale = "lbrut_no2") {
   if (is.na(value) || !is.numeric(value)) return("white")
 
@@ -1255,6 +1319,8 @@ convert_colors_to_hex <- function(color_vector) {
     USE.NAMES = FALSE
   )
 }
+
+# == 5. Legend and banner =====================================================
 
 #' Parse legend label into range and description
 #' @param label Character string like "< 10: WHO guideline" or "25-30"
@@ -1568,6 +1634,8 @@ build_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
   sprintf("\n<style>\n%s\n</style>\n", css_content)
 }
 
+# == 6. Saving and static export ==============================================
+
 #' @keywords internal
 add_year_and_static_layers <- function(
   template,
@@ -1597,6 +1665,36 @@ add_year_and_static_layers <- function(
     )
 }
 
+#' Add the map furniture, save the file, and export a JPG if asked
+#'
+#' The last step of one output pass. Boundary, vignette, viewport and time
+#' controls go on, the HTML is written and post-processed, and — for an image
+#' pass — the saved HTML is screenshotted to JPG and then deleted, because the
+#' image is the deliverable and the intermediate HTML is styled for a camera,
+#' not for a reader.
+#'
+#' @param map Leaflet map object
+#' @param html_file Output path for the HTML
+#' @param borough_sf Boundary polygons, or NULL for no boundary
+#' @param vignette_overlay Dimming shape from [create_vignette_overlay()]
+#' @param vignette Logical; whether to draw the dimming
+#' @param bbox Viewport bounding box
+#' @param interactive TRUE for the HTML pass, FALSE for the image pass
+#' @param display_times Time steps offered by the control
+#' @param boundary_labels Logical; label the boundary areas
+#' @param zoom_level Fixed zoom, or NULL to fit `bbox`
+#' @param title Banner title
+#' @param styling_type "html" to inject banner/legend/controls, "none" to skip
+#' @param show_banner Logical; show the title strip
+#' @param banner_colour Brand accent colour
+#' @param colour_scale Name of the colour scale (drives the legend)
+#' @param autoplay,play_speed Animation settings for the time control
+#' @param data_max Largest value in the data (legend scaling)
+#' @param image_dimensions c(width, height) for the JPG pass; NULL for HTML
+#' @param lazy_payload Embedded JSON payload when lazy rendering is in use
+#' @param banner_style "strip" or "bar"
+#' @return The map object, invisibly used by the caller's loop
+#' @keywords internal
 finalize_and_save_map <- function(
   map,
   html_file,
@@ -1665,6 +1763,19 @@ finalize_and_save_map <- function(
   return(map)
 }
 
+#' Write the widget to a self-contained HTML file and style it
+#'
+#' Leaflet's own output has no banner, legend or time control; those are added
+#' by rewriting the saved file (see [inject_banner_legend_controls()]). The
+#' `_files` folder that `saveWidget()` leaves behind is removed — with
+#' `selfcontained = TRUE` everything is already inside the HTML, and the folder
+#' would only confuse a user emailing the map.
+#'
+#' @inheritParams finalize_and_save_map
+#' @param collapsed_mobile Logical; start the legend collapsed on small screens
+#' @param image_mode Logical; use the static-export styling
+#' @return NULL, called for its side effect
+#' @keywords internal
 save_html_and_style <- function(
   map,
   html_file,
@@ -1711,6 +1822,8 @@ save_html_and_style <- function(
     unlink(files_folder, recursive = TRUE)
   }
 }
+
+# == 7. Time control and the lazy payload =====================================
 
 #' @keywords internal
 load_time_slider_control <- function(
@@ -1848,6 +1961,19 @@ use_lazy_rendering <- function(n_steps, n_marker_rows) {
 #' Build the compact embedded payload consumed by lazy-time-controller.js:
 #' {times, thresholds, colours, naColour, layers: [{id, shape, radius,
 #' nonsolid, labelMode, noHide, sites: [{code, lat, lon, label?, v: [...]}]}]}
+#'
+#' The shape of this payload is the whole point of item 6. A site appears once,
+#' with its readings as a plain vector in time order, so a coordinate pair is
+#' serialized once rather than once per time step; the colours are sent as
+#' thresholds for the controller to apply, rather than as a colour per marker
+#' per step. That is what turns a multi-megabyte file into a small one.
+#'
+#' @param measurement_layers Layer configuration from [get_measurement_layers()]
+#' @param spatial_data Loaded layers from [load_spatial_data_sources()]
+#' @param display_times Time steps to include
+#' @param pollutant Pollutant column name
+#' @param colour_scale Name of the colour scale
+#' @return A list ready for JSON serialization
 #' @keywords internal
 build_lazy_payload <- function(
   measurement_layers,
@@ -1889,6 +2015,9 @@ build_lazy_payload <- function(
       "none"
     }
 
+    # One row per site, readings as a vector across `times`. A site is
+    # identified by siteCode where the data has one, and by its coordinates
+    # otherwise (tube CSVs have no site code).
     key <- if ("siteCode" %in% names(d)) {
       as.character(d$siteCode)
     } else {
@@ -1896,6 +2025,7 @@ build_lazy_payload <- function(
     }
     first <- !duplicated(key)
     ukey <- key[first]
+    # Sites x times grid; gaps stay NA and are drawn in the "no data" colour
     values <- matrix(NA_real_, nrow = length(ukey), ncol = length(times))
     values[cbind(match(key, ukey), match(d$year_str, times))] <-
       d[[pollutant]]
@@ -1924,6 +2054,8 @@ build_lazy_payload <- function(
     )
   }
 
+  # Infinite thresholds are dropped: JSON has no Inf, and the controller
+  # treats "above the last threshold" as the top band anyway
   list(
     times = I(times),
     thresholds = I(scale_data$thresholds[finite]),
@@ -1932,6 +2064,8 @@ build_lazy_payload <- function(
     layers = layers
   )
 }
+
+# == 8. HTML post-processing ==================================================
 
 #' Inject banner, legend, and year control into saved HTML
 #'
@@ -2054,6 +2188,8 @@ inject_banner_legend_controls <- function(
   return(invisible(TRUE))
 }
 
+# == 9. Symbols and layers ====================================================
+
 #' @keywords internal
 validate_and_fix_icon_shape <- function(shape_name) {
   # Valid shape names: solid symbols first, then non-solid
@@ -2102,6 +2238,17 @@ validate_and_fix_icon_shape <- function(shape_name) {
   return(shape_name)
 }
 
+#' Look up the drawing parameters for a symbol shape
+#'
+#' Base sizes are chosen per shape so that the symbols look the same visual
+#' weight next to each other: outline symbols (plus, cross) read larger than
+#' filled ones at the same nominal size, so they are given a smaller base.
+#'
+#' @param shape_name A shape name already passed through
+#'   [validate_and_fix_icon_shape()]
+#' @return List of `shape` (the leaflegend name) and `base_size` in pixels at
+#'   the 1200x1200 reference size
+#' @keywords internal
 get_icon_shape_config <- function(shape_name) {
   # Data-driven shape mapping
   # Maps shape names to leaflegend icon parameters
@@ -2137,6 +2284,29 @@ get_icon_shape_config <- function(shape_name) {
   return(config)
 }
 
+#' Build the marker symbols for one layer at one time step
+#'
+#' Every layer type goes through this one function; what differs is only the
+#' shape and how the colour is chosen. A layer with a `Level` column and no
+#' pollutant (schools) is coloured categorically from the schools scale; a
+#' pollutant layer is coloured by threshold band; anything else falls back to
+#' grey.
+#'
+#' Outline shapes (plus, cross, star) are coloured through `color`, the stroke,
+#' because they have no interior to fill; filled shapes are coloured through
+#' `fillColor` and given a white stroke so that overlapping markers stay
+#' separable.
+#'
+#' @param data Layer data for this time step
+#' @param icon_shape Validated shape name
+#' @param pollutant Pollutant column name, or NULL for a static layer
+#' @param colour_scale Name of the colour scale for pollutant layers
+#' @param image_scale_factor Symbol scaling for static export; 1.0 for HTML.
+#'   Base sizes assume a 1200x1200 image, so other sizes use
+#'   `sqrt((width * height) / (1200 * 1200))`
+#' @param layer_id Layer identifier (used by callers for grouping)
+#' @return leaflegend symbol list ready for `addMarkers()`
+#' @keywords internal
 create_generic_icons <- function(
   data,
   icon_shape,
@@ -2179,15 +2349,12 @@ create_generic_icons <- function(
   is_nonsolid <- shape_config$shape %in% NONSOLID_SHAPES
 
   makeSymbolsSize(
-    # note
     values = rep(1, length(colors)),
     shape = shape_config$shape,
     color = if (is_nonsolid) colors else "#ffffff",
     fillColor = colors,
     baseSize = shape_config$size,
     fillOpacity = 0.75,
-    #   stroke = TRUE,
-    #  weight = 10,
     strokeWidth = 2,
     opacity = 1
   )
@@ -2266,6 +2433,20 @@ get_measurement_layers <- function(
   layers
 }
 
+#' Assemble one layer's data and labels for a single time step
+#'
+#' The middle step of the generic layer pipeline
+#' (`prepare_generic_layer_data()` -> [create_generic_icons()] ->
+#' [add_layer()]). Static layers are passed a NULL pollutant so that their
+#' labels and colours come from their own columns rather than from readings
+#' they do not have.
+#'
+#' @param layer_config One entry from [get_measurement_layers()]
+#' @param year_data Rows for this layer at this time step
+#' @param pollutant Pollutant column name
+#' @param colour_scale Name of the colour scale
+#' @return List of `data` and `labels`, or NULL when there are no rows
+#' @keywords internal
 prepare_generic_layer_data <- function(
   layer_config,
   year_data,
@@ -2421,6 +2602,16 @@ generate_marker_labels <- function(data, pollutant, marker_labels, layer_id) {
 }
 
 
+#' Take one layer's rows for one time step
+#'
+#' The literal year "static" means a layer that does not vary over time
+#' (schools, for instance), so all of its rows are returned unfiltered.
+#'
+#' @param layer_id Layer identifier
+#' @param year Time step string, or "static"
+#' @param spatial_data Loaded data from [load_spatial_data_sources()]
+#' @return The matching rows
+#' @keywords internal
 get_layer_year_data <- function(layer_id, year, spatial_data) {
   data_source <- spatial_data$all_data[[layer_id]]
 
@@ -2431,6 +2622,8 @@ get_layer_year_data <- function(layer_id, year, spatial_data) {
   }
 }
 
+
+# == 10. Map assembly =========================================================
 
 #' Add boundary polygons to map
 #'
@@ -2484,6 +2677,21 @@ add_boundary_polygons <- function(
     )
 }
 
+#' Add boundary, viewport and time machinery to the map
+#'
+#' Everything that goes on the map after the data layers: the boundary
+#' polygons, the viewport, the JavaScript that drives the time control, and the
+#' vignette last so that it sits above the markers it dims.
+#'
+#' Which JavaScript is attached depends on how the map was built. With a lazy
+#' payload (item 6) the temporal markers are Canvas shapes restyled per step
+#' from the embedded JSON, so the lazy controller is attached and there are no
+#' per-step Leaflet layers to cache. Otherwise the layers were pre-built and
+#' the smaller layer-cache script is enough.
+#'
+#' @inheritParams finalize_and_save_map
+#' @return The map with controls added
+#' @keywords internal
 add_map_controls <- function(
   map,
   borough_sf = NULL,
@@ -2579,6 +2787,21 @@ create_base_map <- function(data, interactive = TRUE, base_tiles = NULL) {
   }
 }
 
+#' Draw every enabled layer onto a map for one time step
+#'
+#' Temporal layers are filtered to `target_year` and added as a Leaflet group
+#' named after that step, which is how the time control shows one step at a
+#' time. Static layers carry no group and are drawn once; passing
+#' `target_year = "static_only"` adds those alone.
+#'
+#' @param base_map Map to add to
+#' @param measurement_layers Layer configuration from [get_measurement_layers()]
+#' @param target_year Time step, or "static_only" for static layers only
+#' @param pollutant Pollutant column name
+#' @param colour_scale Name of the colour scale
+#' @param spatial_data Loaded layers from [load_spatial_data_sources()]
+#' @param image_scale_factor Symbol scaling for static export
+#' @return The map with this step's layers added
 #' @keywords internal
 generate_map_layers <- function(
   base_map,
@@ -2656,6 +2879,17 @@ generate_map_layers <- function(
   return(base_map)
 }
 
+# == 11. Orchestration ========================================================
+
+#' Normalise the export_image argument
+#'
+#' `export_image` is deliberately loose for the user's sake: NULL for no image,
+#' TRUE for the default size, or `c(width, height)`. This turns all three into
+#' one shape the rest of the code can rely on.
+#'
+#' @param export_image NULL, TRUE, or c(width, height)
+#' @return List of `enabled`, `width` and `height`
+#' @keywords internal
 parse_export_params <- function(export_image) {
   if (is.null(export_image)) {
     list(enabled = FALSE, width = IMAGE_X, height = IMAGE_Y)
@@ -2667,6 +2901,25 @@ parse_export_params <- function(export_image) {
 }
 
 
+#' Load every data source and return them as spatial layers
+#'
+#' Accepts sf objects (used as they are), RData files, and CSV files. A CSV is
+#' treated as time-varying only when it has more than one time-shaped column
+#' name: a single such column is far more likely to be a one-off measurement
+#' set than an animation, and the user can override the guess with
+#' `data_dynamic`.
+#'
+#' The returned list carries both the general `all_data`/`ids` pair used by the
+#' current pipeline and the older positional `dt`/`sensor`/`school` slots (first,
+#' second and third source), which pre-v0.9.2 callers still read.
+#'
+#' @param data_sources List of file paths and/or sf objects
+#' @param data_ids Layer names; NULL derives them from the file names
+#' @param data_dynamic Logical vector overriding the time-varying guess
+#' @param pollutant Pollutant name, for RData loading
+#' @return List with `all_data` (named list of sf layers), `ids`, and the
+#'   legacy positional slots
+#' @keywords internal
 load_spatial_data_sources <- function(
   data_sources,
   data_ids = NULL,
@@ -2767,6 +3020,23 @@ load_spatial_data_sources <- function(
 }
 
 
+#' Decide which time steps to show and where the map should look
+#'
+#' The time steps come from the first time-varying layer: with several such
+#' layers one has to set the animation's steps, and the first is the one the
+#' user listed first. A map with no time-varying layer at all is marked
+#' "static_only", which suppresses the time control downstream.
+#'
+#' The viewport follows the boundary when there is one, and otherwise the
+#' combined extent of the data (boroughs became optional in v0.9.9.6).
+#'
+#' @param spatial_data Loaded layers from [load_spatial_data_sources()]
+#' @param borough_sf Boundary polygons, or NULL
+#' @param vignette Logical; whether the dimming shape is wanted
+#' @param requested_times The user's `display_times`, or NULL for all
+#' @return List of `primary_data`, `display_times`, `vignette_overlay` and
+#'   `bbox`
+#' @keywords internal
 determine_times_and_viewport <- function(
   spatial_data,
   borough_sf,
@@ -2872,13 +3142,16 @@ determine_times_and_viewport <- function(
 #' @param autoplay Auto-start year animation on load. Default: NULL (uses theme).
 #' @param play_speed Milliseconds per year during animation. Default: NULL (uses theme).
 #' @param theme_file Path to YAML theme file (default: NULL). See inst/themes/ for examples.
+#' @param wind Wind data for the particle overlay: a \code{from_worldmet()}
+#'   object or a data frame of date/ws/wd. Interactive HTML only.
 #'
 #' @return Invisible Leaflet map object. Side effects: Saves HTML to \code{aq_maps/}.
 #'   If \code{export_image} is not NULL, also saves JPG files (one per year).
 #'
 #' @details
 #' \strong{Data Files:} CSV files (diffusion tubes, schools) require Easting/Northing columns.
-#' RData files (sensors) require 'dataOAformat' object. School data auto-detected by School column.
+#' RData files (sensors) are searched for a compatible data.frame by column, whatever the object
+#' is called (see \code{load_rdata_file()}). School data auto-detected by School column.
 #'
 #' \strong{Coordinates:} Input British National Grid (EPSG:27700), output WGS84 (EPSG:4326).
 #'
@@ -2932,6 +3205,9 @@ render_pollution_map <- function(
   theme_file = NULL,
   wind = NULL
 ) {
+  # -- 1. Settings ---------------------------------------------------------
+  # An explicit argument always wins over the theme file; the theme fills in
+  # everything the caller left NULL. This is what lets a one-line call work.
   if (!styling_type %in% c("html", "none")) {
     stop('styling_type must be "html" or "none".', call. = FALSE)
   }
@@ -2962,6 +3238,7 @@ render_pollution_map <- function(
   banner_style <- theme$banner$style %||% "strip"
   wind_style <- theme$wind
 
+  # -- 2. Boundary ---------------------------------------------------------
   # boroughs are optional (2026-07-10): NULL means no boundary is drawn,
   # the viewport fits the data, and the vignette is meaningless
   if (is.null(boroughs)) {
@@ -2974,6 +3251,7 @@ render_pollution_map <- function(
 
   if (!dir.exists("aq_maps")) dir.create("aq_maps", showWarnings = TRUE)
 
+  # -- 3. Data, time steps and viewport ------------------------------------
   spatial_data <- load_spatial_data_sources(
     data_sources,
     data_ids,
@@ -2991,6 +3269,9 @@ render_pollution_map <- function(
   display_times <- apply_time_step_cap(display_times)
   legend_info <- get_colour_legend(colour_scale)
 
+  # -- 4. Base maps --------------------------------------------------------
+  # Two are built when an image is wanted: the interactive one, and a
+  # non-interactive template reused as the starting point for every JPG frame.
   # Use primary data for base map, or borough boundary if no temporal data
   base_map_data <- primary_data %||% borough_sf
   html_map <- create_base_map(base_map_data, TRUE, base_tiles_provider)
@@ -3020,6 +3301,7 @@ render_pollution_map <- function(
     sqrt((map_width_px * map_height_px) / (1200 * 1200))
   } else NULL
 
+  # -- 5. Layers -----------------------------------------------------------
   # Lazy path (item 6): above the size/step thresholds the interactive map
   # embeds one compact JSON payload restyled in JS instead of pre-building
   # per-step hidden layers. Static image export always uses the pre-built
@@ -3052,6 +3334,9 @@ render_pollution_map <- function(
     )
   }
 
+  # One pass per time step. The same loop feeds both outputs (CLAUDE.md,
+  # "Single Loop Processing"): the interactive map gains a layer group per
+  # step, and each JPG is a complete map saved and screenshotted on its own.
   for (yr in unique(display_times)) {
     if (!lazy) {
       html_map <- generate_map_layers(
@@ -3105,7 +3390,8 @@ render_pollution_map <- function(
     }
   }
 
-  # Wind overlay (item 7): interactive map only — a particle animation has
+  # -- 6. Wind overlay -----------------------------------------------------
+  # (item 7): interactive map only — a particle animation has
   # no meaning in a static JPG frame
   if (!is.null(wind) && !identical(display_times, "static_only")) {
     html_map <- add_wind_layer(
@@ -3117,6 +3403,9 @@ render_pollution_map <- function(
     )
   }
 
+  # -- 7. Save -------------------------------------------------------------
+  # With no output_file the widget is returned unsaved, for a user working at
+  # the console or knitting the map into a document.
   if (!is.null(output_file)) {
     html_file <- file.path("aq_maps", output_file)
 
