@@ -18,6 +18,7 @@ Parse legend label into range and description
 \seealso{
 Other legend: 
 \code{\link{calculate_max_range_width}()},
+\code{\link{generate_indicator_html}()},
 \code{\link{generate_legend_html}()},
 \code{\link{get_symbol_for_index}()}
 }

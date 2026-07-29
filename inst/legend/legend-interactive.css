@@ -104,5 +104,57 @@
   padding: 0;
 }
 
+/* Aggregate indicator: the network mean against the scale's thresholds */
+.legend-indicator {
+  flex-shrink: 0;
+  width: 11rem;
+  border-left: 1px solid #e5e5e5;
+  padding-left: 1rem;
+}
+
+.qm-ind-caption {
+  font-size: 0.7rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+.qm-ind-value {
+  font-size: 1.05rem;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.qm-ind-units {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #666;
+}
+
+.qm-ind-svg {
+  width: 100%;
+  height: 1.9rem;
+  overflow: visible;
+}
+
+.qm-ind-track { fill: #ececec; }
+.qm-ind-tick { stroke: #bbb; stroke-width: 0.8; }
+
+.qm-ind-ticklabel {
+  fill: #666;
+  font-size: 7px;
+  text-anchor: middle;
+  font-family: inherit;
+}
+
+#qmIndicatorPointer { transition: transform 0.3s ease; }
+
+.legend.collapsed .legend-indicator {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+}
+
 /* Mobile responsive styles (interactive mode only) */
 {{mobile_css}}

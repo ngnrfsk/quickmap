@@ -793,99 +793,6 @@ get_data_maximum <- function(
   }
 }
 
-#' Aggregate the network down to one figure per time step
-#'
-#' Feeds the legend indicator: the mean concentration across the monitoring
-#' network at each displayed time step, so a reader can see the whole network
-#' move against the WHO and UK thresholds.
-#'
-#' Two rules, both user decisions of 2026-07-29, both of which change what the
-#' number means:
-#'
-#' **Fixed panel.** Only sites with a reading at *every* displayed step are
-#' counted. Real networks gain and lose sites — three of Merton's opened
-#' partway through 2019-2025 — and a mean over whoever happened to be
-#' reporting moves when the network changes, not when the air does. The fixed
-#' panel is comparable year to year at the cost of discarding sites, and the
-#' count that survives is reported alongside the figure so the reader can see
-#' what it rests on.
-#'
-#' **One combined figure.** Every time-varying layer contributes to a single
-#' mean. On a map carrying both diffusion tubes and reference-grade sensors
-#' this averages two measurement methods; that was chosen deliberately with the
-#' caveat noted.
-#'
-#' Returns NULL — no indicator — when the map is not annual. The thresholds
-#' behind the indicator are annual-mean limits, and drawing a 40 µg/m³ "UK
-#' limit" line behind an hourly reading would be simply wrong. Sub-annual
-#' target sets are backlog issue 13.
-#'
-#' @param measurement_layers Layer configuration from [get_measurement_layers()]
-#' @param spatial_data Loaded layers from [load_spatial_data_sources()]
-#' @param display_times Time steps the map will show
-#' @param pollutant Pollutant column name
-#' @return List of `values` (named numeric, one per time step), `n_sites` and
-#'   `pollutant`; or NULL when no honest figure can be produced
-#' @family layer
-#' @keywords internal
-build_indicator_data <- function(
-  measurement_layers,
-  spatial_data,
-  display_times,
-  pollutant
-) {
-  if (identical(display_times, "static_only")) return(NULL)
-  times <- as.character(sort(unique(display_times)))
-  if (length(times) == 0) return(NULL)
-
-  # Annual maps only: every step must be a bare four-digit year
-  if (!all(grepl("^\\d{4}$", times))) return(NULL)
-
-  # One long table of site / step / value across every temporal layer. Sites
-  # are keyed per layer, so two layers can share a site name without merging.
-  rows <- lapply(measurement_layers, function(layer_config) {
-    if (!layer_config$enabled || layer_config$static) return(NULL)
-    d <- spatial_data$all_data[[layer_config$id]]
-    if (is.null(d) || nrow(d) == 0) return(NULL)
-    if (!all(c("year_str", pollutant) %in% names(d))) return(NULL)
-    if (inherits(d, "sf")) d <- sf::st_drop_geometry(d)
-    d <- as.data.frame(d)
-    d <- d[d$year_str %in% times & !is.na(d[[pollutant]]), , drop = FALSE]
-    if (nrow(d) == 0) return(NULL)
-
-    site <- if ("siteCode" %in% names(d)) {
-      as.character(d$siteCode)
-    } else {
-      paste(d$Longitude, d$Latitude)
-    }
-    data.frame(
-      site = paste0(layer_config$id, ":", site),
-      step = as.character(d$year_str),
-      value = as.numeric(d[[pollutant]]),
-      stringsAsFactors = FALSE
-    )
-  })
-
-  obs <- do.call(rbind, Filter(Negate(is.null), rows))
-  if (is.null(obs) || nrow(obs) == 0) return(NULL)
-
-  # The fixed panel: sites reporting in every step. A site measured twice in
-  # one step (duplicate rows) must not count as two steps, hence the unique().
-  steps_per_site <- tapply(obs$step, obs$site, function(s) length(unique(s)))
-  panel <- names(steps_per_site)[steps_per_site == length(times)]
-  if (length(panel) == 0) return(NULL)
-
-  obs <- obs[obs$site %in% panel, , drop = FALSE]
-  means <- tapply(obs$value, factor(obs$step, levels = times), mean)
-
-  list(
-    values = round(as.numeric(means), 1),
-    times = times,
-    n_sites = length(panel),
-    pollutant = pollutant
-  )
-}
-
 #' Geocode UK postcodes to OSGB36 eastings/northings
 #'
 #' Uses the postcodes.io bulk API (100 per request). Falls back to the
@@ -1269,13 +1176,6 @@ get_default_theme <- function() {
       show = TRUE,
       background = "white"
     ),
-    # Aggregate indicator (user-approved 2026-07-29): the network mean for
-    # the displayed time step, shown in the legend against the scale's
-    # thresholds. Annual maps only — see build_indicator_data().
-    indicator = list(
-      show = TRUE,
-      label = NULL # NULL builds "Network mean, N sites"
-    ),
     map = list(
       # default reverted to OSM 2026-07-11 (user): the vignette dimming is
       # too faint on the pale Positron tiles; Positron stays a theme option
@@ -1517,8 +1417,7 @@ calculate_max_range_width <- function(labels) {
 generate_legend_html <- function(
   scale_name,
   collapsed_mobile = TRUE,
-  data_max = NULL,
-  indicator_html = ""
+  data_max = NULL
 ) {
   legend_scale <- load_colour_scale(scale_name)
 
@@ -1616,152 +1515,12 @@ generate_legend_html <- function(
 
   html_template <- read_template_file(html_file)
 
-  # {{placeholder}} substitution, not sprintf: the old positional form broke
-  # on any injected content containing a literal % (a percentage in a label,
-  # a CSS width) and gave no clue why.
-  apply_template_replacements(
+  sprintf(
     html_template,
-    list(
-      "{{legend_title}}" = legend_scale$title,
-      "{{legend_items}}" = legend_items_html,
-      "{{legend_key}}" = symbol_key_html,
-      "{{legend_indicator}}" = indicator_html,
-      "{{legend_script}}" = mobile_script
-    )
-  )
-}
-
-#' Draw the aggregate indicator as inline SVG
-#'
-#' A track running from zero to the top of the colour scale, tick marks at the
-#' scale's thresholds, and a pointer at the network mean for the displayed
-#' step. The pointer takes the band colour of the value it sits on, so the
-#' indicator and the markers on the map agree.
-#'
-#' Everything is `rem`-based with a `viewBox`, never fixed pixels: the static
-#' export scales the root font size, so rem-based chrome scales with the image
-#' and fixed pixels would reproduce the marker-label defect (issue 9) by hand.
-#'
-#' In an interactive map the pointer moves with the time slider, so all steps
-#' are emitted and `indicator.js` selects between them. A static export has one
-#' step per image, so the pointer is drawn where R puts it and no script is
-#' emitted.
-#'
-#' @param indicator Result of [build_indicator_data()], or NULL for no
-#'   indicator
-#' @param scale_name Name of the colour scale supplying the thresholds
-#' @param image_mode TRUE for the static export
-#' @param display_times The step being drawn (image mode) or all steps
-#' @param label Caption above the figure; NULL builds "Network mean, N sites"
-#' @return HTML string, empty when there is nothing to show
-#' @family legend
-#' @keywords internal
-generate_indicator_html <- function(
-  indicator,
-  scale_name,
-  image_mode = FALSE,
-  display_times = NULL,
-  label = NULL
-) {
-  if (is.null(indicator) || length(indicator$values) == 0) return("")
-
-  scale_data <- load_colour_scale(scale_name)
-  thresholds <- scale_data$thresholds
-  ticks <- thresholds[is.finite(thresholds) & thresholds > 0]
-
-  vmax <- max(c(ticks, indicator$values), na.rm = TRUE)
-  if (!is.finite(vmax) || vmax <= 0) return("")
-  vmax <- vmax * 1.08 # headroom so a pointer at the maximum is not clipped
-
-  # viewBox units, not pixels: the SVG scales with its rem-sized box
-  w <- 200
-  pad <- 4
-  x_of <- function(v) pad + (v / vmax) * (w - 2 * pad)
-
-  tick_marks <- vapply(ticks, function(t) {
-    sprintf(
-      paste0('<line x1="%.1f" y1="9" x2="%.1f" y2="20" class="qm-ind-tick"/>',
-             '<text x="%.1f" y="29" class="qm-ind-ticklabel">%s</text>'),
-      x_of(t), x_of(t), x_of(t), format(t, trim = TRUE)
-    )
-  }, "")
-
-  # The step to point at: one image shows one step; the slider drives the rest
-  step <- if (image_mode && !is.null(display_times)) {
-    as.character(display_times[1])
-  } else {
-    indicator$times[1]
-  }
-  idx <- match(step, indicator$times)
-  if (is.na(idx)) idx <- 1
-  value <- indicator$values[idx]
-
-  caption <- label %||% sprintf(
-    "Network mean, %d site%s",
-    indicator$n_sites,
-    if (indicator$n_sites == 1) "" else "s"
-  )
-
-  pointer_colour <- convert_colors_to_hex(assign_colour(value, scale_name))
-
-  svg <- sprintf(
-    paste0(
-      '<svg class="qm-ind-svg" viewBox="0 0 %d 32" ',
-      'preserveAspectRatio="none" aria-hidden="true">',
-      '<rect x="%.1f" y="12" width="%.1f" height="5" rx="2.5" ',
-      'class="qm-ind-track"/>',
-      '%s',
-      '<g id="qmIndicatorPointer" transform="translate(%.1f 0)">',
-      '<path d="M -4 4 L 4 4 L 0 11 Z" fill="%s" stroke="#333" ',
-      'stroke-width="0.6"/>',
-      '</g></svg>'
-    ),
-    w, pad, w - 2 * pad, paste(tick_marks, collapse = ""),
-    x_of(value), pointer_colour
-  )
-
-  value_text <- sprintf(
-    '<span id="qmIndicatorValue">%s</span> <span class="qm-ind-units">%s</span>',
-    format(round(value, 1), nsmall = 1),
-    "µg/m³"
-  )
-
-  block <- sprintf(
-    paste0(
-      '      <div class="legend-indicator" id="qmIndicator">\n',
-      '        <div class="qm-ind-caption">%s</div>\n',
-      '        <div class="qm-ind-value">%s</div>\n',
-      '        %s\n',
-      '      </div>'
-    ),
-    caption, value_text, svg
-  )
-
-  if (image_mode) return(block)
-
-  # Interactive: the pointer follows the slider. Positions are computed in R
-  # and shipped as ready-made x coordinates, so the browser never has to know
-  # the scale.
-  payload <- sprintf(
-    '{"times":[%s],"values":[%s],"x":[%s],"colours":[%s]}',
-    paste0('"', indicator$times, '"', collapse = ","),
-    paste(format(round(indicator$values, 1), nsmall = 1, trim = TRUE),
-          collapse = ","),
-    paste(sprintf("%.2f", x_of(indicator$values)), collapse = ","),
-    paste0('"', convert_colors_to_hex(vapply(
-      indicator$values, assign_colour, "", scale = scale_name
-    )), '"', collapse = ",")
-  )
-
-  controls_dir <- get_package_dir("controls")
-  indicator_js <- read_template_file(
-    file.path(controls_dir, "indicator.js")
-  )
-
-  paste0(
-    block,
-    sprintf("\n<script>\nwindow.quickmapIndicatorData = %s;\n%s\n</script>",
-            payload, indicator_js)
+    legend_scale$title,
+    legend_items_html,
+    symbol_key_html,
+    mobile_script
   )
 }
 
@@ -1934,8 +1693,6 @@ add_year_and_static_layers <- function(
 #' @param image_dimensions c(width, height) for the JPG pass; NULL for HTML
 #' @param lazy_payload Embedded JSON payload when lazy rendering is in use
 #' @param banner_style "strip" or "bar"
-#' @param indicator Aggregate figures from [build_indicator_data()], or NULL
-#' @param indicator_label Caption for the indicator, or NULL for the default
 #' @return The map object, invisibly used by the caller's loop
 #' @keywords internal
 finalize_and_save_map <- function(
@@ -1959,9 +1716,7 @@ finalize_and_save_map <- function(
   data_max,
   image_dimensions = NULL,
   lazy_payload = NULL,
-  banner_style = "strip",
-  indicator = NULL,
-  indicator_label = NULL
+  banner_style = "strip"
 ) {
   map <- add_map_controls(
     map,
@@ -1991,9 +1746,7 @@ finalize_and_save_map <- function(
     play_speed,
     data_max,
     display_times,
-    banner_style,
-    indicator,
-    indicator_label
+    banner_style
   )
 
   if (!is.null(image_dimensions)) {
@@ -2038,9 +1791,7 @@ save_html_and_style <- function(
   play_speed,
   data_max,
   display_times = NULL,
-  banner_style = "strip",
-  indicator = NULL,
-  indicator_label = NULL
+  banner_style = "strip"
 ) {
   htmlwidgets::saveWidget(
     map,
@@ -2062,9 +1813,7 @@ save_html_and_style <- function(
       play_speed = play_speed,
       data_max = data_max,
       display_times = display_times,
-      banner_style = banner_style,
-      indicator = indicator,
-      indicator_label = indicator_label
+      banner_style = banner_style
     )
   }
 
@@ -2353,9 +2102,7 @@ inject_banner_legend_controls <- function(
   play_speed = 500,
   data_max = NULL,
   display_times = NULL,
-  banner_style = "strip",
-  indicator = NULL,
-  indicator_label = NULL
+  banner_style = "strip"
 ) {
   if (!file.exists(html_file)) {
     stop("HTML file not found: ", html_file)
@@ -2431,17 +2178,7 @@ inject_banner_legend_controls <- function(
     time_control_html <- ""
   }
 
-  indicator_html <- generate_indicator_html(
-    indicator,
-    scale_name,
-    image_mode,
-    display_times,
-    indicator_label
-  )
-
-  legend_html <- generate_legend_html(
-    scale_name, collapsed_mobile, data_max, indicator_html
-  )
+  legend_html <- generate_legend_html(scale_name, collapsed_mobile, data_max)
 
   combined_html <- paste0(time_control_html, "\n", legend_html)
   html_text <- sub("</body>", paste0(combined_html, "</body>"), html_text)
@@ -3560,18 +3297,6 @@ render_pollution_map <- function(
     display_times
   )
 
-  # Aggregate indicator: NULL when switched off in the theme, and NULL anyway
-  # for anything but an annual map (see build_indicator_data)
-  indicator <- if (isTRUE(theme$indicator$show)) {
-    build_indicator_data(
-      measurement_layers,
-      spatial_data,
-      display_times,
-      pollutant
-    )
-  }
-  indicator_label <- theme$indicator$label
-
   marker_scale_factor <- if (image_export) {
     sqrt((map_width_px * map_height_px) / (1200 * 1200))
   } else NULL
@@ -3660,9 +3385,7 @@ render_pollution_map <- function(
         data_max,
         c(map_width_px, map_height_px),
         NULL,
-        banner_style,
-        indicator,
-        indicator_label
+        banner_style
       )
     }
   }
@@ -3707,9 +3430,7 @@ render_pollution_map <- function(
       data_max,
       NULL,
       lazy_payload,
-      banner_style,
-      indicator,
-      indicator_label
+      banner_style
     )
   } else {
     html_map <- add_map_controls(

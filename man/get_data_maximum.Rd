@@ -26,4 +26,8 @@ Maximum value or NULL if no data
 \description{
 Get maximum data value across all measurement layers
 }
+\seealso{
+Other layer: 
+\code{\link{build_indicator_data}()}
+}
 \concept{layer}

@@ -39,6 +39,38 @@ CPU when they're in a background tab.
 
 ## Recent work, newest first
 
+### 29 July — The legend indicator (v0.9.9.9) — needs your eyes
+
+Every map now carries a small indicator in the legend: the network mean
+for the year on screen, with a pointer that moves along a scale marked
+with the WHO and UK thresholds, captioned with how many sites it rests
+on. On the Merton tube data it reads 44.1 in 2019 falling to 23.2 in
+2025, from a panel of 59 sites.
+
+Built to the eight decisions you took on 29 July. The two that change
+what the number means: only sites reporting in every displayed year are
+counted (so the figure moves with the air, not with the network — three
+Merton sites opened partway through and are excluded), and all layers
+are averaged into one figure. The indicator hides itself on monthly,
+daily and hourly maps, because the thresholds behind it are annual
+limits; that gap is logged as issue 13.
+
+Maps to look at, in aq_maps/: indicator_merton-annual_v1.html (drag the
+slider — pointer and figure should move), indicator_merton-lazy_v1.html
+(the same map forced down the other rendering path, which is how that
+path gets tested at all), indicator_print-4000_v1_2019.jpg and
+_2025.jpg, indicator_print-900_v1_2025.jpg (the indicator should look
+the same size relative to the map in both), and
+indicator_switched-off_v1.html (nothing should be there).
+
+Tests: 322 pass, up from 287. Smoke test clean. One tidy-up came with
+it: the legend HTML template used positional `sprintf`, which broke on
+any content containing a percent sign; it now uses the same
+{{placeholder}} system as everything else.
+
+**This is a rendering change and needs your visual sign-off before it
+merges. Nothing else rendering-related should start until it does.**
+
 ### 25 July — The code prepared for a line-by-line read
 
 Iarla asked whether the project was ready for a very close, step-by-step

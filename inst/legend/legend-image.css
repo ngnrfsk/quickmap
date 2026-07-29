@@ -86,3 +86,47 @@
   gap: 0.5rem;
   flex-wrap: wrap;
 }
+
+/* Aggregate indicator. Sizes in rem so the pointer, figure and tick labels
+   scale with the export like the rest of the chrome; the tick labels are in
+   viewBox units and scale with the SVG box. */
+.legend-indicator {
+  flex-shrink: 0;
+  width: 12rem;
+  border-left: 1px solid #e5e5e5;
+  padding-left: 1.25rem;
+}
+
+.qm-ind-caption {
+  font-size: 0.75rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+.qm-ind-value {
+  font-size: 1.2rem;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.qm-ind-units {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #666;
+}
+
+.qm-ind-svg {
+  width: 100%;
+  height: 2rem;
+  overflow: visible;
+}
+
+.qm-ind-track { fill: #ececec; }
+.qm-ind-tick { stroke: #bbb; stroke-width: 0.8; }
+
+.qm-ind-ticklabel {
+  fill: #666;
+  font-size: 7px;
+  text-anchor: middle;
+  font-family: inherit;
+}
