@@ -761,6 +761,17 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
     (IntersectionObserver in time-slider.js / wind-controller.js /
     lazy-time-controller.js). Resume seamlessly on return.
 
+12. Image export unreliable (added 2026-07-29, agent-observed — pre-1.0):
+    `id: 12 | area: static-export | component: webshot2/chromote |
+    severity: high | reported: 2026-07-29 | status: open`
+
+    Static JPG export fails intermittently: Chrome either does not start
+    or times out creating a target, aborting the run mid-batch.
+    Observed 2026-07-29 on the Merton action-plan maps: two of three
+    runs failed, at image one and image two.
+    Cause is chromote's browser startup, not QuickMap logic; rerunning
+    succeeds, so fix by retrying each webshot call.
+
 ### Medium Priority Issues
 
 ### Low Priority Issues
