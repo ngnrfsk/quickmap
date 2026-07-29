@@ -772,6 +772,18 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
     Cause is chromote's browser startup, not QuickMap logic; rerunning
     succeeds, so fix by retrying each webshot call.
 
+13. Sub-annual limit values for the aggregate indicator (added
+    2026-07-29, user decision — post-1.0):
+    `id: 13 | area: legend-indicator | component: colour-scales |
+    severity: low | reported: 2026-07-29 | status: open`
+
+    The aggregate indicator hides itself on monthly, daily and hourly
+    maps, because its target lines are annual-mean thresholds.
+    Those maps have their own limit values — daily and hourly NO2
+    objectives — which the indicator could show instead of hiding.
+    Needs a resolution-aware target set in the colour-scale YAML and the
+    numbers confirmed by the user.
+
 ### Medium Priority Issues
 
 ### Low Priority Issues

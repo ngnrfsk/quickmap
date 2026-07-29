@@ -331,7 +331,35 @@ exactly that.
 
 ---
 
-## Decisions for you
+## Decisions — ANSWERED by the user, 2026-07-29
+
+All eight were put to Iarla as multiple choice and answered. The answers are
+binding for implementation; the options are kept below for the record.
+
+1. **When?** → **(c) Now, ahead of roadmap items 9 and 11.** The stacking risk
+   is accepted knowingly. Consequence: this is a rendering-touching change, so
+   it blocks on human visual sign-off before merge, and no second unreviewed
+   rendering item may be started until it is signed off.
+2. **Which features?** → **(b) Indicator now, trend graph later** as separate
+   work.
+3. **Where?** → **(a) Inside the legend block.**
+4. **Which sites?** → **(a) Fixed panel** — only sites with data in every
+   displayed step. The figure is comparable across years; the site count and
+   the exclusion must be stated somewhere visible.
+5. **Mean or median?** → **(a) Mean**, matching the "annual mean" language of
+   the reports this feeds.
+6. **One figure or one per layer?** → **(b) A single combined figure always**,
+   across every measurement layer. Noted for the record: on a map carrying both
+   diffusion tubes and reference-grade sensors this averages two measurement
+   methods into one number. The user chose this with that caveat stated.
+7. **Sub-annual maps?** → **(a) Hide the indicator automatically** — with a
+   backlog item raised for a future resolution-appropriate target set (daily,
+   hourly limit values). See issue 13 in
+   `/Users/iarla/Coding/quickmap/dev/PROJECT_STATUS.md`.
+8. **Trend graph at many time steps?** → deferred; the graph itself is deferred,
+   so this is decided when it is built.
+
+### The options as originally put
 
 1. **When?** Options: (a) after v1.0 as a post-1.0 item, which is what the
    roadmap rules imply; (b) folded into roadmap item 11 (UI defects) as new
