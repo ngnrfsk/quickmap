@@ -4,7 +4,12 @@
 \alias{generate_legend_html}
 \title{Generate HTML legend structure from colour_scale}
 \usage{
-generate_legend_html(scale_name, collapsed_mobile = TRUE, data_max = NULL)
+generate_legend_html(
+  scale_name,
+  collapsed_mobile = TRUE,
+  data_max = NULL,
+  indicator_html = ""
+)
 }
 \arguments{
 \item{scale_name}{Name of scale in colour_scales list (e.g., "who_no2")}
@@ -33,6 +38,7 @@ If data_max provided, filters legend to show only relevant ranges (minimum 2 ite
 \seealso{
 Other legend: 
 \code{\link{calculate_max_range_width}()},
+\code{\link{generate_indicator_html}()},
 \code{\link{get_symbol_for_index}()},
 \code{\link{parse_legend_label}()}
 }

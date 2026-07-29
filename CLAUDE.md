@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.9.8
+### Current Version: 0.9.9.9
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -214,7 +214,9 @@ commands (see "Permissions and command style" below).
 External configuration files in `inst/` directory:
 - **`inst/banner/`**: Banner CSS template with {{placeholder}} substitution
 - **`inst/legend/`**: Legend CSS template with {{placeholder}} substitution
-- **`inst/controls/`**: Time control HTML/CSS/JS (bottom slider, v0.9.9.5+)
+- **`inst/controls/`**: Time control HTML/CSS/JS (bottom slider, v0.9.9.5+),
+  the wind and lazy-loading controllers, and `indicator.js` (legend
+  indicator, v0.9.9.9+)
 - **`inst/config/scales/`**: YAML colour scale definitions
 - **`inst/themes/`**: YAML theme configuration files
 
@@ -312,6 +314,31 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 -   **Files**: `inst/controls/time-slider.html`, `.css`, `.js`
     (replaced the pre-v0.9.9.5 roller dropdown)
 
+### Legend Indicator (v0.9.9.9+)
+
+-   **What it shows**: the network mean for the displayed time step, on a
+    track with tick marks at the colour scale's thresholds and a pointer in
+    the value's band colour, captioned "Network mean, N sites"
+-   **Fixed panel** (user decision 2026-07-29): only sites reporting in
+    *every* displayed step are counted, so the figure moves with the air and
+    not with the network. The surviving count is shown in the caption. The
+    panel is defined over the steps actually displayed, so narrowing
+    `display_times` can admit more sites
+-   **One combined figure** across all measurement layers (user decision) —
+    on a mixed tube/sensor map this averages two measurement methods
+-   **Annual maps only**: `build_indicator_data()` returns NULL for
+    sub-annual steps, because the thresholds behind it are annual-mean
+    limits. Sub-annual target sets are backlog issue 13
+-   **Both rendering paths**: `inst/controls/indicator.js` registers
+    `window.quickmapIndicatorController`, called from the `switchToTime`
+    handler in `time-slider.js` **above** the lazy-path early return
+-   **Static exports**: drawn server-side for that image's step, no script;
+    rem/viewBox units only, so it scales with the export
+-   **Theme keys**: `indicator.show` (default TRUE), `indicator.label`
+-   **Files**: `build_indicator_data()` and `generate_indicator_html()` in
+    `R/quickmap.R`, `inst/controls/indicator.js`, styles in both
+    `inst/legend/legend-interactive.css` and `legend-image.css`
+
 ## File Structure & Outputs
 
 ### Input Files
@@ -375,6 +402,8 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.9.6**: `boroughs` is optional (user decision 2026-07-10, reversing the 07-10 morning decision): NULL (now the default) draws no boundary, disables the vignette and fits the viewport to the data — a one-argument `quickmap("data.csv")` call works
 -   **v0.9.9.7**: default base tiles reverted to OSM (user decision 2026-07-11): the vignette dimming is too faint on the pale CartoDB.Positron tiles that v0.9.9.5 made the default; Positron remains a one-line theme option (`map.base_tiles`)
 -   **v0.9.9.8**: small fixes from the traced API catalogue (dev/260712_api_catalogue_v1.md): non-matching `display_times` now warns naming the available steps; `styling_type` validated against "html"/"none"; roxygen corrected (output_file used verbatim; data_symbols accepts all 18 renderer names)
+
+-   **v0.9.9.9**: legend indicator (user-approved 2026-07-29, feasibility study dev/260729_overlays_feasibility.md): the network mean for the displayed step, drawn in the legend as an inline-SVG track with tick marks at the colour scale's thresholds and a pointer in the value's band colour; `build_indicator_data()` aggregates a **fixed panel** (sites reporting in every displayed step) into a single combined mean across layers, returning NULL for anything but an annual map; moves with the time slider via `window.quickmapIndicatorController` (`inst/controls/indicator.js`), hooked above the lazy-path branch so it works on both rendering paths; static exports draw their own step server-side with no script; theme keys `indicator.show` / `indicator.label`; `inst/legend/legend.html` converted from positional `sprintf` to `{{placeholder}}` substitution
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 

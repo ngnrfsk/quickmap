@@ -19,7 +19,9 @@ save_html_and_style(
   play_speed,
   data_max,
   display_times = NULL,
-  banner_style = "strip"
+  banner_style = "strip",
+  indicator = NULL,
+  indicator_label = NULL
 )
 }
 \arguments{
@@ -50,6 +52,10 @@ save_html_and_style(
 \item{display_times}{Time steps offered by the control}
 
 \item{banner_style}{"strip" or "bar"}
+
+\item{indicator}{Aggregate figures from \code{\link[=build_indicator_data]{build_indicator_data()}}, or NULL}
+
+\item{indicator_label}{Caption for the indicator, or NULL for the default}
 }
 \value{
 NULL, called for its side effect

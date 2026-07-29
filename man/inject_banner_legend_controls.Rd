@@ -16,7 +16,9 @@ inject_banner_legend_controls(
   play_speed = 500,
   data_max = NULL,
   display_times = NULL,
-  banner_style = "strip"
+  banner_style = "strip",
+  indicator = NULL,
+  indicator_label = NULL
 )
 }
 \arguments{

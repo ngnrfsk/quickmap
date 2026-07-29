@@ -19,8 +19,15 @@
 
   function switchToTime(selected, times, instant) {
     try {
+      // Everything that must run on BOTH rendering paths goes above the
+      // quickmapTimeController branch below, which returns early on the lazy
+      // path. Placed after it, an overlay works on small maps and silently
+      // freezes on maps over 50 time steps.
       if (window.quickmapWindController) {
         window.quickmapWindController.setTime(selected);
+      }
+      if (window.quickmapIndicatorController) {
+        window.quickmapIndicatorController.setTime(selected);
       }
       if (window.quickmapTimeController) {
         // second argument: skip the colour crossfade during drag-scrubbing
