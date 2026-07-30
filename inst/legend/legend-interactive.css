@@ -104,6 +104,23 @@
   padding: 0;
 }
 
+/* Indicator bar ("ramp" style): sits directly above the colour ramp and is
+   measured against it, so it must be exactly the ramp's width — same flex
+   parent, no padding of its own. */
+.legend-indicator-bar {
+  height: 0.45rem;
+  margin-bottom: 0.2rem;
+  background: #f2f2f2;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.qm-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
 /* Aggregate indicator: the network mean against the scale's thresholds */
 .legend-indicator {
   flex-shrink: 0;

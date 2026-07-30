@@ -18,7 +18,8 @@ inject_banner_legend_controls(
   display_times = NULL,
   banner_style = "strip",
   indicator = NULL,
-  indicator_label = NULL
+  indicator_label = NULL,
+  indicator_style = "track"
 )
 }
 \arguments{

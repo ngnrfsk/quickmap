@@ -9,7 +9,9 @@ generate_indicator_html(
   scale_name,
   image_mode = FALSE,
   display_times = NULL,
-  label = NULL
+  label = NULL,
+  style = "track",
+  data_max = NULL
 )
 }
 \arguments{
@@ -46,9 +48,11 @@ emitted.
 \seealso{
 Other legend: 
 \code{\link{calculate_max_range_width}()},
-\code{\link{generate_legend_html}()},
+\code{\link{generate_indicator_bar}()},
 \code{\link{get_symbol_for_index}()},
-\code{\link{parse_legend_label}()}
+\code{\link{parse_legend_label}()},
+\code{\link{ramp_position}()},
+\code{\link{trim_colour_scale}()}
 }
 \concept{legend}
 \keyword{internal}

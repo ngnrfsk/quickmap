@@ -18,8 +18,10 @@ Get footnote symbol for index
 \seealso{
 Other legend: 
 \code{\link{calculate_max_range_width}()},
+\code{\link{generate_indicator_bar}()},
 \code{\link{generate_indicator_html}()},
-\code{\link{generate_legend_html}()},
-\code{\link{parse_legend_label}()}
+\code{\link{parse_legend_label}()},
+\code{\link{ramp_position}()},
+\code{\link{trim_colour_scale}()}
 }
 \concept{legend}
