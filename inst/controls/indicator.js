@@ -19,6 +19,15 @@
       if (head) head.setAttribute("fill", data.colours[i]);
     }
 
+    // "ramp" style: a bar above the legend ramp, running from zero to the
+    // mean. Widths are percentages of the ramp, computed band by band in R
+    // because the ramp's blocks are equal width whatever their span.
+    var bar = document.getElementById("qmIndicatorBar");
+    if (bar && data.w) {
+      bar.style.width = data.w[i] + "%";
+      bar.style.background = data.colours[i];
+    }
+
     var value = document.getElementById("qmIndicatorValue");
     if (value) value.textContent = Number(data.values[i]).toFixed(1);
   }

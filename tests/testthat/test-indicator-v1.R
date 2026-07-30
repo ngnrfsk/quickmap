@@ -177,6 +177,65 @@ test_that("the time slider drives the indicator on both rendering paths", {
   expect_true(hook < lazy_branch)
 })
 
+test_that("ramp positions are measured band by band, not linearly", {
+  # gla_pm25: bands 5, 2.5, 2.5, 2.5, 2.5, 5, 5, Inf — all drawn equal width,
+  # so position must follow the blocks, not the numbers
+  th <- c(0, 5, 7.5, 10, 12.5, 15, 20, 25, Inf)
+  n <- 8
+
+  # 7.5 ends band 2 of 8
+  expect_equal(quickmap:::ramp_position(7.5, th, n), 25)
+  # 8.75 is halfway through band 3
+  expect_equal(quickmap:::ramp_position(8.75, th, n), 31.25)
+  # a linear reading of 8.75 against a 25-max scale would be 35 — different
+  expect_false(isTRUE(all.equal(
+    quickmap:::ramp_position(8.75, th, n), 35
+  )))
+
+  # open-ended top band: midpoint, never a fabricated position
+  expect_equal(quickmap:::ramp_position(400, th, n),
+               quickmap:::ramp_position(30, th, n))
+  # below the scale, and NA
+  expect_equal(quickmap:::ramp_position(0, th, n), 0)
+  expect_equal(quickmap:::ramp_position(NA_real_, th, n), 0)
+})
+
+test_that("the bar is trimmed with the legend it sits above", {
+  scale <- quickmap:::load_colour_scale("lbm_no2")
+  full <- length(scale$colours)
+  trimmed <- length(quickmap:::trim_colour_scale(scale, 33.9)$colours)
+
+  expect_lt(trimmed, full)
+  # same value, fewer blocks -> further along the bar, because the bar is a
+  # fraction of the ramp actually drawn
+  expect_gt(
+    quickmap:::ramp_position(23.2, scale$thresholds, trimmed),
+    quickmap:::ramp_position(23.2, scale$thresholds, full)
+  )
+})
+
+test_that("ramp style draws a bar and drops its own scale", {
+  ind <- quickmap:::build_indicator_data(
+    make_layers("tubes"), fixture(), c("2019", "2020", "2021"), "no2"
+  )
+
+  bar <- quickmap:::generate_indicator_bar(ind, "who_no2")
+  expect_match(bar, 'id="qmIndicatorBar"', fixed = TRUE)
+  expect_match(bar, "width:", fixed = TRUE)
+
+  block <- quickmap:::generate_indicator_html(ind, "who_no2", style = "ramp")
+  expect_match(block, "Network mean, 2 sites", fixed = TRUE)
+  expect_false(grepl("qm-ind-svg", block, fixed = TRUE)) # no second scale
+  expect_match(block, '"w":[', fixed = TRUE) # widths for every step
+
+  # track style keeps its own scale and draws no bar
+  track <- quickmap:::generate_indicator_html(ind, "who_no2", style = "track")
+  expect_match(track, "qm-ind-svg", fixed = TRUE)
+  expect_identical(
+    quickmap:::generate_indicator_html(NULL, "who_no2", style = "ramp"), ""
+  )
+})
+
 test_that("the indicator is switchable through the theme", {
   expect_true(quickmap:::get_default_theme()$indicator$show)
 

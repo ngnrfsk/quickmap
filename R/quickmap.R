@@ -1274,7 +1274,10 @@ get_default_theme <- function() {
     # thresholds. Annual maps only — see build_indicator_data().
     indicator = list(
       show = TRUE,
-      label = NULL # NULL builds "Network mean, N sites"
+      label = NULL, # NULL builds "Network mean, N sites"
+      # "track" draws its own scale; "ramp" draws a bar above the legend's
+      # colour ramp and uses that as the scale
+      style = "track"
     ),
     map = list(
       # default reverted to OSM 2026-07-11 (user): the vignette dimming is
@@ -1514,11 +1517,43 @@ calculate_max_range_width <- function(labels) {
 #'   Converts all colors to hex format for CSS compatibility
 #'   If data_max provided, filters legend to show only relevant ranges (minimum 2 items)
 #' @family legend
+#' Trim a colour scale to the bands the data actually reaches
+#'
+#' A legend running to 100 µg/m³ under data topping out at 33 wastes most of
+#' its width on bands nothing falls in. Extracted from
+#' [generate_legend_html()] so the legend and the indicator bar drawn above it
+#' are trimmed identically — if they disagreed, the bar would point at the
+#' wrong block.
+#'
+#' @param legend_scale Scale list from [load_colour_scale()]
+#' @param data_max Largest value in the data, or NULL for no trimming
+#' @return The scale with `colours` and `labels` cut to the bands in use
+#' @family legend
+#' @keywords internal
+trim_colour_scale <- function(legend_scale, data_max = NULL) {
+  if (is.null(data_max) || is.null(legend_scale$thresholds) || data_max <= 0) {
+    return(legend_scale)
+  }
+
+  # thresholds are breaks: [0, 10, 20, 30, 40, ...]. For data_max = 45,
+  # which(45 < thresholds) first hits index 6 (threshold 50), but the band
+  # containing 45 is item 5 (40-50) — hence the subtraction. Two items is the
+  # smallest legend that still reads as a scale.
+  threshold_idx <- which(data_max < legend_scale$thresholds)[1]
+  num_items <- max(2, threshold_idx - 1)
+  num_items <- min(num_items, length(legend_scale$colours))
+
+  legend_scale$colours <- legend_scale$colours[1:num_items]
+  legend_scale$labels <- legend_scale$labels[1:num_items]
+  legend_scale
+}
+
 generate_legend_html <- function(
   scale_name,
   collapsed_mobile = TRUE,
   data_max = NULL,
-  indicator_html = ""
+  indicator_html = "",
+  indicator_bar = ""
 ) {
   legend_scale <- load_colour_scale(scale_name)
 
@@ -1531,23 +1566,7 @@ generate_legend_html <- function(
     ))
   }
 
-  if (!is.null(data_max) && !is.null(legend_scale$thresholds) && data_max > 0) {
-    # Find which threshold index contains data_max
-    # thresholds define breaks: [0, 10, 20, 30, 40, 50, 60, ...]
-    # If data_max = 45, which(45 < thresholds) = [F,F,F,F,F,T,...] -> first TRUE at index 6 (threshold=50)
-    # We want to show up to the range CONTAINING 45 (40-50), which is item 5, not item 6
-    threshold_idx <- which(data_max < legend_scale$thresholds)[1]
-
-    # Include all items up to and including the threshold containing data_max
-    # Subtract 1 because threshold_idx is the NEXT threshold after data_max
-    # Always include at least 2 items (minimum viable legend)
-    num_items <- max(2, threshold_idx - 1)
-
-    num_items <- min(num_items, length(legend_scale$colours))
-
-    legend_scale$colours <- legend_scale$colours[1:num_items]
-    legend_scale$labels <- legend_scale$labels[1:num_items]
-  }
+  legend_scale <- trim_colour_scale(legend_scale, data_max)
 
   hex_colors <- convert_colors_to_hex(legend_scale$colours)
 
@@ -1589,6 +1608,7 @@ generate_legend_html <- function(
   }
 
   legend_items_html <- paste0(
+    indicator_bar,
     '      <div class="legend-ramp">\n',
     paste(unlist(ramp_blocks), collapse = "\n"),
     '\n      </div>\n      <div class="legend-ramp-labels">\n',
@@ -1631,6 +1651,102 @@ generate_legend_html <- function(
   )
 }
 
+#' Position a value along the rendered legend ramp
+#'
+#' The ramp is a flex row of equal-width blocks, one per band
+#' (`.ramp-block { flex: 1 }`), so its geometry is *not* linear in
+#' concentration: `gla_pm25`'s bands are 5, 2.5, 2.5, 2.5, 2.5, 5, 5 units
+#' wide and all draw the same width. A bar measured against the ramp must
+#' therefore be placed band by band — find the band, then interpolate inside
+#' it — never by a straight value/max fraction.
+#'
+#' The open-ended top band (`.Inf`) has no width to interpolate within, so a
+#' value inside it sits at the band's midpoint; anything else would imply a
+#' precision the scale does not have.
+#'
+#' @param value A concentration
+#' @param thresholds The scale's thresholds
+#' @param n_blocks Number of blocks the legend actually rendered, which may
+#'   include a trailing "insufficient data" block that is not a value band
+#' @return Percentage of the ramp's width, 0-100
+#' @family legend
+#' @keywords internal
+ramp_position <- function(value, thresholds, n_blocks) {
+  if (is.na(value) || n_blocks < 1) return(0)
+  finite_upper <- thresholds[-1]
+  band <- findInterval(value, thresholds, left.open = FALSE)
+  band <- max(1, min(band, length(finite_upper)))
+
+  lower <- thresholds[band]
+  upper <- finite_upper[band]
+  frac <- if (is.finite(upper) && upper > lower) {
+    (value - lower) / (upper - lower)
+  } else {
+    0.5 # open-ended top band: midpoint, no false precision
+  }
+  frac <- max(0, min(1, frac))
+
+  round(100 * (band - 1 + frac) / n_blocks, 2)
+}
+
+#' Draw the indicator as a bar measured against the legend ramp
+#'
+#' The alternative to the standalone track (user proposal, 2026-07-30): the
+#' legend's own colour ramp becomes the scale, and the indicator is a bar
+#' above it running from zero to the network mean, filled with the mean's band
+#' colour.
+#'
+#' The advantage over a separate track is that there is only one scale on the
+#' page. A standalone linear track sitting under an equal-width legend ramp
+#' puts the same threshold in two different places, which is worse than having
+#' no scale at all.
+#'
+#' @param indicator Result of [build_indicator_data()]
+#' @param scale_name Colour scale name
+#' @param data_max Largest value in the data, so the bar is trimmed with the
+#'   legend
+#' @param image_mode TRUE for the static export
+#' @param display_times The step being drawn (image mode)
+#' @return HTML for the bar row, placed above the ramp inside the legend
+#' @family legend
+#' @keywords internal
+generate_indicator_bar <- function(
+  indicator,
+  scale_name,
+  data_max = NULL,
+  image_mode = FALSE,
+  display_times = NULL
+) {
+  if (is.null(indicator) || length(indicator$values) == 0) return("")
+
+  scale_data <- trim_colour_scale(load_colour_scale(scale_name), data_max)
+  n_blocks <- length(scale_data$colours)
+  thresholds <- load_colour_scale(scale_name)$thresholds
+
+  step <- if (image_mode && !is.null(display_times)) {
+    as.character(display_times[1])
+  } else {
+    indicator$times[1]
+  }
+  idx <- match(step, indicator$times)
+  if (is.na(idx)) idx <- 1
+
+  width <- ramp_position(indicator$values[idx], thresholds, n_blocks)
+  colour <- convert_colors_to_hex(
+    assign_colour(indicator$values[idx], scale_name)
+  )
+
+  sprintf(
+    paste0(
+      '      <div class="legend-indicator-bar">\n',
+      '        <div class="qm-bar-fill" id="qmIndicatorBar" ',
+      'style="width: %s%%; background: %s;"></div>\n',
+      '      </div>\n'
+    ),
+    format(width, trim = TRUE), colour
+  )
+}
+
 #' Draw the aggregate indicator as inline SVG
 #'
 #' A track running from zero to the top of the colour scale, tick marks at the
@@ -1661,7 +1777,9 @@ generate_indicator_html <- function(
   scale_name,
   image_mode = FALSE,
   display_times = NULL,
-  label = NULL
+  label = NULL,
+  style = "track",
+  data_max = NULL
 ) {
   if (is.null(indicator) || length(indicator$values) == 0) return("")
 
@@ -1726,6 +1844,9 @@ generate_indicator_html <- function(
     "µg/m³"
   )
 
+  # "ramp" style: the legend's own colour ramp is the scale, so the block
+  # carries the words and the figure only — the bar is drawn above the ramp by
+  # generate_indicator_bar()
   block <- sprintf(
     paste0(
       '      <div class="legend-indicator" id="qmIndicator">\n',
@@ -1734,20 +1855,31 @@ generate_indicator_html <- function(
       '        %s\n',
       '      </div>'
     ),
-    caption, value_text, svg
+    caption, value_text, if (identical(style, "ramp")) "" else svg
   )
 
   if (image_mode) return(block)
 
-  # Interactive: the pointer follows the slider. Positions are computed in R
-  # and shipped as ready-made x coordinates, so the browser never has to know
-  # the scale.
+  # Interactive: the indicator follows the slider. Every position is computed
+  # in R and shipped ready-made — x coordinates for the track pointer, widths
+  # for the ramp bar — so the browser never has to know the colour scale.
+  bar_widths <- vapply(
+    indicator$values,
+    ramp_position,
+    0,
+    thresholds = thresholds,
+    n_blocks = length(
+      trim_colour_scale(load_colour_scale(scale_name), data_max)$colours
+    )
+  )
+
   payload <- sprintf(
-    '{"times":[%s],"values":[%s],"x":[%s],"colours":[%s]}',
+    '{"times":[%s],"values":[%s],"x":[%s],"w":[%s],"colours":[%s]}',
     paste0('"', indicator$times, '"', collapse = ","),
     paste(format(round(indicator$values, 1), nsmall = 1, trim = TRUE),
           collapse = ","),
     paste(sprintf("%.2f", x_of(indicator$values)), collapse = ","),
+    paste(sprintf("%.2f", bar_widths), collapse = ","),
     paste0('"', convert_colors_to_hex(vapply(
       indicator$values, assign_colour, "", scale = scale_name
     )), '"', collapse = ",")
@@ -1936,6 +2068,8 @@ add_year_and_static_layers <- function(
 #' @param banner_style "strip" or "bar"
 #' @param indicator Aggregate figures from [build_indicator_data()], or NULL
 #' @param indicator_label Caption for the indicator, or NULL for the default
+#' @param indicator_style "track" (its own scale) or "ramp" (a bar above
+#'   the legend's colour ramp)
 #' @return The map object, invisibly used by the caller's loop
 #' @keywords internal
 finalize_and_save_map <- function(
@@ -1961,7 +2095,8 @@ finalize_and_save_map <- function(
   lazy_payload = NULL,
   banner_style = "strip",
   indicator = NULL,
-  indicator_label = NULL
+  indicator_label = NULL,
+  indicator_style = "track"
 ) {
   map <- add_map_controls(
     map,
@@ -1993,7 +2128,8 @@ finalize_and_save_map <- function(
     display_times,
     banner_style,
     indicator,
-    indicator_label
+    indicator_label,
+    indicator_style
   )
 
   if (!is.null(image_dimensions)) {
@@ -2040,7 +2176,8 @@ save_html_and_style <- function(
   display_times = NULL,
   banner_style = "strip",
   indicator = NULL,
-  indicator_label = NULL
+  indicator_label = NULL,
+  indicator_style = "track"
 ) {
   htmlwidgets::saveWidget(
     map,
@@ -2064,7 +2201,8 @@ save_html_and_style <- function(
       display_times = display_times,
       banner_style = banner_style,
       indicator = indicator,
-      indicator_label = indicator_label
+      indicator_label = indicator_label,
+      indicator_style = indicator_style
     )
   }
 
@@ -2355,7 +2493,8 @@ inject_banner_legend_controls <- function(
   display_times = NULL,
   banner_style = "strip",
   indicator = NULL,
-  indicator_label = NULL
+  indicator_label = NULL,
+  indicator_style = "track"
 ) {
   if (!file.exists(html_file)) {
     stop("HTML file not found: ", html_file)
@@ -2436,11 +2575,23 @@ inject_banner_legend_controls <- function(
     scale_name,
     image_mode,
     display_times,
-    indicator_label
+    indicator_label,
+    indicator_style,
+    data_max
   )
 
+  # "ramp" style draws the bar inside the legend, above the colour ramp it is
+  # measured against; "track" draws its own scale in the indicator block
+  indicator_bar <- if (identical(indicator_style, "ramp")) {
+    generate_indicator_bar(
+      indicator, scale_name, data_max, image_mode, display_times
+    )
+  } else {
+    ""
+  }
+
   legend_html <- generate_legend_html(
-    scale_name, collapsed_mobile, data_max, indicator_html
+    scale_name, collapsed_mobile, data_max, indicator_html, indicator_bar
   )
 
   combined_html <- paste0(time_control_html, "\n", legend_html)
@@ -3571,6 +3722,7 @@ render_pollution_map <- function(
     )
   }
   indicator_label <- theme$indicator$label
+  indicator_style <- theme$indicator$style %||% "track"
 
   marker_scale_factor <- if (image_export) {
     sqrt((map_width_px * map_height_px) / (1200 * 1200))
@@ -3662,7 +3814,8 @@ render_pollution_map <- function(
         NULL,
         banner_style,
         indicator,
-        indicator_label
+        indicator_label,
+        indicator_style
       )
     }
   }
@@ -3709,7 +3862,8 @@ render_pollution_map <- function(
       lazy_payload,
       banner_style,
       indicator,
-      indicator_label
+      indicator_label,
+      indicator_style
     )
   } else {
     html_map <- add_map_controls(
