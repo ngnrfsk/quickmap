@@ -28,7 +28,7 @@ finalize_and_save_map(
   banner_style = "strip",
   indicator = NULL,
   indicator_label = NULL,
-  indicator_style = "track"
+  indicator_style = "bar"
 )
 }
 \arguments{
@@ -76,8 +76,8 @@ finalize_and_save_map(
 
 \item{indicator_label}{Caption for the indicator, or NULL for the default}
 
-\item{indicator_style}{"track" (its own scale) or "ramp" (a bar above
-the legend's colour ramp)}
+\item{indicator_style}{How the mean is marked on the legend ramp:
+"bar" or "roundel"}
 }
 \value{
 The map object, invisibly used by the caller's loop

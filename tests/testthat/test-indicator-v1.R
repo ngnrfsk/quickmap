@@ -214,25 +214,44 @@ test_that("the bar is trimmed with the legend it sits above", {
   )
 })
 
-test_that("ramp style draws a bar and drops its own scale", {
+test_that("bar and roundel both mark the ramp, and nothing draws a second scale", {
   ind <- quickmap:::build_indicator_data(
     make_layers("tubes"), fixture(), c("2019", "2020", "2021"), "no2"
   )
 
-  bar <- quickmap:::generate_indicator_bar(ind, "who_no2")
+  bar <- quickmap:::generate_indicator_bar(ind, "who_no2", style = "bar")
   expect_match(bar, 'id="qmIndicatorBar"', fixed = TRUE)
   expect_match(bar, "width:", fixed = TRUE)
 
-  block <- quickmap:::generate_indicator_html(ind, "who_no2", style = "ramp")
-  expect_match(block, "Network mean, 2 sites", fixed = TRUE)
-  expect_false(grepl("qm-ind-svg", block, fixed = TRUE)) # no second scale
-  expect_match(block, '"w":[', fixed = TRUE) # widths for every step
+  roundel <- quickmap:::generate_indicator_bar(
+    ind, "who_no2", style = "roundel"
+  )
+  expect_match(roundel, "qm-roundel", fixed = TRUE)
+  expect_match(roundel, "left:", fixed = TRUE) # positioned, not filled
+  expect_match(roundel, ">50.0<", fixed = TRUE) # carries its own figure
 
-  # track style keeps its own scale and draws no bar
-  track <- quickmap:::generate_indicator_html(ind, "who_no2", style = "track")
-  expect_match(track, "qm-ind-svg", fixed = TRUE)
+  block <- quickmap:::generate_indicator_html(ind, "who_no2", style = "roundel")
+  expect_match(block, "Network mean, 2 sites", fixed = TRUE)
+  expect_match(block, '"w":[', fixed = TRUE) # positions for every step
+
+  # the retired track style drew its own scale; nothing should now
+  expect_false(grepl("qm-ind-svg", block, fixed = TRUE))
+  expect_false(grepl(
+    "qm-ind-svg",
+    quickmap:::generate_indicator_html(ind, "who_no2", style = "bar"),
+    fixed = TRUE
+  ))
+
+  # the chip beside the figure repeats the marker's shape, which is the
+  # visual link between the caption and the ramp
+  expect_match(block, "qm-ind-chip-roundel", fixed = TRUE)
+  expect_match(
+    quickmap:::generate_indicator_html(ind, "who_no2", style = "bar"),
+    "qm-ind-chip-bar", fixed = TRUE
+  )
+
   expect_identical(
-    quickmap:::generate_indicator_html(NULL, "who_no2", style = "ramp"), ""
+    quickmap:::generate_indicator_html(NULL, "who_no2", style = "roundel"), ""
   )
 })
 

@@ -2,14 +2,15 @@
 % Please edit documentation in R/quickmap.R
 \name{generate_indicator_bar}
 \alias{generate_indicator_bar}
-\title{Draw the indicator as a bar measured against the legend ramp}
+\title{Mark the network mean on the legend's colour ramp}
 \usage{
 generate_indicator_bar(
   indicator,
   scale_name,
   data_max = NULL,
   image_mode = FALSE,
-  display_times = NULL
+  display_times = NULL,
+  style = "bar"
 )
 }
 \arguments{
@@ -17,27 +18,34 @@ generate_indicator_bar(
 
 \item{scale_name}{Colour scale name}
 
-\item{data_max}{Largest value in the data, so the bar is trimmed with the
-legend}
+\item{data_max}{Largest value in the data, so the marker is positioned
+against the ramp the legend actually drew}
 
 \item{image_mode}{TRUE for the static export}
 
 \item{display_times}{The step being drawn (image mode)}
+
+\item{style}{"bar" or "roundel"}
 }
 \value{
-HTML for the bar row, placed above the ramp inside the legend
+HTML placed inside the legend, above (bar) or on (roundel) the ramp
 }
 \description{
-The alternative to the standalone track (user proposal, 2026-07-30): the
-legend's own colour ramp becomes the scale, and the indicator is a bar
-above it running from zero to the network mean, filled with the mean's band
-colour.
+The legend's own colour ramp is the scale (user proposal, 2026-07-30), so
+there is only one scale on the page and the marker cannot disagree with it.
 }
 \details{
-The advantage over a separate track is that there is only one scale on the
-page. A standalone linear track sitting under an equal-width legend ramp
-puts the same threshold in two different places, which is worse than having
-no scale at all.
+Two ways of marking, both refinements of the first attempt, whose bar was
+thin and read as unconnected to the figure beside it:
+
+\describe{
+\item{\code{"bar"}}{a thicker bar above the ramp running from zero to the mean,
+with a cap at its end so the eye lands on the value rather than on the
+length}
+\item{\code{"roundel"}}{a single disc sitting on the ramp at the value and
+carrying the figure, repeated beside the caption — the same object in
+both places is what ties them together}
+}
 }
 \seealso{
 Other legend: 

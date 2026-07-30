@@ -19,7 +19,7 @@ inject_banner_legend_controls(
   banner_style = "strip",
   indicator = NULL,
   indicator_label = NULL,
-  indicator_style = "track"
+  indicator_style = "bar"
 )
 }
 \arguments{
