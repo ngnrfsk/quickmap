@@ -104,12 +104,15 @@
   padding: 0;
 }
 
-/* Indicator bar ("ramp" style): sits directly above the colour ramp and is
-   measured against it, so it must be exactly the ramp's width — same flex
-   parent, no padding of its own. */
+/* Indicator marker. Sits directly above (bar) or on (roundel) the colour
+   ramp and is measured against it, so it must be exactly the ramp's width —
+   same flex parent, no padding of its own. */
+
+/* "bar": thicker than the first attempt, with a dark cap at the end so the
+   eye lands on the value rather than on the length of the bar */
 .legend-indicator-bar {
-  height: 0.45rem;
-  margin-bottom: 0.2rem;
+  height: 0.7rem;
+  margin-bottom: 0.25rem;
   background: #f2f2f2;
   border-radius: 3px;
   overflow: hidden;
@@ -118,7 +121,61 @@
 .qm-bar-fill {
   height: 100%;
   border-radius: 3px;
+  border-right: 0.2rem solid rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
   transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* "roundel": a disc carrying the figure, sitting on the ramp at its value.
+   The row has no height of its own — the disc overhangs onto the ramp below
+   — so the ramp keeps its position and only the disc moves. */
+.legend-indicator-roundel {
+  position: relative;
+  height: 0;
+  margin-top: 0.75rem;
+}
+
+.qm-roundel {
+  position: absolute;
+  top: -0.35rem;
+  transform: translateX(-50%);
+  min-width: 1.9rem;
+  height: 1.4rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+  box-sizing: border-box;
+  z-index: 2;
+  transition: left 0.3s ease, background-color 0.3s ease;
+}
+
+/* The chip repeats the marker beside the figure: same colour, same shape.
+   This is the visual link between the caption box and the ramp. */
+.qm-ind-chip {
+  display: inline-block;
+  vertical-align: baseline;
+  margin-right: 0.35rem;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.qm-ind-chip-bar {
+  width: 0.9rem;
+  height: 0.55rem;
+  border-radius: 2px;
+}
+
+.qm-ind-chip-roundel {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
 }
 
 /* Aggregate indicator: the network mean against the scale's thresholds */

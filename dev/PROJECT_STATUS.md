@@ -816,6 +816,24 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
     Needs a resolution-aware target set in the colour-scale YAML and the
     numbers confirmed by the user.
 
+### Concepts — recorded, not scheduled
+
+-   **Limit-centred indicator** (2026-07-30):
+    `/Users/iarla/Coding/quickmap/dev/concepts/260730_limit-centred-indicator.md`
+    — an indicator measuring distance above or below a chosen target
+    (UK 40, WHO 10) instead of position on the scale. Answers the
+    question an action plan actually asks. Needs a decision on which
+    target sits at the centre.
+
+### Archived code — coded up, retired, wakeable
+
+-   **Standalone "track" indicator style** (v0.9.9.9, retired 2026-07-30):
+    `/Users/iarla/Coding/quickmap/dev/archive/260730_indicator_track-style_v1.R`
+    — an indicator with its own scale and tick marks. Retired because it
+    disagreed geometrically with the legend ramp beside it. The file
+    carries the reason, the case that would justify waking it (maps with
+    the legend switched off), and step-by-step instructions to restore it.
+
 ### Medium Priority Issues
 
 ### Low Priority Issues

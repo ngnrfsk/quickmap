@@ -1275,9 +1275,11 @@ get_default_theme <- function() {
     indicator = list(
       show = TRUE,
       label = NULL, # NULL builds "Network mean, N sites"
-      # "track" draws its own scale; "ramp" draws a bar above the legend's
-      # colour ramp and uses that as the scale
-      style = "track"
+      # How the mean is marked on the legend's colour ramp: "bar" (a bar from
+      # zero to the value) or "roundel" (a disc carrying the figure, repeated
+      # beside the caption). The old standalone "track" style is archived at
+      # dev/archive/260730_indicator_track-style_v1.R
+      style = "bar"
     ),
     map = list(
       # default reverted to OSM 2026-07-11 (user): the vignette dimming is
@@ -1689,25 +1691,31 @@ ramp_position <- function(value, thresholds, n_blocks) {
   round(100 * (band - 1 + frac) / n_blocks, 2)
 }
 
-#' Draw the indicator as a bar measured against the legend ramp
+#' Mark the network mean on the legend's colour ramp
 #'
-#' The alternative to the standalone track (user proposal, 2026-07-30): the
-#' legend's own colour ramp becomes the scale, and the indicator is a bar
-#' above it running from zero to the network mean, filled with the mean's band
-#' colour.
+#' The legend's own colour ramp is the scale (user proposal, 2026-07-30), so
+#' there is only one scale on the page and the marker cannot disagree with it.
 #'
-#' The advantage over a separate track is that there is only one scale on the
-#' page. A standalone linear track sitting under an equal-width legend ramp
-#' puts the same threshold in two different places, which is worse than having
-#' no scale at all.
+#' Two ways of marking, both refinements of the first attempt, whose bar was
+#' thin and read as unconnected to the figure beside it:
+#'
+#' \describe{
+#'   \item{`"bar"`}{a thicker bar above the ramp running from zero to the mean,
+#'     with a cap at its end so the eye lands on the value rather than on the
+#'     length}
+#'   \item{`"roundel"`}{a single disc sitting on the ramp at the value and
+#'     carrying the figure, repeated beside the caption — the same object in
+#'     both places is what ties them together}
+#' }
 #'
 #' @param indicator Result of [build_indicator_data()]
 #' @param scale_name Colour scale name
-#' @param data_max Largest value in the data, so the bar is trimmed with the
-#'   legend
+#' @param data_max Largest value in the data, so the marker is positioned
+#'   against the ramp the legend actually drew
 #' @param image_mode TRUE for the static export
 #' @param display_times The step being drawn (image mode)
-#' @return HTML for the bar row, placed above the ramp inside the legend
+#' @param style "bar" or "roundel"
+#' @return HTML placed inside the legend, above (bar) or on (roundel) the ramp
 #' @family legend
 #' @keywords internal
 generate_indicator_bar <- function(
@@ -1715,7 +1723,8 @@ generate_indicator_bar <- function(
   scale_name,
   data_max = NULL,
   image_mode = FALSE,
-  display_times = NULL
+  display_times = NULL,
+  style = "bar"
 ) {
   if (is.null(indicator) || length(indicator$values) == 0) return("")
 
@@ -1731,10 +1740,25 @@ generate_indicator_bar <- function(
   idx <- match(step, indicator$times)
   if (is.na(idx)) idx <- 1
 
-  width <- ramp_position(indicator$values[idx], thresholds, n_blocks)
+  position <- ramp_position(indicator$values[idx], thresholds, n_blocks)
   colour <- convert_colors_to_hex(
     assign_colour(indicator$values[idx], scale_name)
   )
+  figure <- format(round(indicator$values[idx], 1), nsmall = 1)
+
+  if (identical(style, "roundel")) {
+    # The roundel sits on the ramp, so the ramp row is its positioning
+    # context; CSS nudges it back by half its width to centre on the value
+    return(sprintf(
+      paste0(
+        '      <div class="legend-indicator-roundel">\n',
+        '        <div class="qm-roundel" id="qmIndicatorBar" ',
+        'style="left: %s%%; background: %s;">%s</div>\n',
+        '      </div>\n'
+      ),
+      format(position, trim = TRUE), colour, figure
+    ))
+  }
 
   sprintf(
     paste0(
@@ -1743,25 +1767,26 @@ generate_indicator_bar <- function(
       'style="width: %s%%; background: %s;"></div>\n',
       '      </div>\n'
     ),
-    format(width, trim = TRUE), colour
+    format(position, trim = TRUE), colour
   )
 }
 
-#' Draw the aggregate indicator as inline SVG
+#' Draw the indicator's wording and figure
 #'
-#' A track running from zero to the top of the colour scale, tick marks at the
-#' scale's thresholds, and a pointer at the network mean for the displayed
-#' step. The pointer takes the band colour of the value it sits on, so the
-#' indicator and the markers on the map agree.
+#' The words half of the indicator: the caption saying what the figure is and
+#' how many sites it rests on, and the figure itself. The scale half — the bar
+#' or roundel measured against the legend's colour ramp — is drawn separately
+#' by [generate_indicator_bar()], because it has to live inside the legend
+#' block to inherit the ramp's width.
 #'
-#' Everything is `rem`-based with a `viewBox`, never fixed pixels: the static
-#' export scales the root font size, so rem-based chrome scales with the image
-#' and fixed pixels would reproduce the marker-label defect (issue 9) by hand.
+#' A colour chip in the band colour ties the two halves together: the same
+#' colour appears on the ramp and beside the figure, which is what makes the
+#' reader connect them (user note, 2026-07-30 — the v1 bar was "not obviously
+#' connected visually" to its figure).
 #'
-#' In an interactive map the pointer moves with the time slider, so all steps
-#' are emitted and `indicator.js` selects between them. A static export has one
-#' step per image, so the pointer is drawn where R puts it and no script is
-#' emitted.
+#' In an interactive map every step is emitted and `indicator.js` selects
+#' between them. A static export has one step per image, so R draws that step
+#' and emits no script.
 #'
 #' @param indicator Result of [build_indicator_data()], or NULL for no
 #'   indicator
@@ -1769,6 +1794,9 @@ generate_indicator_bar <- function(
 #' @param image_mode TRUE for the static export
 #' @param display_times The step being drawn (image mode) or all steps
 #' @param label Caption above the figure; NULL builds "Network mean, N sites"
+#' @param style "bar" or "roundel" — how the figure is marked on the ramp
+#' @param data_max Largest value in the data, so the marker is positioned
+#'   against the ramp the legend actually drew
 #' @return HTML string, empty when there is nothing to show
 #' @family legend
 #' @keywords internal
@@ -1778,33 +1806,17 @@ generate_indicator_html <- function(
   image_mode = FALSE,
   display_times = NULL,
   label = NULL,
-  style = "track",
+  style = "bar",
   data_max = NULL
 ) {
   if (is.null(indicator) || length(indicator$values) == 0) return("")
 
-  scale_data <- load_colour_scale(scale_name)
-  thresholds <- scale_data$thresholds
-  ticks <- thresholds[is.finite(thresholds) & thresholds > 0]
+  thresholds <- load_colour_scale(scale_name)$thresholds
+  n_blocks <- length(
+    trim_colour_scale(load_colour_scale(scale_name), data_max)$colours
+  )
 
-  vmax <- max(c(ticks, indicator$values), na.rm = TRUE)
-  if (!is.finite(vmax) || vmax <= 0) return("")
-  vmax <- vmax * 1.08 # headroom so a pointer at the maximum is not clipped
-
-  # viewBox units, not pixels: the SVG scales with its rem-sized box
-  w <- 200
-  pad <- 4
-  x_of <- function(v) pad + (v / vmax) * (w - 2 * pad)
-
-  tick_marks <- vapply(ticks, function(t) {
-    sprintf(
-      paste0('<line x1="%.1f" y1="9" x2="%.1f" y2="20" class="qm-ind-tick"/>',
-             '<text x="%.1f" y="29" class="qm-ind-ticklabel">%s</text>'),
-      x_of(t), x_of(t), x_of(t), format(t, trim = TRUE)
-    )
-  }, "")
-
-  # The step to point at: one image shows one step; the slider drives the rest
+  # The step to show: one image shows one step; the slider drives the rest
   step <- if (image_mode && !is.null(display_times)) {
     as.character(display_times[1])
   } else {
@@ -1820,66 +1832,49 @@ generate_indicator_html <- function(
     if (indicator$n_sites == 1) "" else "s"
   )
 
-  pointer_colour <- convert_colors_to_hex(assign_colour(value, scale_name))
+  colour <- convert_colors_to_hex(assign_colour(value, scale_name))
 
-  svg <- sprintf(
-    paste0(
-      '<svg class="qm-ind-svg" viewBox="0 0 %d 32" ',
-      'preserveAspectRatio="none" aria-hidden="true">',
-      '<rect x="%.1f" y="12" width="%.1f" height="5" rx="2.5" ',
-      'class="qm-ind-track"/>',
-      '%s',
-      '<g id="qmIndicatorPointer" transform="translate(%.1f 0)">',
-      '<path d="M -4 4 L 4 4 L 0 11 Z" fill="%s" stroke="#333" ',
-      'stroke-width="0.6"/>',
-      '</g></svg>'
-    ),
-    w, pad, w - 2 * pad, paste(tick_marks, collapse = ""),
-    x_of(value), pointer_colour
+  # The chip repeats the marker's shape as well as its colour, so a reader
+  # matching the figure to the ramp is matching like with like
+  chip <- sprintf(
+    '<span class="qm-ind-chip qm-ind-chip-%s" id="qmIndicatorChip" style="background: %s;"></span>',
+    if (identical(style, "roundel")) "roundel" else "bar",
+    colour
   )
 
   value_text <- sprintf(
-    '<span id="qmIndicatorValue">%s</span> <span class="qm-ind-units">%s</span>',
+    paste0('%s<span id="qmIndicatorValue">%s</span> ',
+           '<span class="qm-ind-units">%s</span>'),
+    chip,
     format(round(value, 1), nsmall = 1),
-    "µg/m³"
+    "\u00b5g/m\u00b3"
   )
 
-  # "ramp" style: the legend's own colour ramp is the scale, so the block
-  # carries the words and the figure only — the bar is drawn above the ramp by
-  # generate_indicator_bar()
   block <- sprintf(
     paste0(
       '      <div class="legend-indicator" id="qmIndicator">\n',
       '        <div class="qm-ind-caption">%s</div>\n',
       '        <div class="qm-ind-value">%s</div>\n',
-      '        %s\n',
       '      </div>'
     ),
-    caption, value_text, if (identical(style, "ramp")) "" else svg
+    caption, value_text
   )
 
   if (image_mode) return(block)
 
-  # Interactive: the indicator follows the slider. Every position is computed
-  # in R and shipped ready-made — x coordinates for the track pointer, widths
-  # for the ramp bar — so the browser never has to know the colour scale.
-  bar_widths <- vapply(
-    indicator$values,
-    ramp_position,
-    0,
-    thresholds = thresholds,
-    n_blocks = length(
-      trim_colour_scale(load_colour_scale(scale_name), data_max)$colours
-    )
+  # Interactive: positions are computed in R and shipped ready-made, so the
+  # browser never has to know the colour scale
+  positions <- vapply(
+    indicator$values, ramp_position, 0,
+    thresholds = thresholds, n_blocks = n_blocks
   )
 
   payload <- sprintf(
-    '{"times":[%s],"values":[%s],"x":[%s],"w":[%s],"colours":[%s]}',
+    '{"times":[%s],"values":[%s],"w":[%s],"colours":[%s]}',
     paste0('"', indicator$times, '"', collapse = ","),
     paste(format(round(indicator$values, 1), nsmall = 1, trim = TRUE),
           collapse = ","),
-    paste(sprintf("%.2f", x_of(indicator$values)), collapse = ","),
-    paste(sprintf("%.2f", bar_widths), collapse = ","),
+    paste(sprintf("%.2f", positions), collapse = ","),
     paste0('"', convert_colors_to_hex(vapply(
       indicator$values, assign_colour, "", scale = scale_name
     )), '"', collapse = ",")
@@ -2068,8 +2063,8 @@ add_year_and_static_layers <- function(
 #' @param banner_style "strip" or "bar"
 #' @param indicator Aggregate figures from [build_indicator_data()], or NULL
 #' @param indicator_label Caption for the indicator, or NULL for the default
-#' @param indicator_style "track" (its own scale) or "ramp" (a bar above
-#'   the legend's colour ramp)
+#' @param indicator_style How the mean is marked on the legend ramp:
+#'   "bar" or "roundel"
 #' @return The map object, invisibly used by the caller's loop
 #' @keywords internal
 finalize_and_save_map <- function(
@@ -2096,7 +2091,7 @@ finalize_and_save_map <- function(
   banner_style = "strip",
   indicator = NULL,
   indicator_label = NULL,
-  indicator_style = "track"
+  indicator_style = "bar"
 ) {
   map <- add_map_controls(
     map,
@@ -2177,7 +2172,7 @@ save_html_and_style <- function(
   banner_style = "strip",
   indicator = NULL,
   indicator_label = NULL,
-  indicator_style = "track"
+  indicator_style = "bar"
 ) {
   htmlwidgets::saveWidget(
     map,
@@ -2494,7 +2489,7 @@ inject_banner_legend_controls <- function(
   banner_style = "strip",
   indicator = NULL,
   indicator_label = NULL,
-  indicator_style = "track"
+  indicator_style = "bar"
 ) {
   if (!file.exists(html_file)) {
     stop("HTML file not found: ", html_file)
@@ -2580,15 +2575,9 @@ inject_banner_legend_controls <- function(
     data_max
   )
 
-  # "ramp" style draws the bar inside the legend, above the colour ramp it is
-  # measured against; "track" draws its own scale in the indicator block
-  indicator_bar <- if (identical(indicator_style, "ramp")) {
-    generate_indicator_bar(
-      indicator, scale_name, data_max, image_mode, display_times
-    )
-  } else {
-    ""
-  }
+  indicator_bar <- generate_indicator_bar(
+    indicator, scale_name, data_max, image_mode, display_times, indicator_style
+  )
 
   legend_html <- generate_legend_html(
     scale_name, collapsed_mobile, data_max, indicator_html, indicator_bar
@@ -3722,7 +3711,7 @@ render_pollution_map <- function(
     )
   }
   indicator_label <- theme$indicator$label
-  indicator_style <- theme$indicator$style %||% "track"
+  indicator_style <- theme$indicator$style %||% "bar"
 
   marker_scale_factor <- if (image_export) {
     sqrt((map_width_px * map_height_px) / (1200 * 1200))

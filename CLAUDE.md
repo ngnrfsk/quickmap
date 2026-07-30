@@ -334,7 +334,17 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
     handler in `time-slider.js` **above** the lazy-path early return
 -   **Static exports**: drawn server-side for that image's step, no script;
     rem/viewBox units only, so it scales with the export
--   **Theme keys**: `indicator.show` (default TRUE), `indicator.label`
+-   **Marked on the legend's own ramp**, never on a scale of its own: the
+    ramp gives every band equal width whatever its span
+    (`.ramp-block { flex: 1 }`), so a separate linear scale would put the
+    same threshold in two places. `ramp_position()` maps a value band by
+    band; the open-ended top band resolves to its midpoint
+-   **Two marker styles**: `"bar"` (a bar from zero to the value, capped) and
+    `"roundel"` (a disc carrying the figure). Both repeat their colour and
+    shape as a chip beside the caption, which is the visual link between the
+    figure and the ramp
+-   **Theme keys**: `indicator.show` (default TRUE), `indicator.label`,
+    `indicator.style` ("bar" or "roundel")
 -   **Files**: `build_indicator_data()` and `generate_indicator_html()` in
     `R/quickmap.R`, `inst/controls/indicator.js`, styles in both
     `inst/legend/legend-interactive.css` and `legend-image.css`

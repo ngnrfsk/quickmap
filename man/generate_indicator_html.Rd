@@ -2,7 +2,7 @@
 % Please edit documentation in R/quickmap.R
 \name{generate_indicator_html}
 \alias{generate_indicator_html}
-\title{Draw the aggregate indicator as inline SVG}
+\title{Draw the indicator's wording and figure}
 \usage{
 generate_indicator_html(
   indicator,
@@ -10,7 +10,7 @@ generate_indicator_html(
   image_mode = FALSE,
   display_times = NULL,
   label = NULL,
-  style = "track",
+  style = "bar",
   data_max = NULL
 )
 }
@@ -25,25 +25,31 @@ indicator}
 \item{display_times}{The step being drawn (image mode) or all steps}
 
 \item{label}{Caption above the figure; NULL builds "Network mean, N sites"}
+
+\item{style}{"bar" or "roundel" — how the figure is marked on the ramp}
+
+\item{data_max}{Largest value in the data, so the marker is positioned
+against the ramp the legend actually drew}
 }
 \value{
 HTML string, empty when there is nothing to show
 }
 \description{
-A track running from zero to the top of the colour scale, tick marks at the
-scale's thresholds, and a pointer at the network mean for the displayed
-step. The pointer takes the band colour of the value it sits on, so the
-indicator and the markers on the map agree.
+The words half of the indicator: the caption saying what the figure is and
+how many sites it rests on, and the figure itself. The scale half — the bar
+or roundel measured against the legend's colour ramp — is drawn separately
+by \code{\link[=generate_indicator_bar]{generate_indicator_bar()}}, because it has to live inside the legend
+block to inherit the ramp's width.
 }
 \details{
-Everything is \code{rem}-based with a \code{viewBox}, never fixed pixels: the static
-export scales the root font size, so rem-based chrome scales with the image
-and fixed pixels would reproduce the marker-label defect (issue 9) by hand.
+A colour chip in the band colour ties the two halves together: the same
+colour appears on the ramp and beside the figure, which is what makes the
+reader connect them (user note, 2026-07-30 — the v1 bar was "not obviously
+connected visually" to its figure).
 
-In an interactive map the pointer moves with the time slider, so all steps
-are emitted and \code{indicator.js} selects between them. A static export has one
-step per image, so the pointer is drawn where R puts it and no script is
-emitted.
+In an interactive map every step is emitted and \code{indicator.js} selects
+between them. A static export has one step per image, so R draws that step
+and emits no script.
 }
 \seealso{
 Other legend: 
