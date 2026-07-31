@@ -1,5 +1,5 @@
 (function() {
-  // Aggregate indicator: moves the marker and rewrites the figure when the
+  // Aggregate indicator: moves the markers and rewrites the figures when the
   // time slider changes step. Registered as window.quickmapIndicatorController,
   // the same optional-global contract the wind overlay uses.
   //
@@ -10,32 +10,51 @@
   var data = window.quickmapIndicatorData;
   if (!data || !data.times || !data.times.length) return;
 
+  function set(id, fn) {
+    var el = document.getElementById(id);
+    if (el) fn(el);
+  }
+
   function setTime(selected) {
     var i = data.times.indexOf(String(selected));
     if (i < 0) return;
 
     var figure = Number(data.values[i]).toFixed(1);
+    var hasMax = !!data.maxW;
+    // markers within a marker's width of each other would overlap, so the
+    // maximum lifts and the mean drops — the same rule R applies server-side
+    var crowded = hasMax &&
+      Math.abs(data.maxW[i] - data.w[i]) < (data.clearance || 9);
 
-    var marker = document.getElementById("qmIndicatorBar");
-    if (marker) {
-      if (marker.classList.contains("qm-roundel")) {
-        // a disc sitting on the ramp at the value, carrying the figure
-        marker.style.left = data.w[i] + "%";
-        marker.textContent = figure;
-      } else {
-        // a bar from zero to the value
-        marker.style.width = data.w[i] + "%";
-      }
-      marker.style.background = data.colours[i];
-    }
+    set("qmIndicatorBar", function(el) {
+      el.style.left = data.w[i] + "%";
+      el.style.background = data.colours[i];
+      el.textContent = figure;
+      el.classList.toggle("qm-dropped", crowded);
+    });
+    set("qmIndicatorChip", function(el) {
+      el.style.background = data.colours[i];
+    });
+    set("qmIndicatorValue", function(el) { el.textContent = figure; });
 
-    // the chip beside the caption keeps the marker's colour, which is what
-    // ties the figure to the ramp
-    var chip = document.getElementById("qmIndicatorChip");
-    if (chip) chip.style.background = data.colours[i];
+    if (!hasMax) return;
 
-    var value = document.getElementById("qmIndicatorValue");
-    if (value) value.textContent = figure;
+    var maxFigure = Number(data.maxValues[i]).toFixed(1);
+    set("qmIndicatorMax", function(el) {
+      el.style.left = data.maxW[i] + "%";
+      el.style.background = data.maxColours[i];
+      el.title = "Highest site, " + maxFigure;
+      el.classList.toggle("qm-lifted", crowded);
+    });
+    set("qmIndicatorMaxFigure", function(el) {
+      el.style.left = data.maxW[i] + "%";
+      el.textContent = maxFigure;
+      el.classList.toggle("qm-lifted", crowded);
+    });
+    set("qmIndicatorMaxChip", function(el) {
+      el.style.background = data.maxColours[i];
+    });
+    set("qmIndicatorMaxValue", function(el) { el.textContent = maxFigure; });
   }
 
   window.quickmapIndicatorController = { setTime: setTime };

@@ -214,45 +214,100 @@ test_that("the bar is trimmed with the legend it sits above", {
   )
 })
 
-test_that("bar and roundel both mark the ramp, and nothing draws a second scale", {
+test_that("the roundel marks the ramp and nothing draws a second scale", {
   ind <- quickmap:::build_indicator_data(
     make_layers("tubes"), fixture(), c("2019", "2020", "2021"), "no2"
   )
 
-  bar <- quickmap:::generate_indicator_bar(ind, "who_no2", style = "bar")
-  expect_match(bar, 'id="qmIndicatorBar"', fixed = TRUE)
-  expect_match(bar, "width:", fixed = TRUE)
-
-  roundel <- quickmap:::generate_indicator_bar(
-    ind, "who_no2", style = "roundel"
-  )
+  roundel <- quickmap:::generate_indicator_bar(ind, "who_no2")
   expect_match(roundel, "qm-roundel", fixed = TRUE)
   expect_match(roundel, "left:", fixed = TRUE) # positioned, not filled
   expect_match(roundel, ">50.0<", fixed = TRUE) # carries its own figure
 
-  block <- quickmap:::generate_indicator_html(ind, "who_no2", style = "roundel")
+  block <- quickmap:::generate_indicator_html(ind, "who_no2")
   expect_match(block, "Network mean, 2 sites", fixed = TRUE)
   expect_match(block, '"w":[', fixed = TRUE) # positions for every step
-
-  # the retired track style drew its own scale; nothing should now
-  expect_false(grepl("qm-ind-svg", block, fixed = TRUE))
-  expect_false(grepl(
-    "qm-ind-svg",
-    quickmap:::generate_indicator_html(ind, "who_no2", style = "bar"),
-    fixed = TRUE
-  ))
-
-  # the chip beside the figure repeats the marker's shape, which is the
-  # visual link between the caption and the ramp
   expect_match(block, "qm-ind-chip-roundel", fixed = TRUE)
-  expect_match(
-    quickmap:::generate_indicator_html(ind, "who_no2", style = "bar"),
-    "qm-ind-chip-bar", fixed = TRUE
+
+  # the retired track and bar styles are archived; nothing draws either now
+  expect_false(grepl("qm-ind-svg", block, fixed = TRUE))
+  expect_false(grepl("qm-bar-fill", roundel, fixed = TRUE))
+
+  expect_identical(quickmap:::generate_indicator_html(NULL, "who_no2"), "")
+})
+
+test_that("the maximum comes from the same panel as the mean", {
+  ind <- quickmap:::build_indicator_data(
+    make_layers("tubes"), fixture(), c("2019", "2020", "2021"), "no2"
+  )
+  # panel is A (40/30/20) and B (60/50/40); C is excluded from both figures,
+  # so the two are computed over the same sites and remain comparable
+  expect_equal(ind$values, c(50, 40, 30))
+  expect_equal(ind$max_values, c(60, 50, 40))
+})
+
+test_that("the maximum is drawn as a diamond, off by default", {
+  ind <- quickmap:::build_indicator_data(
+    make_layers("tubes"), fixture(), c("2019", "2020", "2021"), "no2"
   )
 
-  expect_identical(
-    quickmap:::generate_indicator_html(NULL, "who_no2", style = "roundel"), ""
+  plain <- quickmap:::generate_indicator_bar(ind, "who_no2")
+  expect_false(grepl("qm-diamond", plain, fixed = TRUE))
+
+  with_max <- quickmap:::generate_indicator_bar(
+    ind, "who_no2", show_max = TRUE
   )
+  expect_match(with_max, "qm-diamond", fixed = TRUE)
+  expect_match(with_max, ">60.0<", fixed = TRUE) # the maximum's own figure
+  expect_match(with_max, "qm-roundel", fixed = TRUE) # mean still there
+
+  block <- quickmap:::generate_indicator_html(ind, "who_no2", show_max = TRUE)
+  expect_match(block, "Highest site", fixed = TRUE)
+  expect_match(block, "qm-ind-chip-diamond", fixed = TRUE)
+  expect_match(block, '"maxValues":[', fixed = TRUE)
+  # shape distinguishes the two, not colour: both take their own band colour
+  expect_match(block, "qm-ind-chip-roundel", fixed = TRUE)
+})
+
+test_that("markers separate only when they would overlap", {
+  # far apart: 10 and 90 on a 0-100 scale
+  apart <- list(
+    values = 10, max_values = 90, times = "2019", n_sites = 5L,
+    pollutant = "no2"
+  )
+  html <- quickmap:::generate_indicator_bar(apart, "who_no2", show_max = TRUE)
+  expect_false(grepl("qm-lifted", html, fixed = TRUE))
+  expect_false(grepl("qm-dropped", html, fixed = TRUE))
+
+  # nearly equal: the rule must fire, or the two markers sit on top of each
+  # other and the figures become unreadable
+  close <- list(
+    values = 42, max_values = 43, times = "2019", n_sites = 5L,
+    pollutant = "no2"
+  )
+  html <- quickmap:::generate_indicator_bar(close, "who_no2", show_max = TRUE)
+  expect_match(html, "qm-lifted", fixed = TRUE)
+  expect_match(html, "qm-dropped", fixed = TRUE)
+})
+
+test_that("the network figures sit under the legend title and collapse with it", {
+  template <- quickmap:::read_template_file(
+    file.path(quickmap:::get_package_dir("legend"), "legend.html")
+  )
+  lead <- regexpr("legend-lead", template, fixed = TRUE)
+  header <- regexpr("legend-header", template, fixed = TRUE)
+  indicator <- regexpr("{{legend_indicator}}", template, fixed = TRUE)
+  content <- regexpr("legend-content", template, fixed = TRUE)
+
+  # the figures live in the lead column, after the title and before the ramp
+  expect_true(lead > 0 && lead < header)
+  expect_true(header < indicator)
+  expect_true(indicator < content)
+
+  css <- quickmap:::read_template_file(
+    file.path(quickmap:::get_package_dir("legend"), "legend-interactive.css")
+  )
+  expect_match(css, ".legend.collapsed .legend-indicator", fixed = TRUE)
 })
 
 test_that("the indicator is switchable through the theme", {

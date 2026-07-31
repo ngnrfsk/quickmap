@@ -87,23 +87,8 @@
   flex-wrap: wrap;
 }
 
-/* Indicator marker: exactly the ramp's width, directly above or on it.
-   All rem-based, so it scales with the export. */
-.legend-indicator-bar {
-  height: 0.75rem;
-  margin-bottom: 0.25rem;
-  background: #f2f2f2;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.qm-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  border-right: 0.2rem solid rgba(0, 0, 0, 0.5);
-  box-sizing: border-box;
-}
-
+/* Indicator markers: exactly the ramp's width, sitting on it.
+   All rem-based, so they scale with the export. */
 .legend-indicator-roundel {
   position: relative;
   height: 0;
@@ -139,26 +124,15 @@
   border: 1px solid rgba(0, 0, 0, 0.25);
 }
 
-.qm-ind-chip-bar {
-  width: 1rem;
-  height: 0.6rem;
-  border-radius: 2px;
-}
-
 .qm-ind-chip-roundel {
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 999px;
 }
 
-/* Aggregate indicator. Sizes in rem so the pointer, figure and tick labels
-   scale with the export like the rest of the chrome; the tick labels are in
-   viewBox units and scale with the SVG box. */
 .legend-indicator {
   flex-shrink: 0;
-  width: 12rem;
-  border-left: 1px solid #e5e5e5;
-  padding-left: 1.25rem;
+  padding-left: 0.2rem;
 }
 
 .qm-ind-caption {
@@ -179,18 +153,55 @@
   color: #666;
 }
 
-.qm-ind-svg {
-  width: 100%;
-  height: 2rem;
-  overflow: visible;
+/* The lead column: title pill with the network figures beneath it. Keeping
+   them together means the figures read as belonging to the legend's title,
+   and they collapse with it (user request, 2026-07-31). */
+.legend-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.46rem;
+  flex-shrink: 0;
 }
 
-.qm-ind-track { fill: #ececec; }
-.qm-ind-tick { stroke: #bbb; stroke-width: 0.8; }
-
-.qm-ind-ticklabel {
-  fill: #666;
-  font-size: 7px;
-  text-anchor: middle;
-  font-family: inherit;
+/* The maximum's diamond: a square turned 45 degrees. Distinguished from the
+   mean by SHAPE, not colour — colour already carries the concentration band,
+   so both markers take the band colour of their own value. */
+.qm-diamond {
+  position: absolute;
+  top: -0.17rem;
+  transform: translateX(-50%) rotate(45deg);
+  width: 0.98rem;
+  height: 0.98rem;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+  z-index: 3;
+  transition: left 0.3s ease, background-color 0.3s ease;
 }
+
+.qm-diamond-figure {
+  position: absolute;
+  top: -1.55rem;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #333;
+  white-space: nowrap;
+  transition: left 0.3s ease;
+}
+
+/* Collision rule: when the mean and the maximum fall within a marker's width
+   of each other, the maximum lifts and the mean drops rather than overlapping.
+   Markers move only to avoid each other, never for layout. */
+.qm-diamond.qm-lifted { top: -0.86rem; }
+.qm-diamond-figure.qm-lifted { top: -2.24rem; }
+.qm-roundel.qm-dropped { top: 0.4rem; }
+
+.qm-ind-chip-diamond {
+  width: 0.71rem;
+  height: 0.71rem;
+  transform: rotate(45deg);
+  margin-right: 0.57rem;
+}
+
+.qm-ind-caption-max { margin-top: 0.29rem; }

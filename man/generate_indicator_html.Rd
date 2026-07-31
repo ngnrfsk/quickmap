@@ -2,7 +2,7 @@
 % Please edit documentation in R/quickmap.R
 \name{generate_indicator_html}
 \alias{generate_indicator_html}
-\title{Draw the indicator's wording and figure}
+\title{Draw the indicator's wording and figures}
 \usage{
 generate_indicator_html(
   indicator,
@@ -10,7 +10,7 @@ generate_indicator_html(
   image_mode = FALSE,
   display_times = NULL,
   label = NULL,
-  style = "bar",
+  show_max = FALSE,
   data_max = NULL
 )
 }
@@ -26,26 +26,27 @@ indicator}
 
 \item{label}{Caption above the figure; NULL builds "Network mean, N sites"}
 
-\item{style}{"bar" or "roundel" — how the figure is marked on the ramp}
+\item{show_max}{Also report the network maximum}
 
-\item{data_max}{Largest value in the data, so the marker is positioned
-against the ramp the legend actually drew}
+\item{data_max}{Largest value in the data, so markers are positioned against
+the ramp the legend actually drew}
 }
 \value{
 HTML string, empty when there is nothing to show
 }
 \description{
-The words half of the indicator: the caption saying what the figure is and
-how many sites it rests on, and the figure itself. The scale half — the bar
-or roundel measured against the legend's colour ramp — is drawn separately
-by \code{\link[=generate_indicator_bar]{generate_indicator_bar()}}, because it has to live inside the legend
-block to inherit the ramp's width.
+The words half of the indicator: what the figure is, how many sites it rests
+on, and the figure itself — plus the network maximum when that is switched
+on. The scale half (the markers on the legend's colour ramp) is drawn by
+\code{\link[=generate_indicator_bar]{generate_indicator_bar()}}, because it has to live inside the legend block
+to inherit the ramp's width.
 }
 \details{
-A colour chip in the band colour ties the two halves together: the same
-colour appears on the ramp and beside the figure, which is what makes the
-reader connect them (user note, 2026-07-30 — the v1 bar was "not obviously
-connected visually" to its figure).
+A chip repeating the marker's shape and colour sits beside each figure. That
+is the visual link between the words and the ramp (user note, 2026-07-30 —
+the first bar was "not obviously connected visually" to its figure), and it
+is what distinguishes the mean's roundel from the maximum's diamond without
+relying on colour, which is already carrying the concentration band.
 
 In an interactive map every step is emitted and \code{indicator.js} selects
 between them. A static export has one step per image, so R draws that step

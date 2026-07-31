@@ -876,10 +876,19 @@ build_indicator_data <- function(
   if (length(panel) == 0) return(NULL)
 
   obs <- obs[obs$site %in% panel, , drop = FALSE]
-  means <- tapply(obs$value, factor(obs$step, levels = times), mean)
+  step_factor <- factor(obs$step, levels = times)
+  means <- tapply(obs$value, step_factor, mean)
+
+  # The maximum comes from the same fixed panel as the mean, deliberately.
+  # The alternative — the worst site of any reporting that year — is a more
+  # natural reading of "the worst site", but mixing bases would put two
+  # figures side by side that are computed over different sets of sites, and
+  # a jump would then be unattributable to either the air or the network.
+  maxima <- tapply(obs$value, step_factor, max)
 
   list(
     values = round(as.numeric(means), 1),
+    max_values = round(as.numeric(maxima), 1),
     times = times,
     n_sites = length(panel),
     pollutant = pollutant
@@ -1275,11 +1284,10 @@ get_default_theme <- function() {
     indicator = list(
       show = TRUE,
       label = NULL, # NULL builds "Network mean, N sites"
-      # How the mean is marked on the legend's colour ramp: "bar" (a bar from
-      # zero to the value) or "roundel" (a disc carrying the figure, repeated
-      # beside the caption). The old standalone "track" style is archived at
-      # dev/archive/260730_indicator_track-style_v1.R
-      style = "bar"
+      # Also mark the network maximum, as a diamond beside the mean's
+      # roundel. Off by default: two markers on one ramp is a busier legend,
+      # and the mean alone is the headline figure.
+      show_max = FALSE
     ),
     map = list(
       # default reverted to OSM 2026-07-11 (user): the vignette dimming is
@@ -1691,31 +1699,32 @@ ramp_position <- function(value, thresholds, n_blocks) {
   round(100 * (band - 1 + frac) / n_blocks, 2)
 }
 
-#' Mark the network mean on the legend's colour ramp
+#' Mark the network figures on the legend's colour ramp
 #'
 #' The legend's own colour ramp is the scale (user proposal, 2026-07-30), so
-#' there is only one scale on the page and the marker cannot disagree with it.
+#' there is only one scale on the page and the markers cannot disagree with it.
 #'
-#' Two ways of marking, both refinements of the first attempt, whose bar was
-#' thin and read as unconnected to the figure beside it:
+#' The mean is a roundel carrying its own figure, sitting at its place on the
+#' ramp. Optionally the maximum joins it as a diamond, distinguished by shape
+#' rather than by colour — colour is already spoken for, since both markers take
+#' the band colour of their own value.
 #'
-#' \describe{
-#'   \item{`"bar"`}{a thicker bar above the ramp running from zero to the mean,
-#'     with a cap at its end so the eye lands on the value rather than on the
-#'     length}
-#'   \item{`"roundel"`}{a single disc sitting on the ramp at the value and
-#'     carrying the figure, repeated beside the caption — the same object in
-#'     both places is what ties them together}
-#' }
+#' When the two figures fall close together their markers would overlap, so the
+#' maximum lifts above the ramp and the mean drops below it. That is a collision
+#' rule, not a layout: markers move only when they would otherwise sit on top of
+#' each other.
+#'
+#' The retired "bar" style is at
+#' `dev/archive/260731_indicator_bar-style_v1.R`.
 #'
 #' @param indicator Result of [build_indicator_data()]
 #' @param scale_name Colour scale name
-#' @param data_max Largest value in the data, so the marker is positioned
-#'   against the ramp the legend actually drew
+#' @param data_max Largest value in the data, so markers are positioned against
+#'   the ramp the legend actually drew
 #' @param image_mode TRUE for the static export
 #' @param display_times The step being drawn (image mode)
-#' @param style "bar" or "roundel"
-#' @return HTML placed inside the legend, above (bar) or on (roundel) the ramp
+#' @param show_max Also mark the network maximum, as a diamond
+#' @return HTML placed inside the legend, over the ramp
 #' @family legend
 #' @keywords internal
 generate_indicator_bar <- function(
@@ -1724,7 +1733,7 @@ generate_indicator_bar <- function(
   data_max = NULL,
   image_mode = FALSE,
   display_times = NULL,
-  style = "bar"
+  show_max = FALSE
 ) {
   if (is.null(indicator) || length(indicator$values) == 0) return("")
 
@@ -1740,49 +1749,65 @@ generate_indicator_bar <- function(
   idx <- match(step, indicator$times)
   if (is.na(idx)) idx <- 1
 
-  position <- ramp_position(indicator$values[idx], thresholds, n_blocks)
-  colour <- convert_colors_to_hex(
+  mean_pos <- ramp_position(indicator$values[idx], thresholds, n_blocks)
+  mean_colour <- convert_colors_to_hex(
     assign_colour(indicator$values[idx], scale_name)
   )
-  figure <- format(round(indicator$values[idx], 1), nsmall = 1)
+  mean_figure <- format(round(indicator$values[idx], 1), nsmall = 1)
 
-  if (identical(style, "roundel")) {
-    # The roundel sits on the ramp, so the ramp row is its positioning
-    # context; CSS nudges it back by half its width to centre on the value
-    return(sprintf(
+  show_max <- isTRUE(show_max) && !is.null(indicator$max_values)
+
+  crowded <- FALSE
+  max_html <- ""
+  if (show_max) {
+    max_pos <- ramp_position(indicator$max_values[idx], thresholds, n_blocks)
+    max_colour <- convert_colors_to_hex(
+      assign_colour(indicator$max_values[idx], scale_name)
+    )
+    max_figure <- format(round(indicator$max_values[idx], 1), nsmall = 1)
+    crowded <- abs(max_pos - mean_pos) < QM_MARKER_CLEARANCE
+
+    max_html <- sprintf(
       paste0(
-        '      <div class="legend-indicator-roundel">\n',
-        '        <div class="qm-roundel" id="qmIndicatorBar" ',
-        'style="left: %s%%; background: %s;">%s</div>\n',
-        '      </div>\n'
+        '        <div class="qm-diamond%s" id="qmIndicatorMax" ',
+        'style="left: %s%%; background: %s;" title="Highest site, %s"></div>\n',
+        '        <div class="qm-diamond-figure%s" id="qmIndicatorMaxFigure" ',
+        'style="left: %s%%;">%s</div>\n'
       ),
-      format(position, trim = TRUE), colour, figure
-    ))
+      if (crowded) " qm-lifted" else "",
+      format(max_pos, trim = TRUE), max_colour, max_figure,
+      if (crowded) " qm-lifted" else "",
+      format(max_pos, trim = TRUE), max_figure
+    )
   }
 
   sprintf(
     paste0(
-      '      <div class="legend-indicator-bar">\n',
-      '        <div class="qm-bar-fill" id="qmIndicatorBar" ',
-      'style="width: %s%%; background: %s;"></div>\n',
+      '      <div class="legend-indicator-roundel">\n',
+      '%s',
+      '        <div class="qm-roundel%s" id="qmIndicatorBar" ',
+      'style="left: %s%%; background: %s;">%s</div>\n',
       '      </div>\n'
     ),
-    format(position, trim = TRUE), colour
+    max_html,
+    if (crowded) " qm-dropped" else "",
+    format(mean_pos, trim = TRUE), mean_colour, mean_figure
   )
 }
 
-#' Draw the indicator's wording and figure
+#' Draw the indicator's wording and figures
 #'
-#' The words half of the indicator: the caption saying what the figure is and
-#' how many sites it rests on, and the figure itself. The scale half — the bar
-#' or roundel measured against the legend's colour ramp — is drawn separately
-#' by [generate_indicator_bar()], because it has to live inside the legend
-#' block to inherit the ramp's width.
+#' The words half of the indicator: what the figure is, how many sites it rests
+#' on, and the figure itself — plus the network maximum when that is switched
+#' on. The scale half (the markers on the legend's colour ramp) is drawn by
+#' [generate_indicator_bar()], because it has to live inside the legend block
+#' to inherit the ramp's width.
 #'
-#' A colour chip in the band colour ties the two halves together: the same
-#' colour appears on the ramp and beside the figure, which is what makes the
-#' reader connect them (user note, 2026-07-30 — the v1 bar was "not obviously
-#' connected visually" to its figure).
+#' A chip repeating the marker's shape and colour sits beside each figure. That
+#' is the visual link between the words and the ramp (user note, 2026-07-30 —
+#' the first bar was "not obviously connected visually" to its figure), and it
+#' is what distinguishes the mean's roundel from the maximum's diamond without
+#' relying on colour, which is already carrying the concentration band.
 #'
 #' In an interactive map every step is emitted and `indicator.js` selects
 #' between them. A static export has one step per image, so R draws that step
@@ -1794,9 +1819,9 @@ generate_indicator_bar <- function(
 #' @param image_mode TRUE for the static export
 #' @param display_times The step being drawn (image mode) or all steps
 #' @param label Caption above the figure; NULL builds "Network mean, N sites"
-#' @param style "bar" or "roundel" — how the figure is marked on the ramp
-#' @param data_max Largest value in the data, so the marker is positioned
-#'   against the ramp the legend actually drew
+#' @param show_max Also report the network maximum
+#' @param data_max Largest value in the data, so markers are positioned against
+#'   the ramp the legend actually drew
 #' @return HTML string, empty when there is nothing to show
 #' @family legend
 #' @keywords internal
@@ -1806,7 +1831,7 @@ generate_indicator_html <- function(
   image_mode = FALSE,
   display_times = NULL,
   label = NULL,
-  style = "bar",
+  show_max = FALSE,
   data_max = NULL
 ) {
   if (is.null(indicator) || length(indicator$values) == 0) return("")
@@ -1815,6 +1840,7 @@ generate_indicator_html <- function(
   n_blocks <- length(
     trim_colour_scale(load_colour_scale(scale_name), data_max)$colours
   )
+  show_max <- isTRUE(show_max) && !is.null(indicator$max_values)
 
   # The step to show: one image shows one step; the slider drives the rest
   step <- if (image_mode && !is.null(display_times)) {
@@ -1834,30 +1860,48 @@ generate_indicator_html <- function(
 
   colour <- convert_colors_to_hex(assign_colour(value, scale_name))
 
-  # The chip repeats the marker's shape as well as its colour, so a reader
-  # matching the figure to the ramp is matching like with like
-  chip <- sprintf(
-    '<span class="qm-ind-chip qm-ind-chip-%s" id="qmIndicatorChip" style="background: %s;"></span>',
-    if (identical(style, "roundel")) "roundel" else "bar",
-    colour
+  figure_row <- function(shape, id_chip, id_value, colour, figure, extra = "") {
+    sprintf(
+      paste0(
+        '<span class="qm-ind-chip qm-ind-chip-%s" id="%s" ',
+        'style="background: %s;"></span>',
+        '<span id="%s">%s</span> ',
+        '<span class="qm-ind-units">\u00b5g/m\u00b3</span>%s'
+      ),
+      shape, id_chip, colour, id_value, figure, extra
+    )
+  }
+
+  value_text <- figure_row(
+    "roundel", "qmIndicatorChip", "qmIndicatorValue", colour,
+    format(round(value, 1), nsmall = 1)
   )
 
-  value_text <- sprintf(
-    paste0('%s<span id="qmIndicatorValue">%s</span> ',
-           '<span class="qm-ind-units">%s</span>'),
-    chip,
-    format(round(value, 1), nsmall = 1),
-    "\u00b5g/m\u00b3"
-  )
+  max_block <- ""
+  if (show_max) {
+    max_value <- indicator$max_values[idx]
+    max_block <- sprintf(
+      paste0(
+        '\n        <div class="qm-ind-caption qm-ind-caption-max">',
+        'Highest site</div>',
+        '\n        <div class="qm-ind-value qm-ind-value-max">%s</div>'
+      ),
+      figure_row(
+        "diamond", "qmIndicatorMaxChip", "qmIndicatorMaxValue",
+        convert_colors_to_hex(assign_colour(max_value, scale_name)),
+        format(round(max_value, 1), nsmall = 1)
+      )
+    )
+  }
 
   block <- sprintf(
     paste0(
       '      <div class="legend-indicator" id="qmIndicator">\n',
       '        <div class="qm-ind-caption">%s</div>\n',
-      '        <div class="qm-ind-value">%s</div>\n',
+      '        <div class="qm-ind-value">%s</div>%s\n',
       '      </div>'
     ),
-    caption, value_text
+    caption, value_text, max_block
   )
 
   if (image_mode) return(block)
@@ -1868,16 +1912,36 @@ generate_indicator_html <- function(
     indicator$values, ramp_position, 0,
     thresholds = thresholds, n_blocks = n_blocks
   )
+  colours <- convert_colors_to_hex(vapply(
+    indicator$values, assign_colour, "", scale = scale_name
+  ))
+
+  max_fields <- ""
+  if (show_max) {
+    max_positions <- vapply(
+      indicator$max_values, ramp_position, 0,
+      thresholds = thresholds, n_blocks = n_blocks
+    )
+    max_fields <- sprintf(
+      ',"maxValues":[%s],"maxW":[%s],"maxColours":[%s],"clearance":%d',
+      paste(format(round(indicator$max_values, 1), nsmall = 1, trim = TRUE),
+            collapse = ","),
+      paste(sprintf("%.2f", max_positions), collapse = ","),
+      paste0('"', convert_colors_to_hex(vapply(
+        indicator$max_values, assign_colour, "", scale = scale_name
+      )), '"', collapse = ","),
+      QM_MARKER_CLEARANCE
+    )
+  }
 
   payload <- sprintf(
-    '{"times":[%s],"values":[%s],"w":[%s],"colours":[%s]}',
+    '{"times":[%s],"values":[%s],"w":[%s],"colours":[%s]%s}',
     paste0('"', indicator$times, '"', collapse = ","),
     paste(format(round(indicator$values, 1), nsmall = 1, trim = TRUE),
           collapse = ","),
     paste(sprintf("%.2f", positions), collapse = ","),
-    paste0('"', convert_colors_to_hex(vapply(
-      indicator$values, assign_colour, "", scale = scale_name
-    )), '"', collapse = ",")
+    paste0('"', colours, '"', collapse = ","),
+    max_fields
   )
 
   controls_dir <- get_package_dir("controls")
@@ -2063,8 +2127,7 @@ add_year_and_static_layers <- function(
 #' @param banner_style "strip" or "bar"
 #' @param indicator Aggregate figures from [build_indicator_data()], or NULL
 #' @param indicator_label Caption for the indicator, or NULL for the default
-#' @param indicator_style How the mean is marked on the legend ramp:
-#'   "bar" or "roundel"
+#' @param indicator_show_max Also mark the network maximum, as a diamond
 #' @return The map object, invisibly used by the caller's loop
 #' @keywords internal
 finalize_and_save_map <- function(
@@ -2091,7 +2154,7 @@ finalize_and_save_map <- function(
   banner_style = "strip",
   indicator = NULL,
   indicator_label = NULL,
-  indicator_style = "bar"
+  indicator_show_max = FALSE
 ) {
   map <- add_map_controls(
     map,
@@ -2124,7 +2187,7 @@ finalize_and_save_map <- function(
     banner_style,
     indicator,
     indicator_label,
-    indicator_style
+    indicator_show_max
   )
 
   if (!is.null(image_dimensions)) {
@@ -2172,7 +2235,7 @@ save_html_and_style <- function(
   banner_style = "strip",
   indicator = NULL,
   indicator_label = NULL,
-  indicator_style = "bar"
+  indicator_show_max = FALSE
 ) {
   htmlwidgets::saveWidget(
     map,
@@ -2197,7 +2260,7 @@ save_html_and_style <- function(
       banner_style = banner_style,
       indicator = indicator,
       indicator_label = indicator_label,
-      indicator_style = indicator_style
+      indicator_show_max = indicator_show_max
     )
   }
 
@@ -2295,6 +2358,11 @@ load_lazy_controller_js <- function() {
 
 # Shapes coloured by stroke rather than fill (kept in sync with the Canvas
 # controller's drawSymbol and create_generic_icons)
+# Percentage of the legend ramp within which two markers would overlap, at
+# which point the collision rule separates them vertically. Calibrated to the
+# roundel's own width against a full-width legend.
+QM_MARKER_CLEARANCE <- 9
+
 NONSOLID_SHAPES <- c(
   "simple-plus", "simple-cross", "cross-rect", "simple-star",
   "plus-circle", "plus-rect", "cross-circle", "cross", "plus"
@@ -2489,7 +2557,7 @@ inject_banner_legend_controls <- function(
   banner_style = "strip",
   indicator = NULL,
   indicator_label = NULL,
-  indicator_style = "bar"
+  indicator_show_max = FALSE
 ) {
   if (!file.exists(html_file)) {
     stop("HTML file not found: ", html_file)
@@ -2571,12 +2639,13 @@ inject_banner_legend_controls <- function(
     image_mode,
     display_times,
     indicator_label,
-    indicator_style,
+    indicator_show_max,
     data_max
   )
 
   indicator_bar <- generate_indicator_bar(
-    indicator, scale_name, data_max, image_mode, display_times, indicator_style
+    indicator, scale_name, data_max, image_mode, display_times,
+    indicator_show_max
   )
 
   legend_html <- generate_legend_html(
@@ -3711,7 +3780,7 @@ render_pollution_map <- function(
     )
   }
   indicator_label <- theme$indicator$label
-  indicator_style <- theme$indicator$style %||% "bar"
+  indicator_show_max <- isTRUE(theme$indicator$show_max)
 
   marker_scale_factor <- if (image_export) {
     sqrt((map_width_px * map_height_px) / (1200 * 1200))
@@ -3804,7 +3873,7 @@ render_pollution_map <- function(
         banner_style,
         indicator,
         indicator_label,
-        indicator_style
+        indicator_show_max
       )
     }
   }
@@ -3852,7 +3921,7 @@ render_pollution_map <- function(
       banner_style,
       indicator,
       indicator_label,
-      indicator_style
+      indicator_show_max
     )
   } else {
     html_map <- add_map_controls(
