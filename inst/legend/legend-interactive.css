@@ -106,33 +106,24 @@
 
 /* Indicator markers sit ON the colour ramp and are measured against it, so
    their row must be exactly the ramp's width — same flex parent, no padding
-   of its own. */
-/* "roundel": a disc carrying the figure, sitting on the ramp at its value.
-   The row has no height of its own — the disc overhangs onto the ramp below
-   — so the ramp keeps its position and only the disc moves. */
+   of its own. The row has no height: the markers overhang onto the ramp
+   below, so the ramp keeps its position and only the markers move.
+   The row's top margin is the headroom the floating figures need. */
 .legend-indicator-roundel {
   position: relative;
   height: 0;
-  margin-top: 0.75rem;
+  margin-top: 2rem;
 }
 
 .qm-roundel {
   position: absolute;
-  top: -0.35rem;
+  top: -0.2rem;
   transform: translateX(-50%);
-  min-width: 1.9rem;
-  height: 1.4rem;
-  padding: 0 0.3rem;
+  width: 1.15rem;
+  height: 1.15rem;
   border-radius: 999px;
   border: 2px solid #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
   box-sizing: border-box;
   z-index: 2;
   transition: left 0.3s ease, background-color 0.3s ease;
@@ -153,10 +144,13 @@
   border-radius: 999px;
 }
 
-/* Aggregate indicator: the network mean against the scale's thresholds */
+/* The figures, to the right of the ramp (user, 2026-07-31). They still
+   collapse with the legend — see the .collapsed rule below. */
 .legend-indicator {
   flex-shrink: 0;
-  padding-left: 0.15rem;
+  width: 11rem;
+  border-left: 1px solid #e5e5e5;
+  padding-left: 1rem;
 }
 
 .qm-ind-caption {
@@ -185,16 +179,6 @@
   border: 0;
 }
 
-/* The lead column: title pill with the network figures beneath it. Keeping
-   them together means the figures read as belonging to the legend's title,
-   and they collapse with it (user request, 2026-07-31). */
-.legend-lead {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  flex-shrink: 0;
-}
-
 /* The maximum's diamond: a square turned 45 degrees. Distinguished from the
    mean by SHAPE, not colour — colour already carries the concentration band,
    so both markers take the band colour of their own value. */
@@ -211,11 +195,11 @@
   transition: left 0.3s ease, background-color 0.3s ease;
 }
 
-.qm-diamond-figure {
+.qm-marker-figure {
   position: absolute;
-  top: -1.35rem;
+  top: -1.5rem;
   transform: translateX(-50%);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #333;
   white-space: nowrap;
@@ -226,8 +210,9 @@
    of each other, the maximum lifts and the mean drops rather than overlapping.
    Markers move only to avoid each other, never for layout. */
 .qm-diamond.qm-lifted { top: -0.75rem; }
-.qm-diamond-figure.qm-lifted { top: -1.95rem; }
-.qm-roundel.qm-dropped { top: 0.35rem; }
+.qm-marker-figure.qm-lifted { top: -1.95rem; }
+.qm-roundel.qm-dropped { top: 0.5rem; }
+.qm-marker-figure-mean.qm-dropped { top: 1.8rem; }
 
 .qm-ind-chip-diamond {
   width: 0.62rem;

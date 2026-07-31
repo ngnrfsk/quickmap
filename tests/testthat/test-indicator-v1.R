@@ -222,7 +222,13 @@ test_that("the roundel marks the ramp and nothing draws a second scale", {
   roundel <- quickmap:::generate_indicator_bar(ind, "who_no2")
   expect_match(roundel, "qm-roundel", fixed = TRUE)
   expect_match(roundel, "left:", fixed = TRUE) # positioned, not filled
-  expect_match(roundel, ">50.0<", fixed = TRUE) # carries its own figure
+
+  # the figure floats above the disc; text inside it mangled the shape and
+  # read worse than the diamond's label (user, 2026-07-31)
+  expect_match(roundel, "qm-marker-figure", fixed = TRUE)
+  expect_match(roundel, ">50.0</div>", fixed = TRUE)
+  expect_false(grepl(">50.0</div>\n        <div class=\"qm-marker",
+                     roundel, fixed = TRUE))
 
   block <- quickmap:::generate_indicator_html(ind, "who_no2")
   expect_match(block, "Network mean, 2 sites", fixed = TRUE)
@@ -236,14 +242,23 @@ test_that("the roundel marks the ramp and nothing draws a second scale", {
   expect_identical(quickmap:::generate_indicator_html(NULL, "who_no2"), "")
 })
 
-test_that("the maximum comes from the same panel as the mean", {
+test_that("the maximum is the worst site reporting, the mean is the panel", {
+  sp <- fixture()
+  # give C the highest reading in 2019: it must count towards the maximum
+  # even though it is excluded from the mean's fixed panel
+  sp$all_data$tubes$no2[sp$all_data$tubes$siteCode == "C" &
+                          sp$all_data$tubes$year_str == "2019"] <- 99
+
   ind <- quickmap:::build_indicator_data(
-    make_layers("tubes"), fixture(), c("2019", "2020", "2021"), "no2"
+    make_layers("tubes"), sp, c("2019", "2020", "2021"), "no2"
   )
-  # panel is A (40/30/20) and B (60/50/40); C is excluded from both figures,
-  # so the two are computed over the same sites and remain comparable
+
+  # mean is over the panel (A and B only) — unchanged by C's spike
   expect_equal(ind$values, c(50, 40, 30))
-  expect_equal(ind$max_values, c(60, 50, 40))
+  # maximum is the worst site actually reporting, so 2019 is C's 99
+  expect_equal(ind$max_values, c(99, 50, 40))
+  # and each step reports how many sites its maximum was drawn from
+  expect_equal(ind$max_counts, c(3L, 3L, 2L))
 })
 
 test_that("the maximum is drawn as a diamond, off by default", {
@@ -262,9 +277,12 @@ test_that("the maximum is drawn as a diamond, off by default", {
   expect_match(with_max, "qm-roundel", fixed = TRUE) # mean still there
 
   block <- quickmap:::generate_indicator_html(ind, "who_no2", show_max = TRUE)
-  expect_match(block, "Highest site", fixed = TRUE)
+  # each figure states its own basis, because they rest on different sites
+  expect_match(block, "Highest of 3 sites", fixed = TRUE)
+  expect_match(block, "Network mean, 2 sites", fixed = TRUE)
   expect_match(block, "qm-ind-chip-diamond", fixed = TRUE)
   expect_match(block, '"maxValues":[', fixed = TRUE)
+  expect_match(block, '"maxCounts":[', fixed = TRUE)
   # shape distinguishes the two, not colour: both take their own band colour
   expect_match(block, "qm-ind-chip-roundel", fixed = TRUE)
 })
@@ -290,23 +308,23 @@ test_that("markers separate only when they would overlap", {
   expect_match(html, "qm-dropped", fixed = TRUE)
 })
 
-test_that("the network figures sit under the legend title and collapse with it", {
+test_that("the figures sit to the right of the ramp and collapse with the legend", {
   template <- quickmap:::read_template_file(
     file.path(quickmap:::get_package_dir("legend"), "legend.html")
   )
-  lead <- regexpr("legend-lead", template, fixed = TRUE)
-  header <- regexpr("legend-header", template, fixed = TRUE)
-  indicator <- regexpr("{{legend_indicator}}", template, fixed = TRUE)
   content <- regexpr("legend-content", template, fixed = TRUE)
+  indicator <- regexpr("{{legend_indicator}}", template, fixed = TRUE)
 
-  # the figures live in the lead column, after the title and before the ramp
-  expect_true(lead > 0 && lead < header)
-  expect_true(header < indicator)
-  expect_true(indicator < content)
+  # entirely to the right of the ramp (user, 2026-07-31): after the whole
+  # content block, not inside it and not in a column beside the title
+  expect_true(content > 0)
+  expect_true(indicator > content)
+  expect_false(grepl("legend-lead", template, fixed = TRUE))
 
   css <- quickmap:::read_template_file(
     file.path(quickmap:::get_package_dir("legend"), "legend-interactive.css")
   )
+  # still disappears on close, which is why it was moved in the first place
   expect_match(css, ".legend.collapsed .legend-indicator", fixed = TRUE)
 })
 

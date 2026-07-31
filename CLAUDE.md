@@ -339,14 +339,20 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
     (`.ramp-block { flex: 1 }`), so a separate linear scale would put the
     same threshold in two places. `ramp_position()` maps a value band by
     band; the open-ended top band resolves to its midpoint
--   **The mean is a roundel** carrying its own figure at its own position on
-    the ramp. Optionally the maximum joins it as a **diamond**
-    (`indicator.show_max`), distinguished by shape because colour already
-    carries the concentration band. When the two would overlap
-    (within `QM_MARKER_CLEARANCE` percent) the maximum lifts and the mean
-    drops — a collision rule, not a layout
--   **Position of the figures**: in the lead column under the legend title, so
-    they read as part of the legend and collapse with it
+-   **The mean is a roundel**, a plain disc at its position on the ramp, with
+    its figure floating above it. Optionally the maximum joins it as a
+    **diamond** (`indicator.show_max`), distinguished by shape because colour
+    already carries the concentration band. When the two would overlap
+    (within `QM_MARKER_CLEARANCE` percent of the ramp's width) the maximum and
+    its figure lift, and the mean and its figure drop — a collision rule, not
+    a layout: they move only to avoid each other
+-   **Two different bases, each stated**: the mean is over the fixed panel;
+    the **maximum is the worst site actually reporting** at that step (user
+    decision 2026-07-31), so it can jump when a site opens. The captions read
+    "Network mean, N sites" and "Highest of N sites", and the maximum's count
+    changes between steps
+-   **Position of the figures**: to the right of the ramp; they still collapse
+    with the legend
 -   **Chips** beside each figure repeat that marker's shape and colour — the
     visual link between the words and the ramp
 -   **Theme keys**: `indicator.show` (default TRUE), `indicator.label`,

@@ -875,20 +875,25 @@ build_indicator_data <- function(
   panel <- names(steps_per_site)[steps_per_site == length(times)]
   if (length(panel) == 0) return(NULL)
 
-  obs <- obs[obs$site %in% panel, , drop = FALSE]
-  step_factor <- factor(obs$step, levels = times)
-  means <- tapply(obs$value, step_factor, mean)
+  # The maximum is the worst site actually reporting at each step — every
+  # site, not the panel (user decision, 2026-07-31). "The highest reading in
+  # the borough" is a statement about the worst place, and excluding a site
+  # because it opened late would understate it. The consequence, and the
+  # reason each figure states its own basis: the maximum can jump when a new
+  # site opens, so it is not the comparable-across-years figure the mean is.
+  all_factor <- factor(obs$step, levels = times)
+  maxima <- tapply(obs$value, all_factor, max)
+  max_counts <- tapply(obs$site, all_factor, function(x) length(unique(x)))
 
-  # The maximum comes from the same fixed panel as the mean, deliberately.
-  # The alternative — the worst site of any reporting that year — is a more
-  # natural reading of "the worst site", but mixing bases would put two
-  # figures side by side that are computed over different sets of sites, and
-  # a jump would then be unattributable to either the air or the network.
-  maxima <- tapply(obs$value, step_factor, max)
+  panel_obs <- obs[obs$site %in% panel, , drop = FALSE]
+  means <- tapply(
+    panel_obs$value, factor(panel_obs$step, levels = times), mean
+  )
 
   list(
     values = round(as.numeric(means), 1),
     max_values = round(as.numeric(maxima), 1),
+    max_counts = as.integer(max_counts),
     times = times,
     n_sites = length(panel),
     pollutant = pollutant
@@ -1771,7 +1776,7 @@ generate_indicator_bar <- function(
       paste0(
         '        <div class="qm-diamond%s" id="qmIndicatorMax" ',
         'style="left: %s%%; background: %s;" title="Highest site, %s"></div>\n',
-        '        <div class="qm-diamond-figure%s" id="qmIndicatorMaxFigure" ',
+        '        <div class="qm-marker-figure%s" id="qmIndicatorMaxFigure" ',
         'style="left: %s%%;">%s</div>\n'
       ),
       if (crowded) " qm-lifted" else "",
@@ -1781,17 +1786,24 @@ generate_indicator_bar <- function(
     )
   }
 
+  # Both figures sit above their markers, never inside them (user, 2026-07-31:
+  # text inside the roundel mangled the disc and was harder to read than the
+  # diamond's floating label). The roundel is now a plain disc.
   sprintf(
     paste0(
       '      <div class="legend-indicator-roundel">\n',
       '%s',
       '        <div class="qm-roundel%s" id="qmIndicatorBar" ',
-      'style="left: %s%%; background: %s;">%s</div>\n',
+      'style="left: %s%%; background: %s;" title="Network mean, %s"></div>\n',
+      '        <div class="qm-marker-figure qm-marker-figure-mean%s" ',
+      'id="qmIndicatorFigure" style="left: %s%%;">%s</div>\n',
       '      </div>\n'
     ),
     max_html,
     if (crowded) " qm-dropped" else "",
-    format(mean_pos, trim = TRUE), mean_colour, mean_figure
+    format(mean_pos, trim = TRUE), mean_colour, mean_figure,
+    if (crowded) " qm-dropped" else "",
+    format(mean_pos, trim = TRUE), mean_figure
   )
 }
 
@@ -1880,12 +1892,22 @@ generate_indicator_html <- function(
   max_block <- ""
   if (show_max) {
     max_value <- indicator$max_values[idx]
+    # Each figure states the sites it rests on, because since 2026-07-31 they
+    # rest on different ones: the mean on the fixed panel, the maximum on
+    # every site reporting at that step. Unlabelled, the pair would invite the
+    # reader to assume one basis.
+    max_caption <- sprintf(
+      "Highest of %d site%s",
+      indicator$max_counts[idx],
+      if (isTRUE(indicator$max_counts[idx] == 1)) "" else "s"
+    )
     max_block <- sprintf(
       paste0(
-        '\n        <div class="qm-ind-caption qm-ind-caption-max">',
-        'Highest site</div>',
+        '\n        <div class="qm-ind-caption qm-ind-caption-max" ',
+        'id="qmIndicatorMaxCaption">%s</div>',
         '\n        <div class="qm-ind-value qm-ind-value-max">%s</div>'
       ),
+      max_caption,
       figure_row(
         "diamond", "qmIndicatorMaxChip", "qmIndicatorMaxValue",
         convert_colors_to_hex(assign_colour(max_value, scale_name)),
@@ -1923,13 +1945,15 @@ generate_indicator_html <- function(
       thresholds = thresholds, n_blocks = n_blocks
     )
     max_fields <- sprintf(
-      ',"maxValues":[%s],"maxW":[%s],"maxColours":[%s],"clearance":%d',
+      paste0(',"maxValues":[%s],"maxW":[%s],"maxColours":[%s],',
+             '"maxCounts":[%s],"clearance":%d'),
       paste(format(round(indicator$max_values, 1), nsmall = 1, trim = TRUE),
             collapse = ","),
       paste(sprintf("%.2f", max_positions), collapse = ","),
       paste0('"', convert_colors_to_hex(vapply(
         indicator$max_values, assign_colour, "", scale = scale_name
       )), '"', collapse = ","),
+      paste(indicator$max_counts, collapse = ","),
       QM_MARKER_CLEARANCE
     )
   }

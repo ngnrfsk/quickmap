@@ -26,9 +26,16 @@
     var crowded = hasMax &&
       Math.abs(data.maxW[i] - data.w[i]) < (data.clearance || 9);
 
+    // the roundel is a plain disc; its figure floats above it, like the
+    // diamond's, and moves with it
     set("qmIndicatorBar", function(el) {
       el.style.left = data.w[i] + "%";
       el.style.background = data.colours[i];
+      el.title = "Network mean, " + figure;
+      el.classList.toggle("qm-dropped", crowded);
+    });
+    set("qmIndicatorFigure", function(el) {
+      el.style.left = data.w[i] + "%";
       el.textContent = figure;
       el.classList.toggle("qm-dropped", crowded);
     });
@@ -55,6 +62,13 @@
       el.style.background = data.maxColours[i];
     });
     set("qmIndicatorMaxValue", function(el) { el.textContent = maxFigure; });
+    // the count changes between steps as sites open, and the caption says so
+    // because the maximum and the mean rest on different sets of sites
+    set("qmIndicatorMaxCaption", function(el) {
+      if (!data.maxCounts) return;
+      var n = data.maxCounts[i];
+      el.textContent = "Highest of " + n + " site" + (n === 1 ? "" : "s");
+    });
   }
 
   window.quickmapIndicatorController = { setTime: setTime };
