@@ -104,28 +104,9 @@
   padding: 0;
 }
 
-/* Indicator marker. Sits directly above (bar) or on (roundel) the colour
-   ramp and is measured against it, so it must be exactly the ramp's width —
-   same flex parent, no padding of its own. */
-
-/* "bar": thicker than the first attempt, with a dark cap at the end so the
-   eye lands on the value rather than on the length of the bar */
-.legend-indicator-bar {
-  height: 0.7rem;
-  margin-bottom: 0.25rem;
-  background: #f2f2f2;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.qm-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  border-right: 0.2rem solid rgba(0, 0, 0, 0.5);
-  box-sizing: border-box;
-  transition: width 0.3s ease, background-color 0.3s ease;
-}
-
+/* Indicator markers sit ON the colour ramp and are measured against it, so
+   their row must be exactly the ramp's width — same flex parent, no padding
+   of its own. */
 /* "roundel": a disc carrying the figure, sitting on the ramp at its value.
    The row has no height of its own — the disc overhangs onto the ramp below
    — so the ramp keeps its position and only the disc moves. */
@@ -166,12 +147,6 @@
   border: 1px solid rgba(0, 0, 0, 0.25);
 }
 
-.qm-ind-chip-bar {
-  width: 0.9rem;
-  height: 0.55rem;
-  border-radius: 2px;
-}
-
 .qm-ind-chip-roundel {
   width: 0.7rem;
   height: 0.7rem;
@@ -181,9 +156,7 @@
 /* Aggregate indicator: the network mean against the scale's thresholds */
 .legend-indicator {
   flex-shrink: 0;
-  width: 11rem;
-  border-left: 1px solid #e5e5e5;
-  padding-left: 1rem;
+  padding-left: 0.15rem;
 }
 
 .qm-ind-caption {
@@ -204,24 +177,6 @@
   color: #666;
 }
 
-.qm-ind-svg {
-  width: 100%;
-  height: 1.9rem;
-  overflow: visible;
-}
-
-.qm-ind-track { fill: #ececec; }
-.qm-ind-tick { stroke: #bbb; stroke-width: 0.8; }
-
-.qm-ind-ticklabel {
-  fill: #666;
-  font-size: 7px;
-  text-anchor: middle;
-  font-family: inherit;
-}
-
-#qmIndicatorPointer { transition: transform 0.3s ease; }
-
 .legend.collapsed .legend-indicator {
   max-height: 0;
   opacity: 0;
@@ -229,6 +184,59 @@
   padding: 0;
   border: 0;
 }
+
+/* The lead column: title pill with the network figures beneath it. Keeping
+   them together means the figures read as belonging to the legend's title,
+   and they collapse with it (user request, 2026-07-31). */
+.legend-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+/* The maximum's diamond: a square turned 45 degrees. Distinguished from the
+   mean by SHAPE, not colour — colour already carries the concentration band,
+   so both markers take the band colour of their own value. */
+.qm-diamond {
+  position: absolute;
+  top: -0.15rem;
+  transform: translateX(-50%) rotate(45deg);
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+  z-index: 3;
+  transition: left 0.3s ease, background-color 0.3s ease;
+}
+
+.qm-diamond-figure {
+  position: absolute;
+  top: -1.35rem;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #333;
+  white-space: nowrap;
+  transition: left 0.3s ease;
+}
+
+/* Collision rule: when the mean and the maximum fall within a marker's width
+   of each other, the maximum lifts and the mean drops rather than overlapping.
+   Markers move only to avoid each other, never for layout. */
+.qm-diamond.qm-lifted { top: -0.75rem; }
+.qm-diamond-figure.qm-lifted { top: -1.95rem; }
+.qm-roundel.qm-dropped { top: 0.35rem; }
+
+.qm-ind-chip-diamond {
+  width: 0.62rem;
+  height: 0.62rem;
+  transform: rotate(45deg);
+  margin-right: 0.5rem;
+}
+
+.qm-ind-caption-max { margin-top: 0.25rem; }
 
 /* Mobile responsive styles (interactive mode only) */
 {{mobile_css}}

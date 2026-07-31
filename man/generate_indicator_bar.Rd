@@ -2,7 +2,7 @@
 % Please edit documentation in R/quickmap.R
 \name{generate_indicator_bar}
 \alias{generate_indicator_bar}
-\title{Mark the network mean on the legend's colour ramp}
+\title{Mark the network figures on the legend's colour ramp}
 \usage{
 generate_indicator_bar(
   indicator,
@@ -10,7 +10,7 @@ generate_indicator_bar(
   data_max = NULL,
   image_mode = FALSE,
   display_times = NULL,
-  style = "bar"
+  show_max = FALSE
 )
 }
 \arguments{
@@ -18,34 +18,35 @@ generate_indicator_bar(
 
 \item{scale_name}{Colour scale name}
 
-\item{data_max}{Largest value in the data, so the marker is positioned
-against the ramp the legend actually drew}
+\item{data_max}{Largest value in the data, so markers are positioned against
+the ramp the legend actually drew}
 
 \item{image_mode}{TRUE for the static export}
 
 \item{display_times}{The step being drawn (image mode)}
 
-\item{style}{"bar" or "roundel"}
+\item{show_max}{Also mark the network maximum, as a diamond}
 }
 \value{
-HTML placed inside the legend, above (bar) or on (roundel) the ramp
+HTML placed inside the legend, over the ramp
 }
 \description{
 The legend's own colour ramp is the scale (user proposal, 2026-07-30), so
-there is only one scale on the page and the marker cannot disagree with it.
+there is only one scale on the page and the markers cannot disagree with it.
 }
 \details{
-Two ways of marking, both refinements of the first attempt, whose bar was
-thin and read as unconnected to the figure beside it:
+The mean is a roundel carrying its own figure, sitting at its place on the
+ramp. Optionally the maximum joins it as a diamond, distinguished by shape
+rather than by colour — colour is already spoken for, since both markers take
+the band colour of their own value.
 
-\describe{
-\item{\code{"bar"}}{a thicker bar above the ramp running from zero to the mean,
-with a cap at its end so the eye lands on the value rather than on the
-length}
-\item{\code{"roundel"}}{a single disc sitting on the ramp at the value and
-carrying the figure, repeated beside the caption — the same object in
-both places is what ties them together}
-}
+When the two figures fall close together their markers would overlap, so the
+maximum lifts above the ramp and the mean drops below it. That is a collision
+rule, not a layout: markers move only when they would otherwise sit on top of
+each other.
+
+The retired "bar" style is at
+\verb{dev/archive/260731_indicator_bar-style_v1.R}.
 }
 \seealso{
 Other legend: 

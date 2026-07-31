@@ -827,6 +827,14 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
 
 ### Archived code — coded up, retired, wakeable
 
+-   **Zero-to-value "bar" indicator style** (retired 2026-07-31 when the
+    roundel was chosen):
+    `/Users/iarla/Coding/quickmap/dev/archive/260731_indicator_bar-style_v1.R`
+    — a bar above the ramp running from zero to the mean. Not retired for
+    being wrong; it lost on readability, because the roundel carries its
+    figure at its own position. Named as a possible future feature: if
+    magnitude ever needs reading as length rather than position, or if the
+    ramp becomes crowded with markers, the bar may read better.
 -   **Standalone "track" indicator style** (v0.9.9.9, retired 2026-07-30):
     `/Users/iarla/Coding/quickmap/dev/archive/260730_indicator_track-style_v1.R`
     — an indicator with its own scale and tick marks. Retired because it

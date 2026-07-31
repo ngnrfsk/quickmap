@@ -339,12 +339,21 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
     (`.ramp-block { flex: 1 }`), so a separate linear scale would put the
     same threshold in two places. `ramp_position()` maps a value band by
     band; the open-ended top band resolves to its midpoint
--   **Two marker styles**: `"bar"` (a bar from zero to the value, capped) and
-    `"roundel"` (a disc carrying the figure). Both repeat their colour and
-    shape as a chip beside the caption, which is the visual link between the
-    figure and the ramp
+-   **The mean is a roundel** carrying its own figure at its own position on
+    the ramp. Optionally the maximum joins it as a **diamond**
+    (`indicator.show_max`), distinguished by shape because colour already
+    carries the concentration band. When the two would overlap
+    (within `QM_MARKER_CLEARANCE` percent) the maximum lifts and the mean
+    drops — a collision rule, not a layout
+-   **Position of the figures**: in the lead column under the legend title, so
+    they read as part of the legend and collapse with it
+-   **Chips** beside each figure repeat that marker's shape and colour — the
+    visual link between the words and the ramp
 -   **Theme keys**: `indicator.show` (default TRUE), `indicator.label`,
-    `indicator.style` ("bar" or "roundel")
+    `indicator.show_max` (default FALSE)
+-   **Archived alternatives**, coded and retired, wakeable with instructions:
+    the standalone track (`dev/archive/260730_indicator_track-style_v1.R`) and
+    the zero-to-value bar (`dev/archive/260731_indicator_bar-style_v1.R`)
 -   **Files**: `build_indicator_data()` and `generate_indicator_html()` in
     `R/quickmap.R`, `inst/controls/indicator.js`, styles in both
     `inst/legend/legend-interactive.css` and `legend-image.css`

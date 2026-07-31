@@ -22,7 +22,7 @@ save_html_and_style(
   banner_style = "strip",
   indicator = NULL,
   indicator_label = NULL,
-  indicator_style = "bar"
+  indicator_show_max = FALSE
 )
 }
 \arguments{
@@ -58,8 +58,7 @@ save_html_and_style(
 
 \item{indicator_label}{Caption for the indicator, or NULL for the default}
 
-\item{indicator_style}{How the mean is marked on the legend ramp:
-"bar" or "roundel"}
+\item{indicator_show_max}{Also mark the network maximum, as a diamond}
 }
 \value{
 NULL, called for its side effect
