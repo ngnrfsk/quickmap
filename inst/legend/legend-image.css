@@ -92,28 +92,21 @@
 .legend-indicator-roundel {
   position: relative;
   height: 0;
-  margin-top: 0.8rem;
+  margin-top: 2.2rem;
 }
 
 .qm-roundel {
   position: absolute;
-  top: -0.4rem;
+  top: -0.23rem;
   transform: translateX(-50%);
-  min-width: 2.1rem;
-  height: 1.6rem;
-  padding: 0 0.35rem;
+  width: 1.3rem;
+  height: 1.3rem;
   border-radius: 999px;
   border: 2px solid #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
   box-sizing: border-box;
   z-index: 2;
+  transition: left 0.3s ease, background-color 0.3s ease;
 }
 
 /* The chip repeats the marker beside the figure: same colour, same shape */
@@ -130,9 +123,12 @@
   border-radius: 999px;
 }
 
+/* The figures, to the right of the ramp (user, 2026-07-31) */
 .legend-indicator {
   flex-shrink: 0;
-  padding-left: 0.2rem;
+  width: 12rem;
+  border-left: 1px solid #e5e5e5;
+  padding-left: 1.25rem;
 }
 
 .qm-ind-caption {
@@ -153,16 +149,6 @@
   color: #666;
 }
 
-/* The lead column: title pill with the network figures beneath it. Keeping
-   them together means the figures read as belonging to the legend's title,
-   and they collapse with it (user request, 2026-07-31). */
-.legend-lead {
-  display: flex;
-  flex-direction: column;
-  gap: 0.46rem;
-  flex-shrink: 0;
-}
-
 /* The maximum's diamond: a square turned 45 degrees. Distinguished from the
    mean by SHAPE, not colour — colour already carries the concentration band,
    so both markers take the band colour of their own value. */
@@ -179,11 +165,11 @@
   transition: left 0.3s ease, background-color 0.3s ease;
 }
 
-.qm-diamond-figure {
+.qm-marker-figure {
   position: absolute;
-  top: -1.55rem;
+  top: -1.7rem;
   transform: translateX(-50%);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: #333;
   white-space: nowrap;
@@ -194,8 +180,9 @@
    of each other, the maximum lifts and the mean drops rather than overlapping.
    Markers move only to avoid each other, never for layout. */
 .qm-diamond.qm-lifted { top: -0.86rem; }
-.qm-diamond-figure.qm-lifted { top: -2.24rem; }
-.qm-roundel.qm-dropped { top: 0.4rem; }
+.qm-marker-figure.qm-lifted { top: -2.24rem; }
+.qm-roundel.qm-dropped { top: 0.55rem; }
+.qm-marker-figure-mean.qm-dropped { top: 2rem; }
 
 .qm-ind-chip-diamond {
   width: 0.71rem;
