@@ -1,4 +1,6 @@
-/* Mobile: Stack vertically on small screens */
+/* Mobile: Stack vertically on small screens.
+   The scarce resource on a phone is vertical space — the legend competes with
+   the map for it — so everything here is about height, not width. */
 @media (max-width: 480px) {
   .legend-container {
     flex-direction: column;
@@ -6,6 +8,31 @@
     gap: 0.5rem;
     padding: 0.5rem;
   }
+
+  /* The figures sit to the right of the ramp on a desktop; stacked, they
+     would add two more rows to a legend that is already tall. Side by side
+     they cost one. */
+  .legend-indicator {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    border-left: 0;
+    border-top: 1px solid #e5e5e5;
+    padding-left: 0;
+    padding-top: 0.45rem;
+  }
+
+  .qm-ind-caption-max { margin-top: 0; }
+
+  .qm-ind-caption { font-size: 0.65rem; }
+
+  .qm-ind-value { font-size: 0.95rem; }
+
+  /* less headroom above the markers: the labels are smaller here too */
+  .legend-indicator-roundel { margin-top: 1.5rem; }
+
+  .qm-marker-figure { font-size: 0.65rem; }
 
   .legend-header {
     padding: 0.5rem 0.75rem;

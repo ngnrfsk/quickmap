@@ -343,9 +343,16 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
     its figure floating above it. Optionally the maximum joins it as a
     **diamond** (`indicator.show_max`), distinguished by shape because colour
     already carries the concentration band. When the two would overlap
-    (within `QM_MARKER_CLEARANCE` percent of the ramp's width) the maximum and
-    its figure lift, and the mean and its figure drop — a collision rule, not
-    a layout: they move only to avoid each other
+    the maximum and its figure lift, and the mean and its figure drop — a
+    collision rule, not a layout: they move only to avoid each other. The
+    browser decides by **measuring** the two labels
+    (`getBoundingClientRect`, re-run on resize), because a percentage of the
+    ramp is wrong on a narrow screen where labels keep their pixel width
+    while the ramp shrinks; `QM_MARKER_CLEARANCE` is R's fallback estimate,
+    used for static exports, which have no JavaScript
+-   **Mobile**: below 480px the figures lay out in a row rather than stacked
+    (`inst/legend/mobile.css`) — vertical space is what a phone is short of,
+    and the legend competes with the map for it
 -   **Two different bases, each stated**: the mean is over the fixed panel;
     the **maximum is the worst site actually reporting** at that step (user
     decision 2026-07-31), so it can jump when a site opens. The captions read
