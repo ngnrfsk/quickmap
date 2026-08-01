@@ -1889,6 +1889,21 @@ generate_indicator_html <- function(
     format(round(value, 1), nsmall = 1)
   )
 
+  # Each figure is a wrapped pair (caption + value) rather than four loose
+  # siblings, so a phone can lay the two side by side instead of stacking
+  # them: vertical space is what a narrow screen is short of.
+  figure_block <- function(caption, caption_class, value_html) {
+    sprintf(
+      paste0(
+        '<div class="qm-ind-figure">',
+        '<div class="qm-ind-caption%s">%s</div>',
+        '<div class="qm-ind-value">%s</div>',
+        '</div>'
+      ),
+      caption_class, caption, value_html
+    )
+  }
+
   max_block <- ""
   if (show_max) {
     max_value <- indicator$max_values[idx]
@@ -1901,17 +1916,16 @@ generate_indicator_html <- function(
       indicator$max_counts[idx],
       if (isTRUE(indicator$max_counts[idx] == 1)) "" else "s"
     )
-    max_block <- sprintf(
-      paste0(
-        '\n        <div class="qm-ind-caption qm-ind-caption-max" ',
-        'id="qmIndicatorMaxCaption">%s</div>',
-        '\n        <div class="qm-ind-value qm-ind-value-max">%s</div>'
-      ),
-      max_caption,
-      figure_row(
-        "diamond", "qmIndicatorMaxChip", "qmIndicatorMaxValue",
-        convert_colors_to_hex(assign_colour(max_value, scale_name)),
-        format(round(max_value, 1), nsmall = 1)
+    max_block <- paste0(
+      "\n        ",
+      figure_block(
+        sprintf('<span id="qmIndicatorMaxCaption">%s</span>', max_caption),
+        " qm-ind-caption-max",
+        figure_row(
+          "diamond", "qmIndicatorMaxChip", "qmIndicatorMaxValue",
+          convert_colors_to_hex(assign_colour(max_value, scale_name)),
+          format(round(max_value, 1), nsmall = 1)
+        )
       )
     )
   }
@@ -1919,11 +1933,10 @@ generate_indicator_html <- function(
   block <- sprintf(
     paste0(
       '      <div class="legend-indicator" id="qmIndicator">\n',
-      '        <div class="qm-ind-caption">%s</div>\n',
-      '        <div class="qm-ind-value">%s</div>%s\n',
+      '        %s%s\n',
       '      </div>'
     ),
-    caption, value_text, max_block
+    figure_block(caption, "", value_text), max_block
   )
 
   if (image_mode) return(block)

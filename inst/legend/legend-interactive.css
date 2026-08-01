@@ -145,13 +145,16 @@
 }
 
 /* The figures, to the right of the ramp (user, 2026-07-31). They still
-   collapse with the legend — see the .collapsed rule below. */
+   collapse with the legend — see the .collapsed rule below. On a phone they
+   turn into a single row; see mobile.css. */
 .legend-indicator {
   flex-shrink: 0;
   width: 11rem;
   border-left: 1px solid #e5e5e5;
   padding-left: 1rem;
 }
+
+.qm-ind-figure { min-width: 0; }
 
 .qm-ind-caption {
   font-size: 0.7rem;

@@ -328,6 +328,59 @@ test_that("the figures sit to the right of the ramp and collapse with the legend
   expect_match(css, ".legend.collapsed .legend-indicator", fixed = TRUE)
 })
 
+test_that("each figure is a wrapped pair, so a phone can lay them side by side", {
+  ind <- quickmap:::build_indicator_data(
+    make_layers("tubes"), fixture(), c("2019", "2020", "2021"), "no2"
+  )
+  block <- quickmap:::generate_indicator_html(ind, "who_no2", show_max = TRUE)
+
+  # two wrappers, not four loose siblings: stacked on a desktop, in a row on
+  # a phone, which is where vertical space is scarce
+  expect_equal(
+    length(gregexpr('class="qm-ind-figure"', block, fixed = TRUE)[[1]]), 2
+  )
+
+  one <- quickmap:::generate_indicator_html(ind, "who_no2")
+  expect_equal(
+    length(gregexpr('class="qm-ind-figure"', one, fixed = TRUE)[[1]]), 1
+  )
+})
+
+test_that("mobile styles cover the indicator, not just the legend", {
+  css <- quickmap:::read_template_file(
+    file.path(quickmap:::get_package_dir("legend"), "mobile.css")
+  )
+  small <- regmatches(
+    css, regexpr("@media \\(max-width: 480px\\).*?\\n\\}\\n", css)
+  )
+  expect_true(nchar(small) > 0)
+  # the block that lays the figures in a row and trims their headroom
+  expect_match(css, ".legend-indicator {", fixed = TRUE)
+  expect_match(css, ".legend-indicator-roundel { margin-top", fixed = TRUE)
+})
+
+test_that("the browser measures overlap rather than trusting the percentage", {
+  js <- quickmap:::read_template_file(
+    file.path(quickmap:::get_package_dir("controls"), "indicator.js")
+  )
+
+  # R's percentage of the ramp is wrong on a narrow screen, where the labels
+  # keep their pixel width while the ramp shrinks, so the browser measures
+  expect_match(js, "getBoundingClientRect", fixed = TRUE)
+  expect_match(js, "measureOverlap", fixed = TRUE)
+  # and re-measures when the window changes shape
+  expect_match(js, 'addEventListener("resize"', fixed = TRUE)
+
+  # R still emits its own estimate, because a static export has no JS
+  ind <- quickmap:::build_indicator_data(
+    make_layers("tubes"), fixture(), c("2019", "2020", "2021"), "no2"
+  )
+  expect_match(
+    quickmap:::generate_indicator_html(ind, "who_no2", show_max = TRUE),
+    '"clearance":', fixed = TRUE
+  )
+})
+
 test_that("the indicator is switchable through the theme", {
   expect_true(quickmap:::get_default_theme()$indicator$show)
 

@@ -15,14 +15,40 @@
     if (el) fn(el);
   }
 
+  // Do the two figures actually overlap, right now, at this window width?
+  //
+  // R decides this server-side from a percentage of the ramp, which is all it
+  // can do for a static export. That is wrong on a narrow screen: the labels
+  // are a fixed width in pixels while the ramp shrinks, so on a phone two
+  // labels can collide while sitting further apart in percentage terms than
+  // any desktop threshold would flag. So in the browser, measure.
+  var GAP = 6; // px of daylight required between the two labels
+
+  function measureOverlap() {
+    var a = document.getElementById("qmIndicatorFigure");
+    var b = document.getElementById("qmIndicatorMaxFigure");
+    if (!a || !b) return false;
+
+    // measure them level: the offsets we are deciding about would otherwise
+    // separate them vertically and hide the very overlap being tested for
+    var was = [a.className, b.className];
+    a.classList.remove("qm-dropped");
+    b.classList.remove("qm-lifted");
+    var ra = a.getBoundingClientRect();
+    var rb = b.getBoundingClientRect();
+    a.className = was[0];
+    b.className = was[1];
+
+    return !(ra.right + GAP < rb.left || rb.right + GAP < ra.left);
+  }
+
   function setTime(selected) {
     var i = data.times.indexOf(String(selected));
     if (i < 0) return;
 
     var figure = Number(data.values[i]).toFixed(1);
     var hasMax = !!data.maxW;
-    // markers within a marker's width of each other would overlap, so the
-    // maximum lifts and the mean drops — the same rule R applies server-side
+    // R's percentage is the starting guess; the measurement below corrects it
     var crowded = hasMax &&
       Math.abs(data.maxW[i] - data.w[i]) < (data.clearance || 9);
 
@@ -69,7 +95,30 @@
       var n = data.maxCounts[i];
       el.textContent = "Highest of " + n + " site" + (n === 1 ? "" : "s");
     });
+
+    applyOverlap();
   }
+
+  // Positions are set, the labels carry their final text: now measure and
+  // separate them only if they really do collide at this window width.
+  function applyOverlap() {
+    if (!data.maxW) return;
+    var overlapping = measureOverlap();
+    [["qmIndicatorFigure", "qm-dropped"], ["qmIndicatorBar", "qm-dropped"],
+     ["qmIndicatorMaxFigure", "qm-lifted"], ["qmIndicatorMax", "qm-lifted"]]
+      .forEach(function(pair) {
+        set(pair[0], function(el) {
+          el.classList.toggle(pair[1], overlapping);
+        });
+      });
+  }
+
+  // A phone rotated, or a window dragged narrower, changes the answer
+  var resizeTimer;
+  window.addEventListener("resize", function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(applyOverlap, 150);
+  });
 
   window.quickmapIndicatorController = { setTime: setTime };
 })();
