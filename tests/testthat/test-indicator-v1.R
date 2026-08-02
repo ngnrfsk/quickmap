@@ -359,6 +359,27 @@ test_that("mobile styles cover the indicator, not just the legend", {
   expect_match(css, ".legend-indicator-roundel { margin-top", fixed = TRUE)
 })
 
+test_that("the phone layout wraps the ramp by flex-basis, not width", {
+  css <- quickmap:::read_template_file(
+    file.path(quickmap:::get_package_dir("legend"), "mobile.css")
+  )
+
+  # The figures share the title's row; the ramp takes the next one. That only
+  # works if .legend-content wraps, and it only wraps on flex-basis: the base
+  # stylesheet gives it `flex: 1` (basis 0%), which beats `width: 100%` and
+  # leaves the ramp squeezed onto the first line as a sliver. Verified by
+  # screenshot at 390px before and after.
+  expect_match(css, ".legend-content { order: 3; flex: 1 1 100%; }",
+               fixed = TRUE)
+  expect_false(grepl(".legend-content { order: 3; width: 100%; }", css,
+                     fixed = TRUE))
+
+  base <- quickmap:::read_template_file(
+    file.path(quickmap:::get_package_dir("legend"), "legend-interactive.css")
+  )
+  expect_match(base, "flex: 1;", fixed = TRUE) # the rule being worked around
+})
+
 test_that("the browser measures overlap rather than trusting the percentage", {
   js <- quickmap:::read_template_file(
     file.path(quickmap:::get_package_dir("controls"), "indicator.js")
