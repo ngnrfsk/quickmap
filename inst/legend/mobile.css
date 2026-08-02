@@ -2,26 +2,38 @@
    The scarce resource on a phone is vertical space — the legend competes with
    the map for it — so everything here is about height, not width. */
 @media (max-width: 480px) {
+  /* Wrapping rows, not a single column: the title pill leaves most of its
+     line empty, so the figures share it and the ramp wraps below. That costs
+     the legend no height at all beyond the row it already had. */
   .legend-container {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-flow: row wrap;
+    align-items: center;
     gap: 0.5rem;
     padding: 0.5rem;
   }
 
-  /* The figures sit to the right of the ramp on a desktop; stacked, they
-     would add two more rows to a legend that is already tall. Side by side
-     they cost one. */
+  .legend-header { order: 1; }
+
+  /* Beside the title, taking the space it leaves. On a narrow phone the pair
+     may not fit; flex-wrap then drops them to their own line rather than
+     squeezing them, which is the graceful failure. */
   .legend-indicator {
-    width: 100%;
+    order: 2;
+    flex: 1 1 auto;
+    width: auto;
     display: flex;
     flex-direction: row;
-    gap: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
     border-left: 0;
-    border-top: 1px solid #e5e5e5;
-    padding-left: 0;
-    padding-top: 0.45rem;
+    padding-left: 0.25rem;
   }
+
+  /* The ramp always takes a full line of its own, below.
+     flex-basis, not width: the base stylesheet gives this element `flex: 1`,
+     which is `flex-basis: 0%`, and that beats any width — leave it at `width:
+     100%` and the ramp stays on the first line squeezed to a sliver. */
+  .legend-content { order: 3; flex: 1 1 100%; }
 
   .qm-ind-caption-max { margin-top: 0; }
 
