@@ -12,6 +12,11 @@
     padding: 0.5rem;
   }
 
+  /* Whichever placement desktop uses, a phone gets the wrapping row: the
+     lead column stops being a box, so the title and the figures become
+     siblings of the ramp and wrap together. */
+  .legend-lead { display: contents; }
+
   .legend-header { order: 1; }
 
   /* Beside the title, taking the space it leaves. On a narrow phone the pair

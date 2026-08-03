@@ -1292,7 +1292,11 @@ get_default_theme <- function() {
       # Also mark the network maximum, as a diamond beside the mean's
       # roundel. Off by default: two markers on one ramp is a busier legend,
       # and the mean alone is the headline figure.
-      show_max = FALSE
+      show_max = FALSE,
+      # Where the figures sit on desktop and tablet: "right" of the ramp, or
+      # "under_title", beneath the legend's title pill. Phones ignore this and
+      # use the wrapping row layout either way (mobile.css).
+      placement = "right"
     ),
     map = list(
       # default reverted to OSM 2026-07-11 (user): the vignette dimming is
@@ -1568,7 +1572,8 @@ generate_legend_html <- function(
   collapsed_mobile = TRUE,
   data_max = NULL,
   indicator_html = "",
-  indicator_bar = ""
+  indicator_bar = "",
+  indicator_placement = "right"
 ) {
   legend_scale <- load_colour_scale(scale_name)
 
@@ -1654,13 +1659,20 @@ generate_legend_html <- function(
   # {{placeholder}} substitution, not sprintf: the old positional form broke
   # on any injected content containing a literal % (a percentage in a label,
   # a CSS width) and gave no clue why.
+  # Two slots, one filled: the figures sit either under the legend title or
+  # to the right of the ramp. Both are real positions in the markup rather
+  # than one position moved by CSS, because the two differ in nesting, not
+  # just in order.
+  under_title <- identical(indicator_placement, "under_title")
+
   apply_template_replacements(
     html_template,
     list(
       "{{legend_title}}" = legend_scale$title,
       "{{legend_items}}" = legend_items_html,
       "{{legend_key}}" = symbol_key_html,
-      "{{legend_indicator}}" = indicator_html,
+      "{{legend_indicator_lead}}" = if (under_title) indicator_html else "",
+      "{{legend_indicator_right}}" = if (under_title) "" else indicator_html,
       "{{legend_script}}" = mobile_script
     )
   )
@@ -2165,6 +2177,7 @@ add_year_and_static_layers <- function(
 #' @param indicator Aggregate figures from [build_indicator_data()], or NULL
 #' @param indicator_label Caption for the indicator, or NULL for the default
 #' @param indicator_show_max Also mark the network maximum, as a diamond
+#' @param indicator_placement "right" of the ramp or "under_title"
 #' @return The map object, invisibly used by the caller's loop
 #' @keywords internal
 finalize_and_save_map <- function(
@@ -2191,7 +2204,8 @@ finalize_and_save_map <- function(
   banner_style = "strip",
   indicator = NULL,
   indicator_label = NULL,
-  indicator_show_max = FALSE
+  indicator_show_max = FALSE,
+  indicator_placement = "right"
 ) {
   map <- add_map_controls(
     map,
@@ -2224,7 +2238,8 @@ finalize_and_save_map <- function(
     banner_style,
     indicator,
     indicator_label,
-    indicator_show_max
+    indicator_show_max,
+    indicator_placement
   )
 
   if (!is.null(image_dimensions)) {
@@ -2272,7 +2287,8 @@ save_html_and_style <- function(
   banner_style = "strip",
   indicator = NULL,
   indicator_label = NULL,
-  indicator_show_max = FALSE
+  indicator_show_max = FALSE,
+  indicator_placement = "right"
 ) {
   htmlwidgets::saveWidget(
     map,
@@ -2297,7 +2313,8 @@ save_html_and_style <- function(
       banner_style = banner_style,
       indicator = indicator,
       indicator_label = indicator_label,
-      indicator_show_max = indicator_show_max
+      indicator_show_max = indicator_show_max,
+      indicator_placement = indicator_placement
     )
   }
 
@@ -2594,7 +2611,8 @@ inject_banner_legend_controls <- function(
   banner_style = "strip",
   indicator = NULL,
   indicator_label = NULL,
-  indicator_show_max = FALSE
+  indicator_show_max = FALSE,
+  indicator_placement = "right"
 ) {
   if (!file.exists(html_file)) {
     stop("HTML file not found: ", html_file)
@@ -2686,7 +2704,8 @@ inject_banner_legend_controls <- function(
   )
 
   legend_html <- generate_legend_html(
-    scale_name, collapsed_mobile, data_max, indicator_html, indicator_bar
+    scale_name, collapsed_mobile, data_max, indicator_html, indicator_bar,
+    indicator_placement
   )
 
   combined_html <- paste0(time_control_html, "\n", legend_html)
@@ -3818,6 +3837,7 @@ render_pollution_map <- function(
   }
   indicator_label <- theme$indicator$label
   indicator_show_max <- isTRUE(theme$indicator$show_max)
+  indicator_placement <- theme$indicator$placement %||% "right"
 
   marker_scale_factor <- if (image_export) {
     sqrt((map_width_px * map_height_px) / (1200 * 1200))
@@ -3910,7 +3930,8 @@ render_pollution_map <- function(
         banner_style,
         indicator,
         indicator_label,
-        indicator_show_max
+        indicator_show_max,
+        indicator_placement
       )
     }
   }
@@ -3958,7 +3979,8 @@ render_pollution_map <- function(
       banner_style,
       indicator,
       indicator_label,
-      indicator_show_max
+      indicator_show_max,
+      indicator_placement
     )
   } else {
     html_map <- add_map_controls(

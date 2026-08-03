@@ -144,6 +144,25 @@
   border-radius: 999px;
 }
 
+/* The lead column: the legend title, with the figures beneath it when
+   indicator.placement is "under_title". With the default "right" placement
+   the column holds the title alone and behaves exactly as the bare title did.
+   Both placements are real positions in the markup — see legend.html. */
+.legend-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+/* Under the title the figures have no ramp to their left, so they drop the
+   divider and the fixed width that the right-hand placement needs. */
+.legend-lead .legend-indicator {
+  width: auto;
+  border-left: 0;
+  padding-left: 0.15rem;
+}
+
 /* The figures, to the right of the ramp (user, 2026-07-31). They still
    collapse with the legend — see the .collapsed rule below. On a phone they
    turn into a single row; see mobile.css. */
