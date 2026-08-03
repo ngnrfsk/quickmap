@@ -28,7 +28,8 @@ finalize_and_save_map(
   banner_style = "strip",
   indicator = NULL,
   indicator_label = NULL,
-  indicator_show_max = FALSE
+  indicator_show_max = FALSE,
+  indicator_placement = "right"
 )
 }
 \arguments{
@@ -77,6 +78,8 @@ finalize_and_save_map(
 \item{indicator_label}{Caption for the indicator, or NULL for the default}
 
 \item{indicator_show_max}{Also mark the network maximum, as a diamond}
+
+\item{indicator_placement}{"right" of the ramp or "under_title"}
 }
 \value{
 The map object, invisibly used by the caller's loop

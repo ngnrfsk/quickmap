@@ -358,8 +358,12 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
     decision 2026-07-31), so it can jump when a site opens. The captions read
     "Network mean, N sites" and "Highest of N sites", and the maximum's count
     changes between steps
--   **Position of the figures**: to the right of the ramp; they still collapse
-    with the legend
+-   **Position of the figures** (`indicator.placement`): `"right"` of the ramp
+    (default) or `"under_title"`, beneath the legend's title pill. Both are
+    real slots in `inst/legend/legend.html`, filled one at a time. Phones
+    ignore the setting — `.legend-lead { display: contents }` dissolves the
+    column so the wrapping row layout applies either way. The figures collapse
+    with the legend in both placements
 -   **Chips** beside each figure repeat that marker's shape and colour — the
     visual link between the words and the ramp
 -   **Theme keys**: `indicator.show` (default TRUE), `indicator.label`,

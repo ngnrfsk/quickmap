@@ -308,23 +308,66 @@ test_that("markers separate only when they would overlap", {
   expect_match(html, "qm-dropped", fixed = TRUE)
 })
 
-test_that("the figures sit to the right of the ramp and collapse with the legend", {
+test_that("placement puts the figures in the slot it names", {
+  marker <- '<div class="legend-indicator"'
+
+  right <- quickmap:::generate_legend_html(
+    "who_no2", indicator_html = paste0(marker, ' id="x"></div>')
+  )
+  under <- quickmap:::generate_legend_html(
+    "who_no2", indicator_html = paste0(marker, ' id="x"></div>'),
+    indicator_placement = "under_title"
+  )
+
+  lead_open <- regexpr('class="legend-lead"', right, fixed = TRUE)
+  content <- regexpr('class="legend-content"', right, fixed = TRUE)
+
+  # right: after the whole content block. under_title: inside the lead column,
+  # before the content block
+  expect_true(regexpr(marker, right, fixed = TRUE) > content)
+  expect_true(regexpr(marker, under, fixed = TRUE) > lead_open)
+  expect_true(regexpr(marker, under, fixed = TRUE) < content)
+
+  # exactly one copy either way — never both slots filled
+  expect_equal(length(gregexpr(marker, right, fixed = TRUE)[[1]]), 1)
+  expect_equal(length(gregexpr(marker, under, fixed = TRUE)[[1]]), 1)
+
+  # and no placeholder left behind in either
+  expect_false(grepl("{{", right, fixed = TRUE))
+  expect_false(grepl("{{", under, fixed = TRUE))
+})
+
+test_that("the phone layout ignores placement", {
+  css <- quickmap:::read_template_file(
+    file.path(quickmap:::get_package_dir("legend"), "mobile.css")
+  )
+  # display: contents dissolves the lead column, so the title and figures
+  # become siblings of the ramp and wrap in one row whichever placement is set
+  expect_match(css, ".legend-lead { display: contents; }", fixed = TRUE)
+})
+
+test_that("the template offers both placements and the figures still collapse", {
   template <- quickmap:::read_template_file(
     file.path(quickmap:::get_package_dir("legend"), "legend.html")
   )
-  content <- regexpr("legend-content", template, fixed = TRUE)
-  indicator <- regexpr("{{legend_indicator}}", template, fixed = TRUE)
 
-  # entirely to the right of the ramp (user, 2026-07-31): after the whole
-  # content block, not inside it and not in a column beside the title
-  expect_true(content > 0)
-  expect_true(indicator > content)
-  expect_false(grepl("legend-lead", template, fixed = TRUE))
+  # one slot under the title, one to the right of the ramp; R fills whichever
+  # the theme names and empties the other
+  expect_match(template, "{{legend_indicator_lead}}", fixed = TRUE)
+  expect_match(template, "{{legend_indicator_right}}", fixed = TRUE)
+  expect_true(
+    regexpr("{{legend_indicator_lead}}", template, fixed = TRUE) <
+      regexpr("legend-content", template, fixed = TRUE)
+  )
+  expect_true(
+    regexpr("{{legend_indicator_right}}", template, fixed = TRUE) >
+      regexpr("legend-content", template, fixed = TRUE)
+  )
 
   css <- quickmap:::read_template_file(
     file.path(quickmap:::get_package_dir("legend"), "legend-interactive.css")
   )
-  # still disappears on close, which is why it was moved in the first place
+  # disappears on close in either placement
   expect_match(css, ".legend.collapsed .legend-indicator", fixed = TRUE)
 })
 
