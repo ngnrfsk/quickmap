@@ -151,6 +151,7 @@
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
+  max-width: 34%;
   gap: 1rem;
 }
 

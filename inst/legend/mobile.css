@@ -1,7 +1,10 @@
 /* Mobile: Stack vertically on small screens.
+   Applies from 560px down — the width at which the ramp has taken a line of
+   its own, so the title and figures have the row above to themselves and
+   should sit on it together rather than stacking further.
    The scarce resource on a phone is vertical space — the legend competes with
    the map for it — so everything here is about height, not width. */
-@media (max-width: 480px) {
+@media (max-width: 560px) {
   /* Wrapping rows, not a single column: the title pill leaves most of its
      line empty, so the figures share it and the ramp wraps below. That costs
      the legend no height at all beyond the row it already had. */
@@ -18,6 +21,9 @@
      lead column stops being a box, so the title and the figures become
      siblings of the ramp and wrap together. */
   .legend-lead { display: contents; }
+
+  /* the share-of-the-row cap is a desktop/tablet device; a phone stacks */
+  .legend-lead.qm-title-row { max-width: none; }
 
   .legend-header { order: 1; }
 
@@ -70,7 +76,7 @@
 }
 
 /* Tablet/Landscape: Keep horizontal but tighter spacing */
-@media (min-width: 481px) and (max-width: 850px) {
+@media (min-width: 561px) and (max-width: 850px) {
   .legend-container {
     gap: 0.75rem;
     padding: 0.625rem;
