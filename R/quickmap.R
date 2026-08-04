@@ -1792,35 +1792,27 @@ generate_indicator_bar <- function(
     max_html <- sprintf(
       paste0(
         '        <div class="qm-diamond%s" id="qmIndicatorMax" ',
-        'style="left: %s%%; background: %s;" title="Highest site, %s"></div>\n',
-        '        <div class="qm-marker-figure%s" id="qmIndicatorMaxFigure" ',
-        'style="left: %s%%;">%s</div>\n'
+        'style="left: %s%%; background: %s;" title="max all sites, %s"></div>\n'
       ),
       if (crowded) " qm-lifted" else "",
-      format(max_pos, trim = TRUE), max_colour, max_figure,
-      if (crowded) " qm-lifted" else "",
-      format(max_pos, trim = TRUE), max_figure
+      format(max_pos, trim = TRUE), max_colour, max_figure
     )
   }
 
-  # Both figures sit above their markers, never inside them (user, 2026-07-31:
-  # text inside the roundel mangled the disc and was harder to read than the
-  # diamond's floating label). The roundel is now a plain disc.
+  # Markers only. The figures they used to carry above them are in the legend
+  # title's row now (user, 2026-08-04), so repeating them here would say the
+  # same number twice; the values remain as hover text.
   sprintf(
     paste0(
       '      <div class="legend-indicator-roundel">\n',
       '%s',
       '        <div class="qm-roundel%s" id="qmIndicatorBar" ',
-      'style="left: %s%%; background: %s;" title="Network mean, %s"></div>\n',
-      '        <div class="qm-marker-figure qm-marker-figure-mean%s" ',
-      'id="qmIndicatorFigure" style="left: %s%%;">%s</div>\n',
+      'style="left: %s%%; background: %s;" title="mean, %s"></div>\n',
       '      </div>\n'
     ),
     max_html,
     if (crowded) " qm-dropped" else "",
-    format(mean_pos, trim = TRUE), mean_colour, mean_figure,
-    if (crowded) " qm-dropped" else "",
-    format(mean_pos, trim = TRUE), mean_figure
+    format(mean_pos, trim = TRUE), mean_colour, mean_figure
   )
 }
 

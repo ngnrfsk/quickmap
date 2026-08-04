@@ -108,11 +108,12 @@
    their row must be exactly the ramp's width — same flex parent, no padding
    of its own. The row has no height: the markers overhang onto the ramp
    below, so the ramp keeps its position and only the markers move.
-   The row's top margin is the headroom the floating figures need. */
+   The row's top margin is the headroom the markers need to overhang
+   upward, including when the collision rule lifts one of them. */
 .legend-indicator-roundel {
   position: relative;
   height: 0;
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 .qm-roundel {
@@ -232,24 +233,11 @@
   transition: left 0.3s ease, background-color 0.3s ease;
 }
 
-.qm-marker-figure {
-  position: absolute;
-  top: -1.5rem;
-  transform: translateX(-50%);
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #333;
-  white-space: nowrap;
-  transition: left 0.3s ease;
-}
-
 /* Collision rule: when the mean and the maximum fall within a marker's width
    of each other, the maximum lifts and the mean drops rather than overlapping.
    Markers move only to avoid each other, never for layout. */
 .qm-diamond.qm-lifted { top: -0.75rem; }
-.qm-marker-figure.qm-lifted { top: -1.95rem; }
 .qm-roundel.qm-dropped { top: 0.5rem; }
-.qm-marker-figure-mean.qm-dropped { top: 1.8rem; }
 
 .qm-ind-chip-diamond {
   width: 0.62rem;

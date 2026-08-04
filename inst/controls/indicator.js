@@ -15,18 +15,18 @@
     if (el) fn(el);
   }
 
-  // Do the two figures actually overlap, right now, at this window width?
+  // Do the two markers actually overlap, right now, at this window width?
   //
   // R decides this server-side from a percentage of the ramp, which is all it
-  // can do for a static export. That is wrong on a narrow screen: the labels
-  // are a fixed width in pixels while the ramp shrinks, so on a phone two
-  // labels can collide while sitting further apart in percentage terms than
-  // any desktop threshold would flag. So in the browser, measure.
-  var GAP = 6; // px of daylight required between the two labels
+  // can do for a static export. That is wrong on a narrow screen: the markers
+  // keep their size while the ramp shrinks, so on a phone two markers can
+  // collide while sitting further apart in percentage terms than any desktop
+  // threshold would flag. So in the browser, measure.
+  var GAP = 4; // px of daylight required between the two markers
 
   function measureOverlap() {
-    var a = document.getElementById("qmIndicatorFigure");
-    var b = document.getElementById("qmIndicatorMaxFigure");
+    var a = document.getElementById("qmIndicatorBar");
+    var b = document.getElementById("qmIndicatorMax");
     if (!a || !b) return false;
 
     // measure them level: the offsets we are deciding about would otherwise
@@ -60,11 +60,6 @@
       el.title = "Network mean, " + figure;
       el.classList.toggle("qm-dropped", crowded);
     });
-    set("qmIndicatorFigure", function(el) {
-      el.style.left = data.w[i] + "%";
-      el.textContent = figure;
-      el.classList.toggle("qm-dropped", crowded);
-    });
     set("qmIndicatorChip", function(el) {
       el.style.background = data.colours[i];
     });
@@ -77,11 +72,6 @@
       el.style.left = data.maxW[i] + "%";
       el.style.background = data.maxColours[i];
       el.title = "Highest site, " + maxFigure;
-      el.classList.toggle("qm-lifted", crowded);
-    });
-    set("qmIndicatorMaxFigure", function(el) {
-      el.style.left = data.maxW[i] + "%";
-      el.textContent = maxFigure;
       el.classList.toggle("qm-lifted", crowded);
     });
     set("qmIndicatorMaxChip", function(el) {
@@ -99,8 +89,7 @@
   function applyOverlap() {
     if (!data.maxW) return;
     var overlapping = measureOverlap();
-    [["qmIndicatorFigure", "qm-dropped"], ["qmIndicatorBar", "qm-dropped"],
-     ["qmIndicatorMaxFigure", "qm-lifted"], ["qmIndicatorMax", "qm-lifted"]]
+    [["qmIndicatorBar", "qm-dropped"], ["qmIndicatorMax", "qm-lifted"]]
       .forEach(function(pair) {
         set(pair[0], function(el) {
           el.classList.toggle(pair[1], overlapping);

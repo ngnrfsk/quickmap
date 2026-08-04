@@ -47,9 +47,8 @@
   .qm-ind-value { font-size: 0.95rem; }
 
   /* less headroom above the markers: the labels are smaller here too */
-  .legend-indicator-roundel { margin-top: 1.5rem; }
+  .legend-indicator-roundel { margin-top: 0.9rem; }
 
-  .qm-marker-figure { font-size: 0.65rem; }
 
   .legend-header {
     padding: 0.5rem 0.75rem;

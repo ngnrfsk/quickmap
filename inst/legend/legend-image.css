@@ -92,7 +92,7 @@
 .legend-indicator-roundel {
   position: relative;
   height: 0;
-  margin-top: 2.2rem;
+  margin-top: 1.1rem;
 }
 
 .qm-roundel {
@@ -199,24 +199,11 @@
   transition: left 0.3s ease, background-color 0.3s ease;
 }
 
-.qm-marker-figure {
-  position: absolute;
-  top: -1.7rem;
-  transform: translateX(-50%);
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #333;
-  white-space: nowrap;
-  transition: left 0.3s ease;
-}
-
 /* Collision rule: when the mean and the maximum fall within a marker's width
    of each other, the maximum lifts and the mean drops rather than overlapping.
    Markers move only to avoid each other, never for layout. */
 .qm-diamond.qm-lifted { top: -0.86rem; }
-.qm-marker-figure.qm-lifted { top: -2.24rem; }
 .qm-roundel.qm-dropped { top: 0.55rem; }
-.qm-marker-figure-mean.qm-dropped { top: 2rem; }
 
 .qm-ind-chip-diamond {
   width: 0.71rem;
