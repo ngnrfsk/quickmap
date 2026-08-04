@@ -223,12 +223,10 @@ test_that("the roundel marks the ramp and nothing draws a second scale", {
   expect_match(roundel, "qm-roundel", fixed = TRUE)
   expect_match(roundel, "left:", fixed = TRUE) # positioned, not filled
 
-  # the figure floats above the disc; text inside it mangled the shape and
-  # read worse than the diamond's label (user, 2026-07-31)
-  expect_match(roundel, "qm-marker-figure", fixed = TRUE)
-  expect_match(roundel, ">50.0</div>", fixed = TRUE)
-  expect_false(grepl(">50.0</div>\n        <div class=\"qm-marker",
-                     roundel, fixed = TRUE))
+  # markers only: the figures live in the legend title row now, so repeating
+  # them over the markers would print the same number twice (user, 2026-08-04)
+  expect_false(grepl("qm-marker-figure", roundel, fixed = TRUE))
+  expect_match(roundel, 'title="mean, 50.0"', fixed = TRUE)
 
   block <- quickmap:::generate_indicator_html(ind, "who_no2")
   expect_match(block, "mean of 2 sites", fixed = TRUE)
@@ -273,7 +271,7 @@ test_that("the maximum is drawn as a diamond, off by default", {
     ind, "who_no2", show_max = TRUE
   )
   expect_match(with_max, "qm-diamond", fixed = TRUE)
-  expect_match(with_max, ">60.0<", fixed = TRUE) # the maximum's own figure
+  expect_match(with_max, 'title="max all sites, 60.0"', fixed = TRUE)
   expect_match(with_max, "qm-roundel", fixed = TRUE) # mean still there
 
   block <- quickmap:::generate_indicator_html(ind, "who_no2", show_max = TRUE)
