@@ -392,7 +392,7 @@ test_that("mobile styles cover the indicator, not just the legend", {
     file.path(quickmap:::get_package_dir("legend"), "mobile.css")
   )
   small <- regmatches(
-    css, regexpr("@media \\(max-width: 480px\\).*?\\n\\}\\n", css)
+    css, regexpr("@media \\(max-width: 560px\\).*?\\n\\}\\n", css)
   )
   expect_true(nchar(small) > 0)
   # the block that lays the figures in a row and trims their headroom
