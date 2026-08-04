@@ -120,7 +120,7 @@ test_that("the drawn indicator carries the figure, units and every step", {
   html <- quickmap:::generate_indicator_html(ind, "who_no2")
 
   expect_match(html, 'id="qmIndicator"', fixed = TRUE)
-  expect_match(html, "Network mean, 2 sites", fixed = TRUE)
+  expect_match(html, "mean of 2 sites", fixed = TRUE)
   expect_match(html, "µg/m³", fixed = TRUE)
   expect_match(html, '"values":[50.0,40.0,30.0]', fixed = TRUE)
   expect_match(html, "window.quickmapIndicatorController", fixed = TRUE)
@@ -231,7 +231,7 @@ test_that("the roundel marks the ramp and nothing draws a second scale", {
                      roundel, fixed = TRUE))
 
   block <- quickmap:::generate_indicator_html(ind, "who_no2")
-  expect_match(block, "Network mean, 2 sites", fixed = TRUE)
+  expect_match(block, "mean of 2 sites", fixed = TRUE)
   expect_match(block, '"w":[', fixed = TRUE) # positions for every step
   expect_match(block, "qm-ind-chip-roundel", fixed = TRUE)
 
@@ -278,8 +278,8 @@ test_that("the maximum is drawn as a diamond, off by default", {
 
   block <- quickmap:::generate_indicator_html(ind, "who_no2", show_max = TRUE)
   # each figure states its own basis, because they rest on different sites
-  expect_match(block, "Highest of 3 sites", fixed = TRUE)
-  expect_match(block, "Network mean, 2 sites", fixed = TRUE)
+  expect_match(block, "max all sites", fixed = TRUE)
+  expect_match(block, "mean of 2 sites", fixed = TRUE)
   expect_match(block, "qm-ind-chip-diamond", fixed = TRUE)
   expect_match(block, '"maxValues":[', fixed = TRUE)
   expect_match(block, '"maxCounts":[', fixed = TRUE)

@@ -163,6 +163,21 @@
   padding-left: 0.15rem;
 }
 
+/* placement "title_row" (default): the figures sit on the legend title's own
+   line. The row exists already, so they cost the legend no height; and with
+   short captions they fit beside the title down to a small phone. */
+.legend-lead.qm-title-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.legend-lead.qm-title-row .legend-indicator {
+  display: flex;
+  flex-direction: row;
+  gap: 1.1rem;
+}
+
 /* The figures, to the right of the ramp (user, 2026-07-31). They still
    collapse with the legend — see the .collapsed rule below. On a phone they
    turn into a single row; see mobile.css. */
@@ -182,7 +197,7 @@
 }
 
 .qm-ind-value {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 650;
   line-height: 1.2;
 }
