@@ -1293,10 +1293,11 @@ get_default_theme <- function() {
       # roundel. Off by default: two markers on one ramp is a busier legend,
       # and the mean alone is the headline figure.
       show_max = FALSE,
-      # Where the figures sit on desktop and tablet: "right" of the ramp, or
-      # "under_title", beneath the legend's title pill. Phones ignore this and
-      # use the wrapping row layout either way (mobile.css).
-      placement = "right"
+      # Where the figures sit: "title_row" (default) puts them on the legend
+      # title's own line, which costs the legend no extra height at any width;
+      # "under_title" stacks them beneath it; "right" puts them past the ramp.
+      # Phones use the wrapping row layout whichever is set (mobile.css).
+      placement = "title_row"
     ),
     map = list(
       # default reverted to OSM 2026-07-11 (user): the vignette dimming is
@@ -1663,7 +1664,9 @@ generate_legend_html <- function(
   # to the right of the ramp. Both are real positions in the markup rather
   # than one position moved by CSS, because the two differ in nesting, not
   # just in order.
-  under_title <- identical(indicator_placement, "under_title")
+  # "title_row" and "under_title" both put the figures in the lead column;
+  # they differ only in whether that column runs across or down.
+  in_lead <- indicator_placement %in% c("title_row", "under_title")
 
   apply_template_replacements(
     html_template,
@@ -1671,8 +1674,10 @@ generate_legend_html <- function(
       "{{legend_title}}" = legend_scale$title,
       "{{legend_items}}" = legend_items_html,
       "{{legend_key}}" = symbol_key_html,
-      "{{legend_indicator_lead}}" = if (under_title) indicator_html else "",
-      "{{legend_indicator_right}}" = if (under_title) "" else indicator_html,
+      "{{legend_lead_class}}" = if (identical(indicator_placement, "title_row"))
+        "qm-title-row" else "",
+      "{{legend_indicator_lead}}" = if (in_lead) indicator_html else "",
+      "{{legend_indicator_right}}" = if (in_lead) "" else indicator_html,
       "{{legend_script}}" = mobile_script
     )
   )
@@ -1876,8 +1881,11 @@ generate_indicator_html <- function(
   if (is.na(idx)) idx <- 1
   value <- indicator$values[idx]
 
+  # Short captions (user, 2026-08-04). The mean states its count because it is
+  # a subset — the fixed panel; the maximum does not, because "all sites" is
+  # what it means by definition.
   caption <- label %||% sprintf(
-    "Network mean, %d site%s",
+    "mean of %d site%s",
     indicator$n_sites,
     if (indicator$n_sites == 1) "" else "s"
   )
@@ -1923,11 +1931,7 @@ generate_indicator_html <- function(
     # rest on different ones: the mean on the fixed panel, the maximum on
     # every site reporting at that step. Unlabelled, the pair would invite the
     # reader to assume one basis.
-    max_caption <- sprintf(
-      "Highest of %d site%s",
-      indicator$max_counts[idx],
-      if (isTRUE(indicator$max_counts[idx] == 1)) "" else "s"
-    )
+    max_caption <- "max all sites"
     max_block <- paste0(
       "\n        ",
       figure_block(
@@ -2079,6 +2083,19 @@ build_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE,
     },
     stop("Unknown banner style '", banner_style, "'. Use \"strip\" or \"bar\".")
   )
+
+  # The year label on an exported image, sized to match the banner title
+  # (user, 2026-08-04: at its old size a reader could miss which year they
+  # were looking at). Built here because this is where the banner's own size
+  # is decided, so the two cannot drift apart. rem, so it scales with the
+  # export like the rest of the chrome.
+  if (image_mode) {
+    banner_size <- if (identical(banner_style, "bar")) "1.8rem" else "1.7rem"
+    style_css <- paste0(
+      style_css,
+      "\n.year-label { font-size: ", banner_size, "; }"
+    )
+  }
 
   replacements <- list("{{banner_style_css}}" = style_css)
 
@@ -2342,14 +2359,18 @@ load_time_slider_control <- function(
     time_text <- if (!is.null(display_times) && length(display_times) > 0) {
       as.character(display_times[1])
     } else ""
+    # Top-left (user, 2026-08-04): the corner a reader looks at first, and
+    # free in an export because the zoom buttons are not drawn. Sized by
+    # .year-label in the banner CSS so it matches the title.
     return(sprintf(
       paste0(
-        '\n<div id="yearControl" style="position: absolute; top: 1.2rem;',
-        ' right: 1.2rem; z-index: 1000; background: rgba(255,255,255,0.95);',
+        '\n<div id="yearControl" class="year-label"',
+        ' style="position: absolute; top: 1.2rem;',
+        ' left: 1.2rem; z-index: 1000; background: rgba(255,255,255,0.95);',
         ' border: 1px solid #ddd; border-radius: 0.5rem;',
-        ' padding: 0.45rem 0.9rem; font-weight: 650; font-size: 1.1rem;',
+        ' padding: 0.5rem 1rem; font-weight: 700;',
         ' font-family: system-ui, -apple-system, sans-serif;',
-        ' box-shadow: 0 1px 4px rgba(0,0,0,0.15);">%s</div>\n'
+        ' box-shadow: 0 1px 4px rgba(0,0,0,0.18);">%s</div>\n'
       ),
       time_text
     ))

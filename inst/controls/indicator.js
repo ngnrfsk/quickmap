@@ -88,13 +88,8 @@
       el.style.background = data.maxColours[i];
     });
     set("qmIndicatorMaxValue", function(el) { el.textContent = maxFigure; });
-    // the count changes between steps as sites open, and the caption says so
-    // because the maximum and the mean rest on different sets of sites
-    set("qmIndicatorMaxCaption", function(el) {
-      if (!data.maxCounts) return;
-      var n = data.maxCounts[i];
-      el.textContent = "Highest of " + n + " site" + (n === 1 ? "" : "s");
-    });
+    // the maximum's caption is fixed ("max all sites") — it is over every
+    // reporting site by definition, so there is no count to keep up to date
 
     applyOverlap();
   }
