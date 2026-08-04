@@ -10,6 +10,7 @@
 .legend-container {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 1.25rem;
@@ -37,8 +38,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 24rem;
+  min-width: 24rem;
 }
 
 /* Thin colour ramp: blocks row + labels row below */
@@ -130,8 +131,9 @@
 .legend-lead {
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
+  min-width: 0;
   gap: 0.5rem;
-  flex-shrink: 0;
 }
 
 /* Under the title the figures have no ramp to their left, so they drop the
@@ -147,6 +149,7 @@
    short captions they fit beside the title down to a small phone. */
 .legend-lead.qm-title-row {
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
 }
@@ -154,12 +157,13 @@
 .legend-lead.qm-title-row .legend-indicator {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: 1.25rem;
 }
 
 /* The figures, to the right of the ramp (user, 2026-07-31) */
 .legend-indicator {
-  flex-shrink: 0;
+  min-width: 0;
   width: 12rem;
   border-left: 1px solid #e5e5e5;
   padding-left: 1.25rem;

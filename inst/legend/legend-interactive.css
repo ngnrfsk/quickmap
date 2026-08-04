@@ -9,6 +9,7 @@
 .legend-container {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
   padding: 0.6rem 1rem;
@@ -44,8 +45,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 22rem;
+  min-width: 22rem;
 }
 
 /* Thin colour ramp: blocks row + labels row below */
@@ -152,8 +153,9 @@
 .legend-lead {
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
+  min-width: 0;
   gap: 0.45rem;
-  flex-shrink: 0;
 }
 
 /* Under the title the figures have no ramp to their left, so they drop the
@@ -169,6 +171,7 @@
    short captions they fit beside the title down to a small phone. */
 .legend-lead.qm-title-row {
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.9rem;
 }
@@ -176,6 +179,7 @@
 .legend-lead.qm-title-row .legend-indicator {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: 1.1rem;
 }
 
@@ -183,7 +187,7 @@
    collapse with the legend — see the .collapsed rule below. On a phone they
    turn into a single row; see mobile.css. */
 .legend-indicator {
-  flex-shrink: 0;
+  min-width: 0;
   width: 11rem;
   border-left: 1px solid #e5e5e5;
   padding-left: 1rem;
