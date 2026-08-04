@@ -6,11 +6,13 @@
      line empty, so the figures share it and the ramp wraps below. That costs
      the legend no height at all beyond the row it already had. */
   .legend-container {
-    flex-flow: row wrap;
-    align-items: center;
     gap: 0.5rem;
     padding: 0.5rem;
   }
+
+  /* below the floor set in the base stylesheet, so the ramp still fills the
+     line it wraps onto */
+  .legend-content { min-width: 0; }
 
   /* Whichever placement desktop uses, a phone gets the wrapping row: the
      lead column stops being a box, so the title and the figures become
