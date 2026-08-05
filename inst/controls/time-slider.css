@@ -54,6 +54,30 @@
 .step-button:focus-visible { outline: 2px solid {{accent_light}}; outline-offset: 2px; }
 #yearControl.single-step .step-button { display: none; }
 
+/* Playback speed (2026-08-05). A pill rather than a bare glyph so it reads as
+   a value you can change, and a fixed width so the card does not reflow as
+   the label goes from "1×" to "0.25×". */
+.speed-button {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 0.35rem;
+  color: #555;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.32rem 0.3rem;
+  width: 2.7rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.speed-button:hover { color: {{accent}}; border-color: {{accent_light}}; }
+.speed-button:focus-visible { outline: 2px solid {{accent_light}}; outline-offset: 2px; }
+#yearControl.single-step .speed-button { display: none; }
+
 .slider-body { flex: 1; min-width: 0; }
 
 .slider-current {
@@ -116,4 +140,7 @@
 @media (max-width: 480px) {
   #yearControl.time-slider { bottom: 0.8rem; padding: 0.4rem 0.7rem; gap: 0.45rem; }
   .slider-current { font-size: 0.8rem; }
+  /* A phone keeps the theme's speed and loses only the control: the card has
+     no width to spare, and the same breakpoint already collapses the legend. */
+  .speed-button { display: none; }
 }

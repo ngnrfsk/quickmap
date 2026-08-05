@@ -259,7 +259,14 @@ test_that("the maximum is the worst site reporting, the mean is the panel", {
   expect_equal(ind$max_counts, c(3L, 3L, 2L))
 })
 
-test_that("the maximum is drawn as a diamond, off by default", {
+test_that("the theme asks for the maximum by default", {
+  # user decision 2026-08-05, reversing 07-31: a mean alone is read as though
+  # it described everywhere. The renderer's own argument stays FALSE — the
+  # theme is what decides, and it always passes the value explicitly.
+  expect_true(quickmap:::get_default_theme()$indicator$show_max)
+})
+
+test_that("the maximum is drawn as a diamond, off unless the caller asks", {
   ind <- quickmap:::build_indicator_data(
     make_layers("tubes"), fixture(), c("2019", "2020", "2021"), "no2"
   )

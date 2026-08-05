@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.9.9
+### Current Version: 0.9.9.10
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -310,6 +310,20 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
     arrows = exact), current step labelled above the thumb
 -   **Dynamic time steps**: populated from the layer cache / lazy payload
 -   **Neutral chrome**: brand colour as accent only (play button, fill)
+-   **Speed button** (v0.9.9.10+): multiplier on the theme's `play_speed`,
+    cycling and wrapping, default 1×, hidden below 480px. The set is chosen in
+    R by step count (`speed_multipliers()`) and passed as `speeds` in
+    `window.quickmapConfig`: 0.5/1/2/4 for 12 steps or fewer, the full
+    0.25 → 0.5 → 1 → 2 → 4 → 8 above — 8× on a seven-step map is 150ms a step,
+    a press you pass through rather than one you want.
+    In `time-slider.js` the interval has one source of truth (the
+    `currentInterval` function) and one place that starts a timer
+    (`startTimer`) — there are two timer sites
+    (play, and resuming after the tab was hidden) and a speed reaching only
+    one of them is correct on play and wrong after a return to the tab
+-   **Default pace** follows the step count (`default_play_speed()`), not a
+    constant: 1200ms for ≤12 steps, 800ms for 13–60, 450ms above. An explicit
+    `play_speed` argument or theme value still wins
 -   **Keyboard**: arrows step, Home/End jump, Space play/pause
 -   **Files**: `inst/controls/time-slider.html`, `.css`, `.js`
     (replaced the pre-v0.9.9.5 roller dropdown)
@@ -340,8 +354,9 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
     same threshold in two places. `ramp_position()` maps a value band by
     band; the open-ended top band resolves to its midpoint
 -   **The mean is a roundel**, a plain disc at its position on the ramp, with
-    its figure floating above it. Optionally the maximum joins it as a
-    **diamond** (`indicator.show_max`), distinguished by shape because colour
+    its figure floating above it. The maximum joins it as a
+    **diamond** (`indicator.show_max`, on by default since 2026-08-05),
+    distinguished by shape because colour
     already carries the concentration band. When the two would overlap
     the maximum and its figure lift, and the mean and its figure drop — a
     collision rule, not a layout: they move only to avoid each other. The
@@ -367,7 +382,10 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 -   **Chips** beside each figure repeat that marker's shape and colour — the
     visual link between the words and the ramp
 -   **Theme keys**: `indicator.show` (default TRUE), `indicator.label`,
-    `indicator.show_max` (default FALSE)
+    `indicator.show_max` (default TRUE since 2026-08-05, user decision
+    reversing 07-31: a mean alone is read as though it described everywhere,
+    and the worst site is what an air quality report is usually about; set it
+    FALSE for the quieter one-figure legend)
 -   **Archived alternatives**, coded and retired, wakeable with instructions:
     the standalone track (`dev/archive/260730_indicator_track-style_v1.R`) and
     the zero-to-value bar (`dev/archive/260731_indicator_bar-style_v1.R`)
@@ -440,6 +458,27 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.9.8**: small fixes from the traced API catalogue (dev/260712_api_catalogue_v1.md): non-matching `display_times` now warns naming the available steps; `styling_type` validated against "html"/"none"; roxygen corrected (output_file used verbatim; data_symbols accepts all 18 renderer names)
 
 -   **v0.9.9.9**: legend indicator (user-approved 2026-07-29, feasibility study dev/260729_overlays_feasibility.md): the network mean for the displayed step, drawn in the legend as an inline-SVG track with tick marks at the colour scale's thresholds and a pointer in the value's band colour; `build_indicator_data()` aggregates a **fixed panel** (sites reporting in every displayed step) into a single combined mean across layers, returning NULL for anything but an annual map; moves with the time slider via `window.quickmapIndicatorController` (`inst/controls/indicator.js`), hooked above the lazy-path branch so it works on both rendering paths; static exports draw their own step server-side with no script; theme keys `indicator.show` / `indicator.label`; `inst/legend/legend.html` converted from positional `sprintf` to `{{placeholder}}` substitution
+
+-   **v0.9.9.10**: animation speed control (agreed 2026-08-05,
+    dev/concepts/260805_animation-speed-control.md, plan
+    dev/260805_speed_control_plan.md): a multiplier button in the time-slider
+    card cycling and wrapping, default 1×, hidden below 480px, its set chosen
+    by step count in R (`speed_multipliers()`: 0.5/1/2/4 for ≤12 steps, the
+    full 0.25–8× above, user decision 2026-08-05 — 8× on a seven-step map is a
+    press you pass through rather than one you want); the
+    default pace becomes step-count based (`default_play_speed()`: 1200ms for
+    ≤12 steps, 800ms for 13–60, 450ms above) instead of a flat 500ms, so the
+    four shipped themes that merely repeated the old 500ms constant now leave
+    `play_speed` unset; the colour crossfade in
+    `inst/controls/lazy-time-controller.js` becomes 40% of the interval capped
+    at 250ms, sized from `window.quickmapPlayInterval` published by the
+    slider, so it cannot outlast the step at high multipliers. Also fixes a
+    `.gitignore` defect found on the way: `*.html` had been swallowing
+    `inst/controls/time-slider.html`, which had therefore never been
+    committed — a fresh clone could not build a map. Also flips
+    `indicator.show_max` to TRUE by default (user decision 2026-08-05,
+    reversing 07-31), so the legend shows the network maximum's diamond
+    beside the mean's roundel unless a theme turns it off
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 

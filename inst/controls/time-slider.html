@@ -1,0 +1,15 @@
+<div id="yearControl" class="time-slider" role="group" aria-label="Time control">
+  <button id="playPauseButton" class="play-pause-button" aria-label="Play animation" aria-pressed="false">▶</button>
+  <button id="stepBack" class="step-button" aria-label="Previous time step">‹</button>
+  <div class="slider-body">
+    <div id="currentLabel" class="slider-current" aria-live="polite"></div>
+    <div id="sliderTrack" class="slider-track" role="slider" tabindex="0"
+         aria-label="Time step" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
+      <div id="sliderFill" class="slider-fill"></div>
+      <div id="sliderThumb" class="slider-thumb"></div>
+    </div>
+    <div class="slider-ends"><span id="startLabel"></span><span id="endLabel"></span></div>
+  </div>
+  <button id="stepForward" class="step-button" aria-label="Next time step">›</button>
+  <button id="speedButton" class="speed-button" aria-label="Playback speed 1×, press to change">1×</button>
+</div>
