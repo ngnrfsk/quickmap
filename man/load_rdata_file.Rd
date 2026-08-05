@@ -2,7 +2,7 @@
 % Please edit documentation in R/quickmap.R
 \name{load_rdata_file}
 \alias{load_rdata_file}
-\title{Load RData file with duck typing}
+\title{Load an RData file and find the sensor data inside it by duck typing}
 \usage{
 load_rdata_file(file_path, pollutant, data_object_name = NULL)
 }
@@ -14,10 +14,21 @@ load_rdata_file(file_path, pollutant, data_object_name = NULL)
 \item{data_object_name}{Optional: explicit object name in RData file}
 }
 \value{
-Processed sensor data
+An sf object in long format with \code{year_str}, \code{Longitude} and
+\code{Latitude} columns
 }
 \description{
-Three-strategy loader: (1) explicit data_object_name, (2) standard names
-(dataOAformat/data/oa_data/sensor_data), (3) any compatible data.frame (largest)
+An RData file may hold several objects under any names, so the object to map
+is identified by its columns rather than its name: either the object named in
+\code{data_object_name}, or — failing that — the largest data.frame carrying
+\code{siteCode}, the pollutant, \code{lat}, \code{lon} and one temporal column.
+}
+\details{
+The temporal column decides how the data is treated, in precedence order:
+\code{year_str} means the data has already been through
+\code{\link[=convert_openair_to_spatial]{convert_openair_to_spatial()}} and is converted straight to sf; a datetime
+column (\code{date}/\code{date_time}/\code{time}/\code{datetime}/\code{timestamp}) is aggregated by
+the resolution inferred from the median gap between timestamps; a bare \code{year}
+column is the annual fallback.
 }
 \keyword{internal}

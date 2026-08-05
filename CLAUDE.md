@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.9.7
+### Current Version: 0.9.9.9
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -214,7 +214,9 @@ commands (see "Permissions and command style" below).
 External configuration files in `inst/` directory:
 - **`inst/banner/`**: Banner CSS template with {{placeholder}} substitution
 - **`inst/legend/`**: Legend CSS template with {{placeholder}} substitution
-- **`inst/controls/`**: Time control HTML/CSS/JS (bottom slider, v0.9.9.5+)
+- **`inst/controls/`**: Time control HTML/CSS/JS (bottom slider, v0.9.9.5+),
+  the wind and lazy-loading controllers, and `indicator.js` (legend
+  indicator, v0.9.9.9+)
 - **`inst/config/scales/`**: YAML colour scale definitions
 - **`inst/themes/`**: YAML theme configuration files
 
@@ -312,6 +314,67 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 -   **Files**: `inst/controls/time-slider.html`, `.css`, `.js`
     (replaced the pre-v0.9.9.5 roller dropdown)
 
+### Legend Indicator (v0.9.9.9+)
+
+-   **What it shows**: the network mean for the displayed time step, on a
+    track with tick marks at the colour scale's thresholds and a pointer in
+    the value's band colour, captioned "Network mean, N sites"
+-   **Fixed panel** (user decision 2026-07-29): only sites reporting in
+    *every* displayed step are counted, so the figure moves with the air and
+    not with the network. The surviving count is shown in the caption. The
+    panel is defined over the steps actually displayed, so narrowing
+    `display_times` can admit more sites
+-   **One combined figure** across all measurement layers (user decision) —
+    on a mixed tube/sensor map this averages two measurement methods
+-   **Annual maps only**: `build_indicator_data()` returns NULL for
+    sub-annual steps, because the thresholds behind it are annual-mean
+    limits. Sub-annual target sets are backlog issue 13
+-   **Both rendering paths**: `inst/controls/indicator.js` registers
+    `window.quickmapIndicatorController`, called from the `switchToTime`
+    handler in `time-slider.js` **above** the lazy-path early return
+-   **Static exports**: drawn server-side for that image's step, no script;
+    rem/viewBox units only, so it scales with the export
+-   **Marked on the legend's own ramp**, never on a scale of its own: the
+    ramp gives every band equal width whatever its span
+    (`.ramp-block { flex: 1 }`), so a separate linear scale would put the
+    same threshold in two places. `ramp_position()` maps a value band by
+    band; the open-ended top band resolves to its midpoint
+-   **The mean is a roundel**, a plain disc at its position on the ramp, with
+    its figure floating above it. Optionally the maximum joins it as a
+    **diamond** (`indicator.show_max`), distinguished by shape because colour
+    already carries the concentration band. When the two would overlap
+    the maximum and its figure lift, and the mean and its figure drop — a
+    collision rule, not a layout: they move only to avoid each other. The
+    browser decides by **measuring** the two labels
+    (`getBoundingClientRect`, re-run on resize), because a percentage of the
+    ramp is wrong on a narrow screen where labels keep their pixel width
+    while the ramp shrinks; `QM_MARKER_CLEARANCE` is R's fallback estimate,
+    used for static exports, which have no JavaScript
+-   **Mobile**: below 480px the figures lay out in a row rather than stacked
+    (`inst/legend/mobile.css`) — vertical space is what a phone is short of,
+    and the legend competes with the map for it
+-   **Two different bases, each stated**: the mean is over the fixed panel;
+    the **maximum is the worst site actually reporting** at that step (user
+    decision 2026-07-31), so it can jump when a site opens. The captions read
+    "Network mean, N sites" and "Highest of N sites", and the maximum's count
+    changes between steps
+-   **Position of the figures** (`indicator.placement`): `"right"` of the ramp
+    (default) or `"under_title"`, beneath the legend's title pill. Both are
+    real slots in `inst/legend/legend.html`, filled one at a time. Phones
+    ignore the setting — `.legend-lead { display: contents }` dissolves the
+    column so the wrapping row layout applies either way. The figures collapse
+    with the legend in both placements
+-   **Chips** beside each figure repeat that marker's shape and colour — the
+    visual link between the words and the ramp
+-   **Theme keys**: `indicator.show` (default TRUE), `indicator.label`,
+    `indicator.show_max` (default FALSE)
+-   **Archived alternatives**, coded and retired, wakeable with instructions:
+    the standalone track (`dev/archive/260730_indicator_track-style_v1.R`) and
+    the zero-to-value bar (`dev/archive/260731_indicator_bar-style_v1.R`)
+-   **Files**: `build_indicator_data()` and `generate_indicator_html()` in
+    `R/quickmap.R`, `inst/controls/indicator.js`, styles in both
+    `inst/legend/legend-interactive.css` and `legend-image.css`
+
 ## File Structure & Outputs
 
 ### Input Files
@@ -374,6 +437,9 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.9.5**: UI visual polish (item 10, user-approved design): slim "strip" banner default (`banner.style: strip|bar` theme key), thin colour-ramp legend with labels outside the colours and the footnote key as pills, neutral chrome with brand-colour accents, system font stack, `CartoDB.Positron` default tiles, bottom time-slider control with fine-step arrows/drag scrubbing/keyboard (`inst/controls/time-slider.*`, replacing the roller menu), wind-particle styling exposed through theme YAML (`wind:` section, speed-ramp default), and the static-export chrome-scaling repair (root font-size scaling)
 -   **v0.9.9.6**: `boroughs` is optional (user decision 2026-07-10, reversing the 07-10 morning decision): NULL (now the default) draws no boundary, disables the vignette and fits the viewport to the data — a one-argument `quickmap("data.csv")` call works
 -   **v0.9.9.7**: default base tiles reverted to OSM (user decision 2026-07-11): the vignette dimming is too faint on the pale CartoDB.Positron tiles that v0.9.9.5 made the default; Positron remains a one-line theme option (`map.base_tiles`)
+-   **v0.9.9.8**: small fixes from the traced API catalogue (dev/260712_api_catalogue_v1.md): non-matching `display_times` now warns naming the available steps; `styling_type` validated against "html"/"none"; roxygen corrected (output_file used verbatim; data_symbols accepts all 18 renderer names)
+
+-   **v0.9.9.9**: legend indicator (user-approved 2026-07-29, feasibility study dev/260729_overlays_feasibility.md): the network mean for the displayed step, drawn in the legend as an inline-SVG track with tick marks at the colour scale's thresholds and a pointer in the value's band colour; `build_indicator_data()` aggregates a **fixed panel** (sites reporting in every displayed step) into a single combined mean across layers, returning NULL for anything but an annual map; moves with the time slider via `window.quickmapIndicatorController` (`inst/controls/indicator.js`), hooked above the lazy-path branch so it works on both rendering paths; static exports draw their own step server-side with no script; theme keys `indicator.show` / `indicator.label`; `inst/legend/legend.html` converted from positional `sprintf` to `{{placeholder}}` substitution
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 
@@ -457,7 +523,12 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
     `inst/controls/wind-controller.js` (particle density, line width,
     colour ramp, velocity scale) through the theme YAML system alongside
     the other visual controls.
-11. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md (LCA visual
+11. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md
+    (including the background CPU/memory defect added 2026-07-12: HTML
+    maps must pause ALL animation work — wind particles, marker
+    crossfades, autoplay — when the page, tab or embedding iframe is
+    hidden or off-viewport, via visibilitychange + IntersectionObserver;
+    today's maps are a CPU and memory hog in the background) (LCA visual
     fixes, static-export subfolder generation, unified marker/text/legend scaling,
     ward/marker label consistency) — so v1.0 releases without known user-facing
     defects. Do not work on these earlier or piecemeal; they are the final

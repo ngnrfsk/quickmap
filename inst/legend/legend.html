@@ -1,20 +1,24 @@
 </div>
 <div class="legend" id="mapLegend">
   <div class="legend-container">
-    <div class="legend-header" onclick="this.parentElement.parentElement.classList.toggle('collapsed')">
-      <span class="legend-toggle">▼</span>
-      <span class="legend-title">%s</span>
+    <div class="legend-lead {{legend_lead_class}}">
+      <div class="legend-header" onclick="this.closest('.legend').classList.toggle('collapsed')">
+        <span class="legend-toggle">▼</span>
+        <span class="legend-title">{{legend_title}}</span>
+      </div>
+{{legend_indicator_lead}}
     </div>
     <div class="legend-content">
       <div class="legend-items">
-%s
+{{legend_items}}
       </div>
       <div class="legend-key">
-%s
+{{legend_key}}
       </div>
     </div>
+{{legend_indicator_right}}
   </div>
 </div>
 <script>
-%s
+{{legend_script}}
 </script>

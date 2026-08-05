@@ -14,9 +14,25 @@ build_lazy_payload(
   colour_scale
 )
 }
+\arguments{
+\item{measurement_layers}{Layer configuration from \code{\link[=get_measurement_layers]{get_measurement_layers()}}}
+
+\item{spatial_data}{Loaded layers from \code{\link[=load_spatial_data_sources]{load_spatial_data_sources()}}}
+
+\item{display_times}{Time steps to include}
+
+\item{pollutant}{Pollutant column name}
+
+\item{colour_scale}{Name of the colour scale}
+}
+\value{
+A list ready for JSON serialization
+}
 \description{
-Build the compact embedded payload consumed by lazy-time-controller.js:
-{times, thresholds, colours, naColour, layers: [{id, shape, radius,
-nonsolid, labelMode, noHide, sites: [{code, lat, lon, label?, v: \link{...}}]}]}
+The shape of this payload is the whole point of item 6. A site appears once,
+with its readings as a plain vector in time order, so a coordinate pair is
+serialized once rather than once per time step; the colours are sent as
+thresholds for the controller to apply, rather than as a colour per marker
+per step. That is what turns a multi-megabyte file into a small one.
 }
 \keyword{internal}

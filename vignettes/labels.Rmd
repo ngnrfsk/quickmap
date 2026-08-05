@@ -1,0 +1,91 @@
+---
+title: "Labels"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Labels}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+Labels put the number — or the site name — behind each symbol. One
+parameter, `marker_labels`, controls both what a label says and when it
+appears:
+
+```{r hover-values}
+library(quickmap)                          # load the quickmap library
+quickmap(
+  "tubes_wandsworth.csv",
+  boroughs      = "Wandsworth",
+  marker_labels = TRUE                     # values appear on hover
+)
+```
+
+<iframe src="maps/labels-hover.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Hover a symbol to see its value"></iframe>
+
+## 1. The five modes
+
+| `marker_labels =` | What appears | When |
+|---|---|---|
+| `FALSE` (default) | nothing | — |
+| `TRUE` | the site's value | on hover |
+| `"values_on"` | the site's value | always shown |
+| `"labels"` | the site's name | on hover |
+| `"labels_on"` | the site's name | always shown |
+
+## 2. Always-visible values
+
+For a map whose reader shouldn't have to hover — a report screenshot, a
+public page — show the values permanently:
+
+```{r values-on}
+quickmap(
+  "tubes_wandsworth.csv",
+  boroughs      = "Wandsworth",
+  marker_labels = "values_on"              # NEW: values always shown
+)
+```
+
+<iframe src="maps/labels-values-on.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Values always shown beside each symbol"></iframe>
+
+## 3. Site names instead of values
+
+Where a label *says a name*, the name comes from the data — no extra
+parameter, just the right column:
+
+```{r names}
+quickmap(
+  list("tubes_wandsworth_labelled.csv", # tubes WITH a Label column
+       "schools_wandsworth.csv"),                  # schools (School column)
+  boroughs      = "Wandsworth",
+  marker_labels = "labels"                 # NEW: names on hover
+)
+```
+
+<iframe src="maps/labels-names.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Hover to see site and school names"></iframe>
+
+## 4. How label content is chosen
+
+Per layer, by its columns (duck typing):
+
+| The layer has… | `"labels"` shows |
+|---|---|
+| a `School` column | the school's name |
+| a `Label` column | the label text |
+| neither | the site's value (with a warning) |
+
+- **Gotcha:** in a CSV with a `Label` column, rows whose label cell is
+  empty are dropped from the map entirely — fill or remove empty label
+  cells.
+- Mixed maps mix naturally: in the example above the tubes show their
+  labels and the schools their names, each layer from its own column.
+
+## See also
+
+- [Get started](quickmap.html) step 8 — labels in the build-up.
+- [Your data](your-data.html) — where `Label` and `School` columns fit
+  in each input format.
+- `?quickmap` — the `marker_labels` parameter.

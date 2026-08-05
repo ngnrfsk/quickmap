@@ -1,0 +1,94 @@
+---
+title: "For R users: the layer contract"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{For R users: the layer contract}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+Under every input format sits one internal currency: the `qm_layer` — an
+`sf` object in long format (one row per site per time step) carrying its
+metadata as attributes. The `from_*()` wrappers all produce one; this
+page is the contract for building and inspecting them directly.
+
+## 1. Canonical columns
+
+| Column | Type | Meaning |
+|---|---|---|
+| `code` | character | stable site id, links a symbol across time steps |
+| `time_label` | character | display text per step (absent = static layer) |
+| `time_sort` | POSIXct | sort key parsed from the label |
+| *value column* | numeric/character | the mapped values, named by `value_col` |
+| `lat`, `lon` | numeric | WGS84 |
+| `geometry` | sfc | the sf geometry (built from lat/lon if absent) |
+
+Legacy names are accepted and normalised: `siteCode`→`code`,
+`year_str`→`time_label`, `Latitude`/`Longitude`→`lat`/`lon`.
+
+## 2. Construction and inspection
+
+```{r construct}
+library(quickmap)
+d <- data.frame(
+  code = rep(c("A", "B"), each = 3),
+  date = rep(as.Date(c("2024-01-01", "2024-02-01", "2024-03-01")), 2),
+  no2  = c(31, 28, 25, 44, 41, 37),
+  lat  = rep(c(51.44, 51.46), each = 3),
+  lon  = rep(c(-0.17, -0.21), each = 3)
+)
+layer <- qm_layer(d, name = "survey")      # infers value, time, resolution
+qm_meta(layer)                             # value_col, time_col, shape, ...
+print(layer)                               # "2 sites x 3 time steps [month]"
+```
+
+Explicit overrides: `value_col`, `time_col` (pass it for non-date
+orderings like diurnal hours), `label_col`, `shape`, `name`.
+
+## 3. The time grammar
+
+`time_label` values must all share one format; the format sets the
+animation's resolution:
+
+| Format | Resolution |
+|---|---|
+| `YYYY` | year |
+| `YYYY-MM` | month |
+| `YYYY-MM-DD` | day |
+| `YYYY-MM-DD HH:MM(:SS)` | hour/minute |
+
+`Date`/`POSIXct` columns are recognised by class wherever they appear;
+character columns are only parsed if named `date`, `time`, `datetime`,
+`time_label` or `year_str` — a gate-named column that fails the grammar
+is a loud error, never a silent guess.
+
+## 4. Inference, in order
+
+When not told explicitly, `qm_layer()` infers:
+
+- **value column**: a known pollutant name (`no2`, `pm25`, `pm10`, `nox`,
+  `o3`, …), else the single remaining candidate column — two candidates
+  is an error asking for `value_col`.
+- **time column**: by class, then by the name gate above; none = a
+  static layer.
+- **labels**: a `Label` or `School` column if present.
+- **shape**: none — the map assigns symbols (solid for temporal layers,
+  outline for static, in layer order) unless the layer or the map-level
+  `data_symbols` says otherwise.
+
+## 5. The compatibility wrapper
+
+`create_pollution_map()` is the historic entry point, kept working with
+its original signature; it converts `data_sources` to `qm_layer`s and
+delegates to `quickmap()`. New code should call `quickmap()`; old scripts
+need no changes.
+
+## See also
+
+- [Layers](layers.html) — the user-facing view of the same system.
+- `?qm_layer`, `?qm_meta` — the reference.
+- [Your data](your-data.html) — the file formats the wrappers consume.

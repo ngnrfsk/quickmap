@@ -29,3 +29,6 @@ quickmap.Rproj
 .RDataTmp
 *.tgz
 .claude/settings.local.json
+
+# Editor workspace files
+*.code-workspace
