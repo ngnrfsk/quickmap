@@ -2359,6 +2359,25 @@ default_play_speed <- function(n_steps) {
   }
 }
 
+#' Playback multipliers offered by the speed button
+#'
+#' Six speeds means up to five presses to reach the one you want. On a short
+#' animation the fastest of them are not worth the presses: at 8× a seven-step
+#' map spends 150ms on each, too fast to read, so it is a speed you pass
+#' through rather than one you choose. Short animations therefore get the
+#' middle four and long ones the full set (user decision 2026-08-05).
+#'
+#' @param n_steps Number of time steps being displayed.
+#' @return Numeric vector of multipliers, always containing 1.
+#' @keywords internal
+speed_multipliers <- function(n_steps) {
+  if (n_steps <= 12) {
+    c(0.5, 1, 2, 4)
+  } else {
+    c(0.25, 0.5, 1, 2, 4, 8)
+  }
+}
+
 #' @keywords internal
 load_time_slider_control <- function(
   banner_colour = "#2c3e50",
@@ -2404,10 +2423,14 @@ load_time_slider_control <- function(
   )
   js_content <- read_template_file(file.path(controls_dir, "time-slider.js"))
 
+  # The speed set is chosen here rather than in the browser because only R
+  # knows how many steps there are.
+  n_steps <- if (is.null(display_times)) 0 else length(unique(display_times))
   config_script <- sprintf(
-    'window.quickmapConfig = {autoplay: %s, playSpeed: %d};',
+    'window.quickmapConfig = {autoplay: %s, playSpeed: %d, speeds: [%s]};',
     tolower(as.character(autoplay)),
-    as.integer(play_speed)
+    as.integer(play_speed),
+    paste(speed_multipliers(n_steps), collapse = ", ")
   )
 
   sprintf(

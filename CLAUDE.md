@@ -311,8 +311,12 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 -   **Dynamic time steps**: populated from the layer cache / lazy payload
 -   **Neutral chrome**: brand colour as accent only (play button, fill)
 -   **Speed button** (v0.9.9.10+): multiplier on the theme's `play_speed`,
-    cycling 0.25 → 0.5 → 1 → 2 → 4 → 8 and wrapping, default 1×, hidden below
-    480px. In `time-slider.js` the interval has one source of truth (the
+    cycling and wrapping, default 1×, hidden below 480px. The set is chosen in
+    R by step count (`speed_multipliers()`) and passed as `speeds` in
+    `window.quickmapConfig`: 0.5/1/2/4 for 12 steps or fewer, the full
+    0.25 → 0.5 → 1 → 2 → 4 → 8 above — 8× on a seven-step map is 150ms a step,
+    a press you pass through rather than one you want.
+    In `time-slider.js` the interval has one source of truth (the
     `currentInterval` function) and one place that starts a timer
     (`startTimer`) — there are two timer sites
     (play, and resuming after the tab was hidden) and a speed reaching only
@@ -454,7 +458,10 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.9.10**: animation speed control (agreed 2026-08-05,
     dev/concepts/260805_animation-speed-control.md, plan
     dev/260805_speed_control_plan.md): a multiplier button in the time-slider
-    card cycling 0.25×–8× and wrapping, default 1×, hidden below 480px; the
+    card cycling and wrapping, default 1×, hidden below 480px, its set chosen
+    by step count in R (`speed_multipliers()`: 0.5/1/2/4 for ≤12 steps, the
+    full 0.25–8× above, user decision 2026-08-05 — 8× on a seven-step map is a
+    press you pass through rather than one you want); the
     default pace becomes step-count based (`default_play_speed()`: 1200ms for
     ≤12 steps, 800ms for 13–60, 450ms above) instead of a flat 500ms, so the
     four shipped themes that merely repeated the old 500ms constant now leave

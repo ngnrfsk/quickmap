@@ -129,7 +129,11 @@
     // places (play, and resuming after the tab was hidden), and a speed that
     // reached one but not the other would be correct on play and wrong after
     // a return to the tab.
-    var SPEEDS = [0.25, 0.5, 1, 2, 4, 8];
+    // The set comes from R, which knows the step count: short animations get
+    // the middle four, because 8× on a seven-step map is a press you pass
+    // through rather than one you want.
+    var SPEEDS = (config.speeds && config.speeds.length) ? config.speeds
+      : [0.25, 0.5, 1, 2, 4, 8];
     var speedIndex = SPEEDS.indexOf(1);
 
     function currentInterval() {
