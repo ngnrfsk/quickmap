@@ -23,14 +23,15 @@ stamp <- "260805"
 # is too faint on pale tiles; this map has no vignette, so that reason does not
 # apply, and the paler background lets the stripes colours carry the map.
 #
-# Wind: Heathrow hourly observations for the same days, drawn at roughly three
-# times the default particle density (user, 2026-08-05) so the flow reads
-# clearly over a pale background — the default 1/300 is tuned for busier tiles.
+# Wind: Heathrow hourly observations for the same days. Density settled at
+# 0.005 (user, 2026-08-05) — half the first attempt at 0.01, still about 50%
+# above the 1/300 default, which is tuned for busier tiles and nearly vanishes
+# on Positron.
 episode_theme <- tempfile(fileext = ".yaml")
 writeLines(c(
   "map:", '  base_tiles: "CartoDB.Positron"',
   "wind:",
-  "  particle_density: 0.01",
+  "  particle_density: 0.005",
   "  line_width: 1.8"
 ), episode_theme)
 
