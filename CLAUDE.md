@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.9.9
+### Current Version: 0.9.9.10
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -310,6 +310,16 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
     arrows = exact), current step labelled above the thumb
 -   **Dynamic time steps**: populated from the layer cache / lazy payload
 -   **Neutral chrome**: brand colour as accent only (play button, fill)
+-   **Speed button** (v0.9.9.10+): multiplier on the theme's `play_speed`,
+    cycling 0.25 → 0.5 → 1 → 2 → 4 → 8 and wrapping, default 1×, hidden below
+    480px. In `time-slider.js` the interval has one source of truth (the
+    `currentInterval` function) and one place that starts a timer
+    (`startTimer`) — there are two timer sites
+    (play, and resuming after the tab was hidden) and a speed reaching only
+    one of them is correct on play and wrong after a return to the tab
+-   **Default pace** follows the step count (`default_play_speed()`), not a
+    constant: 1200ms for ≤12 steps, 800ms for 13–60, 450ms above. An explicit
+    `play_speed` argument or theme value still wins
 -   **Keyboard**: arrows step, Home/End jump, Space play/pause
 -   **Files**: `inst/controls/time-slider.html`, `.css`, `.js`
     (replaced the pre-v0.9.9.5 roller dropdown)
@@ -440,6 +450,21 @@ School data detected by School column presence. Any filename works (schools.csv,
 -   **v0.9.9.8**: small fixes from the traced API catalogue (dev/260712_api_catalogue_v1.md): non-matching `display_times` now warns naming the available steps; `styling_type` validated against "html"/"none"; roxygen corrected (output_file used verbatim; data_symbols accepts all 18 renderer names)
 
 -   **v0.9.9.9**: legend indicator (user-approved 2026-07-29, feasibility study dev/260729_overlays_feasibility.md): the network mean for the displayed step, drawn in the legend as an inline-SVG track with tick marks at the colour scale's thresholds and a pointer in the value's band colour; `build_indicator_data()` aggregates a **fixed panel** (sites reporting in every displayed step) into a single combined mean across layers, returning NULL for anything but an annual map; moves with the time slider via `window.quickmapIndicatorController` (`inst/controls/indicator.js`), hooked above the lazy-path branch so it works on both rendering paths; static exports draw their own step server-side with no script; theme keys `indicator.show` / `indicator.label`; `inst/legend/legend.html` converted from positional `sprintf` to `{{placeholder}}` substitution
+
+-   **v0.9.9.10**: animation speed control (agreed 2026-08-05,
+    dev/concepts/260805_animation-speed-control.md, plan
+    dev/260805_speed_control_plan.md): a multiplier button in the time-slider
+    card cycling 0.25×–8× and wrapping, default 1×, hidden below 480px; the
+    default pace becomes step-count based (`default_play_speed()`: 1200ms for
+    ≤12 steps, 800ms for 13–60, 450ms above) instead of a flat 500ms, so the
+    four shipped themes that merely repeated the old 500ms constant now leave
+    `play_speed` unset; the colour crossfade in
+    `inst/controls/lazy-time-controller.js` becomes 40% of the interval capped
+    at 250ms, sized from `window.quickmapPlayInterval` published by the
+    slider, so it cannot outlast the step at high multipliers. Also fixes a
+    `.gitignore` defect found on the way: `*.html` had been swallowing
+    `inst/controls/time-slider.html`, which had therefore never been
+    committed — a fresh clone could not build a map
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 

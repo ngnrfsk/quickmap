@@ -65,6 +65,7 @@
     var playPauseButton = document.getElementById("playPauseButton");
     var stepBack = document.getElementById("stepBack");
     var stepForward = document.getElementById("stepForward");
+    var speedButton = document.getElementById("speedButton");
     var track = document.getElementById("sliderTrack");
     var fill = document.getElementById("sliderFill");
     var thumb = document.getElementById("sliderThumb");
@@ -121,6 +122,44 @@
       switchToTime(times[index], times, instant);
     }
 
+    // Playback speed (2026-08-05). The button shows a multiplier applied to
+    // the theme's playSpeed, cycling on each press and wrapping. The interval
+    // has exactly one source of truth, currentInterval(), and exactly one
+    // place that starts a timer, startTimer() — the timer is started from two
+    // places (play, and resuming after the tab was hidden), and a speed that
+    // reached one but not the other would be correct on play and wrong after
+    // a return to the tab.
+    var SPEEDS = [0.25, 0.5, 1, 2, 4, 8];
+    var speedIndex = SPEEDS.indexOf(1);
+
+    function currentInterval() {
+      return Math.round(config.playSpeed / SPEEDS[speedIndex]);
+    }
+
+    function startTimer() {
+      if (playInterval) clearInterval(playInterval);
+      playInterval = setInterval(function() {
+        setIndex((index + 1) % times.length);
+      }, currentInterval());
+    }
+
+    function renderSpeed() {
+      var label = SPEEDS[speedIndex] + "×";
+      speedButton.textContent = label;
+      speedButton.setAttribute(
+        "aria-label", "Playback speed " + label + ", press to change"
+      );
+      // read by lazy-time-controller.js, which sizes the colour crossfade at
+      // 40% of the interval — without this the fade would outlast the step
+      window.quickmapPlayInterval = currentInterval();
+      if (isPlaying) startTimer(); // take effect now, not at the next step
+    }
+
+    function cycleSpeed() {
+      speedIndex = (speedIndex + 1) % SPEEDS.length;
+      renderSpeed();
+    }
+
     function pause() {
       if (!isPlaying) return;
       isPlaying = false;
@@ -136,9 +175,7 @@
       playPauseButton.textContent = "⏸";
       playPauseButton.setAttribute("aria-label", "Pause animation");
       playPauseButton.setAttribute("aria-pressed", "true");
-      playInterval = setInterval(function() {
-        setIndex((index + 1) % times.length);
-      }, config.playSpeed);
+      startTimer();
     }
 
     playPauseButton.addEventListener("click", function(e) {
@@ -150,6 +187,20 @@
         e.preventDefault();
         e.stopPropagation();
         togglePlayPause();
+      }
+    });
+
+    speedButton.addEventListener("click", function(e) {
+      e.stopPropagation();
+      cycleSpeed();
+    });
+    speedButton.addEventListener("keydown", function(e) {
+      // matches the play button: handle the keys here and suppress the
+      // default so Space cannot also scroll the page or reach the map
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        e.stopPropagation();
+        cycleSpeed();
       }
     });
 
@@ -206,13 +257,12 @@
         if (document.hidden) {
           if (isPlaying && playInterval) { clearInterval(playInterval); playInterval = null; }
         } else if (isPlaying && !playInterval) {
-          playInterval = setInterval(function() {
-            setIndex((index + 1) % times.length);
-          }, config.playSpeed);
+          startTimer();
         }
       });
     }
 
+    renderSpeed(); // publishes the interval even if the button is never pressed
     setIndex(times.length - 1);
 
     if (config.autoplay && times.length > 1) togglePlayPause();

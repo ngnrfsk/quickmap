@@ -89,7 +89,8 @@ as_qm_layer <- function(x, pollutant, temporal = NULL) {
 #' @param banner_colour Banner background colour
 #' @param boundary_labels Show boundary name labels
 #' @param autoplay Auto-advance the time control
-#' @param play_speed Autoplay interval in ms
+#' @param play_speed Autoplay interval in ms. NULL takes the theme's value,
+#'   and failing that a pace set by the number of time steps
 #' @param theme_file Path to a YAML theme file
 #' @param data_symbols Optional character vector of marker symbols per layer.
 #'   Overrides the shapes carried by the layers themselves
@@ -232,7 +233,8 @@ quickmap <- function(
 #' @param banner_colour Banner background colour
 #' @param boundary_labels Show boundary name labels
 #' @param autoplay Auto-advance the time control
-#' @param play_speed Autoplay interval in ms
+#' @param play_speed Autoplay interval in ms. NULL takes the theme's value,
+#'   and failing that a pace set by the number of time steps
 #' @param theme_file Path to a YAML theme file
 #' @param wind Optional wind layer (see [quickmap()])
 #' @return Invisible Leaflet map object; writes HTML (and optionally JPGs) to

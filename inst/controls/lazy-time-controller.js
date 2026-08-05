@@ -145,9 +145,23 @@ function(el, x, data) {
   });
 
   // Colour crossfade (M2, 2026-07-07): persisting markers tween from their
-  // current colour to the new step's colour over FADE_MS instead of snapping.
-  var FADE_MS = 250;
+  // current colour to the new step's colour instead of snapping.
+  //
+  // Proportional since 2026-08-05 (speed control): 40% of the playback
+  // interval, capped at 250ms. A flat 250ms is longer than the step itself
+  // once the interval drops below ~600ms, so steps overlap and the animation
+  // smears — which is exactly what the speed multiplier makes reachable.
+  // The live interval is published by time-slider.js, which divides the
+  // theme's playSpeed by the current multiplier.
+  var FADE_MAX_MS = 250;
+  var FADE_FRACTION = 0.4;
   var fadeToken = 0;
+
+  function fadeMs() {
+    var interval = window.quickmapPlayInterval ||
+      (window.quickmapConfig && window.quickmapConfig.playSpeed) || 500;
+    return Math.min(FADE_MAX_MS, interval * FADE_FRACTION);
+  }
 
   function hexToRgb(hex) {
     return [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16),
@@ -207,10 +221,12 @@ function(el, x, data) {
       return;
     }
     var t0 = performance.now();
+    var duration = fadeMs(); // fixed for this tween, so a mid-fade speed
+                             // change cannot stretch or truncate it
 
     function tick(now) {
       if (token !== fadeToken) { return; }
-      var t = Math.min((now - t0) / FADE_MS, 1);
+      var t = Math.min((now - t0) / duration, 1);
       fading.forEach(function (f) {
         applyColour(f.entry, mix(f.from, f.to, t));
       });
