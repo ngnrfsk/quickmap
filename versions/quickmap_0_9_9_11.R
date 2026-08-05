@@ -1309,11 +1309,15 @@ get_default_theme <- function() {
       zoom_level = NULL,
       boundary_labels = FALSE,
       marker_labels = FALSE,
-      # Extra multiplier on marker-label text in static exports, over the
-      # scaling the export size already implies. 1 is right for a screen or a
-      # slide; a page-sized print needs more, because the export is a
-      # high-resolution render and 12px text lands around 4.7pt on A4.
-      label_scale = 1
+      # Multiplier on marker-label text. 1 puts labels on MARKER_LABEL_REM,
+      # the same size as the smallest text in the legend, at every export
+      # size — there is no page-size correction to make, because the labels
+      # are rem and the export scales the root. Change it only to depart
+      # from the legend's scale on purpose.
+      label_scale = 1,
+      # The translucent plate behind each marker label. Worth its clutter on
+      # busy tiles, not worth it where labels are dense.
+      label_background = TRUE
     ),
     controls = list(
       autoplay = FALSE,
@@ -2065,21 +2069,33 @@ get_contrast_text_color <- function(color) {
   }
 }
 
-#' @keywords internal
+# Marker labels are the smallest annotation on the map, the same class of text
+# as the legend's captions. 0.75rem is not a taste: the old base was 12px
+# against a 16px root, and 12/16 is 0.75 — so this is the size the labels have
+# always meant to be, now written in the unit that survives an export.
+MARKER_LABEL_REM <- 0.75
+
 #' Marker-label font size, as CSS
 #'
-#' The unit is not optional, and its absence is silent. `labelOptions()` puts
+#' In `rem`, so it needs no export scaling of its own. A static export scales
+#' the root font size (see [inject_banner_legend_controls()]), which is how
+#' banner, legend and year label stay in proportion; expressing marker labels
+#' the same way puts them in that system instead of beside it. At
+#' `label_scale = 1` they land on `MARKER_LABEL_REM`, matching the smallest
+#' text in the legend at any export size.
+#'
+#' The unit is not optional, and its absence is silent: leaflet puts
 #' `textsize` straight into a CSS `font-size`, where a bare number is invalid
 #' and the browser drops it, leaving the label at whatever it inherits. The
-#' code here passed `as.character(12 * label_sizing)` for years, so every
-#' value was inert — unnoticed because `label_sizing` was always 1.0 and the
-#' ignored value and the fallback were both 12.
+#' code passed `as.character(12 * label_sizing)` for years, so every value was
+#' inert — unnoticed because the multiplier was always 1.0 and the ignored
+#' value and the fallback were both 12.
 #'
-#' @param label_sizing Multiplier on the 12px base.
-#' @return A CSS length, e.g. `"52px"`.
+#' @param label_scale Multiplier on [MARKER_LABEL_REM].
+#' @return A CSS length, e.g. `"0.75rem"`.
 #' @keywords internal
-label_font_size <- function(label_sizing) {
-  paste0(round(12 * label_sizing, 1), "px")
+label_font_size <- function(label_scale) {
+  paste0(round(MARKER_LABEL_REM * label_scale, 4), "rem")
 }
 
 #' Build the banner's reference-layer key
@@ -2269,7 +2285,8 @@ add_year_and_static_layers <- function(
   colour_scale,
   spatial_data,
   scale_factor,
-  label_scale = 1.0
+  label_scale = 1.0,
+  label_background = TRUE
 ) {
   template |>
     generate_map_layers(
@@ -2279,7 +2296,8 @@ add_year_and_static_layers <- function(
       colour_scale,
       spatial_data,
       scale_factor,
-      label_scale
+      label_scale,
+      label_background
     ) |>
     generate_map_layers(
       measurement_layers,
@@ -2288,7 +2306,8 @@ add_year_and_static_layers <- function(
       colour_scale,
       spatial_data,
       scale_factor,
-      label_scale
+      label_scale,
+      label_background
     )
 }
 
@@ -3218,7 +3237,8 @@ add_layer <- function(
   colour_scale = NULL,
   label_sizing = 1.0,
   image_scale_factor = 1.0,
-  marker_labels = FALSE
+  marker_labels = FALSE,
+  label_background = TRUE
 ) {
   if (is.null(layer_data)) return(map)
 
@@ -3247,12 +3267,19 @@ add_layer <- function(
     offset = c(0, 12),
     textOnly = TRUE,
     textsize = label_text_size,
-    style = list(
-      "background-color" = "rgba(255,255,255,0.5)",
-      "padding" = "1px",
-      "border-radius" = "3px",
-      "border" = "1px solid rgba(0,0,0,0.1)"
-    )
+    # The plate behind a label buys legibility over busy tiles and costs
+    # clutter where the labels are dense; map.label_background turns it off.
+    style = if (isFALSE(label_background)) {
+      list("background-color" = "transparent", "border" = "none",
+           "padding" = "0")
+    } else {
+      list(
+        "background-color" = "rgba(255,255,255,0.5)",
+        "padding" = "1px",
+        "border-radius" = "3px",
+        "border" = "1px solid rgba(0,0,0,0.1)"
+      )
+    }
   )
 
   marker_params <- list(
@@ -3534,12 +3561,11 @@ create_base_map <- function(data, interactive = TRUE, base_tiles = NULL) {
 #' @param colour_scale Name of the colour scale
 #' @param spatial_data Loaded layers from [load_spatial_data_sources()]
 #' @param image_scale_factor Symbol scaling for static export
-#' @param label_scale Extra multiplier on marker-label text, over and above
-#'   `image_scale_factor`. Marker labels used to sit at a flat 12px however
-#'   large the export was (roadmap item 11, "unified marker/text/legend
-#'   scaling"), so a 4000px print came out with symbols scaled and their
-#'   labels not. They now follow the export; `label_scale` is the further
-#'   push a given page size needs — see the `map.label_scale` theme key.
+#' @param label_scale Multiplier on the marker-label text size. 1 is the
+#'   default and needs no correction for export size: labels are expressed in
+#'   `rem` and the export scales the root, exactly as it does for banner,
+#'   legend and year label. Raise it only to depart deliberately from the
+#'   legend's own scale — see the `map.label_scale` theme key.
 #' @return The map with this step's layers added
 #' @keywords internal
 generate_map_layers <- function(
@@ -3550,9 +3576,12 @@ generate_map_layers <- function(
   colour_scale,
   spatial_data,
   image_scale_factor = 1.0,
-  label_scale = 1.0
+  label_scale = 1.0,
+  label_background = TRUE
 ) {
-  label_sizing <- image_scale_factor * label_scale
+  # Symbols still need the export factor — they are drawn as sized SVG. Labels
+  # do not: they are rem, and the export has already scaled the root.
+  label_sizing <- label_scale
   for (layer_name in names(measurement_layers)) {
     layer_config <- measurement_layers[[layer_name]]
     if (!layer_config$enabled) next
@@ -3589,7 +3618,8 @@ generate_map_layers <- function(
             colour_scale,
             label_sizing,
             image_scale_factor,
-            marker_labels = show_labels
+            marker_labels = show_labels,
+            label_background
           )
         }
       }
@@ -3609,7 +3639,8 @@ generate_map_layers <- function(
         colour_scale = colour_scale,
         label_sizing,
         image_scale_factor,
-        marker_labels = show_labels
+        marker_labels = show_labels,
+        label_background
       )
     }
   }
@@ -4078,6 +4109,7 @@ render_pollution_map <- function(
   # the further push a given page size needs: symbol scaling alone leaves a
   # 4000px image at about 4.7pt on A4, which is below what prints legibly.
   label_scale <- theme$map$label_scale %||% 1
+  label_background <- theme$map$label_background %||% TRUE
 
   # -- 5. Layers -----------------------------------------------------------
   # Lazy path (item 6): above the size/step thresholds the interactive map
@@ -4137,7 +4169,8 @@ render_pollution_map <- function(
         colour_scale,
         spatial_data,
         marker_scale_factor,
-        label_scale
+        label_scale,
+        label_background
       )
 
       file_parts <- tools::file_path_sans_ext(basename(output_file))

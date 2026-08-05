@@ -21,16 +21,54 @@ test_that("label_scale is a theme key, defaulting to no change", {
 })
 
 test_that("the label size carries a CSS unit", {
-  # The bug this guards: labelOptions puts textsize straight into a CSS
-  # font-size, where a bare number is invalid and silently dropped. The code
-  # passed a bare number for years, so every label_sizing value was inert —
-  # invisible because label_sizing was always 1.0 and both the ignored value
-  # and the fallback were 12.
-  expect_equal(quickmap:::label_font_size(1.0), "12px")
-  expect_equal(quickmap:::label_font_size(2.8868), "34.6px")
-  for (s in c(0.5, 1, 2.8868, 11.14)) {
-    expect_match(quickmap:::label_font_size(s), "^[0-9.]+px$", info = s)
+  # The bug this guards: leaflet puts textsize straight into a CSS font-size,
+  # where a bare number is invalid and silently dropped. The code passed a
+  # bare number for years, so every value was inert — invisible because the
+  # multiplier was always 1.0 and both the ignored value and the fallback
+  # were 12.
+  for (s in c(0.5, 1, 2)) {
+    expect_match(quickmap:::label_font_size(s), "^[0-9.]+rem$", info = s)
   }
+})
+
+test_that("marker labels match the smallest legend text at any export size", {
+  # This is the property that makes the default correct without tuning: the
+  # labels are rem and the export scales the root, so they hold their place in
+  # the legend's own scale whatever the output size. Chasing a point size on
+  # the page instead gave labels at half the smallest legend text.
+  expect_equal(quickmap:::label_font_size(1), "0.75rem")
+  expect_equal(quickmap:::MARKER_LABEL_REM, 0.75)
+
+  smallest_legend_rem <- 0.75   # .qm-ind-caption in inst/legend/legend-image.css
+  css <- paste(readLines(
+    system.file("legend", "legend-image.css", package = "quickmap"),
+    warn = FALSE
+  ), collapse = "\n")
+  expect_match(css, sprintf("font-size: %srem", smallest_legend_rem),
+               fixed = TRUE)
+  expect_equal(quickmap:::MARKER_LABEL_REM, smallest_legend_rem)
+
+  # and it is a multiplier, not a replacement
+  expect_equal(quickmap:::label_font_size(2), "1.5rem")
+})
+
+test_that("label_background is a theme key, on by default", {
+  expect_true(quickmap:::get_default_theme()$map$label_background)
+  expect_true("label_background" %in% names(formals(quickmap:::add_layer)))
+  expect_true(formals(quickmap:::add_layer)$label_background)
+  # and it must reach the static export path, the only one that prints
+  expect_true("label_background" %in%
+                names(formals(quickmap:::add_year_and_static_layers)))
+})
+
+test_that("label size no longer double-counts the export scaling", {
+  # Symbols need the export factor because they are sized SVG; labels must
+  # not take it as well, or a 4000px export would scale them twice.
+  body_text <- paste(deparse(body(quickmap:::generate_map_layers)),
+                     collapse = " ")
+  expect_match(body_text, "label_sizing <- label_scale", fixed = TRUE)
+  expect_false(grepl("image_scale_factor * label_scale", body_text,
+                     fixed = TRUE))
 })
 
 test_that("symbol stroke scales with the export too", {
