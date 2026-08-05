@@ -21,12 +21,13 @@ manual built as a website with live example maps.
 
 **Waiting on Iarla:**
 
-1. Review and approve the complete manual (PR #37 —
-   https://github.com/ngnrfsk/quickmap/pull/37; read it at
-   file:///Users/iarla/Coding/quickmap/docs/index.html or iCloud Drive →
-   dev → pr31_manual_review).
-2. Merge the two signed-off branches, oldest first: the legend indicator,
-   then the animation speed control (PR #42).
+1. Merge the animation speed control, PR #42 —
+   https://github.com/ngnrfsk/quickmap/pull/42. Signed off on 5 August.
+   It is the only open PR; nothing else is queued behind it.
+
+*(The manual, PR #37, and the legend indicator, PR #38, were both merged
+on 5 August. Earlier versions of this file listed them as still waiting —
+they were not.)*
 
 *(Decided 13 July: `marker_labels` will be renamed to `symbol_labels`
 with the old name kept working — happens in the final tidy-up,
@@ -72,11 +73,10 @@ which had therefore never been committed. Anyone cloning the project
 fresh could not build a map at all — it failed part-way through. Found
 because a clean build of `main` broke where the new branch did not.
 
-### 5 August — Legend indicator SIGNED OFF by Iarla, ready to merge
+### 5 August — Legend indicator MERGED (PR #38)
 
 Iarla approved the indicator work on 5 August after reviewing
-aq_maps/indicator_titlerow_v5.html. It is ready to merge; the merge
-itself is Iarla's to do.
+aq_maps/indicator_titlerow_v5.html, and merged it the same day.
 
 What it adds: every annual map shows the network mean and the highest
 site for the year on screen, marked on the legend's own colour ramp — a
@@ -155,8 +155,8 @@ dev notes on saving — the reformat was reverted before commit, and
 editor workspace files are now ignored by git. The GitHub command-line
 tool was found signed in to the wrong account (parhillresearch), which
 made it unable to see this repository; it was switched back to ngnrfsk.
-The one open item is unchanged: Iarla to review the complete manual
-(PR #37) — see "Waiting on Iarla" above.
+The one open item at the time was Iarla's review of the complete manual
+(PR #37), since merged on 5 August.
 
 ### 12–13 July — Manual corrections; a data file destroyed and restored
 
@@ -189,7 +189,7 @@ Wind, Sharing and export, Recipes, and a page for experienced R users.
 Every chapter embeds real working maps you can click and play; every
 code example was executed against real data before publishing. The four
 old documentation notes were retired to an archive folder. Open as
-PR #37, awaiting Iarla's review.
+PR #37, merged on 5 August.
 
 Also on 11 July, from Iarla's page reviews: examples regrouped into two
 step-by-step builds (a report map, then an animation), a static-export
