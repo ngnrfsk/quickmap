@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.9.10
+### Current Version: 0.9.9.11
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -225,6 +225,9 @@ External configuration files in `inst/` directory:
 YAML-based scales in `inst/config/scales/`:
 - **WHO-based**: `who_no2.yaml`, `stripes_no2.yaml`, `gla_pm25.yaml`
 - **Borough-specific**: `lbw_no2.yaml`, `lbrut_no2.yaml`, `lbm_no2.yaml`
+- **Publication**: `lbm_aqap_no2.yaml` (LB Merton Air Quality Action Plan print
+  set — lbm_no2's colours and thresholds unchanged, but the 20 µg/m³ target is
+  named on both sides of the boundary and `footnote_symbols` is off)
 - **Special**: `deltas.yaml` (year-on-year change), `schools.yaml` (categorical)
 
 Each YAML scale defines:
@@ -236,7 +239,16 @@ shape: circle
 thresholds: [0, 10, 20, 40, .Inf]
 colours: ["green", "yellow", "orange", "red", "white"]
 labels: ["< 10: Good", "10-20: Fair", "20-40: Poor", "> 40: Bad", "Insufficient data"]
+footnote_symbols: true   # optional, default true
 ```
+
+**Label anatomy.** A label of the form `"range: description"` puts `range`
+under its ramp block and `description` in a pill coloured to match the band; a
+label with no colon gets no pill. `footnote_symbols: false` (v0.9.9.11+) drops
+the `†`/`‡`/`§` markers that otherwise cross-refer the two, leaving the band
+colour as the link — the pills stay. Use it where the bands are distinct and
+the output is print, since the markers are the first thing to become
+illegible.
 
 Loading: `load_colour_scale("who_no2")` returns R list with validation
 
@@ -259,6 +271,8 @@ map:
   zoom_level: null  # null = auto-fit
   boundary_labels: false
   marker_labels: false
+  label_scale: 1            # marker-label size, 1 = the smallest legend text
+  label_background: true    # translucent plate behind each marker label
 controls:
   autoplay: false
   play_speed: 500
@@ -299,6 +313,14 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 
 ### Banner System
 
+-   **Reference-layer key** (v0.9.9.11+): a static layer carries no value, so
+    it gets no place on the colour ramp and its symbol would go unexplained.
+    Where such a layer has a `Level` column, `build_banner_key()` turns its
+    categories and the `schools.yaml` colours into a small inline-SVG key at
+    the end of the banner ("✕ Primary  ✕ Secondary"). Only categories actually
+    present are listed. Sized in `em`, so it follows the banner and therefore
+    scales with a static export. It is also what lets map labels drop the
+    words "Primary School" and stay readable at print size
 -   **Customizable**: Text, color, positioning
 -   **Flexbox layout**: Banner/map/legend components
 -   **Mobile optimized**: Responsive font sizes and padding
@@ -418,6 +440,38 @@ Core R packages (auto-installed): - `leaflet`: Interactive mapping - `sf`: Spati
 
 School data detected by School column presence. Any filename works (schools.csv, schools_wandsworth.csv, etc.).
 
+Because content is duck-typed **per layer**, one setting can serve two layers
+differently: `"values_on"` on a map carrying tubes and schools gives every site
+its value and every school its name, even where the tube file also has a
+`Label` column (`"labels_on"` is what asks for that column instead).
+
+Values read `28 µg/m³` (v0.9.9.11+; previously the ASCII `28 ug/m3`), on both
+the pre-built and the lazy Canvas path.
+
+**Size in static exports** (v0.9.9.11+): label text scales with the export,
+where it used to sit at a flat 12px however large the image was — part of the
+item 11 "unified marker/text/legend scaling" defect. `map.label_scale` is the
+further multiplier a page-sized print needs.
+
+**The unit is not optional, and its absence is silent.** leaflet's
+`labelOptions` puts `textsize` straight into a CSS `font-size`; a bare number there is invalid CSS
+that the browser drops, leaving the label at whatever it inherits. The code
+passed `as.character(12 * label_sizing)` for years, so *every* value was inert
+— unnoticed because `label_sizing` was always 1.0 and the ignored value and
+the fallback were both 12. `label_font_size()` now owns this and appends `px`;
+a test asserts the unit.
+
+**`map.label_background`** (v0.9.9.11+, default TRUE): the translucent white
+plate behind each label. Worth its clutter on busy tiles, not worth it where
+labels are dense. Off leaves the text alone on the map.
+
+**Labels do not scale for free.** On a 4000×3000 export printed 190mm wide,
+an 18pt label box is about 35 × 6.3mm; 115 of them need ~25,000mm² on a map of
+27,000mm². 12pt needs 41% of the area, 8pt is visibly over-full, ~6-7pt is the
+practical ceiling with that many labels. Reaching a larger point size means
+printing the image bigger (across A3 the same pixels are twice the point size)
+or labelling fewer features — not raising `label_scale`.
+
 ## Design Philosophy
 
 **Duck typing:** Data types detected by column presence (School/Label/year_str), not filenames or IDs.
@@ -479,6 +533,29 @@ School data detected by School column presence. Any filename works (schools.csv,
     `indicator.show_max` to TRUE by default (user decision 2026-08-05,
     reversing 07-31), so the legend shows the network maximum's diamond
     beside the mean's roundel unless a theme turns it off
+
+-   **v0.9.9.11**: LB Merton AQAP print set (user brief 2026-08-05, decisions
+    taken by MCQ): `footnote_symbols: false` on a colour scale drops the
+    `†`/`‡`/`§` cross-reference markers while keeping the pills, whose band
+    colour is the link back to the ramp; new `lbm_aqap_no2.yaml` carrying
+    lbm_no2's colours and thresholds unchanged but naming the 20 µg/m³ Merton
+    target from **both** sides ("meets" on green 10-19, "above" on yellow
+    20-29) — naming one side only lets a band label be read as the target
+    itself; `scripts/merton_print-set_v3.R` renders 2019-2025 at 4000×3000
+    with a solid `#2a75d4` banner bar matching the AQAP's own, schools drawn
+    as crosses and labelled by name, and every site carrying its value.
+    Two general fixes came with it: marker labels now **scale with the static
+    export** instead of sitting at a flat 12px (part of the item 11 "unified
+    marker/text/legend scaling" defect), with `map.label_scale` as the extra
+    push a page-sized print needs; **symbol stroke width** scales with the
+    export too (a cross is nothing but its stroke, and a flat 2px came out
+    hairline on a 4000px print); value labels read `µg/m³` rather than the
+    ASCII `ug/m3`, on both rendering paths; and `build_banner_key()` names a
+    static layer's categories in the banner, which is what lets the school
+    labels drop their type and stay readable. Marker labels are now `rem`,
+    sitting on `MARKER_LABEL_REM` (the smallest legend text) at every export
+    size, which is roadmap item 11's "unified marker/text/legend scaling"
+    done early; `map.label_background` turns the plate behind them off
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 
@@ -572,6 +649,14 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
     ward/marker label consistency) — so v1.0 releases without known user-facing
     defects. Do not work on these earlier or piecemeal; they are the final
     item before the v1.0 release, not background tasks.
+    **Partly done early (2026-08-05):** the Merton AQAP print set needed
+    legible marker labels, so "unified marker/text/legend scaling" was fixed
+    then — marker labels are `rem` and sit on `MARKER_LABEL_REM`, the same
+    size as the smallest legend text, at every export size; symbol stroke
+    width scales with the export too. This uncovered the cause: `textsize`
+    reached leaflet without a CSS unit, so every value had been silently
+    ignored for years. When item 11 is picked up, that part is done; the
+    rest of the list stands.
 
 (Items 2 and 5 were inserted 2026-07-05; item 10 (UI polish) was inserted
 2026-07-06, renumbering the UI-defects item to 11. Dev docs written before
