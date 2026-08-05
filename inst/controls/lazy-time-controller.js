@@ -197,7 +197,7 @@ function(el, x, data) {
       }
       var target = hexToRgb(colourFor(v));
       if (entry.layer.labelMode === 'values') {
-        entry.marker.setTooltipContent(Math.round(v) + ' ug/m3');
+        entry.marker.setTooltipContent(Math.round(v) + ' µg/m³');
       } else if (entry.layer.labelMode === 'custom') {
         entry.marker.setTooltipContent(entry.site.label || '');
       }

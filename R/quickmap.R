@@ -1308,7 +1308,12 @@ get_default_theme <- function() {
       base_tiles = NULL,
       zoom_level = NULL,
       boundary_labels = FALSE,
-      marker_labels = FALSE
+      marker_labels = FALSE,
+      # Extra multiplier on marker-label text in static exports, over the
+      # scaling the export size already implies. 1 is right for a screen or a
+      # slide; a page-sized print needs more, because the export is a
+      # high-resolution render and 12px text lands around 4.7pt on A4.
+      label_scale = 1
     ),
     controls = list(
       autoplay = FALSE,
@@ -2152,7 +2157,8 @@ add_year_and_static_layers <- function(
   pollutant,
   colour_scale,
   spatial_data,
-  scale_factor
+  scale_factor,
+  label_scale = 1.0
 ) {
   template |>
     generate_map_layers(
@@ -2161,7 +2167,8 @@ add_year_and_static_layers <- function(
       pollutant,
       colour_scale,
       spatial_data,
-      scale_factor
+      scale_factor,
+      label_scale
     ) |>
     generate_map_layers(
       measurement_layers,
@@ -2169,7 +2176,8 @@ add_year_and_static_layers <- function(
       pollutant,
       colour_scale,
       spatial_data,
-      scale_factor
+      scale_factor,
+      label_scale
     )
 }
 
@@ -3180,7 +3188,7 @@ generate_marker_labels <- function(data, pollutant, marker_labels, layer_id) {
       return(ifelse(
         is.na(data[[pollutant]]),
         "",
-        paste(round(data[[pollutant]], 0), "ug/m3")
+        paste(round(data[[pollutant]], 0), "µg/m³")
       ))
     }
     warning(
@@ -3197,7 +3205,7 @@ generate_marker_labels <- function(data, pollutant, marker_labels, layer_id) {
     return(ifelse(
       is.na(data[[pollutant]]),
       "",
-      paste(round(data[[pollutant]], 0), "ug/m3")
+      paste(round(data[[pollutant]], 0), "µg/m³")
     ))
   }
 
@@ -3404,6 +3412,12 @@ create_base_map <- function(data, interactive = TRUE, base_tiles = NULL) {
 #' @param colour_scale Name of the colour scale
 #' @param spatial_data Loaded layers from [load_spatial_data_sources()]
 #' @param image_scale_factor Symbol scaling for static export
+#' @param label_scale Extra multiplier on marker-label text, over and above
+#'   `image_scale_factor`. Marker labels used to sit at a flat 12px however
+#'   large the export was (roadmap item 11, "unified marker/text/legend
+#'   scaling"), so a 4000px print came out with symbols scaled and their
+#'   labels not. They now follow the export; `label_scale` is the further
+#'   push a given page size needs — see the `map.label_scale` theme key.
 #' @return The map with this step's layers added
 #' @keywords internal
 generate_map_layers <- function(
@@ -3413,8 +3427,10 @@ generate_map_layers <- function(
   pollutant,
   colour_scale,
   spatial_data,
-  image_scale_factor = 1.0
+  image_scale_factor = 1.0,
+  label_scale = 1.0
 ) {
+  label_sizing <- image_scale_factor * label_scale
   for (layer_name in names(measurement_layers)) {
     layer_config <- measurement_layers[[layer_name]]
     if (!layer_config$enabled) next
@@ -3449,7 +3465,7 @@ generate_map_layers <- function(
             target_year,
             pollutant,
             colour_scale,
-            label_sizing = 1.0,
+            label_sizing,
             image_scale_factor,
             marker_labels = show_labels
           )
@@ -3469,7 +3485,7 @@ generate_map_layers <- function(
         year = NULL,
         pollutant = NULL,
         colour_scale = colour_scale,
-        label_sizing = 1.0,
+        label_sizing,
         image_scale_factor,
         marker_labels = show_labels
       )
@@ -3929,6 +3945,12 @@ render_pollution_map <- function(
     sqrt((map_width_px * map_height_px) / (1200 * 1200))
   } else NULL
 
+  # Marker labels follow the export scaling (they used to sit at a flat 12px,
+  # so a 4000px print had scaled symbols and unscaled labels). label_scale is
+  # the further push a given page size needs: symbol scaling alone leaves a
+  # 4000px image at about 4.7pt on A4, which is below what prints legibly.
+  label_scale <- theme$map$label_scale %||% 1
+
   # -- 5. Layers -----------------------------------------------------------
   # Lazy path (item 6): above the size/step thresholds the interactive map
   # embeds one compact JSON payload restyled in JS instead of pre-building
@@ -3986,7 +4008,8 @@ render_pollution_map <- function(
         pollutant,
         colour_scale,
         spatial_data,
-        marker_scale_factor
+        marker_scale_factor,
+        label_scale
       )
 
       file_parts <- tools::file_path_sans_ext(basename(output_file))

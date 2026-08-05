@@ -271,6 +271,7 @@ map:
   zoom_level: null  # null = auto-fit
   boundary_labels: false
   marker_labels: false
+  label_scale: 1     # extra marker-label text scaling in static exports
 controls:
   autoplay: false
   play_speed: 500
@@ -430,6 +431,22 @@ Core R packages (auto-installed): - `leaflet`: Interactive mapping - `sf`: Spati
 
 School data detected by School column presence. Any filename works (schools.csv, schools_wandsworth.csv, etc.).
 
+Because content is duck-typed **per layer**, one setting can serve two layers
+differently: `"values_on"` on a map carrying tubes and schools gives every site
+its value and every school its name, even where the tube file also has a
+`Label` column (`"labels_on"` is what asks for that column instead).
+
+Values read `28 µg/m³` (v0.9.9.11+; previously the ASCII `28 ug/m3`), on both
+the pre-built and the lazy Canvas path.
+
+**Size in static exports** (v0.9.9.11+): label text scales with the export,
+where it used to sit at a flat 12px however large the image was — part of the
+item 11 "unified marker/text/legend scaling" defect. `map.label_scale` is the
+further multiplier a page-sized print needs: symbol scaling alone puts a
+4000×3000 export at roughly 4.7pt on A4, and `label_scale: 1.9` brings it to
+about 8.9pt. Larger labels collide more, so the setting is a trade against
+crowding, not a free win.
+
 ## Design Philosophy
 
 **Duck typing:** Data types detected by column presence (School/Label/year_str), not filenames or IDs.
@@ -499,8 +516,14 @@ School data detected by School column presence. Any filename works (schools.csv,
     lbm_no2's colours and thresholds unchanged but naming the 20 µg/m³ Merton
     target from **both** sides ("meets" on green 10-19, "above" on yellow
     20-29) — naming one side only lets a band label be read as the target
-    itself; `scripts/merton_print-set_v2.R` renders 2019-2025 at 4000×3000
-    with a solid `#2a75d4` banner bar matching the AQAP's own
+    itself; `scripts/merton_print-set_v3.R` renders 2019-2025 at 4000×3000
+    with a solid `#2a75d4` banner bar matching the AQAP's own, schools drawn
+    as crosses and labelled by name, and every site carrying its value.
+    Two general fixes came with it: marker labels now **scale with the static
+    export** instead of sitting at a flat 12px (part of the item 11 "unified
+    marker/text/legend scaling" defect), with `map.label_scale` as the extra
+    push a page-sized print needs; and value labels read `µg/m³` rather than
+    the ASCII `ug/m3`, on both rendering paths
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 
