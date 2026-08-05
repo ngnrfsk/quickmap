@@ -17,8 +17,11 @@ Calculate maximum range width for fixed-width legend blocks
 }
 \seealso{
 Other legend: 
-\code{\link{generate_legend_html}()},
+\code{\link{generate_indicator_bar}()},
+\code{\link{generate_indicator_html}()},
 \code{\link{get_symbol_for_index}()},
-\code{\link{parse_legend_label}()}
+\code{\link{parse_legend_label}()},
+\code{\link{ramp_position}()},
+\code{\link{trim_colour_scale}()}
 }
 \concept{legend}

@@ -1,11 +1,62 @@
-/* Mobile: Stack vertically on small screens */
-@media (max-width: 480px) {
+/* Mobile: Stack vertically on small screens.
+   Applies from 560px down — the width at which the ramp has taken a line of
+   its own, so the title and figures have the row above to themselves and
+   should sit on it together rather than stacking further.
+   The scarce resource on a phone is vertical space — the legend competes with
+   the map for it — so everything here is about height, not width. */
+@media (max-width: 560px) {
+  /* Wrapping rows, not a single column: the title pill leaves most of its
+     line empty, so the figures share it and the ramp wraps below. That costs
+     the legend no height at all beyond the row it already had. */
   .legend-container {
-    flex-direction: column;
-    align-items: flex-start;
     gap: 0.5rem;
     padding: 0.5rem;
   }
+
+  /* below the floor set in the base stylesheet, so the ramp still fills the
+     line it wraps onto */
+  .legend-content { min-width: 0; }
+
+  /* Whichever placement desktop uses, a phone gets the wrapping row: the
+     lead column stops being a box, so the title and the figures become
+     siblings of the ramp and wrap together. */
+  .legend-lead { display: contents; }
+
+  /* the share-of-the-row cap is a desktop/tablet device; a phone stacks */
+  .legend-lead.qm-title-row { max-width: none; }
+
+  .legend-header { order: 1; }
+
+  /* Beside the title, taking the space it leaves. On a narrow phone the pair
+     may not fit; flex-wrap then drops them to their own line rather than
+     squeezing them, which is the graceful failure. */
+  .legend-indicator {
+    order: 2;
+    flex: 1 1 auto;
+    width: auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
+    border-left: 0;
+    padding-left: 0.25rem;
+  }
+
+  /* The ramp always takes a full line of its own, below.
+     flex-basis, not width: the base stylesheet gives this element `flex: 1`,
+     which is `flex-basis: 0%`, and that beats any width — leave it at `width:
+     100%` and the ramp stays on the first line squeezed to a sliver. */
+  .legend-content { order: 3; flex: 1 1 100%; }
+
+  .qm-ind-caption-max { margin-top: 0; }
+
+  .qm-ind-caption { font-size: 0.68rem; }
+
+  .qm-ind-value { font-size: 0.78rem; }
+
+  /* less headroom above the markers: the labels are smaller here too */
+  .legend-indicator-roundel { margin-top: 0.9rem; }
+
 
   .legend-header {
     padding: 0.5rem 0.75rem;
@@ -15,17 +66,17 @@
 
   .legend-items {
     gap: 0.5rem;
-    font-size: 0.9rem;
+    font-size: 0.78rem;
   }
 
   .legend-key {
     gap: 0.5rem;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
   }
 }
 
 /* Tablet/Landscape: Keep horizontal but tighter spacing */
-@media (min-width: 481px) and (max-width: 850px) {
+@media (min-width: 561px) and (max-width: 850px) {
   .legend-container {
     gap: 0.75rem;
     padding: 0.625rem;
@@ -39,12 +90,12 @@
 
   .legend-items {
     gap: 0.625rem;
-    font-size: 1rem;
+    font-size: 0.78rem;
   }
 
   .legend-key {
     gap: 0.625rem;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
   }
 }
 

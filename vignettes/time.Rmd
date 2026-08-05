@@ -1,0 +1,77 @@
+---
+title: "Time and animation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Time and animation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+Any layer with more than one time step gets the time slider — drag it,
+step with ‹ ›, press play. The steps come from the data: year columns in
+a CSV animate annually, a datetime column in a sensor export animates at
+its own resolution (hourly, daily, monthly). Nothing to configure:
+
+```{r animation}
+library(quickmap)                          # load the quickmap library
+quickmap(
+  from_rdata("episode_london.RData", # hourly sensor export
+             "pm25", name = "Sensors"),
+  boroughs     = c("Wandsworth", "Richmond"),
+  colour_scale = "stripes_pm25",
+  autoplay     = TRUE,                     # play on open
+  play_speed   = 500                       # milliseconds per step
+)
+```
+
+<iframe src="maps/getstarted-episode.html" width="100%" height="480" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="108 hourly steps on the time slider"></iframe>
+
+## 1. Choose which steps to show
+
+`display_times` subsets to any steps present in the data, written the
+way the data writes them:
+
+| Resolution | Format | Example |
+|------------|--------|---------|
+| Annual | `"YYYY"` | `display_times = 2020:2022` |
+| Monthly | `"YYYY-MM"` | `"2024-01"` |
+| Daily | `"YYYY-MM-DD"` | `"2024-01-15"` |
+| Hourly | `"YYYY-MM-DD HH:MM"` | `"2024-01-15 10:00"` |
+
+```{r subset}
+quickmap(
+  "tubes_wandsworth.csv",
+  boroughs      = "Wandsworth",
+  display_times = 2020:2022                # NEW: three of the eight years
+)
+```
+
+One selected step means no slider — a still map (that's how the static
+export chooses its frame: [Get started](quickmap.html) step 6).
+
+## 2. Autoplay
+
+`autoplay = TRUE` starts the animation when the map opens —
+right for a public page; leave it off for a map people study.
+`play_speed` is milliseconds per step (500 = two steps a second).
+
+## 3. How big can an animation get?
+
+- **Up to 200 steps** per map: beyond that QuickMap warns and keeps the
+  most recent 200.
+- **Above 50 steps** (or a large estimated file) the map switches
+  automatically to a compact storage format — symbols are recoloured in
+  place per step instead of duplicating every layer. The 108-step episode
+  above is ~1 MB; the same map stored naively would be ~3.5 MB.
+- Scrubbing stays instant regardless of step count (the recolour takes
+  1–3 milliseconds).
+
+## See also
+
+- [Get started](quickmap.html) Part 2 — the animation build-up.
+- [Wind](wind.html) — a wind overlay that advances with the slider.
+- [Your data](your-data.html) — how time columns are recognised.

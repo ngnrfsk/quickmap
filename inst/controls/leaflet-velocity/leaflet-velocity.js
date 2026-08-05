@@ -100,6 +100,11 @@ L.CanvasLayer = (L.Layer ? L.Layer : L.Class).extend({
   },
   //------------------------------------------------------------------------------
   drawLayer: function drawLayer() {
+    // QUICKMAP guard (2026-07-12): a frame can be scheduled just before the
+    // layer is removed (e.g. a time step with no wind data); without this
+    // check the null _map throws inside requestAnimationFrame and kills
+    // the particle animator for good.
+    if (!this._map) return;
     // -- todo make the viewInfo properties  flat objects.
     var size = this._map.getSize();
 
