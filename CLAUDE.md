@@ -651,7 +651,9 @@ HTML file; its appearance and behaviour must be checked by a human at defined po
 - Keep the previously signed-off outputs for before/after comparison — never leave
   the human with only the new set. Before regenerating, copy the last approved maps
   to a dated folder (e.g. `aq_maps/baseline_YYMMDD_signed_off/`) or use dated output
-  filenames. The most recent baseline: `aq_maps/baseline_260705_signed_off/`.
+  filenames. **There is currently no baseline folder** — both were cleared on
+  2026-08-05 (user decision, no longer needed), so the next roadmap item must
+  create its own dated folder before regenerating anything.
 - All merging is done by the human; the agent never merges its own PRs. The rules
   below define the approval bar a PR must state it has met, not permission to merge.
 - PRs touching rendering, UI, or HTML post-processing (wind layer, lazy loading,

@@ -37,8 +37,12 @@ CURRENT |= {"indicator_collision_390.png", "indicator_collision_1400.png"}
 # 3. folders kept whole
 KEEP_DIRS = {
     "archived", "prepared", "print_260804",
-    "baseline_260705_signed_off", "baseline_260707_item8_signed_off",
+    # Both signed-off baselines were cleared on 5 August at the user's
+    # request. Future ones match KEEP_DIR_RE below rather than being listed.
 }
+# What the user approved is never reproducible, so baselines are kept by
+# shape rather than by name.
+KEEP_DIR_RE = re.compile(r"^baseline_.*_signed_off$")
 
 
 def referenced_names():
@@ -67,7 +71,7 @@ def main(apply):
     moved, kept = [], []
 
     for name in entries:
-        if name.startswith(".") or name in KEEP_DIRS:
+        if name.startswith(".") or name in KEEP_DIRS or KEEP_DIR_RE.match(name):
             continue
         src = os.path.join(MAPS, name)
         if name in keep:
