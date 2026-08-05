@@ -10,6 +10,12 @@ docs/
 # manual screenshots are committed
 !vignettes/figures/*.png
 
+# concept demonstrations ARE committed: they are the only evidence a retired
+# or deferred idea was built and worked, and aq_maps is not in the repository
+!dev/concepts/examples/*.html
+!dev/concepts/examples/*.jpg
+!dev/concepts/examples/*.png
+
 # System files
 .DS_Store
 .DS_Store?
