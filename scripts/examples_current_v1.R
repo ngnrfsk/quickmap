@@ -22,8 +22,28 @@ stamp <- "260805"
 # (user, 2026-08-05). OSM was chosen for that demo because the vignette dimming
 # is too faint on pale tiles; this map has no vignette, so that reason does not
 # apply, and the paler background lets the stripes colours carry the map.
+#
+# Wind: Heathrow hourly observations for the same days, drawn at roughly three
+# times the default particle density (user, 2026-08-05) so the flow reads
+# clearly over a pale background — the default 1/300 is tuned for busier tiles.
 episode_theme <- tempfile(fileext = ".yaml")
-writeLines(c("map:", '  base_tiles: "CartoDB.Positron"'), episode_theme)
+writeLines(c(
+  "map:", '  base_tiles: "CartoDB.Positron"',
+  "wind:",
+  "  particle_density: 0.01",
+  "  line_width: 1.8"
+), episode_theme)
+
+heathrow <- tryCatch(
+  {
+    w <- from_worldmet(station = "037720-99999", year = 2024)
+    w[format(w$date, "%Y-%m") == "2024-01", ]
+  },
+  error = function(e) {
+    message("NOAA fetch failed, wind omitted: ", conditionMessage(e))
+    NULL
+  }
+)
 
 quickmap(
   from_rdata("episodeJan15-20_2024_sf_all.Rdata", "pm25", name = "bl_sensors"),
@@ -36,6 +56,7 @@ quickmap(
   banner_colour = "#005794",
   autoplay = TRUE,
   play_speed = 500,
+  wind = heathrow,
   output_file = sprintf("example_long-animation_%s.html", stamp)
 )
 
