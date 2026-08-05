@@ -18,9 +18,12 @@ stamp <- "260805"
 # 108 hourly steps, so this is the lazy rendering path: markers are drawn on
 # Canvas and restyled from one embedded payload rather than pre-built per step.
 # Recipe carried over from scripts/item10_demo-maps_v3.R (map 2): the stripes
-# scale, OSM tiles, no vignette, autoplay.
+# scale, no vignette, autoplay — but on the pale CartoDB.Positron background
+# (user, 2026-08-05). OSM was chosen for that demo because the vignette dimming
+# is too faint on pale tiles; this map has no vignette, so that reason does not
+# apply, and the paler background lets the stripes colours carry the map.
 episode_theme <- tempfile(fileext = ".yaml")
-writeLines(c("map:", '  base_tiles: "OpenStreetMap"'), episode_theme)
+writeLines(c("map:", '  base_tiles: "CartoDB.Positron"'), episode_theme)
 
 quickmap(
   from_rdata("episodeJan15-20_2024_sf_all.Rdata", "pm25", name = "bl_sensors"),
