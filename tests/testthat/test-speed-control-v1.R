@@ -17,6 +17,18 @@ test_that("default_play_speed follows the step count", {
   expect_equal(quickmap:::default_play_speed(61), 450)
 })
 
+test_that("short animations are offered fewer speeds", {
+  # 8x on a seven-step map is 150ms a step: a press you pass through
+  expect_equal(quickmap:::speed_multipliers(7), c(0.5, 1, 2, 4))
+  expect_equal(quickmap:::speed_multipliers(12), c(0.5, 1, 2, 4))
+  expect_equal(quickmap:::speed_multipliers(13), c(0.25, 0.5, 1, 2, 4, 8))
+  expect_equal(quickmap:::speed_multipliers(108), c(0.25, 0.5, 1, 2, 4, 8))
+  # 1x must always be in the set — it is where the button opens
+  for (n in c(0, 1, 7, 12, 13, 108)) {
+    expect_true(1 %in% quickmap:::speed_multipliers(n), info = n)
+  }
+})
+
 test_that("the default theme names no play_speed, so the step count decides", {
   expect_null(quickmap:::get_default_theme()$controls$play_speed)
 
@@ -35,9 +47,16 @@ test_that("the default theme names no play_speed, so the step count decides", {
 })
 
 test_that("the speed button is in the interactive card and not in an export", {
-  control <- quickmap:::load_time_slider_control("#005794", FALSE, 1200)
+  control <- quickmap:::load_time_slider_control(
+    "#005794", FALSE, 1200, display_times = 2018:2024
+  )
   expect_match(control, 'id="speedButton"', fixed = TRUE)
   expect_match(control, "playSpeed: 1200", fixed = TRUE)
+  expect_match(control, "speeds: [0.5, 1, 2, 4]", fixed = TRUE) # 7 steps
+  long <- quickmap:::load_time_slider_control(
+    "#005794", FALSE, 450, display_times = as.character(1:108)
+  )
+  expect_match(long, "speeds: [0.25, 0.5, 1, 2, 4, 8]", fixed = TRUE)
   expect_match(control, ".speed-button", fixed = TRUE)
   expect_false(grepl("{{", control, fixed = TRUE))
 
@@ -115,10 +134,10 @@ test_that("the control behaves in a browser", {
     "Playback speed 1×"
   )
 
-  # cycles and wraps, and the interval is the theme speed over the multiplier
+  # cycles and wraps, and the interval is the theme speed over the multiplier.
+  # char_annual is 3 steps, so it gets the short set: 0.5, 1, 2, 4
   expected <- list(
-    c("2×", 600), c("4×", 300), c("8×", 150),
-    c("0.25×", 4800), c("0.5×", 2400), c("1×", 1200)
+    c("2×", 600), c("4×", 300), c("0.5×", 2400), c("1×", 1200)
   )
   for (step in expected) {
     press()
