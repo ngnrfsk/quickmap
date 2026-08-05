@@ -50,9 +50,9 @@
 
   .qm-ind-caption-max { margin-top: 0; }
 
-  .qm-ind-caption { font-size: 0.65rem; }
+  .qm-ind-caption { font-size: 0.68rem; }
 
-  .qm-ind-value { font-size: 0.95rem; }
+  .qm-ind-value { font-size: 0.78rem; }
 
   /* less headroom above the markers: the labels are smaller here too */
   .legend-indicator-roundel { margin-top: 0.9rem; }
@@ -66,12 +66,12 @@
 
   .legend-items {
     gap: 0.5rem;
-    font-size: 0.9rem;
+    font-size: 0.78rem;
   }
 
   .legend-key {
     gap: 0.5rem;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
   }
 }
 
@@ -90,12 +90,12 @@
 
   .legend-items {
     gap: 0.625rem;
-    font-size: 1rem;
+    font-size: 0.78rem;
   }
 
   .legend-key {
     gap: 0.625rem;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
   }
 }
 

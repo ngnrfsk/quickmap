@@ -1,3 +1,9 @@
+/* Type scale for the legend — three sizes, nothing else:
+     heading  the title pill (inherits the body font size, weight 600)
+     body     0.8rem  ramp labels, key pills, the mean and max figures
+     small    0.7rem  captions and units
+   Keep to these. Sizes drifted to five during the indicator work and the
+   figures read as oversized even at matching pixel heights. */
 /* Legend styles - Interactive mode (item 10: thin ramp, neutral chrome) */
 .legend {
   background: #ffffff;
@@ -84,7 +90,7 @@
 .legend-key span {
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 600;
   display: inline-block;
 }
@@ -203,7 +209,7 @@
 }
 
 .qm-ind-value {
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   font-weight: 650;
   line-height: 1.2;
 }
