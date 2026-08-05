@@ -354,8 +354,9 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
     same threshold in two places. `ramp_position()` maps a value band by
     band; the open-ended top band resolves to its midpoint
 -   **The mean is a roundel**, a plain disc at its position on the ramp, with
-    its figure floating above it. Optionally the maximum joins it as a
-    **diamond** (`indicator.show_max`), distinguished by shape because colour
+    its figure floating above it. The maximum joins it as a
+    **diamond** (`indicator.show_max`, on by default since 2026-08-05),
+    distinguished by shape because colour
     already carries the concentration band. When the two would overlap
     the maximum and its figure lift, and the mean and its figure drop — a
     collision rule, not a layout: they move only to avoid each other. The
@@ -381,7 +382,10 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 -   **Chips** beside each figure repeat that marker's shape and colour — the
     visual link between the words and the ramp
 -   **Theme keys**: `indicator.show` (default TRUE), `indicator.label`,
-    `indicator.show_max` (default FALSE)
+    `indicator.show_max` (default TRUE since 2026-08-05, user decision
+    reversing 07-31: a mean alone is read as though it described everywhere,
+    and the worst site is what an air quality report is usually about; set it
+    FALSE for the quieter one-figure legend)
 -   **Archived alternatives**, coded and retired, wakeable with instructions:
     the standalone track (`dev/archive/260730_indicator_track-style_v1.R`) and
     the zero-to-value bar (`dev/archive/260731_indicator_bar-style_v1.R`)
@@ -471,7 +475,10 @@ School data detected by School column presence. Any filename works (schools.csv,
     slider, so it cannot outlast the step at high multipliers. Also fixes a
     `.gitignore` defect found on the way: `*.html` had been swallowing
     `inst/controls/time-slider.html`, which had therefore never been
-    committed — a fresh clone could not build a map
+    committed — a fresh clone could not build a map. Also flips
+    `indicator.show_max` to TRUE by default (user decision 2026-08-05,
+    reversing 07-31), so the legend shows the network maximum's diamond
+    beside the mean's roundel unless a theme turns it off
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 

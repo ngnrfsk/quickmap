@@ -1290,9 +1290,11 @@ get_default_theme <- function() {
       show = TRUE,
       label = NULL, # NULL builds "Network mean, N sites"
       # Also mark the network maximum, as a diamond beside the mean's
-      # roundel. Off by default: two markers on one ramp is a busier legend,
-      # and the mean alone is the headline figure.
-      show_max = FALSE,
+      # roundel. On by default since 2026-08-05 (user, reversing the 07-31
+      # decision): the busier legend is worth it, because a mean alone is
+      # read as though it described everywhere, and the worst site is what
+      # an air quality report is usually about.
+      show_max = TRUE,
       # Where the figures sit: "title_row" (default) puts them on the legend
       # title's own line, which costs the legend no extra height at any width;
       # "under_title" stacks them beneath it; "right" puts them past the ramp.
