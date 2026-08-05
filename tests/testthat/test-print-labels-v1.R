@@ -20,6 +20,19 @@ test_that("label_scale is a theme key, defaulting to no change", {
   expect_equal(quickmap:::get_default_theme()$map$label_scale, 1)
 })
 
+test_that("the label size carries a CSS unit", {
+  # The bug this guards: labelOptions puts textsize straight into a CSS
+  # font-size, where a bare number is invalid and silently dropped. The code
+  # passed a bare number for years, so every label_sizing value was inert —
+  # invisible because label_sizing was always 1.0 and both the ignored value
+  # and the fallback were 12.
+  expect_equal(quickmap:::label_font_size(1.0), "12px")
+  expect_equal(quickmap:::label_font_size(2.8868), "34.6px")
+  for (s in c(0.5, 1, 2.8868, 11.14)) {
+    expect_match(quickmap:::label_font_size(s), "^[0-9.]+px$", info = s)
+  }
+})
+
 test_that("symbol stroke scales with the export too", {
   # A cross is nothing but its stroke, so a flat 2px came out hairline on a
   # 4000px print while the symbol itself grew almost threefold.

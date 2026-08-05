@@ -450,10 +450,22 @@ the pre-built and the lazy Canvas path.
 **Size in static exports** (v0.9.9.11+): label text scales with the export,
 where it used to sit at a flat 12px however large the image was — part of the
 item 11 "unified marker/text/legend scaling" defect. `map.label_scale` is the
-further multiplier a page-sized print needs: symbol scaling alone puts a
-4000×3000 export at roughly 4.7pt on A4, and `label_scale: 1.9` brings it to
-about 8.9pt. Larger labels collide more, so the setting is a trade against
-crowding, not a free win.
+further multiplier a page-sized print needs.
+
+**The unit is not optional, and its absence is silent.** `labelOptions()` puts
+`textsize` straight into a CSS `font-size`; a bare number there is invalid CSS
+that the browser drops, leaving the label at whatever it inherits. The code
+passed `as.character(12 * label_sizing)` for years, so *every* value was inert
+— unnoticed because `label_sizing` was always 1.0 and the ignored value and
+the fallback were both 12. `label_font_size()` now owns this and appends `px`;
+a test asserts the unit.
+
+**Labels do not scale for free.** On a 4000×3000 export printed 190mm wide,
+an 18pt label box is about 35 × 6.3mm; 115 of them need ~25,000mm² on a map of
+27,000mm². 12pt needs 41% of the area, 8pt is visibly over-full, ~6-7pt is the
+practical ceiling with that many labels. Reaching a larger point size means
+printing the image bigger (across A3 the same pixels are twice the point size)
+or labelling fewer features — not raising `label_scale`.
 
 ## Design Philosophy
 
