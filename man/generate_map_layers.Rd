@@ -11,7 +11,8 @@ generate_map_layers(
   pollutant,
   colour_scale,
   spatial_data,
-  image_scale_factor = 1
+  image_scale_factor = 1,
+  label_scale = 1
 )
 }
 \arguments{
@@ -28,6 +29,13 @@ generate_map_layers(
 \item{spatial_data}{Loaded layers from \code{\link[=load_spatial_data_sources]{load_spatial_data_sources()}}}
 
 \item{image_scale_factor}{Symbol scaling for static export}
+
+\item{label_scale}{Extra multiplier on marker-label text, over and above
+\code{image_scale_factor}. Marker labels used to sit at a flat 12px however
+large the export was (roadmap item 11, "unified marker/text/legend
+scaling"), so a 4000px print came out with symbols scaled and their
+labels not. They now follow the export; \code{label_scale} is the further
+push a given page size needs — see the \code{map.label_scale} theme key.}
 }
 \value{
 The map with this step's layers added
