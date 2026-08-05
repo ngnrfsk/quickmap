@@ -21,6 +21,7 @@ worked.
 | Change-over-time graph | `260729_trend-graph.md` | The open half of the 29 July overlays decision. 1.5–2 days now the indicator has shipped |
 | Limit-centred indicator | `260730_limit-centred-indicator.md` | Distance above or below a chosen target, instead of position on the scale. Needs a decision on which target sits at the centre |
 | Thermometer on the map | `260801_thermometer-overlay.md` | A vertical indicator overlaid on the map rather than in the legend. Feasible, but must not draw a second scale — see the document |
+| Context polygon layer | `260805_context-polygon-layer.md` | Deprivation or similar, drawn under the vignette and labelled 1–10 instead of carrying a second legend ramp. ~2 days |
 
 ## Built, then retired
 
