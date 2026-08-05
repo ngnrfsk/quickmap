@@ -312,6 +312,14 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 
 ### Banner System
 
+-   **Reference-layer key** (v0.9.9.11+): a static layer carries no value, so
+    it gets no place on the colour ramp and its symbol would go unexplained.
+    Where such a layer has a `Level` column, `build_banner_key()` turns its
+    categories and the `schools.yaml` colours into a small inline-SVG key at
+    the end of the banner ("✕ Primary  ✕ Secondary"). Only categories actually
+    present are listed. Sized in `em`, so it follows the banner and therefore
+    scales with a static export. It is also what lets map labels drop the
+    words "Primary School" and stay readable at print size
 -   **Customizable**: Text, color, positioning
 -   **Flexbox layout**: Banner/map/legend components
 -   **Mobile optimized**: Responsive font sizes and padding
@@ -522,8 +530,12 @@ crowding, not a free win.
     Two general fixes came with it: marker labels now **scale with the static
     export** instead of sitting at a flat 12px (part of the item 11 "unified
     marker/text/legend scaling" defect), with `map.label_scale` as the extra
-    push a page-sized print needs; and value labels read `µg/m³` rather than
-    the ASCII `ug/m3`, on both rendering paths
+    push a page-sized print needs; **symbol stroke width** scales with the
+    export too (a cross is nothing but its stroke, and a flat 2px came out
+    hairline on a 4000px print); value labels read `µg/m³` rather than the
+    ASCII `ug/m3`, on both rendering paths; and `build_banner_key()` names a
+    static layer's categories in the banner, which is what lets the school
+    labels drop their type and stay readable at 12pt
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 

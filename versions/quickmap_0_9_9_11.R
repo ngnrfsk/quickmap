@@ -2066,6 +2066,87 @@ get_contrast_text_color <- function(color) {
 }
 
 #' @keywords internal
+#' Build the banner's reference-layer key
+#'
+#' A static reference layer carries no value, so it gets no place on the
+#' colour ramp and its symbol would otherwise go unexplained. Where such a
+#' layer has a `Level` column, its categories and their colours become a small
+#' key at the end of the banner — "✕ Primary, ✕ Secondary" — which is also
+#' what lets the map labels drop the words "Primary School" and stay legible.
+#'
+#' @param measurement_layers Layer configuration from [get_measurement_layers()]
+#' @param spatial_data Loaded layers from [load_spatial_data_sources()]
+#' @return List with `shape` and `items` (label and colour), or NULL when no
+#'   layer qualifies.
+#' @keywords internal
+build_banner_key <- function(measurement_layers, spatial_data) {
+  for (layer_config in measurement_layers) {
+    if (!isTRUE(layer_config$enabled) || !isTRUE(layer_config$static)) next
+    data <- spatial_data$all_data[[layer_config$id]]
+    if (is.null(data) || !"Level" %in% names(data)) next
+
+    scale_data <- load_yaml_config("schools", subdirectory = "scales")
+    present <- unique(trimws(as.character(data$Level)))
+    domain <- unlist(scale_data$domain)
+    colours <- unlist(scale_data$colours)
+
+    keep <- domain %in% present
+    if (!any(keep)) next
+
+    return(list(
+      shape = layer_config$icon_shape,
+      items = Map(
+        function(label, colour) list(label = label, colour = colour),
+        domain[keep],
+        colours[keep]
+      )
+    ))
+  }
+  NULL
+}
+
+#' Render the banner key as inline SVG
+#'
+#' Sized in `em`, so it follows the banner's own font size and therefore
+#' scales with a static export like the rest of the chrome.
+#'
+#' @param key Output of [build_banner_key()], or NULL.
+#' @return HTML string, empty when `key` is NULL.
+#' @keywords internal
+generate_banner_key_html <- function(key) {
+  if (is.null(key)) return("")
+
+  # The key repeats the marker's own geometry rather than a generic swatch:
+  # a reader matches the mark on the map to the mark in the key by shape.
+  mark <- function(colour) {
+    sprintf(
+      paste0(
+        '<svg class="banner-key-mark" viewBox="0 0 20 20" aria-hidden="true">',
+        '<path d="M4 4 L16 16 M16 4 L4 16" stroke="%s" stroke-width="3.6"',
+        ' fill="none" stroke-linecap="round"/></svg>'
+      ),
+      colour
+    )
+  }
+
+  items <- vapply(
+    key$items,
+    function(it) sprintf(
+      '<span class="banner-key-item">%s%s</span>',
+      mark(it$colour),
+      it$label
+    ),
+    ""
+  )
+
+  paste0(
+    '<span class="banner-key">',
+    paste(items, collapse = ""),
+    "</span>"
+  )
+}
+
+#' @keywords internal
 build_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE,
                              banner_style = "strip") {
   banner_dir <- get_package_dir("banner")
@@ -2097,6 +2178,20 @@ build_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE,
              " font-weight: 600; }")
     },
     stop("Unknown banner style '", banner_style, "'. Use \"strip\" or \"bar\".")
+  )
+
+  # Title left, reference-layer key right. With no key the flex row has a
+  # single child and lays out exactly as the plain banner did.
+  style_css <- paste0(
+    style_css,
+    "\n.banner { display: flex; align-items: baseline;",
+    " justify-content: space-between; gap: 1.5em; }",
+    "\n.banner-key { display: flex; align-items: baseline; gap: 1.1em;",
+    " font-size: 0.62em; font-weight: 600; white-space: nowrap;",
+    " flex-shrink: 0; }",
+    "\n.banner-key-item { display: inline-flex; align-items: center;",
+    " gap: 0.3em; }",
+    "\n.banner-key-mark { width: 1.15em; height: 1.15em; flex-shrink: 0; }"
   )
 
   # The year label on an exported image, sized to match the banner title
@@ -2213,6 +2308,8 @@ add_year_and_static_layers <- function(
 #' @param indicator_label Caption for the indicator, or NULL for the default
 #' @param indicator_show_max Also mark the network maximum, as a diamond
 #' @param indicator_placement "right" of the ramp or "under_title"
+#' @param banner_key Reference-layer key from [build_banner_key()], drawn at
+#'   the end of the banner. NULL for no key.
 #' @return The map object, invisibly used by the caller's loop
 #' @keywords internal
 finalize_and_save_map <- function(
@@ -2240,7 +2337,8 @@ finalize_and_save_map <- function(
   indicator = NULL,
   indicator_label = NULL,
   indicator_show_max = FALSE,
-  indicator_placement = "right"
+  indicator_placement = "right",
+  banner_key = NULL
 ) {
   map <- add_map_controls(
     map,
@@ -2274,7 +2372,8 @@ finalize_and_save_map <- function(
     indicator,
     indicator_label,
     indicator_show_max,
-    indicator_placement
+    indicator_placement,
+    banner_key
   )
 
   if (!is.null(image_dimensions)) {
@@ -2323,7 +2422,8 @@ save_html_and_style <- function(
   indicator = NULL,
   indicator_label = NULL,
   indicator_show_max = FALSE,
-  indicator_placement = "right"
+  indicator_placement = "right",
+  banner_key = NULL
 ) {
   htmlwidgets::saveWidget(
     map,
@@ -2349,7 +2449,8 @@ save_html_and_style <- function(
       indicator = indicator,
       indicator_label = indicator_label,
       indicator_show_max = indicator_show_max,
-      indicator_placement = indicator_placement
+      indicator_placement = indicator_placement,
+      banner_key = banner_key
     )
   }
 
@@ -2695,7 +2796,8 @@ inject_banner_legend_controls <- function(
   indicator = NULL,
   indicator_label = NULL,
   indicator_show_max = FALSE,
-  indicator_placement = "right"
+  indicator_placement = "right",
+  banner_key = NULL
 ) {
   if (!file.exists(html_file)) {
     stop("HTML file not found: ", html_file)
@@ -2749,8 +2851,9 @@ inject_banner_legend_controls <- function(
 
   banner_html <- if (!is.null(title)) {
     sprintf(
-      '<div class="banner">%s</div>\n<div class="map-container">\n',
-      title
+      '<div class="banner"><span class="banner-title">%s</span>%s</div>\n<div class="map-container">\n',
+      title,
+      generate_banner_key_html(banner_key)
     )
   } else {
     '<div class="map-container">\n'
@@ -2966,7 +3069,10 @@ create_generic_icons <- function(
     fillColor = colors,
     baseSize = shape_config$size,
     fillOpacity = 0.75,
-    strokeWidth = 2,
+    # Scales with the export like the symbol it draws. At a flat 2px an
+    # outline shape — a cross has nothing but its stroke — came out hairline
+    # on a 4000px print while its size grew almost threefold.
+    strokeWidth = max(2, round(2 * image_scale_factor)),
     opacity = 1
   )
 }
@@ -3937,6 +4043,12 @@ render_pollution_map <- function(
       pollutant
     )
   }
+  # Reference layers carry no value, so they get no place on the colour ramp.
+  # Where one has categories (schools by Level) they are named in the banner,
+  # which is also what lets the map labels drop "Primary School" and stay
+  # readable at print size.
+  banner_key <- build_banner_key(measurement_layers, spatial_data)
+
   indicator_label <- theme$indicator$label
   indicator_show_max <- isTRUE(theme$indicator$show_max)
   indicator_placement <- theme$indicator$placement %||% "right"
@@ -4040,7 +4152,8 @@ render_pollution_map <- function(
         indicator,
         indicator_label,
         indicator_show_max,
-        indicator_placement
+        indicator_placement,
+        banner_key
       )
     }
   }
@@ -4089,7 +4202,8 @@ render_pollution_map <- function(
       indicator,
       indicator_label,
       indicator_show_max,
-      indicator_placement
+      indicator_placement,
+      banner_key
     )
   } else {
     html_map <- add_map_controls(

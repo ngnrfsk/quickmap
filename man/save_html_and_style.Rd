@@ -23,7 +23,8 @@ save_html_and_style(
   indicator = NULL,
   indicator_label = NULL,
   indicator_show_max = FALSE,
-  indicator_placement = "right"
+  indicator_placement = "right",
+  banner_key = NULL
 )
 }
 \arguments{
@@ -62,6 +63,9 @@ save_html_and_style(
 \item{indicator_show_max}{Also mark the network maximum, as a diamond}
 
 \item{indicator_placement}{"right" of the ramp or "under_title"}
+
+\item{banner_key}{Reference-layer key from \code{\link[=build_banner_key]{build_banner_key()}}, drawn at
+the end of the banner. NULL for no key.}
 }
 \value{
 NULL, called for its side effect
