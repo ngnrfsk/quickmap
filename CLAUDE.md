@@ -546,6 +546,14 @@ development: a preset library (muted slate, high-contrast dark, custom
 ramps), speed-scaled line width/opacity, and per-theme ramp selection —
 all ride the same theme-YAML surface, no renderer work.
 
+**Tile-dependent particle density** (added 2026-08-05, from setting up the
+long-animation example): the `particle_density` default of 1/300 was tuned
+against busy OSM tiles. On pale `CartoDB.Positron` the same density reads as
+far too busy — the example settled at 0.00125, roughly a third of it, after
+three halvings — because nothing on the basemap competes with the flow. The
+default should follow the chosen tiles rather than being a single constant,
+which is the same theme-YAML surface again, no renderer work.
+
 **Post-1.0: ecosystem integrations** (added 2026-07-07; full survey with
 integration shapes, risks and suggested ordering:
 dev/260707_v2_integration_candidates.md). Five well-maintained, large-user-base
