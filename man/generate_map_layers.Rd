@@ -11,7 +11,9 @@ generate_map_layers(
   pollutant,
   colour_scale,
   spatial_data,
-  image_scale_factor = 1
+  image_scale_factor = 1,
+  label_scale = 1,
+  label_background = TRUE
 )
 }
 \arguments{
@@ -28,6 +30,12 @@ generate_map_layers(
 \item{spatial_data}{Loaded layers from \code{\link[=load_spatial_data_sources]{load_spatial_data_sources()}}}
 
 \item{image_scale_factor}{Symbol scaling for static export}
+
+\item{label_scale}{Multiplier on the marker-label text size. 1 is the
+default and needs no correction for export size: labels are expressed in
+\code{rem} and the export scales the root, exactly as it does for banner,
+legend and year label. Raise it only to depart deliberately from the
+legend's own scale — see the \code{map.label_scale} theme key.}
 }
 \value{
 The map with this step's layers added
