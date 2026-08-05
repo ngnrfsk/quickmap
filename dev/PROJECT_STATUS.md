@@ -6,17 +6,18 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-07-19 **Current Version**: v0.9.9.8
+**Last Updated**: 2026-08-05 **Current Version**: v0.9.9.10
 
 --------------------------------------------------------------------------------
 
 ## Where the project stands
 
-QuickMap is at v0.9.9.8, close to v1.0. Working and signed off: the new
-map look (white title strip, colour-ramp legend, draggable time slider),
-optional borough boundaries, per-layer symbol choice, the wind overlay,
-small email-able animations, and a complete ten-chapter user manual
-built as a website with live example maps.
+QuickMap is at v0.9.9.10, close to v1.0. Working and signed off: the new
+map look (white title strip, colour-ramp legend, draggable time slider,
+playback speed button), optional borough boundaries, per-layer symbol
+choice, the wind overlay, the network mean and maximum shown on the
+legend, small email-able animations, and a complete ten-chapter user
+manual built as a website with live example maps.
 
 **Waiting on Iarla:**
 
@@ -24,6 +25,8 @@ built as a website with live example maps.
    https://github.com/ngnrfsk/quickmap/pull/37; read it at
    file:///Users/iarla/Coding/quickmap/docs/index.html or iCloud Drive →
    dev → pr31_manual_review).
+2. Merge the two signed-off branches, oldest first: the legend indicator,
+   then the animation speed control (PR #42).
 
 *(Decided 13 July: `marker_labels` will be renamed to `symbol_labels`
 with the old name kept working — happens in the final tidy-up,
@@ -38,6 +41,36 @@ CPU when they're in a background tab.
 --------------------------------------------------------------------------------
 
 ## Recent work, newest first
+
+### 5 August — Animation speed control SIGNED OFF by Iarla, ready to merge
+
+Iarla approved it on 5 August. PR #42 —
+https://github.com/ngnrfsk/quickmap/pull/42. Ready to merge; the merge
+itself is Iarla's to do.
+
+What it adds: a small button on the time-slider card showing how fast the
+animation is playing, which you press to change. Short animations offer
+half, normal, double and quadruple speed; long ones also offer a quarter
+and eight times, because there is more to fast-forward through. It opens
+at normal speed.
+
+Two related things changed at the same time. Maps now play at a speed
+that suits how many steps they have — a seven-year map takes 1.2 seconds
+a year instead of half a second, which was too quick to read — and the
+colour fade between steps shrinks with the speed instead of being fixed,
+so fast playback no longer smears.
+
+The maximum on the legend is now shown by default alongside the mean
+(Iarla's decision on 5 August, reversing 31 July): a mean on its own
+reads as though it described everywhere, and the worst site is usually
+what a report is about. Turn it off with `indicator.show_max: false` in a
+theme.
+
+**A defect found and fixed on the way:** the repository's ignore list was
+excluding one of the package's own files, `inst/controls/time-slider.html`,
+which had therefore never been committed. Anyone cloning the project
+fresh could not build a map at all — it failed part-way through. Found
+because a clean build of `main` broke where the new branch did not.
 
 ### 5 August — Legend indicator SIGNED OFF by Iarla, ready to merge
 
