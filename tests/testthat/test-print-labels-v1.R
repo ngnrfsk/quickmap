@@ -20,6 +20,26 @@ test_that("label_scale is a theme key, defaulting to no change", {
   expect_equal(quickmap:::get_default_theme()$map$label_scale, 1)
 })
 
+test_that("symbol stroke scales with the export too", {
+  # A cross is nothing but its stroke, so a flat 2px came out hairline on a
+  # 4000px print while the symbol itself grew almost threefold.
+  data <- data.frame(School = "x", Level = "Primary")
+  interactive <- quickmap:::create_generic_icons(
+    data, "simple-cross", image_scale_factor = 1.0
+  )
+  print_icons <- quickmap:::create_generic_icons(
+    data, "simple-cross", image_scale_factor = sqrt(4000 * 3000 / 1200^2)
+  )
+  # the icon is a URL-encoded SVG data URI: stroke-width%3D%22N%22
+  stroke <- function(ic) {
+    svg <- utils::URLdecode(as.character(ic$iconUrl[[1]]))
+    m <- regmatches(svg, regexpr('stroke-width="[0-9.]+"', svg))
+    as.numeric(gsub("[^0-9.]", "", m))
+  }
+  expect_equal(stroke(interactive), 2)      # screens are unchanged
+  expect_equal(stroke(print_icons), 6)      # round(2 * 2.887)
+})
+
 test_that("value labels carry proper units on both rendering paths", {
   data <- data.frame(no2 = c(28.4, NA), Easting = 1, Northing = 1)
   labels <- quickmap:::generate_marker_labels(data, "no2", "values_on", "dt")
