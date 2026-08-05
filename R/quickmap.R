@@ -2066,6 +2066,22 @@ get_contrast_text_color <- function(color) {
 }
 
 #' @keywords internal
+#' Marker-label font size, as CSS
+#'
+#' The unit is not optional, and its absence is silent. `labelOptions()` puts
+#' `textsize` straight into a CSS `font-size`, where a bare number is invalid
+#' and the browser drops it, leaving the label at whatever it inherits. The
+#' code here passed `as.character(12 * label_sizing)` for years, so every
+#' value was inert — unnoticed because `label_sizing` was always 1.0 and the
+#' ignored value and the fallback were both 12.
+#'
+#' @param label_sizing Multiplier on the 12px base.
+#' @return A CSS length, e.g. `"52px"`.
+#' @keywords internal
+label_font_size <- function(label_sizing) {
+  paste0(round(12 * label_sizing, 1), "px")
+}
+
 #' Build the banner's reference-layer key
 #'
 #' A static reference layer carries no value, so it gets no place on the
@@ -3220,7 +3236,7 @@ add_layer <- function(
     layer_id = layer_id
   )
 
-  label_text_size <- as.character(12 * label_sizing)
+  label_text_size <- label_font_size(label_sizing)
 
   # Always-visible labels for values_on/labels_on
   no_hide <- marker_labels %in% c("values_on", "labels_on")
