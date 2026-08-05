@@ -32,23 +32,13 @@ library(quickmap)
 STAMP <- "260805"
 
 # -- Label size ---------------------------------------------------------------
-# Worked from the page rather than guessed. The image fills most of an A4
-# width; at 4000px across that is PRINT_WIDTH_MM of paper, so one millimetre
-# is 4000/PRINT_WIDTH_MM pixels. A TARGET_PT label is TARGET_PT/72 inch tall.
-# The renderer's base label is 12px, already multiplied by the export factor
-# sqrt(4000*3000 / 1200^2); label_scale supplies what is still missing.
-PRINT_WIDTH_MM <- 190      # A4 portrait, 210mm less ~10mm margins each side
-# A third of the 7pt v5 first shipped, at Iarla's eye: 7pt filled the map
-# with text. See the note below the calculation for what this means on paper.
-TARGET_PT <- 7 / 3
-
-px_per_mm <- 4000 / PRINT_WIDTH_MM
-target_px <- TARGET_PT / 72 * 25.4 * px_per_mm
-export_factor <- sqrt(4000 * 3000 / 1200^2)
-LABEL_SCALE <- round(target_px / (12 * export_factor), 3)
-
-cat(sprintf("labels: %.0fpt on a %dmm-wide page = %.0fpx, label_scale %.3f\n",
-            TARGET_PT, PRINT_WIDTH_MM, target_px, LABEL_SCALE))
+# Nothing to set. Marker labels sit on MARKER_LABEL_REM, the same size as the
+# smallest text in the legend, and the export scales the root font size, so
+# they stay in proportion with the banner, legend and year label at any output
+# size. Chasing a point size on the page was the wrong frame: it produced
+# labels at half the smallest legend text at one end and text covering the map
+# at the other. The theme's map.label_scale is there to depart from this
+# deliberately; the print set has no reason to.
 
 # -- School names -------------------------------------------------------------
 # The type is dropped from every label because the banner key now carries it.
@@ -103,9 +93,7 @@ writeLines(c(
   '  style: "bar"',
   '  background: "#2a75d4"',
   "indicator:",
-  "  show_max: true",
-  "map:",
-  paste("  label_scale:", LABEL_SCALE)
+  "  show_max: true"
 ), theme)
 
 quickmap(

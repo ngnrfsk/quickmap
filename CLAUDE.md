@@ -271,7 +271,8 @@ map:
   zoom_level: null  # null = auto-fit
   boundary_labels: false
   marker_labels: false
-  label_scale: 1     # extra marker-label text scaling in static exports
+  label_scale: 1            # marker-label size, 1 = the smallest legend text
+  label_background: true    # translucent plate behind each marker label
 controls:
   autoplay: false
   play_speed: 500
@@ -460,6 +461,10 @@ passed `as.character(12 * label_sizing)` for years, so *every* value was inert
 the fallback were both 12. `label_font_size()` now owns this and appends `px`;
 a test asserts the unit.
 
+**`map.label_background`** (v0.9.9.11+, default TRUE): the translucent white
+plate behind each label. Worth its clutter on busy tiles, not worth it where
+labels are dense. Off leaves the text alone on the map.
+
 **Labels do not scale for free.** On a 4000×3000 export printed 190mm wide,
 an 18pt label box is about 35 × 6.3mm; 115 of them need ~25,000mm² on a map of
 27,000mm². 12pt needs 41% of the area, 8pt is visibly over-full, ~6-7pt is the
@@ -547,7 +552,10 @@ or labelling fewer features — not raising `label_scale`.
     hairline on a 4000px print); value labels read `µg/m³` rather than the
     ASCII `ug/m3`, on both rendering paths; and `build_banner_key()` names a
     static layer's categories in the banner, which is what lets the school
-    labels drop their type and stay readable at 12pt
+    labels drop their type and stay readable. Marker labels are now `rem`,
+    sitting on `MARKER_LABEL_REM` (the smallest legend text) at every export
+    size, which is roadmap item 11's "unified marker/text/legend scaling"
+    done early; `map.label_background` turns the plate behind them off
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 
@@ -641,6 +649,14 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
     ward/marker label consistency) — so v1.0 releases without known user-facing
     defects. Do not work on these earlier or piecemeal; they are the final
     item before the v1.0 release, not background tasks.
+    **Partly done early (2026-08-05):** the Merton AQAP print set needed
+    legible marker labels, so "unified marker/text/legend scaling" was fixed
+    then — marker labels are `rem` and sit on `MARKER_LABEL_REM`, the same
+    size as the smallest legend text, at every export size; symbol stroke
+    width scales with the export too. This uncovered the cause: `textsize`
+    reached leaflet without a CSS unit, so every value had been silently
+    ignored for years. When item 11 is picked up, that part is done; the
+    rest of the list stands.
 
 (Items 2 and 5 were inserted 2026-07-05; item 10 (UI polish) was inserted
 2026-07-06, renumbering the UI-defects item to 11. Dev docs written before

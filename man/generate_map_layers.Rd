@@ -12,7 +12,8 @@ generate_map_layers(
   colour_scale,
   spatial_data,
   image_scale_factor = 1,
-  label_scale = 1
+  label_scale = 1,
+  label_background = TRUE
 )
 }
 \arguments{
@@ -30,12 +31,11 @@ generate_map_layers(
 
 \item{image_scale_factor}{Symbol scaling for static export}
 
-\item{label_scale}{Extra multiplier on marker-label text, over and above
-\code{image_scale_factor}. Marker labels used to sit at a flat 12px however
-large the export was (roadmap item 11, "unified marker/text/legend
-scaling"), so a 4000px print came out with symbols scaled and their
-labels not. They now follow the export; \code{label_scale} is the further
-push a given page size needs — see the \code{map.label_scale} theme key.}
+\item{label_scale}{Multiplier on the marker-label text size. 1 is the
+default and needs no correction for export size: labels are expressed in
+\code{rem} and the export scales the root, exactly as it does for banner,
+legend and year label. Raise it only to depart deliberately from the
+legend's own scale — see the \code{map.label_scale} theme key.}
 }
 \value{
 The map with this step's layers added
