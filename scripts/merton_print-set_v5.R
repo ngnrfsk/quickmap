@@ -38,9 +38,9 @@ STAMP <- "260805"
 # The renderer's base label is 12px, already multiplied by the export factor
 # sqrt(4000*3000 / 1200^2); label_scale supplies what is still missing.
 PRINT_WIDTH_MM <- 190      # A4 portrait, 210mm less ~10mm margins each side
-          # 18pt was asked for and is not possible at this label count: see
-          # the note below. 7 is the largest that leaves the map readable.
-TARGET_PT <- 7
+# A third of the 7pt v5 first shipped, at Iarla's eye: 7pt filled the map
+# with text. See the note below the calculation for what this means on paper.
+TARGET_PT <- 7 / 3
 
 px_per_mm <- 4000 / PRINT_WIDTH_MM
 target_px <- TARGET_PT / 72 * 25.4 * px_per_mm
