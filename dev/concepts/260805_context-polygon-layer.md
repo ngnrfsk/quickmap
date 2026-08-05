@@ -25,7 +25,44 @@ It is **not** a `qm_layer`: the atomic unit assumes points carrying a value per
 time step, and a deprivation surface has neither. It belongs as a map-level
 argument alongside `boroughs` and `wind`.
 
-## Labels instead of a legend (Iarla, 5 August)
+## Three hatched grades (Iarla, 5 August — the current preference)
+
+Rather than ten deciles labelled with numbers, three classes — worst, average,
+best — distinguished by hatching rather than by colour.
+
+This is better than the labelling idea on every count that mattered:
+
+- **Density stops being a problem.** Three classes need no per-area labels at
+  all, so nothing competes with the pollution markers.
+- **It survives print, including photocopying and greyscale**, which numeric
+  labels at 12px do not. For a statutory document that will be reproduced badly
+  this is a real advantage.
+- **The key is tiny** — three small swatches and three words fit in the
+  legend's existing row, so the second-ramp problem disappears rather than
+  being worked around.
+- **It cannot be confused with the pollutant scale**, because it is not a
+  colour scale. That was the risk that worried me most about a coloured
+  surface beneath coloured markers.
+
+**How hatching would be done.** Leaflet draws polygons as SVG paths, and this
+map does not switch on Canvas rendering for them (`create_base_map()` sets only
+zoom options), so an SVG `<pattern>` can be defined once and referenced as the
+fill. The mechanism is a small script injected the same way the existing
+controllers are. Worth prototyping early: it is the one part of this concept
+with no precedent in the codebase.
+
+**Fallback if patterns prove awkward:** three levels of a single hue at
+different opacities. Simpler, no new mechanism, but it loses the greyscale and
+photocopy robustness, which is much of the appeal.
+
+**Still needed:** one line saying which end is which, since "worst" and "best"
+must be attached to the swatches. Three words in the legend row.
+
+**Open question:** what defines the three classes — deciles 1–3 / 4–7 / 8–10,
+or tertiles of the areas actually shown? The first is comparable between
+boroughs, the second describes the borough on screen. Decide before building.
+
+## Labels instead of a legend (Iarla, 5 August — superseded by the above)
 
 A second colour ramp would double the height of a legend that is already the
 tightest part of the design. Instead, each area carries its value 1–10 on the
@@ -72,7 +109,12 @@ same constraint that drove the lazy-loading work at roadmap item 6.
 
 ## Recommended shape, if it goes ahead
 
-1. Hover labels in the interactive map, extremes-only labels in exports.
-2. A single-hue ramp, agreed from a mock-up first.
-3. One caption line stating the direction, in the legend's existing row.
-4. The label-scaling fix shared with the marker-label half of issue 9.
+1. Three hatched classes, no per-area labels.
+2. Prototype the SVG pattern fill first — it is the only part with no
+   precedent here, and everything else is routine.
+3. Three swatches and three words in the legend's existing row.
+4. Settle the class boundaries (fixed decile bands, or tertiles of what is
+   shown) before building.
+
+The label-scaling fix that the earlier labelling idea would have needed is no
+longer part of this work — with no labels, it is not affected by issue 9.
