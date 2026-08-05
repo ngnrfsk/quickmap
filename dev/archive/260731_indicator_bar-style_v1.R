@@ -73,7 +73,7 @@
 #
 # --- demonstration output produced while it was live ------------------------
 #
-#   aq_maps/indicator_bar-print_v2_2019.jpg  (and _2025)
-#   aq_maps/indicator_bar-animated_v2.html
+#   dev/concepts/examples/indicator_bar-print_v2_2025.jpg
+#   dev/concepts/examples/indicator_bar-animated_v2.html
 #   built by scripts/indicator_refinements_v2.R and
 #   scripts/indicator_animations_v2.R, both of which still name the style

@@ -10,8 +10,8 @@
 # (.ramp-block { flex: 1 }), so it is not linear in concentration. This track
 # IS linear. The two therefore put the same threshold in different places, a
 # few centimetres apart on the same page. Evidence:
-# aq_maps/indicator_uneven-track_v1_2025.jpg against
-# aq_maps/indicator_uneven-ramp_v1_2025.jpg (gla_pm25, uneven bands).
+# dev/concepts/examples/indicator_uneven-track_v1.html against
+# dev/concepts/examples/indicator_uneven-ramp_v1.html (gla_pm25, uneven bands).
 # Comparison written up in dev/260730_indicator_ramp_variant.md.
 #
 # WHEN IT MIGHT BE WOKEN: a map with the legend switched off

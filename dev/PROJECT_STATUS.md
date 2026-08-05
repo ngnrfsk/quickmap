@@ -841,12 +841,30 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
 
 ### Concepts — recorded, not scheduled
 
+All of them, with their demonstration maps, are in one folder with an
+index: `/Users/iarla/Coding/quickmap/dev/concepts/README.md`
+
+-   **Animation speed control** (agreed 2026-08-05, not built):
+    `/Users/iarla/Coding/quickmap/dev/concepts/260805_animation-speed-control.md`
+    — a speed button on the time slider; also changes the default step
+    timing (1200ms for annual maps, not 500ms) and makes the colour
+    crossfade proportional to the step. About half a day.
+-   **Change-over-time graph** (deferred 2026-07-29):
+    `/Users/iarla/Coding/quickmap/dev/concepts/260729_trend-graph.md`
+    — a sparkline of the network mean across the displayed years. The
+    open half of the overlays decision; 1.5–2 days now the indicator has
+    shipped.
 -   **Limit-centred indicator** (2026-07-30):
     `/Users/iarla/Coding/quickmap/dev/concepts/260730_limit-centred-indicator.md`
     — an indicator measuring distance above or below a chosen target
     (UK 40, WHO 10) instead of position on the scale. Answers the
     question an action plan actually asks. Needs a decision on which
     target sits at the centre.
+-   **Thermometer on the map** (2026-08-01):
+    `/Users/iarla/Coding/quickmap/dev/concepts/260801_thermometer-overlay.md`
+    — a vertical indicator overlaid on the map instead of in the legend.
+    Feasible, but only if it restates the legend's own bands rather than
+    drawing a second scale of its own.
 
 ### Archived code — coded up, retired, wakeable
 
