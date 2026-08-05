@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.9.10
+### Current Version: 0.9.9.11
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -225,6 +225,9 @@ External configuration files in `inst/` directory:
 YAML-based scales in `inst/config/scales/`:
 - **WHO-based**: `who_no2.yaml`, `stripes_no2.yaml`, `gla_pm25.yaml`
 - **Borough-specific**: `lbw_no2.yaml`, `lbrut_no2.yaml`, `lbm_no2.yaml`
+- **Publication**: `lbm_aqap_no2.yaml` (LB Merton Air Quality Action Plan print
+  set — lbm_no2's colours and thresholds unchanged, but the 20 µg/m³ target is
+  named on both sides of the boundary and `footnote_symbols` is off)
 - **Special**: `deltas.yaml` (year-on-year change), `schools.yaml` (categorical)
 
 Each YAML scale defines:
@@ -236,7 +239,16 @@ shape: circle
 thresholds: [0, 10, 20, 40, .Inf]
 colours: ["green", "yellow", "orange", "red", "white"]
 labels: ["< 10: Good", "10-20: Fair", "20-40: Poor", "> 40: Bad", "Insufficient data"]
+footnote_symbols: true   # optional, default true
 ```
+
+**Label anatomy.** A label of the form `"range: description"` puts `range`
+under its ramp block and `description` in a pill coloured to match the band; a
+label with no colon gets no pill. `footnote_symbols: false` (v0.9.9.11+) drops
+the `†`/`‡`/`§` markers that otherwise cross-refer the two, leaving the band
+colour as the link — the pills stay. Use it where the bands are distinct and
+the output is print, since the markers are the first thing to become
+illegible.
 
 Loading: `load_colour_scale("who_no2")` returns R list with validation
 
@@ -479,6 +491,16 @@ School data detected by School column presence. Any filename works (schools.csv,
     `indicator.show_max` to TRUE by default (user decision 2026-08-05,
     reversing 07-31), so the legend shows the network maximum's diamond
     beside the mean's roundel unless a theme turns it off
+
+-   **v0.9.9.11**: LB Merton AQAP print set (user brief 2026-08-05, decisions
+    taken by MCQ): `footnote_symbols: false` on a colour scale drops the
+    `†`/`‡`/`§` cross-reference markers while keeping the pills, whose band
+    colour is the link back to the ramp; new `lbm_aqap_no2.yaml` carrying
+    lbm_no2's colours and thresholds unchanged but naming the 20 µg/m³ Merton
+    target from **both** sides ("meets" on green 10-19, "above" on yellow
+    20-29) — naming one side only lets a band label be read as the target
+    itself; `scripts/merton_print-set_v2.R` renders 2019-2025 at 4000×3000
+    with a solid `#2a75d4` banner bar matching the AQAP's own
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 
