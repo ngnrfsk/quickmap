@@ -64,7 +64,8 @@ static (FALSE) handling per layer (NULL = auto-detect)}
 
 \item{autoplay}{Auto-advance the time control}
 
-\item{play_speed}{Autoplay interval in ms}
+\item{play_speed}{Autoplay interval in ms. NULL takes the theme's value,
+and failing that a pace set by the number of time steps}
 
 \item{theme_file}{Path to a YAML theme file}
 

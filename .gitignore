@@ -10,6 +10,11 @@ docs/
 # manual screenshots are committed
 !vignettes/figures/*.png
 
+# the package's own HTML templates ARE committed: *.html above was aimed at
+# generated maps, but it was also swallowing these, so a fresh clone could not
+# build a map at all (found 2026-08-05, and they had never been committed)
+!inst/**/*.html
+
 # concept demonstrations ARE committed: they are the only evidence a retired
 # or deferred idea was built and worked, and aq_maps is not in the repository
 !dev/concepts/examples/*.html

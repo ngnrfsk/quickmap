@@ -14,7 +14,8 @@ map:
 
 controls:
   autoplay: false
-  play_speed: 500
+  # play_speed unset (2026-08-05): the pace follows the step count. Name a
+  # value here only to override that.
   background: "#005794"
   text_color: "white"
 

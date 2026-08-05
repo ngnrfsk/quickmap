@@ -72,7 +72,11 @@ NULL uses all available periods from data. Must match year_str format in data.}
 
 \item{autoplay}{Auto-start year animation on load. Default: NULL (uses theme).}
 
-\item{play_speed}{Milliseconds per year during animation. Default: NULL (uses theme).}
+\item{play_speed}{Milliseconds per time step during animation. Default:
+NULL, which uses the theme, and failing that a pace set by how many steps
+there are (1200ms for 12 or fewer, 800ms up to 60, 450ms above). The
+viewer can scale whatever this ends up being with the speed button on the
+map, from a quarter of it to eight times.}
 
 \item{theme_file}{Path to YAML theme file (default: NULL). See inst/themes/ for examples.}
 
