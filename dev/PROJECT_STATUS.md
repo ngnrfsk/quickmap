@@ -39,6 +39,29 @@ CPU when they're in a background tab.
 
 ## Recent work, newest first
 
+### 5 August — Legend indicator SIGNED OFF by Iarla, ready to merge
+
+Iarla approved the indicator work on 5 August after reviewing
+aq_maps/indicator_titlerow_v5.html. It is ready to merge; the merge
+itself is Iarla's to do.
+
+What it adds: every annual map shows the network mean and the highest
+site for the year on screen, marked on the legend's own colour ramp — a
+roundel for the mean, a diamond for the maximum — with the figures
+beside the legend title. The mean is over a fixed panel of sites
+reporting every year, so it is comparable year to year; the maximum is
+the worst site actually reporting, so its count changes as sites open.
+Both captions say which. Exports also gained a much larger year label,
+top-left, sized to match the title.
+
+Also in the same branch, from earlier sessions: the code documentation
+pass (every function described, dead copy removed) and the Merton action
+plan script.
+
+**Next, once merged:** the animation speed control (recap and decisions
+in the 5 August chat; summary below in "Waiting on Iarla"). It is
+another rendering change, so it starts only after this merge lands.
+
 ### 29 July — The legend indicator (v0.9.9.9) — needs your eyes
 
 Every map now carries a small indicator in the legend: the network mean
