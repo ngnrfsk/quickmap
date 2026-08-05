@@ -452,8 +452,8 @@ where it used to sit at a flat 12px however large the image was — part of the
 item 11 "unified marker/text/legend scaling" defect. `map.label_scale` is the
 further multiplier a page-sized print needs.
 
-**The unit is not optional, and its absence is silent.** `labelOptions()` puts
-`textsize` straight into a CSS `font-size`; a bare number there is invalid CSS
+**The unit is not optional, and its absence is silent.** leaflet's
+`labelOptions` puts `textsize` straight into a CSS `font-size`; a bare number there is invalid CSS
 that the browser drops, leaving the label at whatever it inherits. The code
 passed `as.character(12 * label_sizing)` for years, so *every* value was inert
 — unnoticed because `label_sizing` was always 1.0 and the ignored value and

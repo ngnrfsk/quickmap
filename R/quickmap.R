@@ -2065,7 +2065,6 @@ get_contrast_text_color <- function(color) {
   }
 }
 
-#' @keywords internal
 #' Marker-label font size, as CSS
 #'
 #' The unit is not optional, and its absence is silent. `labelOptions()` puts
