@@ -21,7 +21,7 @@
 #     says "not monitored" where blank would read as a broken table
 #   - the pills go underneath the table
 #
-# Run from the project root:  Rscript scripts/ecs_trends-table_v2.R
+# Run from the project root:  Rscript quickplot/ecs_trends-table_v2.R
 #
 # Companion script, not a package feature — see the quickplot note in
 # CLAUDE.md's post-1.0 roadmap.
@@ -44,6 +44,13 @@ SCALE <- "lbm_aqap_no2"
 # derived figure sitting in a table of measurements. The code that renders it
 # stays, unused, because it belongs in quickplot when the table moves there.
 SHOW_AVERAGE <- FALSE
+
+# Sits at the very foot of the figure, after the legend. Quiet enough not to
+# compete with the note above it, present enough to travel with the image once
+# it is lifted into a report.
+CREDIT <- paste0(
+  '<div class="credit">Created using parhillresearch.com/quickplot</div>'
+)
 
 stopifnot(file.exists(SRC))
 
@@ -135,6 +142,8 @@ td.miss {
     #d8d8d8 0, #d8d8d8 1.5px, #ffffff 1.5px, #ffffff 5px);
 }
 .table-note { font-size: 0.42rem; color: #555; padding: 0 1rem 0.35rem; }
+.credit { font-size: 0.34rem; color: #888; text-align: right;
+  padding: 0.15rem 1rem 0.3rem; }
 "
 
 banner_css <- quickmap:::build_banner_css(BRAND, image_mode = TRUE,
@@ -162,6 +171,7 @@ html <- paste0(
   '<div class="table-wrap">', table_html, "</div>",
   sprintf('<div class="table-note">%s</div>', note),
   legend,
+  CREDIT,
   "</body></html>"
 )
 
