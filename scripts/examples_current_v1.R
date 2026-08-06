@@ -17,7 +17,8 @@ stamp <- "260805"
 # -- 1. Long animation -------------------------------------------------------
 # 108 hourly steps, so this is the lazy rendering path: markers are drawn on
 # Canvas and restyled from one embedded payload rather than pre-built per step.
-# Recipe carried over from scripts/item10_demo-maps_v3.R (map 2): the stripes
+# Recipe carried over from the item 10 demo maps (removed 2026-08-06;
+# see git history): the stripes
 # scale, no vignette, autoplay — but on the pale CartoDB.Positron background
 # (user, 2026-08-05). OSM was chosen for that demo because the vignette dimming
 # is too faint on pale tiles; this map has no vignette, so that reason does not

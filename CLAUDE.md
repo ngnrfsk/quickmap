@@ -741,7 +741,7 @@ HTML file; its appearance and behaviour must be checked by a human at defined po
 - **Naming convention (mandatory for new artefacts):** every new test file, demo
   script, and demonstration output is named
   `[item]_[short description]_[version]`
-  — e.g. `item4_merton-annual_v1.html` (aq_maps/), `item4_demo-maps_v1.R`
+  — e.g. `speed_merton-annual_v3.html` (aq_maps/), `speed_demo-maps_v3.R`
   (scripts/) — and testthat files keep the required `test-` prefix:
   `test-item4-quickmap-api-v1.R`. The short description says what the artefact
   shows or tests (location/data/period where that is the point, behaviour name
