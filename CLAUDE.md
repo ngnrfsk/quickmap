@@ -688,6 +688,21 @@ wind via ecmwfr (completes the non-uniform wind thread below), saqgetr
 the Mazama AirMonitor/AirSensor suite (US regulatory + PurpleAir), and
 stars/terra raster underlays (modelled surfaces beneath measured markers).
 
+**Post-1.0: quickplot** (user decision 2026-08-06). Charts and tables that
+borrow QuickMap's page furniture so figures and maps read as one document.
+Three functions, named: **Heatmap** (colour-coded table, site × year),
+**Trend** (time series over the colour ramp as background bands) and
+**Exceedance** (counts against a permitted allowance). Working prototypes and
+the full note live in `quickplot/README.md`; the folder is `.Rbuildignore`d and
+ships nothing.
+
+Not part of QuickMap, which is a mapping tool. This repo stays named `quickmap`
+until 1.0 ships, then quickplot gets its own repo rather than this one becoming
+an umbrella. The shared chrome (`build_banner_css()`, `build_legend_css()`,
+`generate_legend_html()`, `load_colour_scale()`, `assign_colour()`) moves to a
+third package only if maintaining it in two places starts to hurt; the colour
+scales stay here either way.
+
 ### Verification and human testing
 
 **Automated gate — run after every change:**
