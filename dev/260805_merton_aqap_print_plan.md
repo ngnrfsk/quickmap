@@ -41,7 +41,7 @@ compliance with the UK limit.
 - `generate_legend_html()` honours `footnote_symbols` on a scale (default TRUE,
   so every existing scale is untouched)
 - `inst/config/scales/lbm_aqap_no2.yaml`
-- `scripts/merton_print-set_v2.R` → `aq_maps/print_aqap_260805/`, seven images
+- `scripts/merton_print-set_v5.R` → `aq_maps/print_aqap_260805/`, seven images
   2019-2025 at 4000 × 3000
 - `tests/testthat/test-aqap-print-scale-v1.R`, which asserts the wording and
   the 20 µg/m³ boundary, not just the mechanism

@@ -541,7 +541,7 @@ or labelling fewer features — not raising `label_scale`.
     lbm_no2's colours and thresholds unchanged but naming the 20 µg/m³ Merton
     target from **both** sides ("meets" on green 10-19, "above" on yellow
     20-29) — naming one side only lets a band label be read as the target
-    itself; `scripts/merton_print-set_v3.R` renders 2019-2025 at 4000×3000
+    itself; `scripts/merton_print-set_v5.R` renders 2019-2025 at 4000×3000
     with a solid `#2a75d4` banner bar matching the AQAP's own, schools drawn
     as crosses and labelled by name, and every site carrying its value.
     Two general fixes came with it: marker labels now **scale with the static
