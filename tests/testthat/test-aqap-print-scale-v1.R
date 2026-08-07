@@ -24,12 +24,12 @@ test_that("the 20 ug/m3 target is named from both sides", {
   html <- quickmap:::generate_legend_html("lbm_aqap_no2", data_max = 47)
   # Naming only one side lets the band label be read as the target itself,
   # which is the mistake this scale exists to prevent.
-  expect_match(html, "meets LB Merton target", fixed = TRUE)
-  expect_match(html, "above LB Merton target", fixed = TRUE)
+  expect_match(html, "meets Merton 2030 target", fixed = TRUE)
+  expect_match(html, "over Merton 2030 target", fixed = TRUE)
 
   scale <- quickmap:::load_colour_scale("lbm_aqap_no2")
-  meets <- grep("meets LB Merton target", scale$labels)
-  above <- grep("above LB Merton target", scale$labels)
+  meets <- grep("meets Merton 2030 target", scale$labels)
+  above <- grep("over Merton 2030 target", scale$labels)
   # the boundary between the two bands must be exactly 20
   expect_equal(scale$thresholds[meets + 1], 20)
   expect_equal(scale$thresholds[above], 20)

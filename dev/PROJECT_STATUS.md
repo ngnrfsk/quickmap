@@ -21,13 +21,29 @@ manual built as a website with live example maps.
 
 **Waiting on Iarla:**
 
-1. Merge the animation speed control, PR #42 —
-   https://github.com/ngnrfsk/quickmap/pull/42. Signed off on 5 August.
-   It is the only open PR; nothing else is queued behind it.
+1. Review and merge two open PRs.
+   - **#45** https://github.com/ngnrfsk/quickmap/pull/45 — the quickplot
+     figures (Heatmap, Trend, Exceedance) plus the tidy-up of `scripts/`,
+     `dev/concepts/` and `dev/archive/`.
+   - **#43** https://github.com/ngnrfsk/quickmap/pull/43 — documentation
+     fixes to baseline references. Docs only.
+
+2. **The manual is out of date** (noticed 7 August). Its eleven chapters in
+   `/Users/iarla/Coding/quickmap/vignettes/` were written before 5 August
+   and mention none of what shipped since: the playback speed button, the
+   step-count default pace, `indicator.show_max` now defaulting on,
+   `map.label_scale`, `map.label_background`, `footnote_symbols` on a colour
+   scale, the banner's reference-layer key, and value labels reading µg/m³.
+   Needs a rewrite pass before v1.0.
+
+3. **The Merton AQAP print pack needs regenerating.** The seven images in
+   `/Users/iarla/Coding/quickmap/aq_maps/print_aqap_260805/` were made
+   before the pill wording changed to "meets / over Merton 2030 target".
+   About four minutes to rebuild with
+   `Rscript scripts/clients/merton_print-set_v5.R`.
 
 *(The manual, PR #37, and the legend indicator, PR #38, were both merged
-on 5 August. Earlier versions of this file listed them as still waiting —
-they were not.)*
+on 5 August; the animation speed control, PR #42, on 6 August.)*
 
 *(Decided 13 July: `marker_labels` will be renamed to `symbol_labels`
 with the old name kept working — happens in the final tidy-up,
@@ -289,7 +305,7 @@ canvas until the tab is foregrounded (rAF throttling — browser behaviour,
 not a defect; particles seed within ~2 s once visible). Payload cost is
 small: episode 913,686 → 976,747 B with 108 hourly wind frames.
 
-**Demo maps** (scripts/item7_demo-maps_v1.R, real Heathrow 037720-99999
+**Demo maps** (scripts/demos/item7_demo-maps_v1.R, real Heathrow 037720-99999
 NOAA data): aq_maps/item7_episode-wind_v1.html (lazy path + hourly wind,
 107/108 steps covered), aq_maps/item7_merton-annual-wind_v1.html (legacy
 path + annual-mean wind). Also .claude job tmp item7_episode_wind.html
@@ -878,23 +894,23 @@ All of them, with their demonstration maps, are in one folder with an
 index: `/Users/iarla/Coding/quickmap/dev/concepts/README.md`
 
 -   **Animation speed control** (agreed 2026-08-05, not built):
-    `/Users/iarla/Coding/quickmap/dev/concepts/260805_animation-speed-control.md`
+    `/Users/iarla/Coding/quickmap/dev/concepts/animation-speed-control/260805_animation-speed-control.md`
     — a speed button on the time slider; also changes the default step
     timing (1200ms for annual maps, not 500ms) and makes the colour
     crossfade proportional to the step. About half a day.
 -   **Change-over-time graph** (deferred 2026-07-29):
-    `/Users/iarla/Coding/quickmap/dev/concepts/260729_trend-graph.md`
+    `/Users/iarla/Coding/quickmap/dev/concepts/trend-graph/260729_trend-graph.md`
     — a sparkline of the network mean across the displayed years. The
     open half of the overlays decision; 1.5–2 days now the indicator has
     shipped.
 -   **Limit-centred indicator** (2026-07-30):
-    `/Users/iarla/Coding/quickmap/dev/concepts/260730_limit-centred-indicator.md`
+    `/Users/iarla/Coding/quickmap/dev/concepts/indicator/260730_limit-centred-indicator.md`
     — an indicator measuring distance above or below a chosen target
     (UK 40, WHO 10) instead of position on the scale. Answers the
     question an action plan actually asks. Needs a decision on which
     target sits at the centre.
 -   **Thermometer on the map** (2026-08-01):
-    `/Users/iarla/Coding/quickmap/dev/concepts/260801_thermometer-overlay.md`
+    `/Users/iarla/Coding/quickmap/dev/concepts/thermometer-overlay/260801_thermometer-overlay.md`
     — a vertical indicator overlaid on the map instead of in the legend.
     Feasible, but only if it restates the legend's own bands rather than
     drawing a second scale of its own.
@@ -903,14 +919,14 @@ index: `/Users/iarla/Coding/quickmap/dev/concepts/README.md`
 
 -   **Zero-to-value "bar" indicator style** (retired 2026-07-31 when the
     roundel was chosen):
-    `/Users/iarla/Coding/quickmap/dev/archive/260731_indicator_bar-style_v1.R`
+    `/Users/iarla/Coding/quickmap/dev/concepts/indicator/code/260731_indicator_bar-style_v1.R`
     — a bar above the ramp running from zero to the mean. Not retired for
     being wrong; it lost on readability, because the roundel carries its
     figure at its own position. Named as a possible future feature: if
     magnitude ever needs reading as length rather than position, or if the
     ramp becomes crowded with markers, the bar may read better.
 -   **Standalone "track" indicator style** (v0.9.9.9, retired 2026-07-30):
-    `/Users/iarla/Coding/quickmap/dev/archive/260730_indicator_track-style_v1.R`
+    `/Users/iarla/Coding/quickmap/dev/concepts/indicator/code/260730_indicator_track-style_v1.R`
     — an indicator with its own scale and tick marks. Retired because it
     disagreed geometrically with the legend ramp beside it. The file
     carries the reason, the case that would justify waking it (maps with

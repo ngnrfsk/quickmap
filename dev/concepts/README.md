@@ -1,46 +1,41 @@
 # Concepts
 
 Ideas that were designed, costed or built and then set aside — kept so they can
-be picked up deliberately rather than reinvented. Each has a document; where a
-version was actually built, its demonstration maps are in `examples/`.
+be picked up deliberately rather than reinvented.
+
+**One folder per concept** (restructured 7 August 2026). Each holds its
+document, and where a version was actually built, its `code/` and `examples/`
+alongside, so the idea, the thing that made it and the thing it produced stay
+together. Folders with code carry a README saying which paths inside those
+scripts no longer resolve.
 
 This folder is in the repository. `aq_maps/` is not, so anything left there is
 one tidy-up away from being lost; a concept's examples are the only evidence it
 worked.
 
-## Agreed, waiting to be built
+The roadmap list that points here is **"Tested ideas, but need more work"** in
+`CLAUDE.md`.
 
-| Concept | Document | Notes |
+## Built and shipped
+
+| Concept | Folder | Notes |
 |---|---|---|
-| Animation speed control | `260805_animation-speed-control.md` | Settings agreed 5 Aug 2026. Also changes the default step timing and makes the crossfade proportional. ~half a day |
+| Legend indicator | `indicator/` | Shipped v0.9.9.9. Folder also holds the four styles tested and rejected on the way, with their renders |
+| Animation speed control | `animation-speed-control/` | Shipped v0.9.9.10 |
 
-## Proposed, undecided
+## Tested ideas, but need more work
 
-| Concept | Document | Notes |
+| Concept | Folder | What is left to do |
 |---|---|---|
-| Change-over-time graph | `260729_trend-graph.md` | The open half of the 29 July overlays decision. 1.5–2 days now the indicator has shipped |
-| Limit-centred indicator | `260730_limit-centred-indicator.md` | Distance above or below a chosen target, instead of position on the scale. Needs a decision on which target sits at the centre |
-| Thermometer on the map | `260801_thermometer-overlay.md` | A vertical indicator overlaid on the map rather than in the legend. Feasible, but must not draw a second scale — see the document |
-| Context polygon layer | `260805_context-polygon-layer.md` | Deprivation or similar, drawn under the vignette and labelled 1–10 instead of carrying a second legend ramp. ~2 days |
+| Limit-centred indicator | `indicator/260730_limit-centred-indicator.md` | Distance above or below a chosen target rather than position on the scale. Needs a decision on which target sits at the centre |
+| Change-over-time graph | `trend-graph/` | The open half of the 29 July overlays decision. 1.5–2 days now the indicator has shipped. Overlaps with quickplot's **Trend** figure |
+| Thermometer on the map | `thermometer-overlay/` | A vertical indicator overlaid on the map rather than in the legend. Feasible, but must not draw a second scale |
+| Context polygon layer | `context-polygon-layer/` | Deprivation or similar, drawn under the vignette and labelled 1–10 instead of carrying a second legend ramp. ~2 days |
 
-## Built, then retired
+## What is not here
 
-Both were working code. The reason each went, and instructions to bring it
-back, are in the archived source files.
-
-| Concept | Archived code | Examples in `examples/` |
-|---|---|---|
-| Zero-to-value bar | `../archive/260731_indicator_bar-style_v1.R` | `indicator_bar-animated_v2.html`, `indicator_bar-annual_v2.html`, `indicator_bar-print_v2*.{html,jpg}` |
-| Standalone track (its own scale beside the legend) | `../archive/260730_indicator_track-style_v1.R` | `indicator_uneven-track_v1.html` and `indicator_uneven-ramp_v1.html` — the pair that shows why it went; `indicator_print-4000_v1.html`, `indicator_print-900_v1.html`, `indicator_merton-annual_v1.html` |
-
-The track's lesson is worth repeating before any future indicator work: the
-legend's colour ramp draws every band the same width whatever its span, so it
-is not a linear scale. Anything drawn linearly beside it puts the same
-threshold in two different places.
-
-## Also recorded elsewhere
-
-- Sub-annual target sets for the indicator — backlog issue 13 in
-  `../PROJECT_STATUS.md`
-- Post-1.0 wind styling presets and ecosystem integrations — the roadmap in
-  `../../CLAUDE.md`
+`dev/archive/` is a different store: 60-odd planning, analysis and review
+documents from 2025 and early 2026, plus the throwaway test scripts of that
+period. They are project history, not tested ideas, and were left where they
+are. The two indicator style prototypes that were in `dev/archive/` moved into
+`indicator/code/` on 7 August, because they are tested ideas.

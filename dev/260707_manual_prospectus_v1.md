@@ -162,7 +162,7 @@ guide into 3.
 ## 7. Validation (same bar as item 8)
 
 Every code chunk in every article is extracted and run against DATA_PATH
-fixtures by a `scripts/manual_run-chunks_v1.R` harness before each PR
+fixtures by a `scripts/manual/manual_run-chunks_v1.R` harness before each PR
 (knitr `purl()` + run). Screenshots regenerate from those runs. The
 consistency test gains a check that every article named in `_pkgdown.yml`
 exists.

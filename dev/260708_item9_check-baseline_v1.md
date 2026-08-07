@@ -69,7 +69,7 @@ NSE false-positives from dplyr/data.table code (`siteCode`, `year`,
 - Ship small teaching-data extracts inside the package (inst/extdata) so
   manual examples and R CMD CHECK examples run on any machine — the
   second half of template principle P7; the DATA_PATH copies
-  (scripts/manual_data_v3.R) are the interim.
+  (scripts/manual/manual_data_v3.R) are the interim.
 - pkgdown renders the top-level CLAUDE.md into the built site
   (docs/CLAUDE.html) — exclude it before the site is ever deployed
   publicly.
