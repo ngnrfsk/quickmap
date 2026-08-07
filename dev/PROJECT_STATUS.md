@@ -21,13 +21,29 @@ manual built as a website with live example maps.
 
 **Waiting on Iarla:**
 
-1. Merge the animation speed control, PR #42 —
-   https://github.com/ngnrfsk/quickmap/pull/42. Signed off on 5 August.
-   It is the only open PR; nothing else is queued behind it.
+1. Review and merge two open PRs.
+   - **#45** https://github.com/ngnrfsk/quickmap/pull/45 — the quickplot
+     figures (Heatmap, Trend, Exceedance) plus the tidy-up of `scripts/`,
+     `dev/concepts/` and `dev/archive/`.
+   - **#43** https://github.com/ngnrfsk/quickmap/pull/43 — documentation
+     fixes to baseline references. Docs only.
+
+2. **The manual is out of date** (noticed 7 August). Its eleven chapters in
+   `/Users/iarla/Coding/quickmap/vignettes/` were written before 5 August
+   and mention none of what shipped since: the playback speed button, the
+   step-count default pace, `indicator.show_max` now defaulting on,
+   `map.label_scale`, `map.label_background`, `footnote_symbols` on a colour
+   scale, the banner's reference-layer key, and value labels reading µg/m³.
+   Needs a rewrite pass before v1.0.
+
+3. **The Merton AQAP print pack needs regenerating.** The seven images in
+   `/Users/iarla/Coding/quickmap/aq_maps/print_aqap_260805/` were made
+   before the pill wording changed to "meets / over Merton 2030 target".
+   About four minutes to rebuild with
+   `Rscript scripts/clients/merton_print-set_v5.R`.
 
 *(The manual, PR #37, and the legend indicator, PR #38, were both merged
-on 5 August. Earlier versions of this file listed them as still waiting —
-they were not.)*
+on 5 August; the animation speed control, PR #42, on 6 August.)*
 
 *(Decided 13 July: `marker_labels` will be renamed to `symbol_labels`
 with the old name kept working — happens in the final tidy-up,
