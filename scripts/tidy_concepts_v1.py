@@ -1,5 +1,5 @@
 """Gather the example maps that belong to concepts, and put them beside the
-concept documents in dev/concepts/examples/.
+concept documents in dev/concepts/indicator/examples/.
 
 A concept's examples are the only evidence that it was ever built and worked;
 left in aq_maps they are indistinguishable from working output, and aq_maps is
@@ -17,13 +17,13 @@ DEST = os.path.join(ROOT, "dev", "concepts", "examples")
 
 # demonstration files, by the concept they belong to
 CONCEPT_FILES = {
-    # the retired zero-to-value bar (dev/archive/260731_indicator_bar-style_v1.R)
+    # the retired zero-to-value bar (dev/concepts/indicator/code/260731_indicator_bar-style_v1.R)
     "indicator_bar-animated_v2.html": "",
     "indicator_bar-annual_v2.html": "archived",
     "indicator_bar-print_v2.html": "archived",
     "indicator_bar-print_v2_2025.jpg": "archived",
     # the retired standalone track, and the pair that shows why it went
-    # (dev/archive/260730_indicator_track-style_v1.R)
+    # (dev/concepts/indicator/code/260730_indicator_track-style_v1.R)
     "indicator_uneven-track_v1.html": "archived",
     "indicator_uneven-ramp_v1.html": "archived",
     "indicator_print-4000_v1.html": "",
@@ -44,7 +44,7 @@ def main(apply):
             os.makedirs(DEST, exist_ok=True)
             shutil.move(src, os.path.join(DEST, name))
 
-    print(f"{'MOVED' if apply else 'WOULD MOVE'} ({len(moved)}) to dev/concepts/examples/")
+    print(f"{'MOVED' if apply else 'WOULD MOVE'} ({len(moved)}) to dev/concepts/indicator/examples/")
     for n in moved:
         print("   ", n)
     if missing:

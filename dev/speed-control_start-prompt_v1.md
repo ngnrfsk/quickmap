@@ -10,7 +10,7 @@ Read these two first, in this order:
 
 - `/Users/iarla/Coding/quickmap/dev/260805_speed_control_plan.md` — the work
   plan: five steps, the tests, and the bug most likely to bite
-- `/Users/iarla/Coding/quickmap/dev/concepts/260805_animation-speed-control.md`
+- `/Users/iarla/Coding/quickmap/dev/concepts/animation-speed-control/260805_animation-speed-control.md`
   — why each setting is what it is, including the ones I argued Iarla out of
 
 Then read CLAUDE.md as usual, in particular the automated gate and the

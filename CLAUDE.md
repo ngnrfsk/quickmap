@@ -409,8 +409,8 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
     and the worst site is what an air quality report is usually about; set it
     FALSE for the quieter one-figure legend)
 -   **Archived alternatives**, coded and retired, wakeable with instructions:
-    the standalone track (`dev/archive/260730_indicator_track-style_v1.R`) and
-    the zero-to-value bar (`dev/archive/260731_indicator_bar-style_v1.R`)
+    the standalone track (`dev/concepts/indicator/code/260730_indicator_track-style_v1.R`) and
+    the zero-to-value bar (`dev/concepts/indicator/code/260731_indicator_bar-style_v1.R`)
 -   **Files**: `build_indicator_data()` and `generate_indicator_html()` in
     `R/quickmap.R`, `inst/controls/indicator.js`, styles in both
     `inst/legend/legend-interactive.css` and `legend-image.css`
@@ -511,10 +511,10 @@ or labelling fewer features — not raising `label_scale`.
 -   **v0.9.9.7**: default base tiles reverted to OSM (user decision 2026-07-11): the vignette dimming is too faint on the pale CartoDB.Positron tiles that v0.9.9.5 made the default; Positron remains a one-line theme option (`map.base_tiles`)
 -   **v0.9.9.8**: small fixes from the traced API catalogue (dev/260712_api_catalogue_v1.md): non-matching `display_times` now warns naming the available steps; `styling_type` validated against "html"/"none"; roxygen corrected (output_file used verbatim; data_symbols accepts all 18 renderer names)
 
--   **v0.9.9.9**: legend indicator (user-approved 2026-07-29, feasibility study dev/260729_overlays_feasibility.md): the network mean for the displayed step, drawn in the legend as an inline-SVG track with tick marks at the colour scale's thresholds and a pointer in the value's band colour; `build_indicator_data()` aggregates a **fixed panel** (sites reporting in every displayed step) into a single combined mean across layers, returning NULL for anything but an annual map; moves with the time slider via `window.quickmapIndicatorController` (`inst/controls/indicator.js`), hooked above the lazy-path branch so it works on both rendering paths; static exports draw their own step server-side with no script; theme keys `indicator.show` / `indicator.label`; `inst/legend/legend.html` converted from positional `sprintf` to `{{placeholder}}` substitution
+-   **v0.9.9.9**: legend indicator (user-approved 2026-07-29, feasibility study dev/concepts/indicator/260729_overlays_feasibility.md): the network mean for the displayed step, drawn in the legend as an inline-SVG track with tick marks at the colour scale's thresholds and a pointer in the value's band colour; `build_indicator_data()` aggregates a **fixed panel** (sites reporting in every displayed step) into a single combined mean across layers, returning NULL for anything but an annual map; moves with the time slider via `window.quickmapIndicatorController` (`inst/controls/indicator.js`), hooked above the lazy-path branch so it works on both rendering paths; static exports draw their own step server-side with no script; theme keys `indicator.show` / `indicator.label`; `inst/legend/legend.html` converted from positional `sprintf` to `{{placeholder}}` substitution
 
 -   **v0.9.9.10**: animation speed control (agreed 2026-08-05,
-    dev/concepts/260805_animation-speed-control.md, plan
+    dev/concepts/animation-speed-control/260805_animation-speed-control.md, plan
     dev/260805_speed_control_plan.md): a multiplier button in the time-slider
     card cycling and wrapping, default 1×, hidden below 480px, its set chosen
     by step count in R (`speed_multipliers()`: 0.5/1/2/4 for ≤12 steps, the
@@ -687,6 +687,23 @@ wind via ecmwfr (completes the non-uniform wind thread below), saqgetr
 (European AQ observations, openair-compatible), OpenAQ (global AQ platform),
 the Mazama AirMonitor/AirSensor suite (US regulatory + PurpleAir), and
 stars/terra raster underlays (modelled surfaces beneath measured markers).
+
+**Tested ideas, but need more work** (list created 2026-08-07). Things that were
+designed, costed or actually built and then set aside — recorded here so they
+are picked up deliberately rather than reinvented. Each lives in its own folder
+under `dev/concepts/`, with its document, the code that built it and the maps
+that code produced. The index is `dev/concepts/README.md`.
+
+| Idea | Folder | What is left to do |
+|---|---|---|
+| Limit-centred indicator | `dev/concepts/indicator/` | Distance above or below a chosen target rather than position on the scale. Needs a decision on which target sits at the centre |
+| Change-over-time graph | `dev/concepts/trend-graph/` | The open half of the 29 July overlays decision. Overlaps with quickplot's **Trend** figure, so settle which owns it |
+| Thermometer on the map | `dev/concepts/thermometer-overlay/` | A vertical indicator over the map rather than in the legend. Must not draw a second scale |
+| Context polygon layer | `dev/concepts/context-polygon-layer/` | Deprivation or similar under the vignette, labelled 1–10 rather than carrying a second ramp. ~2 days |
+
+Four indicator styles were built and rejected on the way to v0.9.9.9; they and
+their renders are in `dev/concepts/indicator/`, not deleted, so a future
+proposal can be checked against what was already tried.
 
 **Post-1.0: quickplot** (user decision 2026-08-06). Charts and tables that
 borrow QuickMap's page furniture so figures and maps read as one document.

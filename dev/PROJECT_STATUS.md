@@ -878,23 +878,23 @@ All of them, with their demonstration maps, are in one folder with an
 index: `/Users/iarla/Coding/quickmap/dev/concepts/README.md`
 
 -   **Animation speed control** (agreed 2026-08-05, not built):
-    `/Users/iarla/Coding/quickmap/dev/concepts/260805_animation-speed-control.md`
+    `/Users/iarla/Coding/quickmap/dev/concepts/animation-speed-control/260805_animation-speed-control.md`
     — a speed button on the time slider; also changes the default step
     timing (1200ms for annual maps, not 500ms) and makes the colour
     crossfade proportional to the step. About half a day.
 -   **Change-over-time graph** (deferred 2026-07-29):
-    `/Users/iarla/Coding/quickmap/dev/concepts/260729_trend-graph.md`
+    `/Users/iarla/Coding/quickmap/dev/concepts/trend-graph/260729_trend-graph.md`
     — a sparkline of the network mean across the displayed years. The
     open half of the overlays decision; 1.5–2 days now the indicator has
     shipped.
 -   **Limit-centred indicator** (2026-07-30):
-    `/Users/iarla/Coding/quickmap/dev/concepts/260730_limit-centred-indicator.md`
+    `/Users/iarla/Coding/quickmap/dev/concepts/indicator/260730_limit-centred-indicator.md`
     — an indicator measuring distance above or below a chosen target
     (UK 40, WHO 10) instead of position on the scale. Answers the
     question an action plan actually asks. Needs a decision on which
     target sits at the centre.
 -   **Thermometer on the map** (2026-08-01):
-    `/Users/iarla/Coding/quickmap/dev/concepts/260801_thermometer-overlay.md`
+    `/Users/iarla/Coding/quickmap/dev/concepts/thermometer-overlay/260801_thermometer-overlay.md`
     — a vertical indicator overlaid on the map instead of in the legend.
     Feasible, but only if it restates the legend's own bands rather than
     drawing a second scale of its own.
@@ -903,14 +903,14 @@ index: `/Users/iarla/Coding/quickmap/dev/concepts/README.md`
 
 -   **Zero-to-value "bar" indicator style** (retired 2026-07-31 when the
     roundel was chosen):
-    `/Users/iarla/Coding/quickmap/dev/archive/260731_indicator_bar-style_v1.R`
+    `/Users/iarla/Coding/quickmap/dev/concepts/indicator/code/260731_indicator_bar-style_v1.R`
     — a bar above the ramp running from zero to the mean. Not retired for
     being wrong; it lost on readability, because the roundel carries its
     figure at its own position. Named as a possible future feature: if
     magnitude ever needs reading as length rather than position, or if the
     ramp becomes crowded with markers, the bar may read better.
 -   **Standalone "track" indicator style** (v0.9.9.9, retired 2026-07-30):
-    `/Users/iarla/Coding/quickmap/dev/archive/260730_indicator_track-style_v1.R`
+    `/Users/iarla/Coding/quickmap/dev/concepts/indicator/code/260730_indicator_track-style_v1.R`
     — an indicator with its own scale and tick marks. Retired because it
     disagreed geometrically with the legend ramp beside it. The file
     carries the reason, the case that would justify waking it (maps with
