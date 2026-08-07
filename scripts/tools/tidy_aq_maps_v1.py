@@ -29,6 +29,8 @@ CURRENT = {
     "sweep_legends.png",
     "merton_no2_annual_2019_2025.html",
 }
+# What the user approved is never reproducible, so it is kept by shape.
+KEEP_DIR_RE = re.compile(r"^baseline_.*_signed_off$")
 CURRENT |= {f"sweep_{w}.png" for w in (1400, 1100, 900, 760, 620, 500, 390)}
 # the collision rule is live and these are its only demonstration; the script
 # that makes them builds the names dynamically, so the scan below misses them
@@ -37,7 +39,8 @@ CURRENT |= {"indicator_collision_390.png", "indicator_collision_1400.png"}
 # 3. folders kept whole
 KEEP_DIRS = {
     "archived", "prepared", "print_260804",
-    "baseline_260705_signed_off", "baseline_260707_item8_signed_off",
+    # Both named baselines were cleared in August 2026; future ones
+    # match KEEP_DIR_RE below.
 }
 
 
@@ -67,7 +70,7 @@ def main(apply):
     moved, kept = [], []
 
     for name in entries:
-        if name.startswith(".") or name in KEEP_DIRS:
+        if name.startswith(".") or name in KEEP_DIRS or KEEP_DIR_RE.match(name):
             continue
         src = os.path.join(MAPS, name)
         if name in keep:
