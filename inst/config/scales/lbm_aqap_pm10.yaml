@@ -1,0 +1,43 @@
+# LB Merton AQAP PM10 scale (2026-08-05), the companion to lbm_aqap_no2.
+#
+# Same colours and the same conventions as the NO2 scale, on PM10's own
+# thresholds, so the charts read as part of the same document as the maps:
+#
+#   - each band is named for the standard it MEETS, as on the NO2 scale, so
+#     "20-29" is the band that meets WHO interim target 3 (30)
+#   - footnote_symbols off: the pills carry their band's colour, which is the
+#     link back to the ramp
+#
+# Standards, from the workbook's own notes (ASR Table G): WHO guideline 15,
+# WHO interim target 4 at 20, UK objective 40. There is no LB Merton PM10
+# target in the source, so none is invented here — the NO2 scale's "LB Merton
+# target" wording deliberately has no counterpart.
+name: lbm_aqap_pm10
+title: PM10, µg/m³
+pollutant: PM10
+shape: circle
+footnote_symbols: false
+thresholds:
+  - 0
+  - 15
+  - 20
+  - 30
+  - 40
+  - 50
+  - .Inf
+colours:
+  - "blue"
+  - "green"
+  - "yellow"
+  - "orange"
+  - "#FF4500"
+  - "#8B0000"
+  - "white"
+labels:
+  - "< 15: WHO guideline"
+  - "15-19: WHO interim 4"
+  - "20-29: WHO interim 3"
+  - "30-39: UK objective"
+  - "40-49: above UK objective"
+  - "50-60"
+  - "Insufficient data"

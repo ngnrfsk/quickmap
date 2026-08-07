@@ -1,7 +1,7 @@
 # Plan: animation speed control
 
 Date: 2026-08-05. Concept and rationale:
-`/Users/iarla/Coding/quickmap/dev/concepts/260805_animation-speed-control.md`.
+`/Users/iarla/Coding/quickmap/dev/concepts/animation-speed-control/260805_animation-speed-control.md`.
 Estimated half a day plus a visual round. Branch off main.
 
 ## What is being built

@@ -18,8 +18,8 @@ For each period, the authoritative detail lives in:
 - **Item 10 (UI polish):** dev/260708_item10_ui-review-mcqs_v1.md
   (decisions), dev/260709_item10_implementation_plan_v1.md (staged plan),
   PR #35; versions/quickmap_0_9_8_1.R.
-- **Item 8 (examples):** PR #29; scripts/item8_worked-examples_v1.R.
+- **Item 8 (examples):** PR #29; scripts/demos/item8_worked-examples_v1.R.
 - **Version-by-version summary:** CLAUDE.md's Version History list.
 - **Teaching-data incident and restore (2026-07-12/13):** commit
   "Borough-tagged teaching filenames…" on feature/manual-phase2;
-  scripts/manual_data_v3.R header.
+  scripts/manual/manual_data_v3.R header.

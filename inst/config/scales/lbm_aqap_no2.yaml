@@ -44,13 +44,16 @@ colours:
   - "white"
 labels:
   - "< 10: WHO guideline"
-  - "10-19: meets LB Merton target"
-  - "20-29: above LB Merton target"
+  # Kept short to stop the pills wrapping at print size: "over" rather than
+  # "above", and the borough named once as "Merton" rather than "LB Merton".
+  # Both sides of the 20 boundary are still named, which is the point of them.
+  - "10-19: meets Merton 2030 target"
+  - "20-29: over Merton 2030 target"
   # Deliberately neutral, and the same claim lbm_no2 made. "Below UK limit"
   # would be true but reads as reassurance about a band half again above
   # Merton's own target — not a thing to imply in the AQAP itself.
   - "30-39: UK/WHO interim 1"
-  - "40-49: above UK limit"
+  - "40-49: over UK limit"
   - "50-60"
   - "60-70"
   - "70-80"
