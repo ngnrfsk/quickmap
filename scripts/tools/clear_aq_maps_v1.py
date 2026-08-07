@@ -15,25 +15,29 @@ folder, which was the same problem one level down.
 DELETES. Run with --apply; without it, only reports.
 """
 import os
+import re
 import shutil
 import sys
 
 MAPS = "/Users/iarla/Coding/quickmap/aq_maps"
 
 KEEP_DIRS = {
-    "baseline_260705_signed_off",   # signed off 5 July, not reproducible
-    "baseline_260707_item8_signed_off",
+    # Both named baselines were cleared in August 2026. Any future one
+    # is kept by KEEP_RE below rather than by being listed here.
     "print_260804",                 # the shareable Merton set
     "prepared",                     # source data the examples are built from
 }
 KEEP_PREFIX = "example_"            # rebuilt by scripts/demos/examples_current_v1.R
+# What the user approved is never reproducible, so it is kept by shape.
+KEEP_RE = re.compile(r"^baseline_.*_signed_off$")
 
 
 def main(apply):
     freed = 0
     removed = []
     for name in sorted(os.listdir(MAPS)):
-        if name.startswith(".") or name in KEEP_DIRS or name.startswith(KEEP_PREFIX):
+        if (name.startswith(".") or name in KEEP_DIRS
+                or name.startswith(KEEP_PREFIX) or KEEP_RE.match(name)):
             continue
         p = os.path.join(MAPS, name)
         size = sum(
