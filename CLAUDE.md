@@ -621,7 +621,15 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
    verify all documentation (CLAUDE.md, dev docs, vignettes, roxygen) against
    the stabilised code, mark dev docs current vs historical, and restructure
    dev/PROJECT_STATUS.md into a maintained current-state section plus archived
-   history
+   history.
+   **Carried over from the archive clear-out (2026-08-07):** replace the four
+   remaining `sapply()` calls in `R/quickmap.R` with `vapply()`. `sapply()`
+   returns a list or a vector depending on its results, so the type is not
+   guaranteed. The one that matters is in `create_generic_icons()` —
+   `sapply(data[[pollutant]], assign_colour, scale = colour_scale)`, around
+   line 3092 — because every marker colour on every map goes through it. This
+   was the only still-live item in the modern-R options paper that used to sit
+   in `dev/archive/`, deleted on 2026-08-07 once it was recorded here.
 10. UI polish pass (**delivers v0.9.9.5 — the last version before v1.0**) —
     modernise the visual design of the HTML output (banner, legend, controls,
     typography, spacing, colour) to the standard of modern web / infographic
