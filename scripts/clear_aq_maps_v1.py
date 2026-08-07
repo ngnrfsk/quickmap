@@ -4,7 +4,7 @@ aq_maps is a staging area, not a store. Everything in it is output; anything
 worth keeping has a proper home elsewhere in the repository:
 
   the manual's maps        vignettes/maps/
-  concept demonstrations   dev/concepts/examples/
+  concept demonstrations   dev/concepts/indicator/examples/
   what Iarla signed off    the dated baseline folders, kept here
   the current examples     rebuilt by scripts/examples_current_v1.R
 
