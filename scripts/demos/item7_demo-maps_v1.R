@@ -1,5 +1,5 @@
 # Item 7 demonstration maps (wind layer via worldmet + leaflet-velocity).
-# Run from the repo root: Rscript scripts/item7_demo-maps_v1.R
+# Run from the repo root: Rscript scripts/demos/item7_demo-maps_v1.R
 # Needs network for the NOAA fetch (worldmet); outputs land in aq_maps/.
 library(quickmap)
 

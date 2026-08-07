@@ -8,7 +8,7 @@
 #   2. short animation  7 annual steps, Merton NO2
 #   3. static export    the same map as a print-ready JPG
 #
-# Run from the repo root:  Rscript scripts/examples_current_v1.R
+# Run from the repo root:  Rscript scripts/demos/examples_current_v1.R
 
 library(quickmap)
 

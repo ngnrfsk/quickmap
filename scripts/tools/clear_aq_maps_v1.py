@@ -6,7 +6,7 @@ worth keeping has a proper home elsewhere in the repository:
   the manual's maps        vignettes/maps/
   concept demonstrations   dev/concepts/indicator/examples/
   what Iarla signed off    the dated baseline folders, kept here
-  the current examples     rebuilt by scripts/examples_current_v1.R
+  the current examples     rebuilt by scripts/demos/examples_current_v1.R
 
 So this keeps the baselines, the shareable print set, the prepared source
 data and the current examples, and deletes the rest — including the archived/
@@ -26,7 +26,7 @@ KEEP_DIRS = {
     "print_260804",                 # the shareable Merton set
     "prepared",                     # source data the examples are built from
 }
-KEEP_PREFIX = "example_"            # rebuilt by scripts/examples_current_v1.R
+KEEP_PREFIX = "example_"            # rebuilt by scripts/demos/examples_current_v1.R
 
 
 def main(apply):

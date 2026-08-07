@@ -8,7 +8,7 @@
 # (The fixture was restored 2026-07-13 from
 # "241122 quickmap/Raw input files/your_schools_Merton copy.csv" and
 # verified by the characterization suite's 53-school pin.)
-# Run from the repo root: Rscript scripts/manual_data_v3.R
+# Run from the repo root: Rscript scripts/manual/manual_data_v3.R
 dp <- Sys.getenv("DATA_PATH")
 
 mapping <- c(

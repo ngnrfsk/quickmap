@@ -1,5 +1,5 @@
 # Animation speed control (2026-08-05): demonstration maps.
-# Run from the repo root: Rscript scripts/speed_demo-maps_v3.R
+# Run from the repo root: Rscript scripts/demos/speed_demo-maps_v3.R
 #
 # v3: indicator.show_max now defaults to TRUE (user decision 2026-08-05), so
 # maps 1 and 2 show the maximum's diamond beside the mean's roundel without

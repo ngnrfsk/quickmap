@@ -29,7 +29,7 @@ Three groups, and they are not the same case:
 
 **The retired alternatives** (`ramp-variant`, `refinements`) are already duplicated in `dev/archive/`, which CLAUDE.md names as the home for "archived alternatives, coded and retired, wakeable with instructions". Keeping them in `scripts/` as well means two copies of a dead idea.
 
-**The collision demo** is the only thing that demonstrates a live rule that Merton's own data cannot show. `scripts/tidy_aq_maps_v1.py` already special-cases its outputs because the filenames are built dynamically and its scan misses them. Deleting it removes the only way to see that rule work.
+**The collision demo** is the only thing that demonstrates a live rule that Merton's own data cannot show. `scripts/tools/tidy_aq_maps_v1.py` already special-cases its outputs because the filenames are built dynamically and its scan misses them. Deleting it removes the only way to see that rule work.
 
 **The rest** (`demo-maps`, `animations`, `max-and-lead`, `placement`, `titlerow`) are review renders for a merged feature. Their value is regenerating the pictures if the indicator is ever changed again — `titlerow_v5` is the closest thing to a current demo, being the set that was signed off.
 

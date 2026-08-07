@@ -46,7 +46,7 @@ Scope — the migration inventory:
   historical, not a gate). Only tests/test_quickmap.R (the smoke test) must
   keep working; touch others only if trivially broken by nothing more than
   a renamed argument, otherwise leave and list them in the PR as historical
-- A new demo script scripts/item8_worked-examples_v1.R exercising the
+- A new demo script scripts/demos/item8_worked-examples_v1.R exercising the
   quickmap() API end-to-end: two-line map, multi-layer + theme, episode
   animation (lazy path), wind layer — the runnable "documentation of record"
 

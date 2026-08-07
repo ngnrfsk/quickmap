@@ -4,7 +4,7 @@
 # (OpenAir/NOAA fetches): a failure there is reported as a skip, not an
 # error (prospectus §2a). Chunks marked purl=FALSE (install, DATA_PATH
 # setup) are never extracted.
-# Run from the repo root: Rscript scripts/manual_run-chunks_v1.R
+# Run from the repo root: Rscript scripts/manual/manual_run-chunks_v1.R
 library(quickmap)
 
 run_vignette_chunks <- function(rmd) {
