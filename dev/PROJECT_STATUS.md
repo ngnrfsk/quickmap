@@ -289,7 +289,7 @@ canvas until the tab is foregrounded (rAF throttling — browser behaviour,
 not a defect; particles seed within ~2 s once visible). Payload cost is
 small: episode 913,686 → 976,747 B with 108 hourly wind frames.
 
-**Demo maps** (scripts/item7_demo-maps_v1.R, real Heathrow 037720-99999
+**Demo maps** (scripts/demos/item7_demo-maps_v1.R, real Heathrow 037720-99999
 NOAA data): aq_maps/item7_episode-wind_v1.html (lazy path + hourly wind,
 107/108 steps covered), aq_maps/item7_merton-annual-wind_v1.html (legacy
 path + annual-mean wind). Also .claude job tmp item7_episode_wind.html

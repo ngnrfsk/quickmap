@@ -1,5 +1,5 @@
 # Item 8 worked examples: the quickmap() API end-to-end (v0.9.8).
-# Run from the repo root: Rscript scripts/item8_worked-examples_v1.R
+# Run from the repo root: Rscript scripts/demos/item8_worked-examples_v1.R
 # Outputs land in aq_maps/ as item8_*_v1.html for human inspection.
 library(quickmap)
 

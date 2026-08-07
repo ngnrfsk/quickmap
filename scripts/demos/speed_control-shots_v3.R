@@ -1,6 +1,6 @@
 # Animation speed control (2026-08-05): close-ups for review.
-# Run after scripts/speed_demo-maps_v3.R.
-# Rscript scripts/speed_control-shots_v3.R
+# Run after scripts/demos/speed_demo-maps_v3.R.
+# Rscript scripts/demos/speed_control-shots_v3.R
 #
 # v3: legend shots follow the new show_max default.
 # v2: the short set (0.5/1/2/4) on the 7-step map, the full set on the

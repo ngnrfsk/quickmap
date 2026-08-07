@@ -57,7 +57,7 @@ Check:
 
 - `_pkgdown.yml` — site structure; note the hidden `internal` reference
   section (11 helpers missing `@keywords internal`, deferred to item 9).
-- `scripts/manual_run-chunks_v1.R` — runs every code example in the manual
+- `scripts/manual/manual_run-chunks_v1.R` — runs every code example in the manual
   against DATA_PATH; network examples skip offline. Already run: ALL OK.
 - `scripts/manual_screenshots_v1.R` — regenerates the screenshots.
 - `.gitignore` / `DESCRIPTION` — docs/ ignored; figures un-ignored;
