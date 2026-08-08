@@ -36,11 +36,18 @@ manual built as a website with live example maps.
    scale, the banner's reference-layer key, and value labels reading µg/m³.
    Needs a rewrite pass before v1.0.
 
-3. **The Merton AQAP print pack needs regenerating.** The seven images in
-   `/Users/iarla/Coding/quickmap/aq_maps/print_aqap_260805/` were made
-   before the pill wording changed to "meets / over Merton 2030 target".
-   About four minutes to rebuild with
-   `Rscript scripts/clients/merton_print-set_v5.R`.
+3. **The Merton AQAP print pack is unfinished.** Two things:
+   - The four approved images live ONLY in
+     `/Users/iarla/Coding/quickmap/aq_maps/` as
+     `merton_no2_nobg_2019.jpg`, `merton_no2_nobg_2025.jpg`,
+     `merton_no2_nolabels_2019.jpg`, `merton_no2_nolabels_2025.jpg`.
+     `aq_maps/` is gitignored, so there is no second copy anywhere, and
+     they cover 2019 and 2025 only.
+   - `scripts/clients/merton_print-set_v6.R` (PR #47) can rebuild them
+     and the missing 2020-2024 in either variant, but has NOT been run
+     for the full seven years. The old seven-image pack in
+     `aq_maps/print_aqap_260805/` is still there, still carrying the old
+     pill wording, and was NOT deleted.
 
 *(The manual, PR #37, and the legend indicator, PR #38, were both merged
 on 5 August; the animation speed control, PR #42, on 6 August.)*
