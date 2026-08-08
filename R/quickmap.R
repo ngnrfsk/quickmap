@@ -1582,6 +1582,19 @@ trim_colour_scale <- function(legend_scale, data_max = NULL) {
   legend_scale
 }
 
+#' Build the external legend
+#'
+#' The colour ramp, its band labels, the key pills and — on an annual map —
+#' the network figures. Generated from the scale's YAML, so the legend and the
+#' markers cannot disagree about what a colour means.
+#'
+#' @param scale_name Name of the colour scale.
+#' @param collapsed_mobile Start collapsed below 480px.
+#' @param data_max Trim the ramp to the data's maximum; NULL keeps every band.
+#' @param indicator_html,indicator_bar Pre-rendered indicator figures.
+#' @param indicator_placement "right", "title_row" or "under_title".
+#' @return HTML string.
+#' @keywords internal
 generate_legend_html <- function(
   scale_name,
   collapsed_mobile = TRUE,

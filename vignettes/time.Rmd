@@ -23,9 +23,8 @@ quickmap(
              "pm25", name = "Sensors"),
   boroughs     = c("Wandsworth", "Richmond"),
   colour_scale = "stripes_pm25",
-  autoplay     = TRUE,                     # play on open
-  play_speed   = 500                       # milliseconds per step
-)
+  autoplay     = TRUE                      # play on open
+)                                          # pace follows the step count
 ```
 
 <iframe src="maps/getstarted-episode.html" width="100%" height="480" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="108 hourly steps on the time slider"></iframe>
@@ -53,13 +52,43 @@ quickmap(
 One selected step means no slider — a still map (that's how the static
 export chooses its frame: [Get started](quickmap.html) step 6).
 
-## 2. Autoplay
+## 2. Autoplay and pace
 
 `autoplay = TRUE` starts the animation when the map opens —
 right for a public page; leave it off for a map people study.
-`play_speed` is milliseconds per step (500 = two steps a second).
 
-## 3. How big can an animation get?
+`play_speed` is milliseconds per step. **You rarely need to set it.**
+Left alone, the pace follows how many steps there are:
+
+| Steps | Default pace |
+|---|---|
+| 12 or fewer (a run of years) | 1200 ms |
+| 13 to 60 (months) | 800 ms |
+| more than 60 (days, hours) | 450 ms |
+
+A seven-year map at 1200 ms leaves nearly a second still on each year —
+long enough to read the label and scan the symbols. A 108-step episode
+would be tedious at that pace, so it runs faster.
+
+## 3. The speed button
+
+Whatever pace you choose, the reader can change it. The card carries a
+button showing a multiplier — press it to cycle, and playback changes at
+once:
+
+- **Short animations** (12 steps or fewer) offer 0.5×, 1×, 2×, 4×.
+- **Longer ones** also offer 0.25× and 8×, because there is more to
+  fast-forward through.
+
+It opens at 1×, so `play_speed` is always the pace the reader first
+sees. On a screen narrower than 480px the button is hidden and the
+theme's pace stands.
+
+The colour fade between steps scales with the interval — 40% of it, up
+to a quarter-second — so the map does not smear at 8× or crawl at
+0.25×. Nothing to configure.
+
+## 4. How big can an animation get?
 
 - **Up to 200 steps** per map: beyond that QuickMap warns and keeps the
   most recent 200.
@@ -75,3 +104,5 @@ right for a public page; leave it off for a map people study.
 - [Get started](quickmap.html) Part 2 — the animation build-up.
 - [Wind](wind.html) — a wind overlay that advances with the slider.
 - [Your data](your-data.html) — how time columns are recognised.
+- [Styling and themes](styling.html) — the mean and maximum figures
+  on the legend, which move with the slider.

@@ -83,9 +83,52 @@ Per layer, by its columns (duck typing):
 - Mixed maps mix naturally: in the example above the tubes show their
   labels and the schools their names, each layer from its own column.
 
+Because the choice is made per layer, one setting can do two jobs.
+`marker_labels = "values_on"` on a map of tubes *and* schools gives every
+tube its value and every school its name — even if the tube file also has
+a `Label` column, since a `School` column always wins. Values read
+`28 µg/m³`.
+
+## 5. Size and background
+
+Labels are the smallest text on a map, matched to the smallest text in
+the legend, and they scale with a static export automatically — a
+4000-pixel image gets 4000-pixel-sized labels without being asked.
+
+Two theme keys adjust them:
+
+```yaml
+map:
+  label_scale: 1           # multiplier: 2 is twice the legend's small text
+  label_background: true   # the translucent plate behind each label
+```
+
+`label_background: false` removes the plate, leaving the text alone on
+the map. The plate buys legibility over busy tiles and costs clutter
+where labels are dense — worth turning off on a print map.
+
+`label_scale` is a trade, not a free win: bigger labels collide sooner.
+On a crowded borough map, labels twice this size begin to overlap in the
+built-up centre, and much beyond that they cover the map. If you need
+larger text on paper, print the image bigger before raising this — the
+same file across A3 is twice the point size for nothing.
+
+## 6. Reference layers get a key, not labels
+
+A layer with no values — schools are the usual case — has no place on
+the colour ramp, so its symbol is explained in the banner instead. Where
+such a layer has a `Level` column, its categories appear at the end of
+the banner as small marks in their own colours ("✕ Primary ✕ Secondary").
+
+That key is what lets the map labels drop the words every school shares.
+"Abbotsbury Primary School" can be labelled "Abbotsbury" once the banner
+has said what a blue cross means.
+
 ## See also
 
 - [Get started](quickmap.html) step 8 — labels in the build-up.
 - [Your data](your-data.html) — where `Label` and `School` columns fit
   in each input format.
 - `?quickmap` — the `marker_labels` parameter.
+- [Sharing and export](sharing.html) — sizing labels for the printed
+  page.

@@ -46,14 +46,33 @@ quickmap(
 ![The exported JPG, 1200×900](maps/getstarted-export.jpg)
 
 - `export_image = TRUE` uses the default 1200×1200.
-- Text, legend and symbols scale with the image size — a 2400px poster
-  export is as legible as a 700px thumbnail.
+- Text, legend, symbols and marker labels all scale with the image size —
+  a 2400px poster export is as legible as a 700px thumbnail.
 - Several selected time steps produce one JPG per step.
 - The interactive HTML is written as well — the JPG is an extra, not a
   replacement. Wind overlays are omitted from stills.
+
+## 4. Sizing for the printed page
+
+A big export is not automatically a legible one: what matters is how wide
+the image is *printed*, not how many pixels it has. A 4000-pixel image
+across 190 mm of A4 is about 21 pixels per millimetre, so the map's small
+text lands near 7 point — readable, but no more.
+
+Two ways to get bigger text on paper, in order of preference:
+
+1. **Print the image larger.** Nothing in the file changes. The same
+   export across A3 is twice the point size.
+2. **Label fewer things.** `marker_labels = FALSE` with the values in a
+   table beside the map, or labels on one layer only.
+
+Raising `map: label_scale:` is the last resort — see
+[Labels](labels.html) for why bigger labels collide.
 
 ## See also
 
 - [Get started](quickmap.html) step 6 — export in the build-up.
 - [Time and animation](time.html) — the compact format that keeps
   animations email-sized.
+- [Labels](labels.html) — label size, the plate behind them, and the
+  banner key for reference layers.
