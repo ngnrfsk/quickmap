@@ -6,65 +6,171 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-08-05 **Current Version**: v0.9.9.10
+**Last Updated**: 2026-08-12 **Current Version**: v0.9.9.11
 
 --------------------------------------------------------------------------------
 
 ## Where the project stands
 
-QuickMap is at v0.9.9.10, close to v1.0. Working and signed off: the new
-map look (white title strip, colour-ramp legend, draggable time slider,
-playback speed button), optional borough boundaries, per-layer symbol
-choice, the wind overlay, the network mean and maximum shown on the
-legend, small email-able animations, and a complete ten-chapter user
-manual built as a website with live example maps.
+QuickMap is at v0.9.9.11, close to v1.0. Working and signed off: the map
+look (title strip or colour bar, colour-ramp legend, draggable time
+slider, playback speed button), optional borough boundaries, per-layer
+symbol choice, the wind overlay, the network mean and maximum on the
+legend, small email-able animations, and an eleven-chapter user manual
+built as a website with live example maps.
 
-**Waiting on Iarla:**
+Two things now sit beside the package: **quickplot**, three figure types
+that borrow the maps' page furniture, in `quickplot/`; and the **LB
+Merton AQAP** client job, in `scripts/clients/`.
 
-1. Review and merge two open PRs.
-   - **#45** https://github.com/ngnrfsk/quickmap/pull/45 — the quickplot
-     figures (Heatmap, Trend, Exceedance) plus the tidy-up of `scripts/`,
-     `dev/concepts/` and `dev/archive/`.
-   - **#43** https://github.com/ngnrfsk/quickmap/pull/43 — documentation
-     fixes to baseline references. Docs only.
+--------------------------------------------------------------------------------
 
-2. **The manual is out of date** (noticed 7 August). Its eleven chapters in
-   `/Users/iarla/Coding/quickmap/vignettes/` were written before 5 August
-   and mention none of what shipped since: the playback speed button, the
-   step-count default pace, `indicator.show_max` now defaulting on,
-   `map.label_scale`, `map.label_background`, `footnote_symbols` on a colour
-   scale, the banner's reference-layer key, and value labels reading µg/m³.
-   Needs a rewrite pass before v1.0.
+## RESUME HERE — outstanding actions
 
-3. **The Merton AQAP print pack is unfinished.** Two things:
-   - The four approved images live ONLY in
-     `/Users/iarla/Coding/quickmap/aq_maps/` as
-     `merton_no2_nobg_2019.jpg`, `merton_no2_nobg_2025.jpg`,
-     `merton_no2_nolabels_2019.jpg`, `merton_no2_nolabels_2025.jpg`.
-     `aq_maps/` is gitignored, so there is no second copy anywhere, and
-     they cover 2019 and 2025 only.
-   - `scripts/clients/merton_print-set_v6.R` (PR #47) can rebuild them
-     and the missing 2020-2024 in either variant, but has NOT been run
-     for the full seven years. The old seven-image pack in
-     `aq_maps/print_aqap_260805/` is still there, still carrying the old
-     pill wording, and was NOT deleted.
+Everything below is either waiting on Iarla or ready to be picked up. The
+repository is clean, `main` is at `b328412`, and the test suite is green
+(487 pass, 1 skipped — that skip is a browser test that only runs when
+`NOT_CRAN` is set).
 
-*(The manual, PR #37, and the legend indicator, PR #38, were both merged
-on 5 August; the animation speed control, PR #42, on 6 August.)*
+### A. Waiting on Iarla — decisions or review
 
-*(Decided 13 July: `marker_labels` will be renamed to `symbol_labels`
-with the old name kept working — happens in the final tidy-up,
-roadmap item 9.)*
+- [ ] **A1. Read the manual and say whether it is right.**
+      file:///Users/iarla/Coding/quickmap/docs/index.html
+      Four chapters changed on 9 August: Time and animation, Styling and
+      themes, Labels, Sharing and export. The legend's mean and maximum
+      figures had never been documented at all. PR #48.
+- [ ] **A2. Review PR #47** — `scripts/clients/merton_print-set_v6.R`,
+      which renders the AQAP print set in three label variants.
+      https://github.com/ngnrfsk/quickmap/pull/47
+- [ ] **A3. Decide when the manual rewrite finishes.** Roadmap item 9
+      renames `marker_labels` to `symbol_labels`. Doing the manual before
+      item 9 means documenting the parameter twice.
+- [ ] **A4. Back up four irreplaceable images.** See C1 — they exist in
+      exactly one place and are not in git.
 
-**Left before v1.0:** the final code tidy-up (roadmap item 9: make the
-package pass R's formal check, five known small issues listed in
-dev/260708_item9_check-baseline_v1.md) and the known screen-defect list
-(roadmap item 11, below), which now includes stopping maps from burning
-CPU when they're in a background tab.
+### B. Ready to run, no decision needed
+
+- [ ] **B1. Merge PR #48** (manual) and **PR #47** (print set v6) once
+      reviewed. Iarla merges; the agent never merges its own PRs.
+- [ ] **B2. Run the print set for all seven years**, both chosen
+      variants:
+      `Rscript scripts/clients/merton_print-set_v6.R nobg` then
+      `... nolabels`. About eight minutes for the pair. Writes to
+      `aq_maps/print_aqap_260808/`.
+- [ ] **B3. Delete the superseded pack** `aq_maps/print_aqap_260805/`
+      once B2 has produced a set that has been looked at. Not before —
+      `aq_maps/` is gitignored, so deletion is permanent.
+
+### C. Known risks
+
+- [ ] **C1. Four approved AQAP images exist in one place only.**
+      `/Users/iarla/Coding/quickmap/aq_maps/merton_no2_nobg_2019.jpg`,
+      `merton_no2_nobg_2025.jpg`, `merton_no2_nolabels_2019.jpg`,
+      `merton_no2_nolabels_2025.jpg`. `aq_maps/` is gitignored. They
+      cover 2019 and 2025 only. The 2025 pair was rebuilt on 8 August
+      after a smoke test overwrote the originals; v6 now renders under a
+      `build_` name so that cannot recur.
+- [ ] **C2. There is no signed-off baseline folder.** Both were cleared
+      on 5–6 August at Iarla's request. CLAUDE.md's rule — never leave
+      the human with only the new set — has nothing to compare against,
+      so the next roadmap item must create its own before regenerating.
+
+### D. The last two roadmap items before v1.0
+
+- [ ] **D1. Item 9 — CRAN compliance and the consistency audit.**
+      `R CMD CHECK` clean; five known issues in
+      `dev/260708_item9_check-baseline_v1.md`; rename `marker_labels` to
+      `symbol_labels` keeping the old name working; replace the four
+      remaining `sapply()` calls with `vapply()` (the one in
+      `create_generic_icons()` colours every marker on every map).
+- [ ] **D2. Item 11 — the UI defect list.** LCA visual fixes,
+      static-export subfolder generation, ward/marker label consistency,
+      and the background CPU defect (maps must pause all animation when
+      hidden). The "unified marker/text/legend scaling" part was done
+      early on 5 August because the AQAP print set needed it.
+
+### E. Post-1.0, recorded so they are not reinvented
+
+- **quickplot** gets its own repo once there is a second job needing it.
+  `quickplot/README.md` names the three functions and what a fork takes.
+- **Tested ideas, but need more work** — four ideas with their code and
+  renders under `dev/concepts/`, indexed by `dev/concepts/README.md` and
+  listed in CLAUDE.md.
+- **Ecosystem integrations** and **non-uniform wind** — see CLAUDE.md.
 
 --------------------------------------------------------------------------------
 
 ## Recent work, newest first
+
+### 9 August — Manual brought up to date (PR #48, awaiting review)
+
+The eleven chapters predated 5 August and documented none of what had
+shipped after it. Four now do: Time and animation (the pace follows the
+step count; the speed button), Styling and themes (the mean and maximum
+figures on the legend, which had never been written up at all,
+`footnote_symbols`, the two AQAP scales), Labels (`label_scale`,
+`label_background`, the banner key) and Sharing and export (sizing for
+the printed page). Get started gained a line on the speed button.
+
+Found and fixed on the way: `generate_legend_html()` had lost its
+documentation block — a single `@keywords internal` line deleted on
+6 August as a stray — and without it the manual website would not build
+at all.
+
+Read it at file:///Users/iarla/Coding/quickmap/docs/index.html.
+
+### 8 August — Print set v6, three label variants (PR #47, not yet run)
+
+The AQAP pack uses two label variants that had been rendered by
+throwaway scripts and then chosen, leaving the deliverable with no
+script behind it. `scripts/clients/merton_print-set_v6.R` now renders
+`nobg`, `nolabels` or `plate`, one per run or all three.
+
+**Two approved images were destroyed during this work.** A smoke test
+rendered straight to the delivered filenames and overwrote the 2025
+pair; they were rebuilt with the corrected pill wording, but the
+6 August originals are gone. v6 now renders under a `build_` name and
+takes the final name only on the move.
+
+### 7 August — Repository tidy-up (merged, PR #45)
+
+`scripts/` went from 42 files to 14 and split into `clients/`, `demos/`,
+`manual/` and `tools/`. Superseded versions and demos for merged roadmap
+items were deleted; git keeps them.
+
+`dev/concepts/` became one folder per idea, each holding its document,
+its `code/` and its `examples/`, indexed by `dev/concepts/README.md` and
+listed in CLAUDE.md as "Tested ideas, but need more work". The eight
+indicator design scripts moved there.
+
+`dev/archive/` went from 66 files to 16: thirteen throwaway test scripts
+and thirty-seven superseded planning documents deleted, after a
+mechanical triage and a headings digest. What survives is OpenAir
+reference material and the reasoning behind live behaviour.
+`dev/archive/README.md` says what the folder now is.
+
+The one live item in the deleted modern-R options paper — replace the
+remaining `sapply()` calls with `vapply()` — was written into roadmap
+item 9 before the file went.
+
+### 6 August — quickplot begins (merged, PR #45)
+
+Three figure types that share the maps' banner, legend and colour
+scales, so figures and maps read as one document: **Heatmap** (a
+colour-coded table, site by year), **Trend** (a time series over the
+colour ramp as background bands) and **Exceedance** (counts against a
+permitted allowance). Prototypes in `quickplot/`, excluded from the
+package build.
+
+Not part of QuickMap, which is a mapping tool. The repo was briefly
+renamed `quickplot` and reverted the same day: the repo name should
+match the package being published until 1.0 ships.
+
+A bug worth remembering: `assign_colour()` returns R colour *names* for
+the low bands, and R and CSS disagree — R's `green` is `#00FF00`, CSS's
+is `#008000`. Dropped straight into a style attribute the table's cells
+rendered dark while its legend rendered bright.
+
 
 ### 5 August — Animation speed control SIGNED OFF by Iarla, ready to merge
 
