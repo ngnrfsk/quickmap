@@ -19,8 +19,9 @@ fake_spatial <- function(levels = c("Primary", "Secondary")) {
 test_that("a static layer with a Level column produces a key", {
   key <- quickmap:::build_banner_key(fake_layers(), fake_spatial())
   expect_equal(key$shape, "simple-cross")
+  # displayed wording comes from the scale's labels, not the raw domain values
   expect_equal(unname(vapply(key$items, function(i) i$label, "")),
-               c("Primary", "Secondary"))
+               c("Primary School", "Secondary School"))
   # colours come from the schools scale, so key and map agree
   scale <- quickmap:::load_yaml_config("schools", subdirectory = "scales")
   expect_equal(unname(vapply(key$items, function(i) i$colour, "")),
@@ -30,7 +31,7 @@ test_that("a static layer with a Level column produces a key", {
 test_that("only the categories actually present are listed", {
   key <- quickmap:::build_banner_key(fake_layers(), fake_spatial("Primary"))
   expect_equal(length(key$items), 1)
-  expect_equal(key$items[[1]]$label, "Primary")
+  expect_equal(key$items[[1]]$label, "Primary School")
 })
 
 test_that("no key without a qualifying layer", {
