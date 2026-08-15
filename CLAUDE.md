@@ -704,8 +704,9 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
     internal function (`bl_request()`); 28 fixture-test assertions pass.
     On the saved Merton hourly data (69 sites, 345 site-years) the 75%
     capture rule yields NA for 117 site-years, including every raw annual
-    mean above 60 µg/m³ (all from under 9% capture). Surviving site-years
-    differ from the published annualised values by up to 16.5 µg/m³ —
+    mean above 60 µg/m³ (all from under 9% capture). Site-years meeting
+    the threshold differ from the published annualised values by up to
+    16.5 µg/m³ —
     unexplained; check before republication (scheduled into the Step 4
     demo comparison). Remaining: live probes with the key (site-code
     scheme, pagination, field types), and Step 4 attribution in the map
