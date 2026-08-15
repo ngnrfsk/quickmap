@@ -4,7 +4,13 @@
 \alias{convert_openair_to_spatial}
 \title{Convert OpenAir data to spatial sf object}
 \usage{
-convert_openair_to_spatial(data, source = NULL, pollutant, avg.time = "year")
+convert_openair_to_spatial(
+  data,
+  source = NULL,
+  pollutant,
+  avg.time = "year",
+  data_capture = 0.75
+)
 }
 \arguments{
 \item{data}{data.frame. OpenAir data with date, site identifier, and pollutant columns.
@@ -19,6 +25,12 @@ Required only if data lacks latitude/longitude columns.}
 
 \item{avg.time}{Character. Temporal aggregation period: "year" (default),
 "month", "day", "hour". Passed to dplyr grouping.}
+
+\item{data_capture}{Numeric. Minimum fraction of a period's expected
+observations that must carry a value for its mean to exist; sparser
+site-periods yield NA instead of an average of whatever was measured.
+Expected counts come from the calendar and the data's own time step.
+Default 0.75; 0 reproduces the pre-v0.9.9.12 behaviour.}
 }
 \value{
 sf object with columns: siteCode, year, year_str, pollutant value,

@@ -685,8 +685,7 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
     was replaced in June 2025 (new gateway, `X-API-KEY` header,
     `/ListSensors` + `/SensorData` with query parameters, hourly-only,
     366-day window), and every existing fetch function — all outside this
-    repo — targets the dead old one. A new source file `breathe_london.R`
-    under `R/` provides:
+    repo — targets the dead old one. `R/breathe_london.R` provides:
     `bl_sensors()`, `bl_data()` (key parameter defaulting to
     `Sys.getenv("BREATHE_LONDON_KEY")`, requests chunked to the window,
     retry with backoff) and `from_breathelondon()` returning a `qm_layer`,

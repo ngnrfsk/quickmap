@@ -19,9 +19,7 @@ claude_text <- paste(claude_md, collapse = "\n")
 # Functions named in the roadmap that are designed but not yet implemented
 planned_functions <- c(
   "quickmap", "from_csv", "from_rdata", "from_openair", "from_worldmet",
-  "from_yaml",
-  # roadmap item 12 (dev/260815_bl_fetch_plan.md), not yet implemented
-  "bl_sensors", "bl_data", "from_breathelondon"
+  "from_yaml"
 )
 
 # Functions cited from other packages (not expected in R/quickmap.R or base R)

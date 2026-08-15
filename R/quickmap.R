@@ -218,6 +218,11 @@ clear_openair_metadata_cache <- function(source = NULL) {
 #' @param pollutant Character. Pollutant column name (e.g., "no2", "pm2.5").
 #' @param avg.time Character. Temporal aggregation period: "year" (default),
 #'   "month", "day", "hour". Passed to dplyr grouping.
+#' @param data_capture Numeric. Minimum fraction of a period's expected
+#'   observations that must carry a value for its mean to exist; sparser
+#'   site-periods yield NA instead of an average of whatever was measured.
+#'   Expected counts come from the calendar and the data's own time step.
+#'   Default 0.75; 0 reproduces the pre-v0.9.9.12 behaviour.
 #' @return sf object with columns: siteCode, year, year_str, pollutant value,
 #'   lat, lon, Longitude, Latitude, geometry. Compatible with process_oa_data() output.
 #' @family openair
@@ -236,7 +241,8 @@ convert_openair_to_spatial <- function(
   data,
   source = NULL,
   pollutant,
-  avg.time = "year"
+  avg.time = "year",
+  data_capture = 0.75
 ) {
   # -- Input checks: column names differ between OpenAir and quickmap, so
   # both spellings are accepted rather than made the user's problem ---------
@@ -346,7 +352,24 @@ convert_openair_to_spatial <- function(
   # `year_str` is the string the time control displays and the rest of the
   # pipeline groups by; its format is what distinguishes an annual map from a
   # monthly, daily or hourly one.
-  # Temporal aggregation using dplyr (preserves grouping columns)
+  # A mean exists only where at least `data_capture` of the period's expected
+  # observations carry a value. Expected counts are calendar seconds divided
+  # by the data's own median time step, so hours absent from the data
+  # entirely count against capture, not just NA rows.
+  steps <- diff(sort(unique(data$date)))
+  units(steps) <- "secs"
+  step_secs <- if (length(steps)) stats::median(as.numeric(steps)) else NA
+  capped_mean <- function(values, period_secs) {
+    if (!is.na(step_secs) && data_capture > 0 &&
+          sum(!is.na(values)) / (period_secs / step_secs) < data_capture) {
+      return(NA_real_)
+    }
+    mean(values, na.rm = TRUE)
+  }
+  year_secs <- function(year) {
+    (365 + lubridate::leap_year(year)) * 86400
+  }
+
   if (avg.time == "year") {
     # Annual aggregation
     data$year <- as.integer(format(data$date, "%Y"))
@@ -355,7 +378,8 @@ convert_openair_to_spatial <- function(
     aggregated <- data |>
       group_by(siteCode, year) |>
       summarise(
-        !!sym(pollutant) := mean(!!sym(pollutant), na.rm = TRUE),
+        !!sym(pollutant) := capped_mean(!!sym(pollutant),
+                                        year_secs(year[1])),
         latitude = first(latitude),
         longitude = first(longitude),
         year_str = first(year_str),
@@ -382,10 +406,17 @@ convert_openair_to_spatial <- function(
       "hour" = data$date
     )
 
+    period_secs <- switch(
+      avg.time,
+      "month" = function(p) lubridate::days_in_month(p) * 86400,
+      "day" = function(p) 86400,
+      "hour" = function(p) 3600
+    )
     aggregated <- data |>
       group_by(siteCode, period, year, year_str) |>
       summarise(
-        !!sym(pollutant) := mean(!!sym(pollutant), na.rm = TRUE),
+        !!sym(pollutant) := capped_mean(!!sym(pollutant),
+                                        period_secs(period[1])),
         latitude = first(latitude),
         longitude = first(longitude),
         .groups = "drop"
