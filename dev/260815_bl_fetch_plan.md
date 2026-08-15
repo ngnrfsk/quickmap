@@ -94,6 +94,15 @@ approval before starting Part B.
   `A01_startup_250417`): record alive/dead in the dev doc. Either way, no
   legacy code path is built; saved Rdata files remain the historical-data
   source.
+  **RESULT (2026-08-15): the old API is dead.**
+  `https://api.breathelondon.org/api/ListSensors` returns **403 Forbidden**
+  with the old key, with a bad key, and with no key — the service is closed,
+  not key-revoked. The new gateway
+  (`https://breathe-london-7x54d7qf.ew.gateway.dev/ListSensors`) returns
+  **401 Unauthorized** without a key — alive and awaiting a valid
+  `X-API-KEY`. Consequences: the saved Rdata files are the only route to
+  historical BL data until a new key arrives, and no legacy code path is
+  worth even a probe wrapper.
 - User registers for a new API key via breathelondon.org/developers
   (GLA approval required — the live steps below wait on this).
 - With the key: probe `/ListSensors?Borough=Merton` and one `/SensorData`
