@@ -13,6 +13,14 @@
 BL_BASE_URL <- "https://breathe-london-7x54d7qf.ew.gateway.dev"
 BL_MAX_WINDOW_DAYS <- 365  # documented limit is "shorter than 366 days"
 
+# Required by the API terms of use (effective 23 June 2025): published
+# outputs carrying this data must state the source and link to it. Carried
+# on the layer, so any map showing the layer prints it.
+BL_ATTRIBUTION <- paste0(
+  "Contains Breathe London data licensed under the Open Government ",
+  "Licence v3.0 (breathelondon.org)"
+)
+
 bl_check_deps <- function() {
   for (pkg in c("httr", "jsonlite")) {
     if (!requireNamespace(pkg, quietly = TRUE)) {
@@ -330,5 +338,6 @@ from_breathelondon <- function(borough = NULL, site = NULL, start, end,
          period, ". Widen the period or lower data_capture.", call. = FALSE)
   }
   qm_layer(means, value_col = pollutant, time_col = "period",
-           shape = "diamond", name = name)
+           shape = "diamond", name = name,
+           attribution = BL_ATTRIBUTION)
 }

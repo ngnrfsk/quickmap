@@ -10,7 +10,8 @@ qm_layer(
   time_col = NULL,
   label_col = NULL,
   shape = NULL,
-  name = "layer"
+  name = "layer",
+  attribution = NULL
 )
 }
 \arguments{
@@ -36,6 +37,11 @@ for static layers, cycling in layer order). A map-level \code{data_symbols}
 argument to \code{\link[=quickmap]{quickmap()}} overrides this.}
 
 \item{name}{Human-visible layer name (legends, controls, errors)}
+
+\item{attribution}{Source credit this layer's licence requires, e.g.
+"Contains Breathe London data licensed under the Open Government
+Licence v3.0". Printed once beneath the legend on any map carrying the
+layer; NULL (default) for data with no such condition.}
 }
 \value{
 The data as a \code{qm_layer} (still an sf data.frame)

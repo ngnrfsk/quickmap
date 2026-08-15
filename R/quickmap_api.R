@@ -184,9 +184,16 @@ quickmap <- function(
     if (any(!is.na(meta_shapes))) data_symbols <- meta_shapes
   }
 
+  # Licence credits travel with the layers that require them, so a map
+  # cannot show the data without its attribution.
+  attributions <- unique(unlist(lapply(qm_layers, function(l) {
+    qm_meta(l)$attribution
+  })))
+
   render_pollution_map(
     data_sources = legacy,
     data_ids = ids,
+    attributions = attributions,
     data_symbols = data_symbols,
     output_file = output_file,
     export_image = export_image,

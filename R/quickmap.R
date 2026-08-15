@@ -1619,7 +1619,8 @@ generate_legend_html <- function(
   data_max = NULL,
   indicator_html = "",
   indicator_bar = "",
-  indicator_placement = "right"
+  indicator_placement = "right",
+  attributions = NULL
 ) {
   legend_scale <- load_colour_scale(scale_name)
 
@@ -1726,10 +1727,24 @@ generate_legend_html <- function(
   # they differ only in whether that column runs across or down.
   in_lead <- indicator_placement %in% c("title_row", "under_title")
 
+  # Source credits sit under the legend content, inside the collapsible
+  # body: a licence line belongs with the data it describes, and hiding it
+  # with the legend keeps a phone screen usable without losing it.
+  attribution_html <- if (length(attributions)) {
+    paste0(
+      '<div class="legend-attribution">',
+      paste(htmltools::htmlEscape(attributions), collapse = "<br>"),
+      "</div>"
+    )
+  } else {
+    ""
+  }
+
   apply_template_replacements(
     html_template,
     list(
       "{{legend_title}}" = legend_scale$title,
+      "{{legend_attribution}}" = attribution_html,
       "{{legend_items}}" = legend_items_html,
       "{{legend_key}}" = symbol_key_html,
       "{{legend_lead_class}}" = if (identical(indicator_placement, "title_row"))
@@ -2404,7 +2419,8 @@ finalize_and_save_map <- function(
   indicator_label = NULL,
   indicator_show_max = FALSE,
   indicator_placement = "right",
-  banner_key = NULL
+  banner_key = NULL,
+  attributions = NULL
 ) {
   map <- add_map_controls(
     map,
@@ -2439,7 +2455,8 @@ finalize_and_save_map <- function(
     indicator_label,
     indicator_show_max,
     indicator_placement,
-    banner_key
+    banner_key,
+    attributions
   )
 
   if (!is.null(image_dimensions)) {
@@ -2489,7 +2506,8 @@ save_html_and_style <- function(
   indicator_label = NULL,
   indicator_show_max = FALSE,
   indicator_placement = "right",
-  banner_key = NULL
+  banner_key = NULL,
+  attributions = NULL
 ) {
   htmlwidgets::saveWidget(
     map,
@@ -2516,7 +2534,8 @@ save_html_and_style <- function(
       indicator_label = indicator_label,
       indicator_show_max = indicator_show_max,
       indicator_placement = indicator_placement,
-      banner_key = banner_key
+      banner_key = banner_key,
+      attributions = attributions
     )
   }
 
@@ -2863,7 +2882,8 @@ inject_banner_legend_controls <- function(
   indicator_label = NULL,
   indicator_show_max = FALSE,
   indicator_placement = "right",
-  banner_key = NULL
+  banner_key = NULL,
+  attributions = NULL
 ) {
   if (!file.exists(html_file)) {
     stop("HTML file not found: ", html_file)
@@ -2957,7 +2977,7 @@ inject_banner_legend_controls <- function(
 
   legend_html <- generate_legend_html(
     scale_name, collapsed_mobile, data_max, indicator_html, indicator_bar,
-    indicator_placement
+    indicator_placement, attributions
   )
 
   combined_html <- paste0(time_control_html, "\n", legend_html)
@@ -3925,6 +3945,8 @@ determine_times_and_viewport <- function(
 #'   "triangle", "star", "plus" and every renderer symbol name (18 in all;
 #'   an unknown name errors with the full list).
 #' @param data_dynamic Logical vector indicating temporal (TRUE) vs static (FALSE) layers (default: NULL, auto-detected).
+#' @param attributions Character vector of source credits to print beneath
+#'   the legend, collected from the layers' `attribution` metadata.
 #' @param output_file Output file name, used verbatim (include the .html
 #'   extension). Saved to the 'aq_maps/' directory; NULL returns the widget
 #'   without writing a file.
@@ -3995,6 +4017,7 @@ render_pollution_map <- function(
   data_ids = NULL,
   data_symbols = NULL,
   data_dynamic = NULL,
+  attributions = NULL,
   output_file = "pollution_map.html",
   export_image = NULL,
   boroughs = NULL,
@@ -4233,7 +4256,8 @@ render_pollution_map <- function(
         indicator_label,
         indicator_show_max,
         indicator_placement,
-        banner_key
+        banner_key,
+        attributions
       )
     }
   }
@@ -4283,7 +4307,8 @@ render_pollution_map <- function(
       indicator_label,
       indicator_show_max,
       indicator_placement,
-      banner_key
+      banner_key,
+      attributions
     )
   } else {
     html_map <- add_map_controls(
