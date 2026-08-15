@@ -47,7 +47,7 @@ location-based data, with QuickMap acting as a spatial companion to the OpenAir
 package — OpenAir analyses and fetches data from UK measurement networks; QuickMap
 maps it.
 
-### Current Version: 0.9.9.11
+### Current Version: 0.9.9.12
 
 -   **Production code**: `R/quickmap.R` (stable, ~2,900 lines)
 -   **Archived versions**: `versions/`
@@ -556,6 +556,14 @@ or labelling fewer features — not raising `label_scale`.
     sitting on `MARKER_LABEL_REM` (the smallest legend text) at every export
     size, which is roadmap item 11's "unified marker/text/legend scaling"
     done early; `map.label_background` turns the plate behind them off
+
+-   **v0.9.9.12**: banner key reads the schools scale's `labels`
+    (user request 2026-08-14): `build_banner_key()` displayed `domain` —
+    the values matched against the data — so editing `labels` in
+    `schools.yaml` changed nothing. It now displays `labels`, falling back
+    to `domain` when a scale defines none, and `schools.yaml` names the
+    categories "Primary School" / "Secondary School". Colour matching still
+    runs on `domain`, which must equal the data's `Level` values.
 
 Archived versions in `versions/`. Current: `R/quickmap.R`.
 

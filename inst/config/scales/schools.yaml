@@ -7,7 +7,7 @@ domain:
   - Secondary
 
 labels:
-  - Primary
-  - Secondary
+  - Primary School
+  - Secondary School
 
 title: "School Level"
