@@ -327,9 +327,9 @@ different questions:
     for its own name: "QuickMap | Leaflet", linked, no version number.
     Set in `create_base_map()`; theme key `map.credit`, default TRUE.
     The tile provider's own attribution is untouched either way.
-    **The QuickMap link needs the repo to be public** (user decision
-    2026-08-15: it will be). While it is private GitHub answers 404, not
-    403, so a published map carries a dead link until then.
+    The QuickMap link needs the repo to be public — it was made public on
+    2026-08-15 for this reason. If it ever returns to private the link
+    breaks silently: GitHub answers 404, not 403.
 -   **Source metadata** — `<meta name="generator" content="QuickMap
     x.y.z">` plus an HTML comment, injected in
     `inject_banner_legend_controls()`. Invisible on the page, so these
