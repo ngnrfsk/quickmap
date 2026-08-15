@@ -1348,7 +1348,11 @@ get_default_theme <- function() {
       label_scale = 1,
       # The translucent plate behind each marker label. Worth its clutter on
       # busy tiles, not worth it where labels are dense.
-      label_background = TRUE
+      label_background = TRUE,
+      # "QuickMap | Leaflet" in the attribution control's software slot,
+      # beside the tile provider's own credit. FALSE removes it; the tile
+      # credit and any data-licence line are unaffected either way.
+      credit = TRUE
     ),
     controls = list(
       autoplay = FALSE,
@@ -2906,6 +2910,20 @@ inject_banner_legend_controls <- function(
 
   viewport_meta <- '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
 
+  # Source metadata: the HTML5 `generator` meta is the standard place to
+  # name the software that produced a document, and the comment says the
+  # same to anyone reading the source. Neither is visible on the page, so
+  # both carry the version, which the on-screen credit does not.
+  # Read at render time, not at build time: the package is not installed
+  # while it is being built, so a top-level packageVersion() would fail.
+  qm_version <- as.character(utils::packageVersion("quickmap"))
+  generator_meta <- sprintf(
+    paste0('<meta name="generator" content="QuickMap %s">\n',
+           '<!-- Made with QuickMap %s ',
+           '- https://github.com/ngnrfsk/quickmap -->\n'),
+    qm_version, qm_version
+  )
+
   banner_css <- build_banner_css(banner_colour, image_mode, banner_style)
 
   legend_css <- build_legend_css(banner_colour, image_mode)
@@ -2931,7 +2949,7 @@ inject_banner_legend_controls <- function(
 
   html_text <- sub(
     "</head>",
-    paste0(viewport_meta, custom_css, "</head>"),
+    paste0(viewport_meta, generator_meta, custom_css, "</head>"),
     html_text
   )
 
@@ -3580,8 +3598,27 @@ add_map_controls <- function(
   return(map)
 }
 
+#' Software credit shown in the map's attribution control
+#'
+#' Leaflet's attribution control has two slots and they mean different
+#' things: the *attribution* names who the data belongs to (the tile
+#' provider sets its own, and a data licence goes in the legend line), the
+#' *prefix* names the software that drew the map — which is why Leaflet
+#' puts its own name there. QuickMap joins it rather than replacing it, and
+#' never touches the tile credit. Short and linked, with no version number:
+#' the version belongs in the source metadata, not on the reader's screen.
 #' @keywords internal
-create_base_map <- function(data, interactive = TRUE, base_tiles = NULL) {
+QM_CREDIT_PREFIX <- paste0(
+  '<a href="https://github.com/ngnrfsk/quickmap" target="_blank" ',
+  'rel="noopener">QuickMap</a> | <a href="https://leafletjs.com" ',
+  'target="_blank" rel="noopener">Leaflet</a>'
+)
+
+#' @param credit Show the QuickMap credit in the attribution control
+#'   (theme key `map.credit`, default TRUE)
+#' @keywords internal
+create_base_map <- function(data, interactive = TRUE, base_tiles = NULL,
+                            credit = TRUE) {
   map <- leaflet(
     data,
     options = leafletOptions(
@@ -3591,11 +3628,18 @@ create_base_map <- function(data, interactive = TRUE, base_tiles = NULL) {
     )
   )
 
-  if (!is.null(base_tiles)) {
+  map <- if (!is.null(base_tiles)) {
     map |> addProviderTiles(base_tiles)
   } else {
     map |> addTiles()
   }
+
+  if (isFALSE(credit)) return(map)
+
+  htmlwidgets::onRender(map, sprintf(
+    "function(el, x) { this.attributionControl.setPrefix('%s'); }",
+    QM_CREDIT_PREFIX
+  ))
 }
 
 #' Draw every enabled layer onto a map for one time step
@@ -4111,13 +4155,16 @@ render_pollution_map <- function(
   # non-interactive template reused as the starting point for every JPG frame.
   # Use primary data for base map, or borough boundary if no temporal data
   base_map_data <- primary_data %||% borough_sf
-  html_map <- create_base_map(base_map_data, TRUE, base_tiles_provider)
+  show_credit <- theme$map$credit %||% TRUE
+  html_map <- create_base_map(base_map_data, TRUE, base_tiles_provider,
+                              show_credit)
 
   if (image_export) {
     static_map_template <- create_base_map(
       base_map_data,
       FALSE,
-      base_tiles_provider
+      base_tiles_provider,
+      show_credit
     )
   }
 

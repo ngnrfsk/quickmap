@@ -112,9 +112,12 @@ char_marker_calls <- function(payload) {
 
 # Lazy-rendering payload (item 6): the data attached to the onRender hook
 char_lazy_payload <- function(payload) {
+  # More than one render hook since the attribution credit gained its own
+  # (2026-08-15); the lazy payload is the hook carrying data.
   hooks <- payload$jsHooks$render
-  stopifnot(length(hooks) == 1)
-  hooks[[1]]$data
+  with_data <- Filter(function(h) !is.null(h$data), hooks)
+  stopifnot(length(with_data) == 1)
+  with_data[[1]]$data
 }
 
 char_shown_groups <- function(payload) {

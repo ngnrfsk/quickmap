@@ -273,6 +273,7 @@ map:
   marker_labels: false
   label_scale: 1            # marker-label size, 1 = the smallest legend text
   label_background: true    # translucent plate behind each marker label
+  credit: true              # "QuickMap | Leaflet" in the attribution control
 controls:
   autoplay: false
   play_speed: 500
@@ -310,6 +311,27 @@ CSS/JS templates use `{{placeholder_name}}` replaced by `gsub()`:
 -   **Collapsible**: Click header to toggle visibility
 -   **Generated from color scales**: Uses existing `colour_scales` configuration
 -   **Post-processing**: Modifies saved HTML files with `inject_banner_legend_controls()`; missing injection anchors are hard errors
+
+### Credits and attribution (2026-08-15)
+
+Three separate things, in three separate places, because they answer
+different questions:
+
+-   **Data licence** — under the legend key (`.legend-attribution`,
+    0.7rem, collapses with the legend, `rem` so it scales with an export).
+    Carried on the layer: `qm_layer(attribution =)`, set automatically by
+    `from_breathelondon()` to the statement the Breathe London terms
+    require. `quickmap()` collects them from its layers, so a map cannot
+    show the data without its credit. No attribution, no element.
+-   **Software** — Leaflet's attribution *prefix*, the slot Leaflet uses
+    for its own name: "QuickMap | Leaflet", linked, no version number.
+    Set in `create_base_map()`; theme key `map.credit`, default TRUE.
+    The tile provider's own attribution is untouched either way.
+-   **Source metadata** — `<meta name="generator" content="QuickMap
+    x.y.z">` plus an HTML comment, injected in
+    `inject_banner_legend_controls()`. Invisible on the page, so these
+    carry the version, read at render time from the installed
+    DESCRIPTION.
 
 ### Banner System
 
