@@ -103,6 +103,15 @@ approval before starting Part B.
   `X-API-KEY`. Consequences: the saved Rdata files are the only route to
   historical BL data until a new key arrives, and no legacy code path is
   worth even a probe wrapper.
+  **Follow-up (same day): the old key does not transfer to the new
+  gateway.** With `X-API-KEY: <old key>` the gateway answers
+  `400 INVALID_ARGUMENT: API key not valid` — byte-identical treatment to
+  a made-up key (control tested). No key at all gives
+  `401 UNAUTHENTICATED`. So the gateway is a Google Cloud API Gateway
+  validating keys against its own registry, old keys were not migrated,
+  and fresh registration is unavoidable. Useful for Step 1 regardless:
+  error bodies are JSON `{"code": <int>, "message": "..."}`, so the fetch
+  functions can surface `message` verbatim on failure.
 - User registers for a new API key via breathelondon.org/developers
   (GLA approval required — the live steps below wait on this).
 - With the key: probe `/ListSensors?Borough=Merton` and one `/SensorData`
