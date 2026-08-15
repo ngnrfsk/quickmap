@@ -51,9 +51,15 @@ roadmap item 9.)*
 
 **Left before v1.0:** the final code tidy-up (roadmap item 9: make the
 package pass R's formal check, five known small issues listed in
-dev/260708_item9_check-baseline_v1.md) and the known screen-defect list
-(roadmap item 11, below), which now includes stopping maps from burning
-CPU when they're in a background tab.
+dev/260708_item9_check-baseline_v1.md, and — added 15 August — the
+package/workspace separation: output stops defaulting into `aq_maps/`,
+client scripts leave the repo); the new Breathe London fetch (roadmap
+item 12, added 15 August — the old API is dead; plan with STOP gates in
+dev/260815_bl_fetch_plan.md, blocked on an approved API key); and the
+known screen-defect list (roadmap item 11, below), which now includes
+stopping maps from burning CPU when they're in a background tab.
+Post-1.0, the superseded fetch scripts outside this repo get marked
+historical ("fetch-code reconciliation" in CLAUDE.md).
 
 --------------------------------------------------------------------------------
 
