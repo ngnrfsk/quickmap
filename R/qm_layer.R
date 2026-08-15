@@ -172,6 +172,10 @@ qm_find_time_col <- function(data, time_col = NULL) {
 #'   for static layers, cycling in layer order). A map-level `data_symbols`
 #'   argument to [quickmap()] overrides this.
 #' @param name Human-visible layer name (legends, controls, errors)
+#' @param attribution Source credit this layer's licence requires, e.g.
+#'   "Contains Breathe London data licensed under the Open Government
+#'   Licence v3.0". Printed once beneath the legend on any map carrying the
+#'   layer; NULL (default) for data with no such condition.
 #' @return The data as a `qm_layer` (still an sf data.frame)
 #' @family atomic unit
 #' @export
@@ -181,7 +185,8 @@ qm_layer <- function(
   time_col = NULL,
   label_col = NULL,
   shape = NULL,
-  name = "layer"
+  name = "layer",
+  attribution = NULL
 ) {
   if (!is.null(shape)) shape <- qm_normalise_shape(shape)
   if (!is.data.frame(data) || nrow(data) == 0) {
@@ -284,7 +289,8 @@ qm_layer <- function(
       label_col = label_col,
       shape = shape,
       name = name,
-      resolution = resolution
+      resolution = resolution,
+      attribution = attribution
     )
   )
 }

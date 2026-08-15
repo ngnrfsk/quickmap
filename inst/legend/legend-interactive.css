@@ -111,6 +111,15 @@
   padding: 0;
 }
 
+/* Source credit required by a data licence: the quietest text on the map,
+   but never hidden while the legend is open. */
+.legend-attribution {
+  font-size: 0.7rem;
+  line-height: 1.3;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
 /* Indicator markers sit ON the colour ramp and are measured against it, so
    their row must be exactly the ramp's width — same flex parent, no padding
    of its own. The row has no height: the markers overhang onto the ramp

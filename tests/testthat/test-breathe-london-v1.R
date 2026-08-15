@@ -123,6 +123,31 @@ test_that("missing key and missing filter fail with instructions", {
                "borough or site")
 })
 
+test_that("attribution rides on the layer and reaches the legend", {
+  layer <- qm_layer(
+    data.frame(code = "S1", time_label = "2023", no2 = 30,
+               lat = 51.4, lon = -0.2),
+    value_col = "no2", time_col = "time_label",
+    attribution = "Contains Example data under OGL v3.0"
+  )
+  expect_identical(qm_meta(layer)$attribution,
+                   "Contains Example data under OGL v3.0")
+  expect_null(qm_meta(qm_layer(
+    data.frame(code = "S1", time_label = "2023", no2 = 30,
+               lat = 51.4, lon = -0.2)
+  ))$attribution)
+
+  html <- quickmap:::generate_legend_html(
+    "who_no2", attributions = "Contains Example data under OGL v3.0"
+  )
+  expect_match(html, "legend-attribution", fixed = TRUE)
+  expect_match(html, "Contains Example data under OGL v3.0", fixed = TRUE)
+
+  # no attribution, no element — a map that needs no credit shows none
+  expect_false(grepl("legend-attribution",
+                     quickmap:::generate_legend_html("who_no2"), fixed = TRUE))
+})
+
 test_that("live smoke test", {
   skip_if(Sys.getenv("BREATHE_LONDON_KEY") == "",
           "BREATHE_LONDON_KEY not set")

@@ -9,6 +9,7 @@ render_pollution_map(
   data_ids = NULL,
   data_symbols = NULL,
   data_dynamic = NULL,
+  attributions = NULL,
   output_file = "pollution_map.html",
   export_image = NULL,
   boroughs = NULL,
@@ -40,6 +41,9 @@ Accepts the friendly names "circle", "diamond", "cross", "square",
 an unknown name errors with the full list).}
 
 \item{data_dynamic}{Logical vector indicating temporal (TRUE) vs static (FALSE) layers (default: NULL, auto-detected).}
+
+\item{attributions}{Character vector of source credits to print beneath
+the legend, collected from the layers' \code{attribution} metadata.}
 
 \item{output_file}{Output file name, used verbatim (include the .html
 extension). Saved to the 'aq_maps/' directory; NULL returns the widget
