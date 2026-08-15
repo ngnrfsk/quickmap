@@ -888,6 +888,20 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
     Needs a resolution-aware target set in the colour-scale YAML and the
     numbers confirmed by the user.
 
+14. Explain the indicator's fixed panel to the reader (added 2026-08-14,
+    user request):
+    `id: 14 | area: legend-indicator | component: indicator |
+    severity: medium | reported: 2026-08-14 | status: open`
+
+    The "Network mean, N sites" caption counts only the fixed panel —
+    sites reporting in every displayed step — so N is smaller than the
+    number of markers on screen (e.g. 59 sites averaged while more are
+    visible), and nothing tells the reader why. Surfaced by the Merton
+    combined tubes + Breathe London map, where the gap is large. Add a
+    brief explanation — a tooltip on the caption is the leading idea —
+    saying the mean is held to a constant panel so it tracks the air,
+    not the network.
+
 ### Concepts — recorded, not scheduled
 
 All of them, with their demonstration maps, are in one folder with an
