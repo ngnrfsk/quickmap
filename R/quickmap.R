@@ -218,6 +218,11 @@ clear_openair_metadata_cache <- function(source = NULL) {
 #' @param pollutant Character. Pollutant column name (e.g., "no2", "pm2.5").
 #' @param avg.time Character. Temporal aggregation period: "year" (default),
 #'   "month", "day", "hour". Passed to dplyr grouping.
+#' @param data_capture Numeric. Minimum fraction of a period's expected
+#'   observations that must carry a value for its mean to exist; sparser
+#'   site-periods yield NA instead of an average of whatever was measured.
+#'   Expected counts come from the calendar and the data's own time step.
+#'   Default 0.75; 0 reproduces the pre-v0.9.9.12 behaviour.
 #' @return sf object with columns: siteCode, year, year_str, pollutant value,
 #'   lat, lon, Longitude, Latitude, geometry. Compatible with process_oa_data() output.
 #' @family openair
@@ -236,7 +241,8 @@ convert_openair_to_spatial <- function(
   data,
   source = NULL,
   pollutant,
-  avg.time = "year"
+  avg.time = "year",
+  data_capture = 0.75
 ) {
   # -- Input checks: column names differ between OpenAir and quickmap, so
   # both spellings are accepted rather than made the user's problem ---------
@@ -346,7 +352,24 @@ convert_openair_to_spatial <- function(
   # `year_str` is the string the time control displays and the rest of the
   # pipeline groups by; its format is what distinguishes an annual map from a
   # monthly, daily or hourly one.
-  # Temporal aggregation using dplyr (preserves grouping columns)
+  # A mean exists only where at least `data_capture` of the period's expected
+  # observations carry a value. Expected counts are calendar seconds divided
+  # by the data's own median time step, so hours absent from the data
+  # entirely count against capture, not just NA rows.
+  steps <- diff(sort(unique(data$date)))
+  units(steps) <- "secs"
+  step_secs <- if (length(steps)) stats::median(as.numeric(steps)) else NA
+  capped_mean <- function(values, period_secs) {
+    if (!is.na(step_secs) && data_capture > 0 &&
+          sum(!is.na(values)) / (period_secs / step_secs) < data_capture) {
+      return(NA_real_)
+    }
+    mean(values, na.rm = TRUE)
+  }
+  year_secs <- function(year) {
+    (365 + lubridate::leap_year(year)) * 86400
+  }
+
   if (avg.time == "year") {
     # Annual aggregation
     data$year <- as.integer(format(data$date, "%Y"))
@@ -355,7 +378,8 @@ convert_openair_to_spatial <- function(
     aggregated <- data |>
       group_by(siteCode, year) |>
       summarise(
-        !!sym(pollutant) := mean(!!sym(pollutant), na.rm = TRUE),
+        !!sym(pollutant) := capped_mean(!!sym(pollutant),
+                                        year_secs(year[1])),
         latitude = first(latitude),
         longitude = first(longitude),
         year_str = first(year_str),
@@ -382,10 +406,17 @@ convert_openair_to_spatial <- function(
       "hour" = data$date
     )
 
+    period_secs <- switch(
+      avg.time,
+      "month" = function(p) lubridate::days_in_month(p) * 86400,
+      "day" = function(p) 86400,
+      "hour" = function(p) 3600
+    )
     aggregated <- data |>
       group_by(siteCode, period, year, year_str) |>
       summarise(
-        !!sym(pollutant) := mean(!!sym(pollutant), na.rm = TRUE),
+        !!sym(pollutant) := capped_mean(!!sym(pollutant),
+                                        period_secs(period[1])),
         latitude = first(latitude),
         longitude = first(longitude),
         .groups = "drop"
@@ -1317,7 +1348,11 @@ get_default_theme <- function() {
       label_scale = 1,
       # The translucent plate behind each marker label. Worth its clutter on
       # busy tiles, not worth it where labels are dense.
-      label_background = TRUE
+      label_background = TRUE,
+      # "QuickMap | Leaflet" in the attribution control's software slot,
+      # beside the tile provider's own credit. FALSE removes it; the tile
+      # credit and any data-licence line are unaffected either way.
+      credit = TRUE
     ),
     controls = list(
       autoplay = FALSE,
@@ -1588,7 +1623,8 @@ generate_legend_html <- function(
   data_max = NULL,
   indicator_html = "",
   indicator_bar = "",
-  indicator_placement = "right"
+  indicator_placement = "right",
+  attributions = NULL
 ) {
   legend_scale <- load_colour_scale(scale_name)
 
@@ -1695,10 +1731,24 @@ generate_legend_html <- function(
   # they differ only in whether that column runs across or down.
   in_lead <- indicator_placement %in% c("title_row", "under_title")
 
+  # Source credits sit under the legend content, inside the collapsible
+  # body: a licence line belongs with the data it describes, and hiding it
+  # with the legend keeps a phone screen usable without losing it.
+  attribution_html <- if (length(attributions)) {
+    paste0(
+      '<div class="legend-attribution">',
+      paste(htmltools::htmlEscape(attributions), collapse = "<br>"),
+      "</div>"
+    )
+  } else {
+    ""
+  }
+
   apply_template_replacements(
     html_template,
     list(
       "{{legend_title}}" = legend_scale$title,
+      "{{legend_attribution}}" = attribution_html,
       "{{legend_items}}" = legend_items_html,
       "{{legend_key}}" = symbol_key_html,
       "{{legend_lead_class}}" = if (identical(indicator_placement, "title_row"))
@@ -2373,7 +2423,8 @@ finalize_and_save_map <- function(
   indicator_label = NULL,
   indicator_show_max = FALSE,
   indicator_placement = "right",
-  banner_key = NULL
+  banner_key = NULL,
+  attributions = NULL
 ) {
   map <- add_map_controls(
     map,
@@ -2408,7 +2459,8 @@ finalize_and_save_map <- function(
     indicator_label,
     indicator_show_max,
     indicator_placement,
-    banner_key
+    banner_key,
+    attributions
   )
 
   if (!is.null(image_dimensions)) {
@@ -2458,7 +2510,8 @@ save_html_and_style <- function(
   indicator_label = NULL,
   indicator_show_max = FALSE,
   indicator_placement = "right",
-  banner_key = NULL
+  banner_key = NULL,
+  attributions = NULL
 ) {
   htmlwidgets::saveWidget(
     map,
@@ -2485,7 +2538,8 @@ save_html_and_style <- function(
       indicator_label = indicator_label,
       indicator_show_max = indicator_show_max,
       indicator_placement = indicator_placement,
-      banner_key = banner_key
+      banner_key = banner_key,
+      attributions = attributions
     )
   }
 
@@ -2832,7 +2886,8 @@ inject_banner_legend_controls <- function(
   indicator_label = NULL,
   indicator_show_max = FALSE,
   indicator_placement = "right",
-  banner_key = NULL
+  banner_key = NULL,
+  attributions = NULL
 ) {
   if (!file.exists(html_file)) {
     stop("HTML file not found: ", html_file)
@@ -2854,6 +2909,20 @@ inject_banner_legend_controls <- function(
   }
 
   viewport_meta <- '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+
+  # Source metadata: the HTML5 `generator` meta is the standard place to
+  # name the software that produced a document, and the comment says the
+  # same to anyone reading the source. Neither is visible on the page, so
+  # both carry the version, which the on-screen credit does not.
+  # Read at render time, not at build time: the package is not installed
+  # while it is being built, so a top-level packageVersion() would fail.
+  qm_version <- as.character(utils::packageVersion("quickmap"))
+  generator_meta <- sprintf(
+    paste0('<meta name="generator" content="QuickMap %s">\n',
+           '<!-- Made with QuickMap %s ',
+           '- https://github.com/ngnrfsk/quickmap -->\n'),
+    qm_version, qm_version
+  )
 
   banner_css <- build_banner_css(banner_colour, image_mode, banner_style)
 
@@ -2880,7 +2949,7 @@ inject_banner_legend_controls <- function(
 
   html_text <- sub(
     "</head>",
-    paste0(viewport_meta, custom_css, "</head>"),
+    paste0(viewport_meta, generator_meta, custom_css, "</head>"),
     html_text
   )
 
@@ -2926,7 +2995,7 @@ inject_banner_legend_controls <- function(
 
   legend_html <- generate_legend_html(
     scale_name, collapsed_mobile, data_max, indicator_html, indicator_bar,
-    indicator_placement
+    indicator_placement, attributions
   )
 
   combined_html <- paste0(time_control_html, "\n", legend_html)
@@ -3529,8 +3598,27 @@ add_map_controls <- function(
   return(map)
 }
 
+#' Software credit shown in the map's attribution control
+#'
+#' Leaflet's attribution control has two slots and they mean different
+#' things: the *attribution* names who the data belongs to (the tile
+#' provider sets its own, and a data licence goes in the legend line), the
+#' *prefix* names the software that drew the map — which is why Leaflet
+#' puts its own name there. QuickMap joins it rather than replacing it, and
+#' never touches the tile credit. Short and linked, with no version number:
+#' the version belongs in the source metadata, not on the reader's screen.
 #' @keywords internal
-create_base_map <- function(data, interactive = TRUE, base_tiles = NULL) {
+QM_CREDIT_PREFIX <- paste0(
+  '<a href="https://github.com/ngnrfsk/quickmap" target="_blank" ',
+  'rel="noopener">QuickMap</a> | <a href="https://leafletjs.com" ',
+  'target="_blank" rel="noopener">Leaflet</a>'
+)
+
+#' @param credit Show the QuickMap credit in the attribution control
+#'   (theme key `map.credit`, default TRUE)
+#' @keywords internal
+create_base_map <- function(data, interactive = TRUE, base_tiles = NULL,
+                            credit = TRUE) {
   map <- leaflet(
     data,
     options = leafletOptions(
@@ -3540,11 +3628,18 @@ create_base_map <- function(data, interactive = TRUE, base_tiles = NULL) {
     )
   )
 
-  if (!is.null(base_tiles)) {
+  map <- if (!is.null(base_tiles)) {
     map |> addProviderTiles(base_tiles)
   } else {
     map |> addTiles()
   }
+
+  if (isFALSE(credit)) return(map)
+
+  htmlwidgets::onRender(map, sprintf(
+    "function(el, x) { this.attributionControl.setPrefix('%s'); }",
+    QM_CREDIT_PREFIX
+  ))
 }
 
 #' Draw every enabled layer onto a map for one time step
@@ -3894,6 +3989,8 @@ determine_times_and_viewport <- function(
 #'   "triangle", "star", "plus" and every renderer symbol name (18 in all;
 #'   an unknown name errors with the full list).
 #' @param data_dynamic Logical vector indicating temporal (TRUE) vs static (FALSE) layers (default: NULL, auto-detected).
+#' @param attributions Character vector of source credits to print beneath
+#'   the legend, collected from the layers' `attribution` metadata.
 #' @param output_file Output file name, used verbatim (include the .html
 #'   extension). Saved to the 'aq_maps/' directory; NULL returns the widget
 #'   without writing a file.
@@ -3964,6 +4061,7 @@ render_pollution_map <- function(
   data_ids = NULL,
   data_symbols = NULL,
   data_dynamic = NULL,
+  attributions = NULL,
   output_file = "pollution_map.html",
   export_image = NULL,
   boroughs = NULL,
@@ -4057,13 +4155,16 @@ render_pollution_map <- function(
   # non-interactive template reused as the starting point for every JPG frame.
   # Use primary data for base map, or borough boundary if no temporal data
   base_map_data <- primary_data %||% borough_sf
-  html_map <- create_base_map(base_map_data, TRUE, base_tiles_provider)
+  show_credit <- theme$map$credit %||% TRUE
+  html_map <- create_base_map(base_map_data, TRUE, base_tiles_provider,
+                              show_credit)
 
   if (image_export) {
     static_map_template <- create_base_map(
       base_map_data,
       FALSE,
-      base_tiles_provider
+      base_tiles_provider,
+      show_credit
     )
   }
 
@@ -4202,7 +4303,8 @@ render_pollution_map <- function(
         indicator_label,
         indicator_show_max,
         indicator_placement,
-        banner_key
+        banner_key,
+        attributions
       )
     }
   }
@@ -4252,7 +4354,8 @@ render_pollution_map <- function(
       indicator_label,
       indicator_show_max,
       indicator_placement,
-      banner_key
+      banner_key,
+      attributions
     )
   } else {
     html_map <- add_map_controls(
