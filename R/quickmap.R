@@ -2121,6 +2121,8 @@ build_banner_key <- function(measurement_layers, spatial_data) {
     present <- unique(trimws(as.character(data$Level)))
     domain <- unlist(scale_data$domain)
     colours <- unlist(scale_data$colours)
+    # domain matches the data's values; labels carry the displayed wording
+    labels <- unlist(scale_data$labels) %||% domain
 
     keep <- domain %in% present
     if (!any(keep)) next
@@ -2129,7 +2131,7 @@ build_banner_key <- function(measurement_layers, spatial_data) {
       shape = layer_config$icon_shape,
       items = Map(
         function(label, colour) list(label = label, colour = colour),
-        domain[keep],
+        labels[keep],
         colours[keep]
       )
     ))
