@@ -6,7 +6,8 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-08-12 **Current Version**: v0.9.9.11
+**Last Updated**: 2026-08-15 **Current Version**: v0.9.9.11 (v0.9.9.12 in
+PR #49, awaiting review)
 
 --------------------------------------------------------------------------------
 
@@ -19,9 +20,12 @@ symbol choice, the wind overlay, the network mean and maximum on the
 legend, small email-able animations, and an eleven-chapter user manual
 built as a website with live example maps.
 
-Two things now sit beside the package: **quickplot**, three figure types
-that borrow the maps' page furniture, in `quickplot/`; and the **LB
-Merton AQAP** client job, in `scripts/clients/`.
+**quickplot** sits beside the package — three figure types that borrow
+the maps' page furniture, in `quickplot/`. The **LB Merton AQAP** client
+job left the repo on 15 August: its scripts, print packs, animation maps,
+figures and prepared data are archived in
+`/Users/iarla/Coding/260814 Merton AQAP maps and figures refresh/`
+(see its README).
 
 --------------------------------------------------------------------------------
 
@@ -39,37 +43,39 @@ repository is clean, `main` is at `b328412`, and the test suite is green
       Four chapters changed on 9 August: Time and animation, Styling and
       themes, Labels, Sharing and export. The legend's mean and maximum
       figures had never been documented at all. PR #48.
-- [ ] **A2. Review PR #47** — `scripts/clients/merton_print-set_v6.R`,
-      which renders the AQAP print set in three label variants.
-      https://github.com/ngnrfsk/quickmap/pull/47
+- [ ] **A2. Review PR #49** — v0.9.9.12: the banner key now displays the
+      schools scale's `labels` ("Primary School" / "Secondary School"),
+      plus the AQAP script removals.
+      https://github.com/ngnrfsk/quickmap/pull/49
+      Merge #49 BEFORE #48 — both touch this file, and #49 is the small
+      one; this branch already carries its issue-14 entry so #48 then
+      merges clean.
 - [ ] **A3. Decide when the manual rewrite finishes.** Roadmap item 9
       renames `marker_labels` to `symbol_labels`. Doing the manual before
       item 9 means documenting the parameter twice.
-- [ ] **A4. Back up four irreplaceable images.** See C1 — they exist in
-      exactly one place and are not in git.
+- [x] **A4. Back up four irreplaceable images.** Done 15 August — archived
+      in the AQAP working folder's `samples/`.
 
 ### B. Ready to run, no decision needed
 
-- [ ] **B1. Merge PR #48** (manual) and **PR #47** (print set v6) once
-      reviewed. Iarla merges; the agent never merges its own PRs.
+- [ ] **B1. Merge PR #49 then PR #48** once reviewed (that order — see
+      A2). Iarla merges; the agent never merges its own PRs.
+      (PR #47 was closed unmerged on 15 August: client working scripts
+      leave the package repo; v6 is archived in the AQAP working folder.)
 - [ ] **B2. Run the print set for all seven years**, both chosen
-      variants:
-      `Rscript scripts/clients/merton_print-set_v6.R nobg` then
-      `... nolabels`. About eight minutes for the pair. Writes to
-      `aq_maps/print_aqap_260808/`.
-- [ ] **B3. Delete the superseded pack** `aq_maps/print_aqap_260805/`
-      once B2 has produced a set that has been looked at. Not before —
-      `aq_maps/` is gitignored, so deletion is permanent.
+      variants, from the AQAP working folder — the script's paths assume
+      the quickmap repo root, so restore or adjust them first (its
+      prepared CSVs are in the folder's `prepared/`). The superseded
+      `print_aqap_260805` pack is archived in the same folder's
+      `print_packs/`, so there is no longer a deletion step after it.
 
 ### C. Known risks
 
-- [ ] **C1. Four approved AQAP images exist in one place only.**
-      `/Users/iarla/Coding/quickmap/aq_maps/merton_no2_nobg_2019.jpg`,
-      `merton_no2_nobg_2025.jpg`, `merton_no2_nolabels_2019.jpg`,
-      `merton_no2_nolabels_2025.jpg`. `aq_maps/` is gitignored. They
-      cover 2019 and 2025 only. The 2025 pair was rebuilt on 8 August
-      after a smoke test overwrote the originals; v6 now renders under a
-      `build_` name so that cannot recur.
+- [x] **C1. Four approved AQAP images exist in one place only.** Resolved
+      15 August: archived in the AQAP working folder's `samples/`, with
+      the rest of the pack's outputs alongside. (The 2025 pair had been
+      rebuilt on 8 August after a smoke test overwrote the originals; v6
+      renders under a `build_` name so that cannot recur.)
 - [ ] **C2. There is no signed-off baseline folder.** Both were cleared
       on 5–6 August at Iarla's request. CLAUDE.md's rule — never leave
       the human with only the new set — has nothing to compare against,
@@ -119,7 +125,9 @@ at all.
 
 Read it at file:///Users/iarla/Coding/quickmap/docs/index.html.
 
-### 8 August — Print set v6, three label variants (PR #47, not yet run)
+### 8 August — Print set v6, three label variants (PR #47, closed unmerged
+15 August — client scripts leave the repo; v6 archived in the AQAP
+working folder)
 
 The AQAP pack uses two label variants that had been rendered by
 throwaway scripts and then chosen, leaving the deliverable with no
@@ -1000,6 +1008,20 @@ logging, graceful failures) **Expected Effort**: 8-12 hours total
     objectives — which the indicator could show instead of hiding.
     Needs a resolution-aware target set in the colour-scale YAML and the
     numbers confirmed by the user.
+
+14. Explain the indicator's fixed panel to the reader (added 2026-08-14,
+    user request):
+    `id: 14 | area: legend-indicator | component: indicator |
+    severity: medium | reported: 2026-08-14 | status: open`
+
+    The "Network mean, N sites" caption counts only the fixed panel —
+    sites reporting in every displayed step — so N is smaller than the
+    number of markers on screen (e.g. 59 sites averaged while more are
+    visible), and nothing tells the reader why. Surfaced by the Merton
+    combined tubes + Breathe London map, where the gap is large. Add a
+    brief explanation — a tooltip on the caption is the leading idea —
+    saying the mean is held to a constant panel so it tracks the air,
+    not the network.
 
 ### Concepts — recorded, not scheduled
 
