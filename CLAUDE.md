@@ -699,6 +699,17 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
     Government Licence v3.0", linked to breathelondon.org). Full plan with
     STOP gates: dev/260815_bl_fetch_plan.md. **Blocked on an approved API
     key** (registration via breathelondon.org/developers).
+    **Status 2026-08-15: code built and fixture-tested, not live-validated.**
+    All three functions implemented; network access isolated in one
+    internal function (`bl_request()`); 28 fixture-test assertions pass.
+    On the saved Merton hourly data (69 sites, 345 site-years) the 75%
+    capture rule yields NA for 117 site-years, including every raw annual
+    mean above 60 µg/m³ (all from under 9% capture). Surviving site-years
+    differ from the published annualised values by up to 16.5 µg/m³ —
+    unexplained; check before republication (scheduled into the Step 4
+    demo comparison). Remaining: live probes with the key (site-code
+    scheme, pagination, field types), and Step 4 attribution in the map
+    chrome (rendering change, needs visual sign-off).
 
 (Items 2 and 5 were inserted 2026-07-05; item 10 (UI polish) was inserted
 2026-07-06, renumbering the UI-defects item to 11. Item 12 was added
