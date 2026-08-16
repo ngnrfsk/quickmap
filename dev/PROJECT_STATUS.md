@@ -20,15 +20,15 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 
 ## Waiting on Iarla
 
-1. **Review PR #52** — vignettes were missing from the built package; adds the
-   first README.
-2. **Review PR #50** — merging now asks for approval at a prompt.
-3. **Switch on GitHub Pages**: settings → Pages → main branch, `/docs`. The
-   manual's example-map links stay broken until it is on.
-4. **Get a Breathe London API key** at breathelondon.org/developers. Put it in
-   `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
-5. **Upload three maps** to swlonrsp.github.io from
-   `/Users/iarla/Coding/260814 Merton AQAP maps and figures refresh/animations/`.
+1.  **Review PR #52** — vignettes were missing from the built package; adds the
+    first README.
+2.  **Review PR #50** — merging now asks for approval at a prompt.
+3.  **Switch on GitHub Pages**: settings → Pages → main branch, `/docs`. The
+    manual's example-map links stay broken until it is on.
+4.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
+    `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
+5.  **Upload three maps** to swlonrsp.github.io from
+    `/Users/iarla/Coding/260814 Merton AQAP maps and figures refresh/animations/`.
 
 PR #48, the manual, is held until item 9 changes output paths and renames
 `marker_labels`. Reviewing it now would mean reviewing it twice.
@@ -45,46 +45,47 @@ Items are never renumbered; other documents cite these numbers.
 
 ### 9. CRAN compliance and internal consistency — next
 
-- `R CMD CHECK` clean: dev/260708_item9_check-baseline_v1.md.
-- Output paths: no auto `aq_maps/`; the user names the file.
-  dev/260816_output_paths_decision.md.
-- Rename `marker_labels` to `symbol_labels`, old name kept working.
-- Defects and roadmap to GitHub Issues, plus DESCRIPTION `URL:`/`BugReports:`.
-  Steps 2 and 3 of dev/260816_item9_status_restructure_plan.md.
-- Client scripts move to a workspace repo; `inst/examples/` keeps generic ones.
-  May finish post-1.0 if the package no longer depends on them.
-- Four `sapply()` calls to `vapply()`; the live one is in
-  `create_generic_icons()`, around R/quickmap.R:3092.
-- Audit docs against code; mark dev docs current or historical.
+1.  Output paths: no auto `aq_maps/`; the user names the file.
+    dev/260816_output_paths_decision.md.
+2.  `R CMD CHECK` clean: dev/260708_item9_check-baseline_v1.md.
+3.  Rename `marker_labels` to `symbol_labels`, old name kept working.
+4.  Defects and roadmap to GitHub Issues, plus DESCRIPTION `URL:`/`BugReports:`.
+    Steps 2 and 3 of dev/260816_item9_status_restructure_plan.md.
+5.  Client scripts move to a workspace repo; `inst/examples/` keeps generic
+    ones. May finish post-1.0 if the package no longer depends on them.
+6.  Four `sapply()` calls to `vapply()`; the live one is in
+    `create_generic_icons()`, around R/quickmap.R:3092.
+7.  Audit docs against code; mark dev docs current or historical.
 
 ### 11. Clear the open defects — last item before release
 
-- The list is "Open defects" below. Not to be picked off piecemeal.
-- Marker/text scaling was done early on 2026-08-05.
+1.  The list is "Open defects" below. Not to be picked off piecemeal.
+2.  Marker/text scaling was done early on 2026-08-05.
 
 ### 12. Breathe London fetch for the 2025 API — after 9, before 11
 
-- `bl_sensors()`, `bl_data()`, `from_breathelondon()` built and fixture-tested
-  on PR #51 (draft). Blocked on the API key.
-- The 75% capture rule voids 117 of 345 Merton site-years, including every raw
-  mean above 60 µg/m³. Survivors differ from published values by up to 16.5
-  µg/m³, unexplained.
-- Remaining: live probes, and licence attribution in the chrome (needs visual
-  sign-off). dev/260815_bl_fetch_plan.md.
+1.  `bl_sensors()`, `bl_data()`, `from_breathelondon()` built and fixture-tested
+    on PR #51 (draft). Blocked on the API key.
+2.  The 75% capture rule voids 117 of 345 Merton site-years, including every raw
+    mean above 60 µg/m³. Survivors differ from published values by up to 16.5
+    µg/m³, unexplained.
+3.  Remaining: live probes, and licence attribution in the chrome (needs visual
+    sign-off). dev/260815_bl_fetch_plan.md.
 
 ### 13. Retest the alternative stacks
 
-- README and the "For R users" vignette state July 2026 conclusions publicly.
-  tmap v4 now builds on mapgl.
-- Re-test three load-bearing grounds: self-contained animated HTML; per-layer
-  symbols on one scale in both outputs; one emailable file.
-- dev/260706_atomic_unit_recommendation.md, dev/item5_backend-comparison_v1.md.
+1.  README and the "For R users" vignette state July 2026 conclusions publicly.
+    tmap v4 now builds on mapgl.
+2.  Three grounds must be re-tested, not assumed: self-contained animated HTML; per-layer
+    symbols on one scale in both outputs; one emailable file.
+3.  dev/260706_atomic_unit_recommendation.md,
+    dev/item5_backend-comparison_v1.md.
 
 ### 14. Rename the dev/ documents by date
 
-- Three naming conventions coexist, so the folder cannot be read in order.
-- Rename to `YYMMDD_name_vN.md`, update references, grep for old names.
-- Known stale reference: dev/260816_output_paths_decision.md:67.
+1.  Three naming conventions coexist, so the folder cannot be read in order.
+2.  Rename to `YYMMDD_name_vN.md`, update references, grep for old names.
+3.  Known stale reference: dev/260816_output_paths_decision.md:67.
 
 ### Numbering history
 
@@ -143,9 +144,9 @@ Index, documents, code and demonstration maps: dev/concepts/README.md.
   quickplot's Trend; settle ownership. 1.5–2 days.
 - **Thermometer on the map**: vertical indicator over the map. Only if it
   restates the legend's bands.
-- **Context polygon layer**: deprivation under the vignette, labelled 1–10. ~2
+- **Context polygon layer**: deprivation under the vignette, labelled 1–10. \~2
   days.
-- **Retired indicator styles**, wakeable with instructions in the files:
+- **Retired indicator styles**, with restoration instructions in the files:
   zero-to-value bar (`260731_indicator_bar-style_v1.R`), standalone track
   (`260730_indicator_track-style_v1.R`).
 
@@ -160,5 +161,5 @@ Index, documents, code and demonstration maps: dev/concepts/README.md.
   fetch code built on PR #51. Items 13 and 14 added. Merton AQAP work moved out
   of the repo.
 - **5 August**: speed control (PR #42) and legend indicator (PR #38) merged,
-  both signed off. `.gitignore` was excluding
-  `inst/controls/time-slider.html`, so a fresh clone could not build a map.
+  both signed off. `.gitignore` was excluding `inst/controls/time-slider.html`,
+  so a fresh clone could not build a map.
