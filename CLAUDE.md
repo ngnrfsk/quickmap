@@ -640,6 +640,20 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
    line 3092 — because every marker colour on every map goes through it. This
    was the only still-live item in the modern-R options paper that used to sit
    in `dev/archive/`, deleted on 2026-08-07 once it was recorded here.
+   **Package/workspace separation** (added 2026-08-15, user decision — CRAN
+   compliance in substance, so it lives here): the repo is currently half
+   package, half the user's production workspace, and the two must part
+   before release. (a) `quickmap()`'s default output location becomes an
+   explicit `output_file` path or `tempdir()` — a package auto-creating
+   `aq_maps/` in the working directory is a CRAN policy violation;
+   (b) client production scripts (the `clients` folder under `scripts/`)
+   and their prepared-data pattern move to a separate workspace repo, keeping only
+   generic examples in `inst/examples/` (the Merton AQAP job moved out on
+   2026-08-15, to `~/Coding/260814 Merton AQAP maps and figures refresh/`);
+   (c) the demonstration-map and baseline sign-off conventions are
+   re-stated against the workspace, not the package repo. The workspace
+   move itself can complete post-1.0 provided the package no longer
+   depends on it.
 10. UI polish pass (**delivers v0.9.9.5 — the last version before v1.0**) —
     modernise the visual design of the HTML output (banner, legend, controls,
     typography, spacing, colour) to the standard of modern web / infographic
@@ -676,8 +690,74 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
     ignored for years. When item 11 is picked up, that part is done; the
     rest of the list stands.
 
+12. Breathe London fetch for the new (2025) API (added 2026-08-15, user
+    decision; **executed after item 9 and before item 11**, numbered 12 to
+    avoid renumbering item 11's many references). The Breathe London API
+    was replaced in June 2025 (new gateway, `X-API-KEY` header,
+    `/ListSensors` + `/SensorData` with query parameters, hourly-only,
+    366-day window), and every existing fetch function — all outside this
+    repo — targets the dead old one. A new `breathe_london.R` under `R/`
+    provides:
+    `bl_sensors()`, `bl_data()` (key parameter defaulting to
+    `Sys.getenv("BREATHE_LONDON_KEY")`, requests chunked to the window,
+    retry with backoff) and `from_breathelondon()` returning a `qm_layer`,
+    following the `from_worldmet()` pattern. Includes formalised QA
+    (hourly plausibility screen: NO2 ≥ 500 → NA, PM2.5 ≥ 130 → NA) and
+    completeness-aware aggregation (≥ 75% capture or NA), wired into both
+    the new path and `convert_openair_to_spatial()` — the existing
+    annualised Rdata files were built with no capture threshold, so means
+    can change. A map with a BL layer must carry the licence-required
+    attribution ("Contains Breathe London data licensed under the Open
+    Government Licence v3.0", linked to breathelondon.org). Full plan with
+    STOP gates: dev/260815_bl_fetch_plan.md. **Blocked on an approved API
+    key** (registration via breathelondon.org/developers).
+    **The code is on branch `feature/breathe-london-fetch` (PR #51,
+    draft), not on main.**
+    **Status 2026-08-15: built and fixture-tested, not live-validated.**
+    All three functions implemented; network access isolated in one
+    internal function (`bl_request()`); 28 fixture-test assertions pass.
+    On the saved Merton hourly data (69 sites, 345 site-years) the 75%
+    capture rule yields NA for 117 site-years, including every raw annual
+    mean above 60 µg/m³ (all from under 9% capture). Site-years meeting
+    the threshold differ from the published annualised values by up to
+    16.5 µg/m³ —
+    unexplained; check before republication (scheduled into the Step 4
+    demo comparison). Remaining: live probes with the key (site-code
+    scheme, pagination, field types), and Step 4 attribution in the map
+    chrome (rendering change, needs visual sign-off).
+13. Retest the alternative stacks before v1.0 (added 2026-08-15, user
+    decision). The front-end and back-end candidates were assessed in July
+    2026 — tmap and mapview in the atomic-unit survey
+    (dev/260706_atomic_unit_recommendation.md), Leaflet, MapLibre/mapgl,
+    mapdeck and React in the backend comparison
+    (dev/item5_backend-comparison_v1.md) — and the conclusions are now
+    stated publicly in README.md and the "For R users" vignette. Both are
+    moving targets (tmap v4 now builds on mapgl), so re-run the
+    comparison against current versions before release and correct the
+    public claims if anything has changed. Three grounds are load-bearing
+    and each must be re-tested, not assumed: **animation** (does any of
+    them yet produce self-contained interactive HTML with a time control,
+    rather than GIF or video?), **layer and symbol specification** (can a
+    single figure carry per-layer symbols — circles for tubes, diamonds
+    for sensors, crosses for schools — on one colour scale, in both
+    interactive and static output? verified inadequate by the author in
+    2026; the finding is not otherwise in the written record), and
+    **self-contained sharing** (one emailable file, no server).
+14. Rename the dev/ documents by date (added 2026-08-15, user decision).
+    Filenames in `dev/` follow at least three conventions —
+    `YYMMDD_name_vN.md` (the stated standard), `itemN_name_vN.md`, and
+    bare names — so the folder cannot be read in chronological order and
+    a reader cannot tell a current document from a superseded one.
+    Rename to the dated standard, keeping the item number in the
+    descriptive part where it carries meaning, and update every reference
+    (CLAUDE.md, PROJECT_STATUS.md, cross-references inside dev docs, the
+    concepts index, roxygen and vignette citations). Mechanical, but the
+    references make it error-prone: check with a grep sweep for the old
+    names afterwards.
+
 (Items 2 and 5 were inserted 2026-07-05; item 10 (UI polish) was inserted
-2026-07-06, renumbering the UI-defects item to 11. Dev docs written before
+2026-07-06, renumbering the UI-defects item to 11. Items 12, 13 and 14 were
+added 2026-08-15/16. Dev docs written before
 those dates use the older numbering — in particular the item-5 comparison doc
 says "item 10" for what is now item 11.)
 
@@ -706,6 +786,16 @@ wind via ecmwfr (completes the non-uniform wind thread below), saqgetr
 the Mazama AirMonitor/AirSensor suite (US regulatory + PurpleAir), and
 stars/terra raster underlays (modelled surfaces beneath measured markers).
 
+**Post-1.0: fetch-code reconciliation** (added 2026-08-15, user decision).
+Once item 12 lands, quickmap's `from_*()` family is the sole maintained
+fetch surface, and the superseded Breathe London fetch/processing copies —
+all outside this repo — are marked historical rather than rewritten:
+`~/Coding/Library/R/api.R`, `~/Coding/Library/R/openair_breathe_london_1_0.R`,
+the iCloud `Breathe_London_package_v1_0.R`, the `~/Coding/ScriptArchive`
+A-scripts, and the `~/Coding/250120_RSP_BL_download` scripts. That cleanup
+also moves the API and Stadia Maps keys hardcoded in
+`250120_RSP_BL_download/A01_startup_250417_RSP_BL_download.R` (lines 43–44)
+into `.Renviron` — keys never live in scripts.
 **Tested ideas, but need more work** (list created 2026-08-07). Things that were
 designed, costed or actually built and then set aside — recorded here so they
 are picked up deliberately rather than reinvented. Each lives in its own folder

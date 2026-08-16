@@ -55,6 +55,13 @@ dev/260708_item9_check-baseline_v1.md) and the known screen-defect list
 (roadmap item 11, below), which now includes stopping maps from burning
 CPU when they're in a background tab.
 
+**The manual is on hold until the saving change is done** (decided
+2026-08-16). The manual rewrite (PR #48) describes the `aq_maps` folder
+in two chapters and uses the old `marker_labels` name throughout. Both
+change in roadmap item 9, so approving the manual now would mean
+reviewing it twice. Order: item 9 first, then update those pages on the
+manual's branch, then one review.
+
 **Where maps get saved must change before release** (added 2026-08-16,
 roadmap item 9). QuickMap makes an `aq_maps` folder wherever you happen
 to be working and puts every map in it. R's package rules forbid that:
