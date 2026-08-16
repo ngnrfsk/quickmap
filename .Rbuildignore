@@ -22,5 +22,6 @@
 ^tests/test_.*\.R$
 ^tests/debug_do_not_delete\.R$
 ^tests/.*\.md$
-^vignettes$
+^vignettes/maps$
+^vignettes/archive$
 ^quickplot$

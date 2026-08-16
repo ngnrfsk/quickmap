@@ -87,6 +87,48 @@ its original signature; it converts `data_sources` to `qm_layer`s and
 delegates to `quickmap()`. New code should call `quickmap()`; old scripts
 need no changes.
 
+## 6. Why not tmap, mapview or openairmaps?
+
+A fair question for anyone already fluent in R spatial packages. QuickMap
+does not replace them; it fills one gap they leave.
+
+**tmap** gives a full grammar over `sf` and is highly customisable for
+cartography. Two things rule it out here. Its animation route
+(`tm_facets()` + `tmap_animation()`) renders GIF or video, not
+self-contained interactive HTML with a time control, so the grammar would
+not buy the temporal feature that is the point of this package. And the
+entry cost is high for the intended reader: shape/layer separation, `+`
+composition and the visual-variable system are three concepts before the
+first map appears.
+
+**mapview** has the gentlest curve in the R spatial ecosystem —
+`mapview(x, zcol = "no2")` renders immediately — and QuickMap borrows its
+central lesson: keep the atomic unit a standard `sf` object the user can
+build and inspect, rather than inventing a class. But mapview has no
+temporal animation, and it is built for exploring data rather than
+producing publication output.
+
+**openairmaps** is the nearest neighbour in subject matter: leaflet maps
+of UK air quality networks, polar-analysis markers, trajectory paths, with
+static equivalents for reports. It maps analysis markers and network
+locations; it does not produce animated concentration maps with
+configurable banner, legend and controls.
+
+**Symbol control** was the third consideration. These maps routinely carry
+circles for diffusion tubes, diamonds for sensors and crosses for schools
+in one figure, on one colour scale, with the symbol set per layer. None of
+the packages above exposes that control in a form that survives into both
+interactive and static output.
+
+What is left is **leaflet**, which QuickMap builds on directly. Everything
+above the base map — banner, colour-ramp legend, time slider, network
+indicator, attribution — is QuickMap's own, injected into the saved HTML.
+
+The full surveys are in the repository: `dev/260706_atomic_unit_recommendation.md`
+compares the APIs, and `dev/item5_backend-comparison_v1.md` compares
+rendering backends (Leaflet, MapLibre/mapgl, mapdeck), with MapLibre
+recorded as the migration path beyond v1.
+
 ## See also
 
 - [Layers](layers.html) — the user-facing view of the same system.
