@@ -62,7 +62,8 @@ save_html_and_style(
 
 \item{indicator_show_max}{Also mark the network maximum, as a diamond}
 
-\item{indicator_placement}{"right" of the ramp or "under_title"}
+\item{indicator_placement}{"title_row" (the default theme's), "under_title",
+or "right" of the ramp}
 
 \item{banner_key}{Reference-layer key from \code{\link[=build_banner_key]{build_banner_key()}}, drawn at
 the end of the banner. NULL for no key.}

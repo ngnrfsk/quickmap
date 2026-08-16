@@ -16,9 +16,11 @@ root <- find_root()
 claude_md <- readLines(file.path(root, "CLAUDE.md"), warn = FALSE)
 claude_text <- paste(claude_md, collapse = "\n")
 
-# Functions named in the roadmap that are designed but not yet implemented
+# Functions named in CLAUDE.md that are not defined on main. Trimmed
+# 2026-08-16: quickmap/from_csv/from_rdata/from_openair/from_worldmet shipped
+# at v0.9.6 and were still exempt here, which hid from_yaml — named in the
+# wrapper table for months, never written.
 planned_functions <- c(
-  "quickmap", "from_csv", "from_rdata", "from_openair", "from_worldmet",
   "from_yaml",
   # roadmap item 12: written, but on feature/breathe-london-fetch (PR #51)
   "bl_sensors", "bl_data", "from_breathelondon", "bl_request"
