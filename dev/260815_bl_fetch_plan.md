@@ -160,6 +160,17 @@ for the user before Step 2.
   default). Flag in the PR that annual means computed through this path can
   differ from previously published values.
 
+**Result (2026-08-15), measured on the saved Merton hourly data**
+(69 sites, 345 site-years, 2021-2025, plausibility screen applied):
+
+- 117 of 345 site-years fall below 75% capture and yield NA.
+- Both raw means above 60 ug/m3 yield NA: CLDP0219 2023, 63.0 at 8.2%
+  capture; CLDP0234 2023, 66.3 at 7.8%.
+- CLDP0239 2021: 2.9% capture, raw mean 36.1; the published annualised
+  file records 93.4 for the same site-year. Both yield NA.
+- 110 site-years meet the threshold; among these the maximum absolute
+  difference from the published value is 16.5 ug/m3, unexplained.
+
 **STOP — end of Step 2.** Show a before/after comparison of Merton annual
 means with the 75% rule applied (naming any sites/years that become NA or
 change), then stop and wait for the user before Step 3.
