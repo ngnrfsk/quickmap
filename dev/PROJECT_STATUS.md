@@ -76,6 +76,82 @@ added. The decision, what it breaks and the order to do it in:
 
 --------------------------------------------------------------------------------
 
+## The roadmap
+
+The numbered list of work to v1.0. Items are referenced by number
+throughout the project's documents.
+
+Items 1 to 8 and item 10 are done. Items 9, 11, 12, 13 and 14 remain
+before v1.0. "Above" and "below" in the text below refer to CLAUDE.md,
+where this list used to live.
+
+1.  Fix the path-resolution bug above — DONE (v0.9.5)
+
+2.  Characterization test net — before any API or rendering change, write testthat tests that assert on the rendered HTML output of the smoke-test maps: marker counts per layer and time step, layer group names, embedded JSON payload structure, and presence of the injected banner/legend/year-control blocks. These assert output, not function signatures, so they survive the item-4 API refactor and act as the regression net for items 4 and 6. They live in `tests/testthat/` and join the automated gate once written
+
+3.  Formalise the atomic data unit and wrapper API (see below)
+
+4.  Refactor `create_pollution_map()` as a thin wrapper around `quickmap()` — ease of use takes priority over retaining the existing API; when the API changes, all examples, docs, vignettes, and test files must be updated in the same change. Plan API development with care to minimise revisions of these key files — settle the design before implementing rather than rewriting everything repeatedly
+
+5.  Rendering backend decision — **DONE, decision approved 2026-07-06: Option D** (keep Leaflet; Canvas markers + embedded JSON + minimal custom JS time controller). Comparison and evidence: dev/item5_backend-comparison_v1.md (PR #22). MapLibre/mapgl recorded as the V2 migration path; item 6 is unblocked and implements Option D
+
+6.  Implement time step cap and lazy loading — addresses the CRITICAL HTML file-size blocker recorded in dev/PROJECT_STATUS.md
+
+7.  Add wind layer support via worldmet + leaflet-velocity — its JS payload rides on the lazy-loading architecture, so it must follow item 6
+
+8.  Migrate and validate all examples
+
+9.  CRAN compliance (R CMD CHECK clean) + full internal-consistency audit: verify all documentation (CLAUDE.md, dev docs, vignettes, roxygen) against the stabilised code, mark dev docs current vs historical, and restructure dev/PROJECT_STATUS.md into a maintained current-state section plus archived history. **Carried over from the archive clear-out (2026-08-07):** replace the four remaining `sapply()` calls in `R/quickmap.R` with `vapply()`. `sapply()` returns a list or a vector depending on its results, so the type is not guaranteed. The one that matters is in `create_generic_icons()` — `sapply(data[[pollutant]], assign_colour, scale = colour_scale)`, around line 3092 — because every marker colour on every map goes through it. This was the only still-live item in the modern-R options paper that used to sit in `dev/archive/`, deleted on 2026-08-07 once it was recorded here. **Package/workspace separation** (added 2026-08-15, user decision — CRAN compliance in substance, so it lives here): the repo is currently half package, half the user's production workspace, and the two must part before release. (a) `quickmap()`'s default output location becomes an explicit `output_file` path or `tempdir()` — a package auto-creating `aq_maps/` in the working directory is a CRAN policy violation;
+
+    (b) client production scripts (the `clients` folder under `scripts/`) and their prepared-data pattern move to a separate workspace repo, keeping only generic examples in `inst/examples/` (the Merton AQAP job moved out on 2026-08-15, to `~/Coding/260814 Merton AQAP maps and figures refresh/`);
+    (c) the demonstration-map and baseline sign-off conventions are re-stated against the workspace, not the package repo. The workspace move itself can complete post-1.0 provided the package no longer depends on it.
+
+10. UI polish pass (**delivers v0.9.9.5 — the last version before v1.0**) — modernise the visual design of the HTML output (banner, legend, controls, typography, spacing, colour) to the standard of modern web / infographic design. **Starts with an analysis of design-template options** — e.g. established design systems and news-graphics conventions (FT/Economist/BBC-style chart chrome, GOV.UK design system), lightweight CSS approaches compatible with self-contained output (no framework runtime) — ending in a recommended direction with mock-ups for **user approval before implementation**. Implementation lands through the existing `{{placeholder}}` template/theme system; themes must remain user-configurable. (Inserted 2026-07-06 after the item-5 React comparison: app-framework polish is reproducible as CSS/design effort.) **Includes wind-particle styling configuration** (added 2026-07-07): expose the constants currently hardcoded in `inst/controls/wind-controller.js` (particle density, line width, colour ramp, velocity scale) through the theme YAML system alongside the other visual controls.
+
+11. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md (including the background CPU/memory defect added 2026-07-12: HTML maps must pause ALL animation work — wind particles, marker crossfades, autoplay — when the page, tab or embedding iframe is hidden or off-viewport, via visibilitychange + IntersectionObserver; today's maps are a CPU and memory hog in the background) (LCA visual fixes, static-export subfolder generation, unified marker/text/legend scaling, ward/marker label consistency) — so v1.0 releases without known user-facing defects. Do not work on these earlier or piecemeal; they are the final item before the v1.0 release, not background tasks. **Partly done early (2026-08-05):** the Merton AQAP print set needed legible marker labels, so "unified marker/text/legend scaling" was fixed then — marker labels are `rem` and sit on `MARKER_LABEL_REM`, the same size as the smallest legend text, at every export size; symbol stroke width scales with the export too. This uncovered the cause: `textsize` reached leaflet without a CSS unit, so every value had been silently ignored for years. When item 11 is picked up, that part is done; the rest of the list stands.
+
+12. Breathe London fetch for the new (2025) API (added 2026-08-15, user decision; **executed after item 9 and before item 11**, numbered 12 to avoid renumbering item 11's many references). The Breathe London API was replaced in June 2025 (new gateway, `X-API-KEY` header, `/ListSensors` + `/SensorData` with query parameters, hourly-only, 366-day window), and every existing fetch function — all outside this repo — targets the dead old one. A new `breathe_london.R` under `R/` provides: `bl_sensors()`, `bl_data()` (key parameter defaulting to `Sys.getenv("BREATHE_LONDON_KEY")`, requests chunked to the window, retry with backoff) and `from_breathelondon()` returning a `qm_layer`, following the `from_worldmet()` pattern. Includes formalised QA (hourly plausibility screen: NO2 ≥ 500 → NA, PM2.5 ≥ 130 → NA) and completeness-aware aggregation (≥ 75% capture or NA), wired into both the new path and `convert_openair_to_spatial()` — the existing annualised Rdata files were built with no capture threshold, so means can change. A map with a BL layer must carry the licence-required attribution ("Contains Breathe London data licensed under the Open Government Licence v3.0", linked to breathelondon.org). Full plan with STOP gates: dev/260815_bl_fetch_plan.md. **Blocked on an approved API key** (registration via breathelondon.org/developers). **The code is on branch `feature/breathe-london-fetch` (PR #51, draft), not on main.** **Status 2026-08-15: built and fixture-tested, not live-validated.** All three functions implemented; network access isolated in one internal function (`bl_request()`); 28 fixture-test assertions pass. On the saved Merton hourly data (69 sites, 345 site-years) the 75% capture rule yields NA for 117 site-years, including every raw annual mean above 60 µg/m³ (all from under 9% capture). Site-years meeting the threshold differ from the published annualised values by up to 16.5 µg/m³ — unexplained; check before republication (scheduled into the Step 4 demo comparison). Remaining: live probes with the key (site-code scheme, pagination, field types), and Step 4 attribution in the map chrome (rendering change, needs visual sign-off).
+
+13. Retest the alternative stacks before v1.0 (added 2026-08-15, user decision). The front-end and back-end candidates were assessed in July 2026 — tmap and mapview in the atomic-unit survey (dev/260706_atomic_unit_recommendation.md), Leaflet, MapLibre/mapgl, mapdeck and React in the backend comparison (dev/item5_backend-comparison_v1.md) — and the conclusions are now stated publicly in README.md and the "For R users" vignette. Both are moving targets (tmap v4 now builds on mapgl), so re-run the comparison against current versions before release and correct the public claims if anything has changed. Three grounds are load-bearing and each must be re-tested, not assumed: **animation** (does any of them yet produce self-contained interactive HTML with a time control, rather than GIF or video?), **layer and symbol specification** (can a single figure carry per-layer symbols — circles for tubes, diamonds for sensors, crosses for schools — on one colour scale, in both interactive and static output? verified inadequate by the author in 2026; the finding is not otherwise in the written record), and **self-contained sharing** (one emailable file, no server).
+
+14. Rename the dev/ documents by date (added 2026-08-15, user decision). Filenames in `dev/` follow at least three conventions — `YYMMDD_name_vN.md` (the stated standard), `itemN_name_vN.md`, and bare names — so the folder cannot be read in chronological order and a reader cannot tell a current document from a superseded one. Rename to the dated standard, keeping the item number in the descriptive part where it carries meaning, and update every reference (CLAUDE.md, PROJECT_STATUS.md, cross-references inside dev docs, the concepts index, roxygen and vignette citations). Mechanical, but the references make it error-prone: check with a grep sweep for the old names afterwards.
+
+(Items 2 and 5 were inserted 2026-07-05; item 10 (UI polish) was inserted 2026-07-06, renumbering the UI-defects item to 11. Items 12, 13 and 14 were added 2026-08-15/16. Dev docs written before those dates use the older numbering — in particular the item-5 comparison doc says "item 10" for what is now item 11.)
+
+**Post-1.0: wind styling presets (optional)** (added 2026-07-09, user decision at item 10). Item 10 ships the speed-ramp colour scale as the wind default with the constants theme-exposed; recorded as optional future development: a preset library (muted slate, high-contrast dark, custom ramps), speed-scaled line width/opacity, and per-theme ramp selection — all ride the same theme-YAML surface, no renderer work.
+
+**Tile-dependent particle density** (added 2026-08-05, from setting up the long-animation example): the `particle_density` default of 1/300 was tuned against busy OSM tiles. On pale `CartoDB.Positron` the same density reads as far too busy — the example settled at 0.00125, roughly a third of it, after three halvings — because nothing on the basemap competes with the flow. The default should follow the chosen tiles rather than being a single constant, which is the same theme-YAML surface again, no renderer work.
+
+**Post-1.0: ecosystem integrations** (added 2026-07-07; full survey with integration shapes, risks and suggested ordering: dev/260707_v2_integration_candidates.md). Five well-maintained, large-user-base suites to link into after v1.0, each landing as a `from_*()` wrapper or layer type, never as a map-API change — in suggested pickup order: ERA5 reanalysis wind via ecmwfr (completes the non-uniform wind thread below), saqgetr (European AQ observations, openair-compatible), OpenAQ (global AQ platform), the Mazama AirMonitor/AirSensor suite (US regulatory + PurpleAir), and stars/terra raster underlays (modelled surfaces beneath measured markers).
+
+**Post-1.0: fetch-code reconciliation** (added 2026-08-15, user decision). Once item 12 lands, quickmap's `from_*()` family is the sole maintained fetch surface, and the superseded Breathe London fetch/processing copies — all outside this repo — are marked historical rather than rewritten: `~/Coding/Library/R/api.R`, `~/Coding/Library/R/openair_breathe_london_1_0.R`, the iCloud `Breathe_London_package_v1_0.R`, the `~/Coding/ScriptArchive` A-scripts, and the `~/Coding/250120_RSP_BL_download` scripts. That cleanup also moves the API and Stadia Maps keys hardcoded in `250120_RSP_BL_download/A01_startup_250417_RSP_BL_download.R` (lines 43–44) into `.Renviron` — keys never live in scripts. **Tested ideas, but need more work** (list created 2026-08-07). Things that were designed, costed or actually built and then set aside — recorded here so they are picked up deliberately rather than reinvented. Each lives in its own folder under `dev/concepts/`, with its document, the code that built it and the maps that code produced. The index is `dev/concepts/README.md`.
+
+| Idea | Folder | What is left to do |
+|------------------------|------------------------|------------------------|
+| Limit-centred indicator | `dev/concepts/indicator/` | Distance above or below a chosen target rather than position on the scale. Needs a decision on which target sits at the centre |
+| Change-over-time graph | `dev/concepts/trend-graph/` | The open half of the 29 July overlays decision. Overlaps with quickplot's **Trend** figure, so settle which owns it |
+| Thermometer on the map | `dev/concepts/thermometer-overlay/` | A vertical indicator over the map rather than in the legend. Must not draw a second scale |
+| Context polygon layer | `dev/concepts/context-polygon-layer/` | Deprivation or similar under the vignette, labelled 1–10 rather than carrying a second ramp. \~2 days |
+
+Four indicator styles were built and rejected on the way to v0.9.9.9; they and their renders are in `dev/concepts/indicator/`, not deleted, so a future proposal can be checked against what was already tried.
+
+**Post-1.0: quickplot** (user decision 2026-08-06). Charts and tables that borrow QuickMap's page furniture so figures and maps read as one document. Three functions, named: **Heatmap** (colour-coded table, site × year), **Trend** (time series over the colour ramp as background bands) and **Exceedance** (counts against a permitted allowance). Working prototypes and the full note live in `quickplot/README.md`; the folder is `.Rbuildignore`d and ships nothing.
+
+Not part of QuickMap, which is a mapping tool. This repo stays named `quickmap` until 1.0 ships, then quickplot gets its own repo rather than this one becoming an umbrella. The shared chrome (`build_banner_css()`, `build_legend_css()`, `generate_legend_html()`, `load_colour_scale()`, `assign_colour()`) moves to a third package only if maintaining it in two places starts to hurt; the colour scales stay here either way.
+
+--------------------------------------------------------------------------------
+
+## Known bugs
+
+(Former bug #1 — path resolution via `system.file()` — was fixed in v0.9.5 (roadmap item 1): quickmap is now a proper installed package loaded with `library(quickmap)`.)
+
+(A former bug #2 — `na.strings` passed via `...` to `import_csv_data` — was fixed in v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
+
+The open defect list is "Outstanding Issues" below; roadmap item 11 is
+where it gets cleared.
+
+--------------------------------------------------------------------------------
+
 ## Recent work, newest first
 
 ### 5 August — Animation speed control SIGNED OFF by Iarla, ready to merge

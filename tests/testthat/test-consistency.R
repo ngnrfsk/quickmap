@@ -27,12 +27,17 @@ planned_functions <- c(
 # Functions cited from other packages (not expected in R/quickmap.R or base R)
 external_functions <- c("aes")
 
-test_that("DESCRIPTION Version matches CLAUDE.md Current Version", {
+test_that("DESCRIPTION Version matches the version PROJECT_STATUS states", {
+  # The version moved out of CLAUDE.md on 2026-08-16: DESCRIPTION is
+  # authoritative, PROJECT_STATUS states it in prose for the reader, and
+  # those two are what must agree.
   desc_version <- read.dcf(file.path(root, "DESCRIPTION"))[1, "Version"]
-  heading <- grep("^### Current Version:", claude_md, value = TRUE)
+  status <- readLines(file.path(root, "dev/PROJECT_STATUS.md"), warn = FALSE)
+  heading <- grep("\\*\\*Current Version\\*\\*:", status, value = TRUE)
   expect_length(heading, 1)
-  claude_version <- sub("^### Current Version:\\s*", "", heading)
-  expect_identical(unname(desc_version), claude_version)
+  stated <- sub(".*\\*\\*Current Version\\*\\*:\\s*v?([0-9.]+).*", "\\1",
+                heading)
+  expect_identical(unname(desc_version), stated)
 })
 
 test_that("file paths referenced in CLAUDE.md exist", {
