@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>body { margin: 0; font-family: sans-serif; } #map { position: absolute; top: 60px; bottom: 0; width: 100%; }</style>
+</head>
+<body>
+<div style="height:60px; padding:10px; background:#005794; color:white;">
+    {{TITLE}} | <input type="range" id="slider" style="width:400px"> <span id="t"></span>
+</div>
+<div id="map"></div>
+<script>
+    const times = {{TIMES}};
+    const map = new maplibregl.Map({ 
+        container: 'map', 
+        style: 'https://demotiles.maplibre.org/style.json', 
+        center: [-0.1, 51.5], zoom: 11 
+    });
+    map.on('load', () => {
+        map.addSource('p', { type: 'geojson', data: {{POINTS}} });
+        map.addLayer({ id: 'pts', type: 'circle', source: 'p', paint: { 'circle-radius': 9, 'circle-color': {{PAINT}}, 'circle-stroke-width': 1, 'circle-stroke-color': '#fff' } });
+        
+        const slider = document.getElementById('slider');
+        slider.max = times.length - 1;
+        slider.addEventListener('input', (e) => {
+            const val = times[e.target.value];
+            document.getElementById('t').innerText = val;
+            let p = {{PAINT}}; p[1][1] = val; // Switch GPU pointer to new column
+            map.setPaintProperty('pts', 'circle-color', p);
+        });
+        document.getElementById('t').innerText = times[0];
+    });
+</script>
+</body>
+</html>
