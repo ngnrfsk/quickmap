@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>{{TITLE}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+    
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; }
+        
+        /* Banner Styles (from richmond.yaml) */
+        #banner {
+            background-color: {{BANNER_BG}};
+            color: {{BANNER_TEXT}};
+            padding: 10px 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        #map-container { position: relative; flex-grow: 1; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+
+        /* Legend Styles (from airstat_no2.yaml) */
+        #legend {
+            background-color: {{LEGEND_BG}};
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            z-index: 20;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Controls */
+        #controls {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 4px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 20;
+            width: 300px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        
+        input[type=range] { width: 100%; }
+        #date-display { font-weight: bold; font-size: 1.2em; text-align: center; margin-bottom: 5px; color: #333; }
+        
+        /* Mobile adjustment */
+        @media (max-width: 600px) {
+            #banner { font-size: 1.2rem; padding: 8px; }
+            #controls { width: 200px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="banner">
+    <span>{{TITLE}}</span>
+    <img src="https://via.placeholder.com/30" alt="Logo" style="height:24px; opacity:0.8;"> </div>
+
+<div id="map-container">
+    <div id="map"></div>
+
+    <div id="controls">
+        <div id="date-display">Loading...</div>
+        <input type="range" id="slider" min="0" max="0" value="0">
+        <div style="display:flex; justify-content:center; gap:10px; margin-top:5px;">
+            <button id="playBtn" style="cursor:pointer; padding: 4px 12px;">Play</button>
+        </div>
+    </div>
+
+    <div id="legend">
+        <h4 style="margin: 0 0 10px 0;">NO2 (µg/m³)</h4>
+        {{LEGEND_HTML}}
+    </div>
+</div>
+
+<script>
+    // --- 1. Injected Data ---
+    var pointsData = {{GEOJSON_POINTS}};
+    var boundsData = {{GEOJSON_BOUNDS}};
+    var vignetteData = {{GEOJSON_VIGNETTE}};
+    var timeSteps = {{TIME_STEPS}};
+    var initialBounds = {{INITIAL_BOUNDS}};
+    
+    // --- 2. Map Initialization ---
+    var map = new maplibregl.Map({
+        container: 'map',
+        style: 'https://demotiles.maplibre.org/style.json', // Basic neutral style
+        bounds: initialBounds,
+        fitBoundsOptions: { padding: 50 }
+    });
+
+    // --- 3. Animation Logic ---
+    var slider = document.getElementById('slider');
+    var dateDisplay = document.getElementById('date-display');
+    var playBtn = document.getElementById('playBtn');
+    var isPlaying = false;
+    var timer = null;
+
+    slider.max = timeSteps.length - 1;
+    dateDisplay.innerText = timeSteps[0];
+
+    // Convert YAML Scale to JS Function for Dynamic Updates
+    // We already injected the 'initial_paint', but we need to reconstruct it in JS loop
+    // or efficiently swap the property lookup.
+    
+    // Actually, the most efficient way in MapLibre is to keep the expression 
+    // but change the Property key being looked up: ['get', '2024-01'] -> ['get', '2024-02']
+    
+    // We will parse the Initial Paint provided by R to find the expression structure
+    var basePaintExpression = {{INITIAL_PAINT}}; 
+
+    map.on('load', function () {
+        
+        // A. Add Boundary (Richmond)
+        map.addSource('bounds', { type: 'geojson', data: boundsData });
+        map.addLayer({
+            'id': 'boundary-line',
+            'type': 'line',
+            'source': 'bounds',
+            'paint': {
+                'line-color': '{{BOUND_COLOR}}',
+                'line-width': 2.5,
+                'line-dasharray': {{BOUND_DASH}} 
+            }
+        });
+
+        // B. Add Vignette (Optional)
+        if (vignetteData) {
+            map.addSource('vignette', { type: 'geojson', data: vignetteData });
+            map.addLayer({
+                'id': 'vignette-fill',
+                'type': 'fill',
+                'source': 'vignette',
+                'paint': {
+                    'fill-color': '{{VIGNETTE_COLOR}}',
+                    'fill-opacity': {{VIGNETTE_OPACITY}}
+                }
+            });
+        }
+
+        // C. Add Pollution Points
+        map.addSource('points', { type: 'geojson', data: pointsData });
+        
+        map.addLayer({
+            'id': 'aq-points',
+            'type': 'circle',
+            'source': 'points',
+            'paint': {
+                'circle-radius': 8,
+                'circle-stroke-width': 1,
+                'circle-stroke-color': '#fff',
+                // This is the magic: The color is dynamic based on data
+                'circle-color': basePaintExpression
+            }
+        });
+
+        // --- Interaction ---
+        
+        function setTime(index) {
+            var selectedCol = timeSteps[index];
+            dateDisplay.innerText = selectedCol;
+            
+            // Clone the base expression
+            var newExpr = JSON.parse(JSON.stringify(basePaintExpression));
+            // Update the 'get' target (Index 1 of the 'step' expression)
+            // structure: ["step", ["get", "COLUMN_NAME"], default, stop, color...]
+            newExpr[1][1] = selectedCol;
+            
+            map.setPaintProperty('aq-points', 'circle-color', newExpr);
+        }
+
+        slider.addEventListener('input', function(e) {
+            setTime(parseInt(e.target.value));
+        });
+
+        playBtn.addEventListener('click', function() {
+            if (isPlaying) {
+                clearInterval(timer);
+                playBtn.innerText = "Play";
+                isPlaying = false;
+            } else {
+                playBtn.innerText = "Pause";
+                isPlaying = true;
+                timer = setInterval(function() {
+                    var val = parseInt(slider.value);
+                    if (val >= timeSteps.length - 1) val = -1;
+                    slider.value = val + 1;
+                    setTime(val + 1);
+                }, 500); // Speed from richmond.yaml could go here
+            }
+        });
+        
+        // Popups
+        map.on('click', 'aq-points', function (e) {
+            var coordinates = e.features[0].geometry.coordinates.slice();
+            var index = parseInt(slider.value);
+            var col = timeSteps[index];
+            var val = e.features[0].properties[col];
+            var site = e.features[0].properties.siteCode || "Site";
+
+            new maplibregl.Popup()
+                .setLngLat(coordinates)
+                .setHTML(`<strong>${site}</strong><br>${col}: ${val} µg/m³`)
+                .addTo(map);
+        });
+
+        // Change cursor on hover
+        map.on('mouseenter', 'aq-points', function () { map.getCanvas().style.cursor = 'pointer'; });
+        map.on('mouseleave', 'aq-points', function () { map.getCanvas().style.cursor = ''; });
+    });
+</script>
+
+</body>
+</html>
