@@ -57,7 +57,7 @@ own symbol, so readers can tell a reference tube from a low-cost sensor
 at a glance. The time slider covers every year found in *any* layer;
 layers without data for a year simply sit that year out.
 
-<iframe src="maps/layers-multilayer.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Three layers on one map: circles (tubes), diamonds (sensors), crosses (schools)"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/layers-multilayer.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Three layers on one map: circles (tubes), diamonds (sensors), crosses (schools)"></iframe>
 
 ## 2. Name a layer with `from_csv(name = )`
 

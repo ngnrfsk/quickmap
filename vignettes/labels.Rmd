@@ -24,7 +24,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/labels-hover.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Hover a symbol to see its value"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/labels-hover.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Hover a symbol to see its value"></iframe>
 
 ## 1. The five modes
 
@@ -49,7 +49,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/labels-values-on.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Values always shown beside each symbol"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/labels-values-on.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Values always shown beside each symbol"></iframe>
 
 ## 3. Site names instead of values
 
@@ -65,7 +65,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/labels-names.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Hover to see site and school names"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/labels-names.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Hover to see site and school names"></iframe>
 
 ## 4. How label content is chosen
 

@@ -33,7 +33,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/boundaries-two.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Two borough boundaries on one map"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/boundaries-two.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Two borough boundaries on one map"></iframe>
 
 `boroughs = "All"` draws every London borough. Minor misspellings of
 common names are corrected automatically; an unrecognised name lists the
@@ -52,7 +52,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/boundaries-labelled.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Borough names written on the map"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/boundaries-labelled.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Borough names written on the map"></iframe>
 
 ## 3. The vignette
 
