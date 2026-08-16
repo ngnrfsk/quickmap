@@ -5,9 +5,9 @@
 # Ignore where output lands, not what it is called.
 aq_maps/
 
-# pkgdown site: built locally, served from GitHub Pages once deployed.
-# Kept out of the repo until then — see dev/260707_manual_prospectus_v1.md.
-docs/
+# docs/ is NOT ignored: GitHub Pages serves the manual from it, and the
+# vignettes embed their example maps from that site because the maps are
+# too large to ship inside the package. Committed, not built on push.
 
 # Downloaded package tarballs kept for reference, not ours to version
 dev/*.tgz
