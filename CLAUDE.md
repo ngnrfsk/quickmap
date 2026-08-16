@@ -541,7 +541,9 @@ or labelling fewer features — not raising `label_scale`.
     lbm_no2's colours and thresholds unchanged but naming the 20 µg/m³ Merton
     target from **both** sides ("meets" on green 10-19, "above" on yellow
     20-29) — naming one side only lets a band label be read as the target
-    itself; `scripts/clients/merton_print-set_v5.R` renders 2019-2025 at 4000×3000
+    itself; the print-set script (v5, later v6 — moved out of the repo on
+    2026-08-15 to `~/Coding/260814 Merton AQAP maps and figures refresh/`)
+    renders 2019-2025 at 4000×3000
     with a solid `#2a75d4` banner bar matching the AQAP's own, schools drawn
     as crosses and labelled by name, and every site carrying its value.
     Two general fixes came with it: marker labels now **scale with the static
@@ -673,9 +675,40 @@ v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
     reached leaflet without a CSS unit, so every value had been silently
     ignored for years. When item 11 is picked up, that part is done; the
     rest of the list stands.
+13. Retest the alternative stacks before v1.0 (added 2026-08-15, user
+    decision). (Item 12 is the Breathe London fetch, on branch
+    feature/breathe-london-fetch / PR #51 — numbered there.) The front-end and back-end candidates were assessed in July
+    2026 — tmap and mapview in the atomic-unit survey
+    (dev/260706_atomic_unit_recommendation.md), Leaflet, MapLibre/mapgl,
+    mapdeck and React in the backend comparison
+    (dev/item5_backend-comparison_v1.md) — and the conclusions are now
+    stated publicly in README.md and the "For R users" vignette. Both are
+    moving targets (tmap v4 now builds on mapgl), so re-run the
+    comparison against current versions before release and correct the
+    public claims if anything has changed. Three grounds are load-bearing
+    and each must be re-tested, not assumed: **animation** (does any of
+    them yet produce self-contained interactive HTML with a time control,
+    rather than GIF or video?), **layer and symbol specification** (can a
+    single figure carry per-layer symbols — circles for tubes, diamonds
+    for sensors, crosses for schools — on one colour scale, in both
+    interactive and static output? verified inadequate by the author in
+    2026; the finding is not otherwise in the written record), and
+    **self-contained sharing** (one emailable file, no server).
+14. Rename the dev/ documents by date (added 2026-08-15, user decision).
+    Filenames in `dev/` follow at least three conventions —
+    `YYMMDD_name_vN.md` (the stated standard), `itemN_name_vN.md`, and
+    bare names — so the folder cannot be read in chronological order and
+    a reader cannot tell a current document from a superseded one.
+    Rename to the dated standard, keeping the item number in the
+    descriptive part where it carries meaning, and update every reference
+    (CLAUDE.md, PROJECT_STATUS.md, cross-references inside dev docs, the
+    concepts index, roxygen and vignette citations). Mechanical, but the
+    references make it error-prone: check with a grep sweep for the old
+    names afterwards.
 
 (Items 2 and 5 were inserted 2026-07-05; item 10 (UI polish) was inserted
-2026-07-06, renumbering the UI-defects item to 11. Dev docs written before
+2026-07-06, renumbering the UI-defects item to 11. Items 13 and 14 were
+added 2026-08-15, item 12 being the Breathe London fetch. Dev docs written before
 those dates use the older numbering — in particular the item-5 comparison doc
 says "item 10" for what is now item 11.)
 
