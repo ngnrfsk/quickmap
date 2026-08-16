@@ -69,7 +69,7 @@ a single self-contained file. Open it in any browser, attach it to an
 email, or put it on a website (it does need an internet connection to
 download the background map). Here is that exact file:
 
-<iframe src="maps/getstarted-first.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="First map: Wandsworth diffusion tubes, no boundary"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/getstarted-first.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="First map: Wandsworth diffusion tubes, no boundary"></iframe>
 
 **Reading the map:**
 
@@ -103,7 +103,7 @@ quickmap(
 - The boundary also drives the next step's vignette and the map's
   framing.
 
-<iframe src="maps/getstarted-boundary.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The same map with the Wandsworth boundary and vignette"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/getstarted-boundary.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The same map with the Wandsworth boundary and vignette"></iframe>
 
 ## 4. The vignette — focus attention inside the boundary
 
@@ -119,11 +119,11 @@ quickmap(
 )                                           #      (the default with a boundary)
 ```
 
-<iframe src="maps/getstarted-boundary.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Vignette on: dimmed outside the boundary"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/getstarted-boundary.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Vignette on: dimmed outside the boundary"></iframe>
 
 Set `vignette = FALSE` to show the surroundings at full brightness:
 
-<iframe src="maps/getstarted-vignette-off.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Vignette off: full brightness everywhere"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/getstarted-vignette-off.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Vignette off: full brightness everywhere"></iframe>
 
 *The vignette's colour follows the map's theme — themes bundle all such
 choices into one reusable YAML file (`?load_theme`).*
@@ -180,7 +180,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/getstarted-titled.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The map with its banner title"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/getstarted-titled.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The map with its banner title"></iframe>
 
 *The accent colour under the title can be set directly with
 `banner_colour =`; the banner's style (white strip or colour bar) and
@@ -201,7 +201,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/getstarted-labels.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Hover a symbol to see its value"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/getstarted-labels.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Hover a symbol to see its value"></iframe>
 
 *Labels have five modes — off, values on hover, values always shown, and
 site names (from a `Label` or `School` column) on hover or always shown:
@@ -225,7 +225,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/getstarted-networks.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Three networks on one map, symbols keyed in the banner"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/getstarted-networks.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Three networks on one map, symbols keyed in the banner"></iframe>
 
 *Naming layers, choosing each network's pollutant or symbol
 (`data_symbols`, `qm_layer()`), and mapping data frames you built
@@ -259,7 +259,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/getstarted-episode.html" width="100%" height="480" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="108-step hourly animation"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/getstarted-episode.html" width="100%" height="480" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="108-step hourly animation"></iframe>
 
 Above 50 time steps QuickMap automatically switches to a compact storage
 format, so even this five-day hourly animation stays around 1 MB — small
@@ -288,7 +288,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/getstarted-wind.html" width="100%" height="480" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The animation with a live wind-particle overlay"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/getstarted-wind.html" width="100%" height="480" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The animation with a live wind-particle overlay"></iframe>
 
 Wind particles are coloured by wind speed. *Requires the `worldmet`
 package and an internet connection for the NOAA fetch; particle styling

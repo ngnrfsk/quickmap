@@ -28,7 +28,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/getstarted-episode.html" width="100%" height="480" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="108 hourly steps on the time slider"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/getstarted-episode.html" width="100%" height="480" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="108 hourly steps on the time slider"></iframe>
 
 ## 1. Choose which steps to show
 
