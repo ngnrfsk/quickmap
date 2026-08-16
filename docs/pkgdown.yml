@@ -1,0 +1,17 @@
+pandoc: 3.8.3
+pkgdown: 2.0.7
+pkgdown_sha: ~
+articles:
+  boundaries: boundaries.html
+  labels: labels.html
+  layers: layers.html
+  quickmap: quickmap.html
+  r-users: r-users.html
+  recipes: recipes.html
+  sharing: sharing.html
+  styling: styling.html
+  time: time.html
+  wind: wind.html
+  your-data: your-data.html
+last_built: 2026-08-12T10:11Z
+
