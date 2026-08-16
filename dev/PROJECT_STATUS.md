@@ -55,6 +55,16 @@ dev/260708_item9_check-baseline_v1.md) and the known screen-defect list
 (roadmap item 11, below), which now includes stopping maps from burning
 CPU when they're in a background tab.
 
+**Where maps get saved must change before release** (added 2026-08-16,
+roadmap item 9). QuickMap makes an `aq_maps` folder wherever you happen
+to be working and puts every map in it. R's package rules forbid that:
+a package may only write where the user has said to write. So you will
+have to name the file — `quickmap("data.csv", output_file = "map.html")`
+— and it lands where you are, or wherever you point it. Scripts that
+relied on the folder appearing by itself will need that one argument
+added. The decision, what it breaks and the order to do it in:
+/Users/iarla/Coding/quickmap/dev/260816_output_paths_decision.md
+
 --------------------------------------------------------------------------------
 
 ## Recent work, newest first
