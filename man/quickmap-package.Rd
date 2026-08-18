@@ -8,7 +8,7 @@
 Creates interactive and static air quality maps showing pollution data (NO2, PM2.5) overlaid with school locations and borough boundaries. Uses Leaflet for interactive HTML maps and supports static JPG export. Designed for UK local government air quality reporting, but can plot any coloured points on a map.
 }
 \author{
-\strong{Maintainer}: Iarla Kilbane-Dawe \email{iarlakd@gmail.com}
+\strong{Maintainer}: Iarla Kilbane-Dawe \email{ngnrfsk@users.noreply.github.com}
 
 }
 \keyword{internal}
