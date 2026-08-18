@@ -61,6 +61,12 @@ Items are never renumbered; other documents cite these numbers.
 6.  Four `sapply()` calls to `vapply()`; the live one is in
     `create_generic_icons()`, around R/quickmap.R:3092.
 7.  Audit docs against code; mark dev docs current or historical.
+8.  **Done (v0.9.9.13).** `shorten_school_names()` brought into the package
+    from the Merton print script, as `qm_layer(shorten_labels =)` and
+    `from_csv(shorten_labels =)`, defaulting FALSE. Schools only; the
+    vocabulary for other place types is post-1.0. Added 2026-08-17 after the
+    demonstration map showed full school names — the shortening had never been
+    in the package.
 
 ### 11. Clear the open defects — last item before release
 
@@ -110,6 +116,13 @@ Items 2 and 5 inserted 2026-07-05; item 10 on 07-06, renumbering UI defects to
   historical; hardcoded keys in `250120_RSP_BL_download` move to `.Renviron`.
 - **Wind styling presets**: preset ramps, speed-scaled width and opacity, per
   theme. Theme YAML only.
+- **Place types beyond schools**: extend the label shortening to hospitals, GP
+  surgeries and similar. Each has its own vocabulary ("NHS Foundation Trust",
+  "Surgery", "Medical Centre"), so it wants a YAML place-type config carrying
+  the column gate, the category vocabulary and the suffix list. That also
+  absorbs the four places where `School` is hardcoded as the duck-typing gate
+  (R/qm_layer.R:223, 342, 364; R/quickmap.R:3410). Decided 2026-08-17 to keep
+  1.0 schools-only rather than widen the data format mid-item 9.
 - **Tile-dependent particle density**: 1/300 suits OSM; CartoDB.Positron needs
   about 0.00125. Default should follow the tiles.
 
@@ -133,7 +146,9 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
 - **14. Fixed panel unexplained.** "Network mean, N sites" counts fewer sites
   than are on screen; add a tooltip.
 - **15. Split import from map creation.**
-- **16. Automate label placement**, clustering and spread.
+- **16. Automate label placement**, clustering and spread. Includes reducing
+  label clashes and overlaps generally (added 2026-08-17); shortening school
+  names (item 9.8) buys width but does not place anything.
 - **LCA-1/2/3.** Collapsible radio buttons bottom-left; open at a zoom filling
   the screen; choose the layer visible on load.
 

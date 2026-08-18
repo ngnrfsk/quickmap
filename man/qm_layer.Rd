@@ -10,7 +10,8 @@ qm_layer(
   time_col = NULL,
   label_col = NULL,
   shape = NULL,
-  name = "layer"
+  name = "layer",
+  shorten_labels = FALSE
 )
 }
 \arguments{
@@ -36,6 +37,13 @@ for static layers, cycling in layer order). A map-level \code{data_symbols}
 argument to \code{\link[=quickmap]{quickmap()}} overrides this.}
 
 \item{name}{Human-visible layer name (legends, controls, errors)}
+
+\item{shorten_labels}{Drop the school type from the label column, so
+"Abbotsbury Primary School" reads "Abbotsbury" and the type appears once
+in the banner key instead of on every marker. Default FALSE, because it
+changes what an existing map says. Names that would collide keep their
+full form — see \code{\link[=shorten_school_names]{shorten_school_names()}}. Schools only for 1.0; the
+layer is left alone when it has no label column.}
 }
 \value{
 The data as a \code{qm_layer} (still an sf data.frame)
@@ -60,6 +68,7 @@ Other atomic unit:
 \code{\link{from_csv}()},
 \code{\link{from_openair}()},
 \code{\link{from_rdata}()},
-\code{\link{qm_meta}()}
+\code{\link{qm_meta}()},
+\code{\link{shorten_school_names}()}
 }
 \concept{atomic unit}

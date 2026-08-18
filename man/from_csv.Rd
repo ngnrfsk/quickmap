@@ -4,7 +4,13 @@
 \alias{from_csv}
 \title{Build a qm_layer from a CSV file}
 \usage{
-from_csv(file, pollutant = "no2", name = NULL, temporal = NULL)
+from_csv(
+  file,
+  pollutant = "no2",
+  name = NULL,
+  temporal = NULL,
+  shorten_labels = FALSE
+)
 }
 \arguments{
 \item{file}{Path to the CSV (relative paths resolve against \code{DATA_PATH})}
@@ -15,6 +21,9 @@ from_csv(file, pollutant = "no2", name = NULL, temporal = NULL)
 
 \item{temporal}{Force temporal (TRUE) or static (FALSE) handling; NULL
 (default) auto-detects: more than one year column means temporal}
+
+\item{shorten_labels}{Drop the school type from school names — see
+\code{\link[=qm_layer]{qm_layer()}}. Default FALSE.}
 }
 \value{
 A \code{\link[=qm_layer]{qm_layer()}}
@@ -30,6 +39,7 @@ Other atomic unit:
 \code{\link{from_openair}()},
 \code{\link{from_rdata}()},
 \code{\link{qm_layer}()},
-\code{\link{qm_meta}()}
+\code{\link{qm_meta}()},
+\code{\link{shorten_school_names}()}
 }
 \concept{atomic unit}
