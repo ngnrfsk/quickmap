@@ -2344,7 +2344,8 @@ add_year_and_static_layers <- function(
 #' @param indicator Aggregate figures from [build_indicator_data()], or NULL
 #' @param indicator_label Caption for the indicator, or NULL for the default
 #' @param indicator_show_max Also mark the network maximum, as a diamond
-#' @param indicator_placement "right" of the ramp or "under_title"
+#' @param indicator_placement "title_row" (the default theme's), "under_title",
+#'   or "right" of the ramp
 #' @param banner_key Reference-layer key from [build_banner_key()], drawn at
 #'   the end of the banner. NULL for no key.
 #' @return The map object, invisibly used by the caller's loop
