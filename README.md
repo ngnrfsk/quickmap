@@ -89,8 +89,9 @@ for the layer contract.
 
 Design decisions behind the package are recorded in `dev/`, notably the
 atomic-unit survey (`dev/260706_atomic_unit_recommendation.md`, which
-covers tmap and mapview in more detail) and the rendering-backend
-comparison (`dev/item5_backend-comparison_v1.md`).
+covers tmap and mapview in more detail). The rendering backend was chosen
+by benchmark in July 2026 — Leaflet over MapLibre/mapgl and mapdeck, with
+MapLibre the migration path beyond v1.0.
 
 ## Licence
 

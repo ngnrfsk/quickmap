@@ -17,6 +17,15 @@ Packaging", done at v0.9.5.
 
 Current status: dev/PROJECT_STATUS.md. Version history: NEWS.md.
 
+Five dev documents named in the text below were deleted on 2026-08-17 and are
+readable only in git history, at the commit that last held each:
+`item5_backend-comparison_v1.md` (4b4d0d4), `item5_start-prompt_v1.md`
+(ca5d02d), `item6_start-prompt_v1.md` (0a8a9f6), `item8_start-prompt_v1.md`
+(f496e39) and `speed-control_start-prompt_v1.md` (8b97de2). The four
+start-prompts were
+session kick-off instructions, spent once their item shipped; the benchmark
+document's conclusions are in the item 5 section below.
+
 --------------------------------------------------------------------------------
 
 
