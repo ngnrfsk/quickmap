@@ -93,7 +93,7 @@ test_that("symbol stroke scales with the export too", {
 
 test_that("value labels carry proper units on both rendering paths", {
   data <- data.frame(no2 = c(28.4, NA), Easting = 1, Northing = 1)
-  labels <- quickmap:::generate_marker_labels(data, "no2", "values_on", "dt")
+  labels <- quickmap:::generate_symbol_labels(data, "no2", "values_on", "dt")
   expect_equal(labels[1], "28 µg/m³")
   expect_equal(labels[2], "")          # no label where there is no value
   expect_false(grepl("ug/m3", labels[1], fixed = TRUE))
@@ -112,7 +112,7 @@ test_that("values_on labels schools by name and sites by value", {
   # set: content is duck-typed per layer, so one setting gives both.
   schools <- data.frame(School = c("Aragon Primary School"), no2 = NA)
   expect_equal(
-    quickmap:::generate_marker_labels(schools, "no2", "values_on", "schools"),
+    quickmap:::generate_symbol_labels(schools, "no2", "values_on", "schools"),
     "Aragon Primary School"
   )
 
@@ -120,11 +120,11 @@ test_that("values_on labels schools by name and sites by value", {
   # "labels_on" is what asks for the Label column instead
   sites <- data.frame(Label = "Bushey Road", no2 = 47)
   expect_equal(
-    quickmap:::generate_marker_labels(sites, "no2", "values_on", "dt"),
+    quickmap:::generate_symbol_labels(sites, "no2", "values_on", "dt"),
     "47 µg/m³"
   )
   expect_equal(
-    quickmap:::generate_marker_labels(sites, "no2", "labels_on", "dt"),
+    quickmap:::generate_symbol_labels(sites, "no2", "labels_on", "dt"),
     "Bushey Road"
   )
 })

@@ -5,7 +5,7 @@ banner:
 map:
   vignette: true
   boundary_labels: false
-  marker_labels: false
+  symbol_labels: false
   zoom_level: 11
   base_tiles: "CartoDB.Positron"  # Clean light basemap
 

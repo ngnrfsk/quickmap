@@ -27,7 +27,7 @@ shape_map_payload <- function(layers, ...) {
     ...
   ))
   html <- paste(
-    readLines(file.path("aq_maps", "item9_shapes.html"), warn = FALSE),
+    readLines("item9_shapes.html", warn = FALSE),
     collapse = "\n"
   )
   char_lazy_payload(char_payload(html))

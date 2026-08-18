@@ -24,7 +24,8 @@ quickmap(
   boroughs     = c("Wandsworth", "Richmond"),
   colour_scale = "stripes_pm25",
   autoplay     = TRUE,                     # play on open
-  play_speed   = 500                       # milliseconds per step
+  play_speed   = 500,                       # milliseconds per step
+  output_file = "episode.html"
 )
 ```
 
@@ -46,7 +47,8 @@ way the data writes them:
 quickmap(
   "tubes_wandsworth.csv",
   boroughs      = "Wandsworth",
-  display_times = 2020:2022                # NEW: three of the eight years
+  display_times = 2020:2022,                # NEW: three of the eight years
+  output_file = "episode.html"
 )
 ```
 

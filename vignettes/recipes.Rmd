@@ -31,7 +31,7 @@ quickmap(
   title         = "Merton NO2: ● tubes ◆ sensors ✖ schools",
   theme_file    = system.file("themes", "merton.yaml",
                               package = "quickmap"),
-  marker_labels = "labels",                # names on hover, where the data
+  symbol_labels = "labels",                # names on hover, where the data
                                            # has them (layers without a
                                            # Label column show values)
   display_times = 2020:2022,
@@ -74,7 +74,7 @@ quickmap(
   ),
   boroughs      = "Wandsworth",
   title         = "Wandsworth sites: ● tubes ◆ sensors ✖ proposed",
-  marker_labels = "labels",
+  symbol_labels = "labels",
   output_file   = "wandsworth_sites.html"
 )
 ```

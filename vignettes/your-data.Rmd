@@ -47,7 +47,8 @@ fine: the site sits that year out.*
 quickmap(
   list("~/my_data/tubes_merton.csv",
        "~/my_data/schools_merton.csv"),     # context layer on top
-  boroughs = "Merton"
+  boroughs = "Merton",
+  output_file = "my_first_map.html"
 )
 ```
 
@@ -69,7 +70,8 @@ quickmap(
   from_rdata("sensors_london.RData",
              "no2",                          # the pollutant column to map
              name = "Breathe London"),
-  boroughs = "Merton"
+  boroughs = "Merton",
+  output_file = "my_first_map.html"
 )
 ```
 
@@ -129,7 +131,8 @@ quickmap(
                avg.time = "month",         # aggregate hours -> monthly means
                source = "aurn",            # network, for coordinate lookup
                name = "AURN"),
-  boroughs = "All"
+  boroughs = "All",
+  output_file = "my_first_map.html"
 )
 ```
 
@@ -144,7 +147,8 @@ laqn <- importImperial(site = "wm0",       # a LAQN site code
 quickmap(
   from_openair(laqn, pollutant = "no2", avg.time = "month",
                source = "kcl", name = "LAQN"),
-  boroughs = "All"
+  boroughs = "All",
+  output_file = "my_first_map.html"
 )
 ```
 

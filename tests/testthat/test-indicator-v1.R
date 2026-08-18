@@ -9,7 +9,7 @@ make_layers <- function(ids, static = FALSE) {
   stats::setNames(
     lapply(ids, function(id) {
       list(enabled = TRUE, id = id, static = static, icon_shape = "circle",
-           options = list(marker_labels = FALSE))
+           options = list(symbol_labels = FALSE))
     }),
     ids
   )

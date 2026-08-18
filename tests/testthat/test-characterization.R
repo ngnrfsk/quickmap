@@ -119,7 +119,7 @@ test_that("episode map: lazy payload replaces per-step marker groups", {
   expect_equal(unlist(lazy$thresholds), c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50))
   expect_equal(length(lazy$colours), 11)
   expect_true(all(grepl("^#[0-9A-F]{6}$", unlist(lazy$colours))))
-  expect_equal(lazy$layers[[1]]$labelMode, "values")   # marker_labels = TRUE
+  expect_equal(lazy$layers[[1]]$labelMode, "values")   # symbol_labels = TRUE
 })
 
 test_that("episode map: file size — item 6 lazy-loading result", {

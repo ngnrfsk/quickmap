@@ -21,9 +21,10 @@ map1_merton_no2 <- quickmap(
   colour_scale = "who_no2",
   theme_file = system.file("themes", "airstat.yaml", package = "quickmap"),
   output_file = "merton_no2_2018_2024_dt_bl_airstat.html",
+  output_dir = "aq_maps",
   title = "LB Merton Annual Mean NO2, 2018-2024. ✖ Schools. Sensors: ● Diffusion Tubes ◆ Breathe London.",
   vignette = TRUE,
-  marker_labels = "labels",
+  symbol_labels = "labels",
   banner_colour = "#5F3E94", # Merton purple
   boundary_labels = FALSE
 )
@@ -40,9 +41,10 @@ map2_wandsworth_no2 <- quickmap(
   boroughs = "Wandsworth",
   colour_scale = "lbw_no2",
   output_file = "wandsworth_no2_2017_2024_dt_bl_schools.html",
+  output_dir = "aq_maps",
   title = "LB Wandsworth Annual Mean NO2, 2017-2024. ✖ Schools. Sensors: ● Diffusion Tubes ◆ Breathe London.",
   vignette = TRUE,
-  marker_labels = "labels",
+  symbol_labels = "labels",
   banner_colour = "#00549F", # Wandsworth blue
   boundary_labels = FALSE
 )
@@ -58,9 +60,10 @@ map3_richmond_no2 <- quickmap(
   boroughs = "Richmond",
   colour_scale = "lbrut_no2",
   output_file = "richmond_no2_1993_2024_dt_bl.html",
+  output_dir = "aq_maps",
   title = "LB Richmond Annual Mean NO2, 1993-2024. Sensors: ● Diffusion Tubes ◆ Breathe London",
   vignette = TRUE,
-  marker_labels = "labels",
+  symbol_labels = "labels",
   banner_colour = "#00824B", # Richmond green
   boundary_labels = FALSE
 )
@@ -77,9 +80,10 @@ map4_merton_pm25 <- quickmap(
   pollutant = "pm25",
   colour_scale = "gla_pm25",
   output_file = "merton_pm25_2022_2024_bl.html",
+  output_dir = "aq_maps",
   title = "LB Merton Annual Mean PM2.5, 2022-2024. ✖ Schools. Sensors: ◆ Breathe London.",
   vignette = TRUE,
-  marker_labels = "labels",
+  symbol_labels = "labels",
   banner_colour = "#5F3E94", # Merton purple
   boundary_labels = FALSE
 )
@@ -93,9 +97,10 @@ map5_wandsworth_pm25 <- quickmap(
   pollutant = "pm25",
   colour_scale = "gla_pm25",
   output_file = "wandsworth_pm25_2021_2025_bl.html",
+  output_dir = "aq_maps",
   title = "LB Wandsworth Annual Mean PM2.5, 2022-2024. Sensors: ◆ Breathe London",
   vignette = TRUE,
-  marker_labels = "labels",
+  symbol_labels = "labels",
   banner_colour = "#00549F", # Wandsworth blue
   boundary_labels = FALSE
 )
@@ -109,9 +114,10 @@ map6_richmond_pm25 <- quickmap(
   pollutant = "pm25",
   colour_scale = "gla_pm25",
   output_file = "richmond_pm25_2022_2024_bl.html",
+  output_dir = "aq_maps",
   title = "LB Richmond Annual Mean PM2.5, 2022-2024. Sensors: ◆ Breathe London",
   vignette = TRUE,
-  marker_labels = "labels",
+  symbol_labels = "labels",
   banner_colour = "#00824B", # Richmond green
   boundary_labels = FALSE
 )

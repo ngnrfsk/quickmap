@@ -6,7 +6,7 @@ editor_options:
 
 # QuickMap Project Status
 
-**Last Updated**: 2026-08-16 **Current Version**: v0.9.9.12
+**Last Updated**: 2026-08-17 **Current Version**: v0.9.9.13
 
 Version history: NEWS.md. History before 2026-08-16:
 dev/archive/PROJECT_STATUS_history_to_260816.md.
@@ -15,8 +15,10 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 
 ## Where the project stands
 
-- Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain. Item 9 is next.
-- Nothing in progress on main. Four PRs open, three waiting on Iarla.
+- Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain. Item 9 is in
+  progress: 9.1 and 9.3 done on `feature/item9-output-paths`, awaiting visual
+  sign-off; 9.2 and 9.4 to 9.7 remain.
+- Four PRs open, three waiting on Iarla, plus the item 9 branch to raise.
 
 ## Waiting on Iarla
 
@@ -43,12 +45,15 @@ Items are never renumbered; other documents cite these numbers.
 `quickmap()` API (v0.9.6), 5 backend decision, 6 lazy loading (v0.9.7), 7 wind
 (v0.9.8), 8 examples, 10 UI polish (v0.9.9.5).
 
-### 9. CRAN compliance and internal consistency — next
+### 9. CRAN compliance and internal consistency — in progress
 
-1.  Output paths: no auto `aq_maps/`; the user names the file.
+1.  **Done (v0.9.9.13).** Output paths: no auto `aq_maps/`; the user names the
+    file. `output_file` required, `output_dir` and `quickmap.output_dir` added.
     dev/260816_output_paths_decision.md.
 2.  `R CMD CHECK` clean: dev/260708_item9_check-baseline_v1.md.
-3.  Rename `marker_labels` to `symbol_labels`, old name kept working.
+3.  **Done (v0.9.9.13).** Renamed `marker_labels` to `symbol_labels`; the old
+    name works with a warning, at the API and in a theme file's
+    `map.marker_labels`.
 4.  Defects and roadmap to GitHub Issues, plus DESCRIPTION `URL:`/`BugReports:`.
     Steps 2 and 3 of dev/260816_item9_status_restructure_plan.md.
 5.  Client scripts move to a workspace repo; `inst/examples/` keeps generic
@@ -154,6 +159,11 @@ Index, documents, code and demonstration maps: dev/concepts/README.md.
 
 ## Recent work
 
+- **17 August**: items 9.1 and 9.3 built on `feature/item9-output-paths`
+  (v0.9.9.13). Two filename defects fixed in passing: the per-step JPG loop
+  dropped any directory the caller gave, and put the raw time step in the
+  filename, so a sub-annual step wrote spaces and colons into a path. PR #48
+  (the manual) is released for review once this merges; PR #51 needs a rebase.
 - **16 August**: project record split by content type — history to NEWS.md and
   the archive, roadmap and defects here, decisions to dev/ citations. Output
   paths decided (dev/260816_output_paths_decision.md), which holds PR #48.

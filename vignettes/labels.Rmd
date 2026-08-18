@@ -12,7 +12,7 @@ knitr::opts_chunk$set(eval = FALSE)
 ```
 
 Labels put the number — or the site name — behind each symbol. One
-parameter, `marker_labels`, controls both what a label says and when it
+parameter, `symbol_labels`, controls both what a label says and when it
 appears:
 
 ```{r hover-values}
@@ -20,7 +20,8 @@ library(quickmap)                          # load the quickmap library
 quickmap(
   "tubes_wandsworth.csv",
   boroughs      = "Wandsworth",
-  marker_labels = TRUE                     # values appear on hover
+  symbol_labels = TRUE,                     # values appear on hover
+  output_file = "wandsworth_labels.html"
 )
 ```
 
@@ -28,7 +29,7 @@ quickmap(
 
 ## 1. The five modes
 
-| `marker_labels =` | What appears | When |
+| `symbol_labels =` | What appears | When |
 |---|---|---|
 | `FALSE` (default) | nothing | — |
 | `TRUE` | the site's value | on hover |
@@ -45,7 +46,8 @@ public page — show the values permanently:
 quickmap(
   "tubes_wandsworth.csv",
   boroughs      = "Wandsworth",
-  marker_labels = "values_on"              # NEW: values always shown
+  symbol_labels = "values_on",              # NEW: values always shown
+  output_file = "wandsworth_labels.html"
 )
 ```
 
@@ -61,7 +63,8 @@ quickmap(
   list("tubes_wandsworth_labelled.csv", # tubes WITH a Label column
        "schools_wandsworth.csv"),                  # schools (School column)
   boroughs      = "Wandsworth",
-  marker_labels = "labels"                 # NEW: names on hover
+  symbol_labels = "labels",                 # NEW: names on hover
+  output_file = "wandsworth_labels.html"
 )
 ```
 
@@ -88,4 +91,4 @@ Per layer, by its columns (duck typing):
 - [Get started](quickmap.html) step 8 — labels in the build-up.
 - [Your data](your-data.html) — where `Label` and `School` columns fit
   in each input format.
-- `?quickmap` — the `marker_labels` parameter.
+- `?quickmap` — the `symbol_labels` parameter.
