@@ -37,14 +37,26 @@ quickmap(
   autoplay = TRUE
 )
 
-# 3. Schools and labels, under the new argument name.
+# 3. Schools and labels, under the new argument name. Two versions, so the
+#    school-name shortening (item 9.8) can be compared side by side.
 quickmap(
   list("merton_dt_2018_2024.csv", "schools_Merton.csv"),
   boroughs = "Merton",
   colour_scale = "who_no2",
-  title = "Item 9: Merton NO2 with schools",
-  symbol_labels = "values_on",
+  title = "Item 9: Merton NO2 with schools, full names",
+  symbol_labels = "labels_on",
   output_file = "item9_merton-schools_v1.html",
+  output_dir = out
+)
+
+quickmap(
+  list("merton_dt_2018_2024.csv",
+       from_csv("schools_Merton.csv", shorten_labels = TRUE)),
+  boroughs = "Merton",
+  colour_scale = "who_no2",
+  title = "Item 9: Merton NO2 with schools, names shortened",
+  symbol_labels = "labels_on",
+  output_file = "item9_merton-schools-short_v1.html",
   output_dir = out
 )
 

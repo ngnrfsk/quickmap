@@ -86,6 +86,37 @@ Per layer, by its columns (duck typing):
 - Mixed maps mix naturally: in the example above the tubes show their
   labels and the schools their names, each layer from its own column.
 
+## 5. Shorter school names
+
+School names repeat their type 53 times on a Merton map — "Abbotsbury
+Primary School", "Aragon Primary School". The type is already in the
+banner key, so `shorten_labels = TRUE` drops it from the markers:
+
+```{r shorten}
+quickmap(
+  list("tubes_merton.csv",
+       from_csv("schools_merton.csv",
+                shorten_labels = TRUE)),      # NEW: "Abbotsbury", not
+  boroughs      = "Merton",                   #      "Abbotsbury Primary School"
+  symbol_labels = "labels",
+  output_file   = "merton_schools.html"
+)
+```
+
+It is set on the layer, not the map, because it describes that layer's
+data. On Merton's 53 schools it shortens 47 and cuts the longest label
+from 47 characters to 32.
+
+**Two schools never merge into one label.** Where shortening would give
+two schools the same name they keep their full names — "Harris Primary
+Academy Merton" and "Harris Academy Merton" are different schools. The
+exception is a pair whose `Level` differs: the cross colour already tells
+them apart, so the short form is kept.
+
+The vocabulary is schools-only (`Primary`, `Secondary`, `Infant`,
+`Junior`, and a trailing `School`, `Academy` or `College`). Hospitals and
+GP surgeries need their own, which is planned after 1.0.
+
 ## See also
 
 - [Get started](quickmap.html) step 8 — labels in the build-up.
