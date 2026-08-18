@@ -4,1223 +4,161 @@ editor_options:
     wrap: 80
 ---
 
-# QuickMap Project Status Summary
+# QuickMap Project Status
 
 **Last Updated**: 2026-08-16 **Current Version**: v0.9.9.12
+
+Version history: NEWS.md. History before 2026-08-16:
+dev/archive/PROJECT_STATUS_history_to_260816.md.
 
 --------------------------------------------------------------------------------
 
 ## Where the project stands
 
-QuickMap is at v0.9.9.12, close to v1.0. Working and signed off: the map
-look (title strip or colour bar, colour-ramp legend, draggable time
-slider, playback speed button), optional borough boundaries, per-layer
-symbol choice, the wind overlay, the network mean and maximum shown on
-the legend, small email-able animations, and an eleven-chapter user
-manual built as a website with live example maps.
+- Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain. Item 9 is next.
+- Nothing in progress on main. Four PRs open, three waiting on Iarla.
 
-**Waiting on Iarla (as at 16 August):**
+## Waiting on Iarla
 
-1. **Three open pull requests to review.**
-   - **#52** https://github.com/ngnrfsk/quickmap/pull/52 — the manual
-     chapters were being left out of the built package; also adds the
-     first README and records why QuickMap is not tmap or mapview.
-   - **#50** https://github.com/ngnrfsk/quickmap/pull/50 — merging a PR
-     now asks for your approval at a prompt instead of being forbidden.
-   - **#51** https://github.com/ngnrfsk/quickmap/pull/51 — draft, the new
-     Breathe London data fetch. Waiting on the API key, not on you.
-
-2. **The manual (#48) is deliberately on hold.** See the note below on
-   where maps get saved: approving the manual now would mean reviewing it
-   twice.
-
-3. **Publish the manual website.** Repository settings, Pages, source =
-   main branch, `/docs` folder. The chapters now load their example maps
-   from that site, so the links stay broken until it is switched on.
-
-4. **A Breathe London API key.** Register at
-   https://www.breathelondon.org/developers, then put it in `~/.Renviron`
-   as `BREATHE_LONDON_KEY`. The old key stopped working: that service was
-   shut down in 2025.
-
-5. **Three maps to upload** to swlonrsp.github.io, in
+1. **Review PR #52** — vignettes were missing from the built package; adds the
+   first README.
+2. **Review PR #50** — merging now asks for approval at a prompt.
+3. **Switch on GitHub Pages**: settings → Pages → main branch, `/docs`. The
+   manual's example-map links stay broken until it is on.
+4. **Get a Breathe London API key** at breathelondon.org/developers. Put it in
+   `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
+5. **Upload three maps** to swlonrsp.github.io from
    `/Users/iarla/Coding/260814 Merton AQAP maps and figures refresh/animations/`.
-   They replace the two Merton maps on the site.
 
-*(Decided 13 July: `marker_labels` will be renamed to `symbol_labels`
-with the old name kept working — happens in the final tidy-up,
-roadmap item 9.)*
-
-**Left before v1.0:** the final code tidy-up (roadmap item 9: make the
-package pass R's formal check, five known small issues listed in
-dev/260708_item9_check-baseline_v1.md) and the known screen-defect list
-(roadmap item 11, below), which now includes stopping maps from burning
-CPU when they're in a background tab.
-
-**The manual is on hold until the saving change is done** (decided
-2026-08-16). The manual rewrite (PR #48) describes the `aq_maps` folder
-in two chapters and uses the old `marker_labels` name throughout. Both
-change in roadmap item 9, so approving the manual now would mean
-reviewing it twice. Order: item 9 first, then update those pages on the
-manual's branch, then one review.
-
-**Where maps get saved must change before release** (added 2026-08-16,
-roadmap item 9). QuickMap makes an `aq_maps` folder wherever you happen
-to be working and puts every map in it. R's package rules forbid that:
-a package may only write where the user has said to write. So you will
-have to name the file — `quickmap("data.csv", output_file = "map.html")`
-— and it lands where you are, or wherever you point it. Scripts that
-relied on the folder appearing by itself will need that one argument
-added. The decision, what it breaks and the order to do it in:
-/Users/iarla/Coding/quickmap/dev/260816_output_paths_decision.md
+PR #48, the manual, is held until item 9 changes output paths and renames
+`marker_labels`. Reviewing it now would mean reviewing it twice.
 
 --------------------------------------------------------------------------------
 
-## The roadmap
+## Roadmap
 
-The numbered list of work to v1.0. Items are referenced by number
-throughout the project's documents.
+Items are never renumbered; other documents cite these numbers.
 
-Items 1 to 8 and item 10 are done. Items 9, 11, 12, 13 and 14 remain
-before v1.0. "Above" and "below" in the text below refer to CLAUDE.md,
-where this list used to live.
+**Done:** 1 packaging (v0.9.5), 2 characterization tests, 3 qm_layer, 4
+`quickmap()` API (v0.9.6), 5 backend decision, 6 lazy loading (v0.9.7), 7 wind
+(v0.9.8), 8 examples, 10 UI polish (v0.9.9.5).
 
-1.  Fix the path-resolution bug above — DONE (v0.9.5)
+### 9. CRAN compliance and internal consistency — next
 
-2.  Characterization test net — before any API or rendering change, write testthat tests that assert on the rendered HTML output of the smoke-test maps: marker counts per layer and time step, layer group names, embedded JSON payload structure, and presence of the injected banner/legend/year-control blocks. These assert output, not function signatures, so they survive the item-4 API refactor and act as the regression net for items 4 and 6. They live in `tests/testthat/` and join the automated gate once written
+- `R CMD CHECK` clean: dev/260708_item9_check-baseline_v1.md.
+- Output paths: no auto `aq_maps/`; the user names the file.
+  dev/260816_output_paths_decision.md.
+- Rename `marker_labels` to `symbol_labels`, old name kept working.
+- Defects and roadmap to GitHub Issues, plus DESCRIPTION `URL:`/`BugReports:`.
+  Steps 2 and 3 of dev/260816_item9_status_restructure_plan.md.
+- Client scripts move to a workspace repo; `inst/examples/` keeps generic ones.
+  May finish post-1.0 if the package no longer depends on them.
+- Four `sapply()` calls to `vapply()`; the live one is in
+  `create_generic_icons()`, around R/quickmap.R:3092.
+- Audit docs against code; mark dev docs current or historical.
 
-3.  Formalise the atomic data unit and wrapper API (see below)
+### 11. Clear the open defects — last item before release
 
-4.  Refactor `create_pollution_map()` as a thin wrapper around `quickmap()` — ease of use takes priority over retaining the existing API; when the API changes, all examples, docs, vignettes, and test files must be updated in the same change. Plan API development with care to minimise revisions of these key files — settle the design before implementing rather than rewriting everything repeatedly
+- The list is "Open defects" below. Not to be picked off piecemeal.
+- Marker/text scaling was done early on 2026-08-05.
 
-5.  Rendering backend decision — **DONE, decision approved 2026-07-06: Option D** (keep Leaflet; Canvas markers + embedded JSON + minimal custom JS time controller). Comparison and evidence: dev/item5_backend-comparison_v1.md (PR #22). MapLibre/mapgl recorded as the V2 migration path; item 6 is unblocked and implements Option D
+### 12. Breathe London fetch for the 2025 API — after 9, before 11
 
-6.  Implement time step cap and lazy loading — addresses the CRITICAL HTML file-size blocker recorded in dev/PROJECT_STATUS.md
+- `bl_sensors()`, `bl_data()`, `from_breathelondon()` built and fixture-tested
+  on PR #51 (draft). Blocked on the API key.
+- The 75% capture rule voids 117 of 345 Merton site-years, including every raw
+  mean above 60 µg/m³. Survivors differ from published values by up to 16.5
+  µg/m³, unexplained.
+- Remaining: live probes, and licence attribution in the chrome (needs visual
+  sign-off). dev/260815_bl_fetch_plan.md.
 
-7.  Add wind layer support via worldmet + leaflet-velocity — its JS payload rides on the lazy-loading architecture, so it must follow item 6
+### 13. Retest the alternative stacks
 
-8.  Migrate and validate all examples
+- README and the "For R users" vignette state July 2026 conclusions publicly.
+  tmap v4 now builds on mapgl.
+- Re-test three load-bearing grounds: self-contained animated HTML; per-layer
+  symbols on one scale in both outputs; one emailable file.
+- dev/260706_atomic_unit_recommendation.md, dev/item5_backend-comparison_v1.md.
 
-9.  CRAN compliance (R CMD CHECK clean) + full internal-consistency audit: verify all documentation (CLAUDE.md, dev docs, vignettes, roxygen) against the stabilised code, mark dev docs current vs historical, and restructure dev/PROJECT_STATUS.md into a maintained current-state section plus archived history. **Carried over from the archive clear-out (2026-08-07):** replace the four remaining `sapply()` calls in `R/quickmap.R` with `vapply()`. `sapply()` returns a list or a vector depending on its results, so the type is not guaranteed. The one that matters is in `create_generic_icons()` — `sapply(data[[pollutant]], assign_colour, scale = colour_scale)`, around line 3092 — because every marker colour on every map goes through it. This was the only still-live item in the modern-R options paper that used to sit in `dev/archive/`, deleted on 2026-08-07 once it was recorded here. **Package/workspace separation** (added 2026-08-15, user decision — CRAN compliance in substance, so it lives here): the repo is currently half package, half the user's production workspace, and the two must part before release. (a) `quickmap()`'s default output location becomes an explicit `output_file` path or `tempdir()` — a package auto-creating `aq_maps/` in the working directory is a CRAN policy violation;
+### 14. Rename the dev/ documents by date
 
-    (b) client production scripts (the `clients` folder under `scripts/`) and their prepared-data pattern move to a separate workspace repo, keeping only generic examples in `inst/examples/` (the Merton AQAP job moved out on 2026-08-15, to `~/Coding/260814 Merton AQAP maps and figures refresh/`);
-    (c) the demonstration-map and baseline sign-off conventions are re-stated against the workspace, not the package repo. The workspace move itself can complete post-1.0 provided the package no longer depends on it.
+- Three naming conventions coexist, so the folder cannot be read in order.
+- Rename to `YYMMDD_name_vN.md`, update references, grep for old names.
+- Known stale reference: dev/260816_output_paths_decision.md:67.
 
-10. UI polish pass (**delivers v0.9.9.5 — the last version before v1.0**) — modernise the visual design of the HTML output (banner, legend, controls, typography, spacing, colour) to the standard of modern web / infographic design. **Starts with an analysis of design-template options** — e.g. established design systems and news-graphics conventions (FT/Economist/BBC-style chart chrome, GOV.UK design system), lightweight CSS approaches compatible with self-contained output (no framework runtime) — ending in a recommended direction with mock-ups for **user approval before implementation**. Implementation lands through the existing `{{placeholder}}` template/theme system; themes must remain user-configurable. (Inserted 2026-07-06 after the item-5 React comparison: app-framework polish is reproducible as CSS/design effort.) **Includes wind-particle styling configuration** (added 2026-07-07): expose the constants currently hardcoded in `inst/controls/wind-controller.js` (particle density, line width, colour ramp, velocity scale) through the theme YAML system alongside the other visual controls.
+### Numbering history
 
-11. Fix the outstanding UI defects listed in dev/PROJECT_STATUS.md (including the background CPU/memory defect added 2026-07-12: HTML maps must pause ALL animation work — wind particles, marker crossfades, autoplay — when the page, tab or embedding iframe is hidden or off-viewport, via visibilitychange + IntersectionObserver; today's maps are a CPU and memory hog in the background) (LCA visual fixes, static-export subfolder generation, unified marker/text/legend scaling, ward/marker label consistency) — so v1.0 releases without known user-facing defects. Do not work on these earlier or piecemeal; they are the final item before the v1.0 release, not background tasks. **Partly done early (2026-08-05):** the Merton AQAP print set needed legible marker labels, so "unified marker/text/legend scaling" was fixed then — marker labels are `rem` and sit on `MARKER_LABEL_REM`, the same size as the smallest legend text, at every export size; symbol stroke width scales with the export too. This uncovered the cause: `textsize` reached leaflet without a CSS unit, so every value had been silently ignored for years. When item 11 is picked up, that part is done; the rest of the list stands.
-
-12. Breathe London fetch for the new (2025) API (added 2026-08-15, user decision; **executed after item 9 and before item 11**, numbered 12 to avoid renumbering item 11's many references). The Breathe London API was replaced in June 2025 (new gateway, `X-API-KEY` header, `/ListSensors` + `/SensorData` with query parameters, hourly-only, 366-day window), and every existing fetch function — all outside this repo — targets the dead old one. A new `breathe_london.R` under `R/` provides: `bl_sensors()`, `bl_data()` (key parameter defaulting to `Sys.getenv("BREATHE_LONDON_KEY")`, requests chunked to the window, retry with backoff) and `from_breathelondon()` returning a `qm_layer`, following the `from_worldmet()` pattern. Includes formalised QA (hourly plausibility screen: NO2 ≥ 500 → NA, PM2.5 ≥ 130 → NA) and completeness-aware aggregation (≥ 75% capture or NA), wired into both the new path and `convert_openair_to_spatial()` — the existing annualised Rdata files were built with no capture threshold, so means can change. A map with a BL layer must carry the licence-required attribution ("Contains Breathe London data licensed under the Open Government Licence v3.0", linked to breathelondon.org). Full plan with STOP gates: dev/260815_bl_fetch_plan.md. **Blocked on an approved API key** (registration via breathelondon.org/developers). **The code is on branch `feature/breathe-london-fetch` (PR #51, draft), not on main.** **Status 2026-08-15: built and fixture-tested, not live-validated.** All three functions implemented; network access isolated in one internal function (`bl_request()`); 28 fixture-test assertions pass. On the saved Merton hourly data (69 sites, 345 site-years) the 75% capture rule yields NA for 117 site-years, including every raw annual mean above 60 µg/m³ (all from under 9% capture). Site-years meeting the threshold differ from the published annualised values by up to 16.5 µg/m³ — unexplained; check before republication (scheduled into the Step 4 demo comparison). Remaining: live probes with the key (site-code scheme, pagination, field types), and Step 4 attribution in the map chrome (rendering change, needs visual sign-off).
-
-13. Retest the alternative stacks before v1.0 (added 2026-08-15, user decision). The front-end and back-end candidates were assessed in July 2026 — tmap and mapview in the atomic-unit survey (dev/260706_atomic_unit_recommendation.md), Leaflet, MapLibre/mapgl, mapdeck and React in the backend comparison (dev/item5_backend-comparison_v1.md) — and the conclusions are now stated publicly in README.md and the "For R users" vignette. Both are moving targets (tmap v4 now builds on mapgl), so re-run the comparison against current versions before release and correct the public claims if anything has changed. Three grounds are load-bearing and each must be re-tested, not assumed: **animation** (does any of them yet produce self-contained interactive HTML with a time control, rather than GIF or video?), **layer and symbol specification** (can a single figure carry per-layer symbols — circles for tubes, diamonds for sensors, crosses for schools — on one colour scale, in both interactive and static output? verified inadequate by the author in 2026; the finding is not otherwise in the written record), and **self-contained sharing** (one emailable file, no server).
-
-14. Rename the dev/ documents by date (added 2026-08-15, user decision). Filenames in `dev/` follow at least three conventions — `YYMMDD_name_vN.md` (the stated standard), `itemN_name_vN.md`, and bare names — so the folder cannot be read in chronological order and a reader cannot tell a current document from a superseded one. Rename to the dated standard, keeping the item number in the descriptive part where it carries meaning, and update every reference (CLAUDE.md, PROJECT_STATUS.md, cross-references inside dev docs, the concepts index, roxygen and vignette citations). Mechanical, but the references make it error-prone: check with a grep sweep for the old names afterwards.
-
-(Items 2 and 5 were inserted 2026-07-05; item 10 (UI polish) was inserted 2026-07-06, renumbering the UI-defects item to 11. Items 12, 13 and 14 were added 2026-08-15/16. Dev docs written before those dates use the older numbering — in particular the item-5 comparison doc says "item 10" for what is now item 11.)
-
-**Post-1.0: wind styling presets (optional)** (added 2026-07-09, user decision at item 10). Item 10 ships the speed-ramp colour scale as the wind default with the constants theme-exposed; recorded as optional future development: a preset library (muted slate, high-contrast dark, custom ramps), speed-scaled line width/opacity, and per-theme ramp selection — all ride the same theme-YAML surface, no renderer work.
-
-**Tile-dependent particle density** (added 2026-08-05, from setting up the long-animation example): the `particle_density` default of 1/300 was tuned against busy OSM tiles. On pale `CartoDB.Positron` the same density reads as far too busy — the example settled at 0.00125, roughly a third of it, after three halvings — because nothing on the basemap competes with the flow. The default should follow the chosen tiles rather than being a single constant, which is the same theme-YAML surface again, no renderer work.
-
-**Post-1.0: ecosystem integrations** (added 2026-07-07; full survey with integration shapes, risks and suggested ordering: dev/260707_v2_integration_candidates.md). Five well-maintained, large-user-base suites to link into after v1.0, each landing as a `from_*()` wrapper or layer type, never as a map-API change — in suggested pickup order: ERA5 reanalysis wind via ecmwfr (completes the non-uniform wind thread below), saqgetr (European AQ observations, openair-compatible), OpenAQ (global AQ platform), the Mazama AirMonitor/AirSensor suite (US regulatory + PurpleAir), and stars/terra raster underlays (modelled surfaces beneath measured markers).
-
-**Post-1.0: fetch-code reconciliation** (added 2026-08-15, user decision). Once item 12 lands, quickmap's `from_*()` family is the sole maintained fetch surface, and the superseded Breathe London fetch/processing copies — all outside this repo — are marked historical rather than rewritten: `~/Coding/Library/R/api.R`, `~/Coding/Library/R/openair_breathe_london_1_0.R`, the iCloud `Breathe_London_package_v1_0.R`, the `~/Coding/ScriptArchive` A-scripts, and the `~/Coding/250120_RSP_BL_download` scripts. That cleanup also moves the API and Stadia Maps keys hardcoded in `250120_RSP_BL_download/A01_startup_250417_RSP_BL_download.R` (lines 43–44) into `.Renviron` — keys never live in scripts. **Tested ideas, but need more work** (list created 2026-08-07). Things that were designed, costed or actually built and then set aside — recorded here so they are picked up deliberately rather than reinvented. Each lives in its own folder under `dev/concepts/`, with its document, the code that built it and the maps that code produced. The index is `dev/concepts/README.md`.
-
-| Idea | Folder | What is left to do |
-|------------------------|------------------------|------------------------|
-| Limit-centred indicator | `dev/concepts/indicator/` | Distance above or below a chosen target rather than position on the scale. Needs a decision on which target sits at the centre |
-| Change-over-time graph | `dev/concepts/trend-graph/` | The open half of the 29 July overlays decision. Overlaps with quickplot's **Trend** figure, so settle which owns it |
-| Thermometer on the map | `dev/concepts/thermometer-overlay/` | A vertical indicator over the map rather than in the legend. Must not draw a second scale |
-| Context polygon layer | `dev/concepts/context-polygon-layer/` | Deprivation or similar under the vignette, labelled 1–10 rather than carrying a second ramp. \~2 days |
-
-Four indicator styles were built and rejected on the way to v0.9.9.9; they and their renders are in `dev/concepts/indicator/`, not deleted, so a future proposal can be checked against what was already tried.
-
-**Post-1.0: quickplot** (user decision 2026-08-06). Charts and tables that borrow QuickMap's page furniture so figures and maps read as one document. Three functions, named: **Heatmap** (colour-coded table, site × year), **Trend** (time series over the colour ramp as background bands) and **Exceedance** (counts against a permitted allowance). Working prototypes and the full note live in `quickplot/README.md`; the folder is `.Rbuildignore`d and ships nothing.
-
-Not part of QuickMap, which is a mapping tool. This repo stays named `quickmap` until 1.0 ships, then quickplot gets its own repo rather than this one becoming an umbrella. The shared chrome (`build_banner_css()`, `build_legend_css()`, `generate_legend_html()`, `load_colour_scale()`, `assign_colour()`) moves to a third package only if maintaining it in two places starts to hurt; the colour scales stay here either way.
+Items 2 and 5 inserted 2026-07-05; item 10 on 07-06, renumbering UI defects to
+11; items 12–14 on 08-15/16. Earlier dev docs use the old numbering.
 
 --------------------------------------------------------------------------------
 
-## Known bugs
+## Post-1.0
 
-(Former bug #1 — path resolution via `system.file()` — was fixed in v0.9.5 (roadmap item 1): quickmap is now a proper installed package loaded with `library(quickmap)`.)
-
-(A former bug #2 — `na.strings` passed via `...` to `import_csv_data` — was fixed in v0.9.3.x; `import_csv_data` now sets `na.strings` internally.)
-
-The open defect list is "Outstanding Issues" below; roadmap item 11 is
-where it gets cleared.
+- **quickplot**: Heatmap, Trend, Exceedance figures on QuickMap's chrome. Own
+  repo after 1.0. `quickplot/README.md`.
+- **Ecosystem integrations**: ERA5 via ecmwfr, saqgetr, OpenAQ, Mazama
+  AirMonitor, stars/terra underlays. Each a `from_*()` wrapper.
+  dev/260707_v2_integration_candidates.md.
+- **Fetch-code reconciliation**: superseded BL copies outside this repo marked
+  historical; hardcoded keys in `250120_RSP_BL_download` move to `.Renviron`.
+- **Wind styling presets**: preset ramps, speed-scaled width and opacity, per
+  theme. Theme YAML only.
+- **Tile-dependent particle density**: 1/300 suits OSM; CartoDB.Positron needs
+  about 0.00125. Default should follow the tiles.
 
 --------------------------------------------------------------------------------
 
-## Recent work, newest first
-
-### 5 August — Animation speed control SIGNED OFF by Iarla, ready to merge
-
-Iarla approved it on 5 August. PR #42 —
-https://github.com/ngnrfsk/quickmap/pull/42. Ready to merge; the merge
-itself is Iarla's to do.
-
-What it adds: a small button on the time-slider card showing how fast the
-animation is playing, which you press to change. Short animations offer
-half, normal, double and quadruple speed; long ones also offer a quarter
-and eight times, because there is more to fast-forward through. It opens
-at normal speed.
-
-Two related things changed at the same time. Maps now play at a speed
-that suits how many steps they have — a seven-year map takes 1.2 seconds
-a year instead of half a second, which was too quick to read — and the
-colour fade between steps shrinks with the speed instead of being fixed,
-so fast playback no longer smears.
-
-The maximum on the legend is now shown by default alongside the mean
-(Iarla's decision on 5 August, reversing 31 July): a mean on its own
-reads as though it described everywhere, and the worst site is usually
-what a report is about. Turn it off with `indicator.show_max: false` in a
-theme.
-
-**A defect found and fixed on the way:** the repository's ignore list was
-excluding one of the package's own files, `inst/controls/time-slider.html`,
-which had therefore never been committed. Anyone cloning the project
-fresh could not build a map at all — it failed part-way through. Found
-because a clean build of `main` broke where the new branch did not.
-
-### 5 August — Legend indicator MERGED (PR #38)
-
-Iarla approved the indicator work on 5 August after reviewing
-aq_maps/indicator_titlerow_v5.html, and merged it the same day.
-
-What it adds: every annual map shows the network mean and the highest
-site for the year on screen, marked on the legend's own colour ramp — a
-roundel for the mean, a diamond for the maximum — with the figures
-beside the legend title. The mean is over a fixed panel of sites
-reporting every year, so it is comparable year to year; the maximum is
-the worst site actually reporting, so its count changes as sites open.
-Both captions say which. Exports also gained a much larger year label,
-top-left, sized to match the title.
-
-Also in the same branch, from earlier sessions: the code documentation
-pass (every function described, dead copy removed) and the Merton action
-plan script.
-
-**Next, once merged:** the animation speed control (recap and decisions
-in the 5 August chat; summary below in "Waiting on Iarla"). It is
-another rendering change, so it starts only after this merge lands.
-
-### 29 July — The legend indicator (v0.9.9.9) — needs your eyes
-
-Every map now carries a small indicator in the legend: the network mean
-for the year on screen, with a pointer that moves along a scale marked
-with the WHO and UK thresholds, captioned with how many sites it rests
-on. On the Merton tube data it reads 44.1 in 2019 falling to 23.2 in
-2025, from a panel of 59 sites.
-
-Built to the eight decisions you took on 29 July. The two that change
-what the number means: only sites reporting in every displayed year are
-counted (so the figure moves with the air, not with the network — three
-Merton sites opened partway through and are excluded), and all layers
-are averaged into one figure. The indicator hides itself on monthly,
-daily and hourly maps, because the thresholds behind it are annual
-limits; that gap is logged as issue 13.
-
-Maps to look at, in aq_maps/: indicator_merton-annual_v1.html (drag the
-slider — pointer and figure should move), indicator_merton-lazy_v1.html
-(the same map forced down the other rendering path, which is how that
-path gets tested at all), indicator_print-4000_v1_2019.jpg and
-_2025.jpg, indicator_print-900_v1_2025.jpg (the indicator should look
-the same size relative to the map in both), and
-indicator_switched-off_v1.html (nothing should be there).
-
-Tests: 322 pass, up from 287. Smoke test clean. One tidy-up came with
-it: the legend HTML template used positional `sprintf`, which broke on
-any content containing a percent sign; it now uses the same
-{{placeholder}} system as everything else.
-
-**This is a rendering change and needs your visual sign-off before it
-merges. Nothing else rendering-related should start until it does.**
-
-### 25 July — The code prepared for a line-by-line read
-
-Iarla asked whether the project was ready for a very close, step-by-step
-read of the code alongside the written record. The written record was;
-the code was not, for three reasons, all now fixed on branch
-feature/item9-doc-prep:
-
-- A 115-line commented-out copy of an old function sat in the middle of
-  quickmap.R, with the help text describing it attached to the dead copy
-  rather than to the live function below it. Removed.
-- 24 of the 60 functions in quickmap.R had no description at all,
-  including the largest and least obvious ones. All 60 now have one, and
-  a further two in the public-API file were written out fully.
-- The longest functions had almost no signposting. The main function is
-  now divided into seven labelled steps, and the file opens with a
-  contents list of its eleven sections, so a reader can find their place.
-
-Nothing the computer executes was changed: stripping the comments from
-the old and new files leaves two identical files. All 287 tests pass and
-the smoke test produces its maps as before.
-
-### 14–19 July — Housekeeping only; still waiting on the manual review
-
-No project code changed. A visual editor had silently re-wrapped two
-dev notes on saving — the reformat was reverted before commit, and
-editor workspace files are now ignored by git. The GitHub command-line
-tool was found signed in to the wrong account (parhillresearch), which
-made it unable to see this repository; it was switched back to ngnrfsk.
-The one open item at the time was Iarla's review of the complete manual
-(PR #37), since merged on 5 August.
-
-### 12–13 July — Manual corrections; a data file destroyed and restored
-
-The manual's example files were renamed so the borough is part of every
-name (tubes_wandsworth.csv, schools_merton.csv, sensors_london.RData and
-so on) — Iarla's correction: the borough is important information. Five
-small bugs found by tracing the code were fixed (unhelpful silences now
-warn, two wrong help texts corrected). The wind particles missing from
-the manual's step-11 map were diagnosed in the browser and fixed: a
-crash inside the wind plugin was silently killing the animation, and the
-calm-week wind colours were too faint to see — both repaired, particles
-now clearly visible.
-
-**Incident, disclosed:** while renaming, a script copied
-schools_Merton.csv onto schools_merton.csv — on a Mac those are the same
-file, so the original was wiped to zero bytes. It was fully restored
-from an old copy in the 241122 quickmap folder and the restoration is
-proven by the test suite (which counts exactly 53 schools on the
-reference map). The script now refuses any copy where the names differ
-only by capitalisation.
-
-*Detail: dev/archive/PROJECT_STATUS_technical_260707-13.md and the
-commits on branch feature/manual-phase2.*
-
-### 11 July — The complete manual
-
-Nine new chapters joined the approved Get started and Layers pages:
-Your data, Labels, Boundaries, Styling and themes, Time and animation,
-Wind, Sharing and export, Recipes, and a page for experienced R users.
-Every chapter embeds real working maps you can click and play; every
-code example was executed against real data before publishing. The four
-old documentation notes were retired to an archive folder. Open as
-PR #37, merged on 5 August.
-
-Also on 11 July, from Iarla's page reviews: examples regrouped into two
-step-by-step builds (a report map, then an animation), a static-export
-step and a labels step added, symbols put into banner titles as a key,
-and two writing rules adopted — say only what the shown map actually
-does, and give a feature its own chapter when it's complex enough (the
-test that promoted Labels and Boundaries to chapters).
-
-*Detail: the archive file above; principles in
-dev/260708..0711_page_template_review_v1..v4.md.*
-
-### 10 July — Two decisions changed the code
-
-Iarla reversed the morning's decision: `boroughs` is now optional — a
-one-line quickmap("data.csv") works, with the view fitted to the data
-(v0.9.9.6). And the default background map went back to OpenStreetMap
-(v0.9.9.7): the boundary vignette was too faint on the pale tiles that
-the redesign had chosen; the pale look stays available as a one-line
-theme option.
-
-### 9 July — The new look (roadmap item 10, v0.9.9.5) — signed off
-
-The redesign Iarla approved from mock-ups was built for real: white
-title strip (colour bar still available), thin colour-ramp legend,
-draggable bottom time slider replacing the old dropdown (drag to scrub,
-arrows for one step, play button), neutral colours with the borough
-colour as accent, wind-particle styling moved into theme files, and a
-long-standing bug fixed so exported JPGs scale their text with the image
-size. Verified live in a browser and signed off after two rounds
-(vignette restored in the demos; the long animation shown on OSM).
-Merged as PR #35.
-
-### 8 July — Symbol settings actually work now (v0.9.8.1) — signed off
-
-Writing the manual exposed that choosing a symbol on a layer
-(qm_layer(shape = "diamond")) did nothing — the setting was recorded and
-ignored. Fixed: layer symbol choices now reach the map, the documented
-convention holds (tubes circles, sensors diamonds, schools crosses), and
-all 18 symbol names work with friendly spellings. Merged as PR #32.
-
-### 7 July — Examples brought up to date (roadmap item 8) — merged
-
-Every example script and documentation note was moved to the current
-quickmap() interface and actually run against the test data; two example
-scripts that could never have run as committed were fixed. Proven safe:
-the canonical animation renders byte-for-byte identically through the
-new interface. Merged as PR #29.
-
-*Older entries below are unchanged.*
-
-### Roadmap item 7 complete (v0.9.8): wind layer — 2026-07-07 (visually signed off, PR #26 merged)
-
-Sign-off followed one feedback round: (a) wind grid widened to ±3° (particles
-cover the viewport at any zoom); (b) particle density 1/500 (user-tuned),
-lineWidth 1, muted slate colour ramp; (c) smoothness — patched the vendored
-(now unminified) leaflet-velocity so wind frames swap under the running
-particle animation without reseeding, with a geometry cache (per-cell
-lat/lng + distortion matrix recorded during the full pass) making per-step
-field rebuilds ~20–30 ms instead of 358 ms, resolution-independent; and the
-lazy-time-controller markers crossfade colour over 250 ms instead of
-snapping. Roadmap notes added: nearest-station auto-selection + variable
-grid (multi-station) post-1.0; wind-particle styling configuration folded
-into item 10.
-
-Branch `feature/item7-wind-layer`. Implements the worldmet + leaflet-velocity
-plan (Windy API was assessed and rejected at item 5).
-
-**What changed:**
-
-- **`from_worldmet(data | station, year)`** (R/wind.R) returns a `qm_wind`
-  data frame: fetches via `worldmet::importNOAA()` when given a station code,
-  or accepts any data frame with `date`/`ws`/`wd`; converts to U/V by the
-  standard meteorological decomposition (u = −ws·sin(wd·π/180), v = −ws·cos).
-- **`wind` parameter** on `quickmap()`, `create_pollution_map()` and
-  `render_pollution_map()`. `build_wind_payload()` averages U/V per displayed
-  time step (format inferred from the year_str grammar via
-  `wind_time_format()`) onto a uniform 2×2 grid over the padded map bbox,
-  GRIB-style headers as leaflet-velocity expects (north→south scan); steps
-  with no observations get null frames (overlay empties rather than showing
-  stale wind); coverage messaged, zero coverage warned.
-- **leaflet-velocity 2.1.4 vendored** in inst/controls/leaflet-velocity/
-  (js+css+CSIRO licence) and attached as an htmlDependency, so
-  `saveWidget(selfcontained = TRUE)` inlines it — sharing mode (a) holds
-  (verified: no external script/css in output).
-  **inst/controls/wind-controller.js** renders/updates one
-  `L.velocityLayer`, publishes `window.quickmapWindController`;
-  roller-menu.js calls it on every time switch alongside the item-6 marker
-  controller (both lazy and legacy marker paths work with wind).
-- **Interactive HTML only** — the overlay is skipped for static_only maps
-  and never enters the JPG export path (a particle animation has no meaning
-  in a still frame). New Imports: htmltools; Suggests: worldmet.
-
-**Verified in Chrome:** particles render and animate over the episode map,
-advance with roller menu and 500 ms autoplay, no console errors. One
-transient investigated: a background-tab load can show a blank particle
-canvas until the tab is foregrounded (rAF throttling — browser behaviour,
-not a defect; particles seed within ~2 s once visible). Payload cost is
-small: episode 913,686 → 976,747 B with 108 hourly wind frames.
-
-**Demo maps** (scripts/demos/item7_demo-maps_v1.R, real Heathrow 037720-99999
-NOAA data): aq_maps/item7_episode-wind_v1.html (lazy path + hourly wind,
-107/108 steps covered), aq_maps/item7_merton-annual-wind_v1.html (legacy
-path + annual-mean wind). Also .claude job tmp item7_episode_wind.html
-(synthetic wind, used for browser debugging).
-
-**Tests:** tests/testthat/test-item7-wind-layer-v1.R (U/V decomposition,
-input validation, time-format grammar, payload aggregation with null gaps
-and north→south headers, full map embed: velocity dep inlined + controller
-hook + self-contained). Gate: **244 pass / 0 fail / 0 skip**; smoke OK.
-Characterization tests untouched (wind is additive; no baseline changed).
-
-Also this session: `.claude/settings.json` gained `mcp__claude-in-chrome`
-in permissions.allow (user request — browser tools no longer prompt);
-gatekeeper tests still pass; permissions pretest due before next
-unattended run. v0.9.7 archived to versions/quickmap_0_9_7.R.
-**PR blocks on human visual sign-off** (rendering-touching).
-
-### Roadmap item 6 complete (v0.9.7): time step cap + lazy loading — 2026-07-06 (visually signed off, PR #24 merged)
-
-Branch `feature/item6-lazy-loading`. Implements the approved Option D inside
-the package (R-only + the mandated JS controller; the item-5 Python builders
-remain comparison scaffolding).
-
-**What changed:**
-
-- **Lazy rendering path** — when a map has > 50 time steps or an estimated
-  pre-built size > ~5 MB (`use_lazy_rendering()`; both thresholds
-  options-overridable: `quickmap.lazy_step_threshold`,
-  `quickmap.lazy_size_threshold`), temporal markers are no longer pre-built
-  as one hidden `addMarkers()` layer set per step. Instead
-  `build_lazy_payload()` embeds one compact JSON payload
-  (`{times, thresholds, colours, naColour, layers:[{id, shape, radius,
-  nonsolid, labelMode, noHide, sites:[{code, lat, lon, label?, v:[…null]}]}]}`)
-  attached via `htmlwidgets::onRender(load_lazy_controller_js(), data=…)` in
-  `add_map_controls()`, and the new
-  **inst/controls/lazy-time-controller.js** renders one Canvas marker per
-  site (`ShapeMarker` subclass of `L.CircleMarker` drawing all QuickMap
-  symbol shapes; markers on `L.canvas()`, polygons stay on SVG per the
-  Leaflet 1.3.1 clipping bug) and restyles them per step via `setStyle`.
-  Missing values remove the marker (parity with the legacy NA filter).
-  Tooltips reproduce the legacy label modes (values/custom, hover/permanent).
-- **Roller-menu integration** — the existing menu UI is untouched;
-  `roller-menu.js` `switchToYear()` now delegates to
-  `window.quickmapTimeController` when present, and the controller publishes
-  a key-only `quickmapLayerCache` stub so menu initialisation (year list,
-  autoplay, keyboard nav) works unchanged.
-- **200-step cap** — `apply_time_step_cap()` (option
-  `quickmap.time_step_cap`) warns and subsets to the most recent steps,
-  applied to all paths.
-- **Serialization fix** — `attr(map$x, "TOJSON_ARGS") <- list(digits = 7)`
-  on lazy widgets only (htmlwidgets' default 16 digits serialized 22.8 as
-  22.800000000000001; 586 KB → 389 KB payload).
-- **Below-threshold maps unchanged** — the annual fixture still renders via
-  the pre-built path; its characterization tests pass unmodified. Static
-  JPG export always uses the legacy per-step non-interactive path, so
-  webshot2 never sees JS-restyled markers (no settle-delay issue).
-
-**Measured (episode fixture, 395 sensors × 108 hourly steps):**
-3,456,970 → 913,686 bytes (−74%); widget JSON 389 KB; step switch 0.9 ms
-(annual forced-lazy 2.8 ms); no console errors; tooltips/menu/autoplay
-verified in Chrome. The item-5 prototype's ~0.44 MB was a bare hand-built
-page; ~520 KB of the package output is the fixed leaflet/htmlwidgets/legend
-stack that every quickmap HTML (even a 2-step map) carries — payload cost is
-now ~0.4 MB for 43k site-steps vs ~2.5 MB before.
-
-**Deliberate characterization change (flagged):** the episode tests now
-assert 0 addMarkers/showGroup calls and pin the payload instead — 108 times,
-395 sites, **40,876 non-null site-step values (exact parity with the v0.9.5
-addMarkers baseline)**, threshold/colour contract; size band lowered to
-0.6–1.1 MB. Annual tests untouched. New tests:
-tests/testthat/test-item6-lazy-loading-v1.R (cap warn+subset, decision
-thresholds, payload contract incl. NA→null and Label fallback, forced-lazy
-annual: schools stay a static pre-built layer added once, dt+bl layers with
-circle/rect shapes).
-
-**Gate:** 213 pass / 0 fail / 0 skip; smoke test OK (HTML + 3 JPGs).
-Demo script scripts/item6_demo-maps_v1.R → aq_maps/item6_episode-lazy_v1.html
-(lazy, headline), item6_merton-annual_v1.html (legacy path, must match
-baseline), item6_merton-annual-forced-lazy_v1.html (same map forced lazy for
-side-by-side marker comparison). Signed-off baseline preserved untouched in
-aq_maps/baseline_260705_signed_off/; episode reference:
-aq_maps/item5_leaflet-episode-reference_v1.html. v0.9.6 archived to
-versions/quickmap_0_9_6.R. **Human visual sign-off given and PR #24 merged
-2026-07-06.** The item6_* demo outputs are the new comparison set for item 7.
-
-### Roadmap item 5 complete: rendering backend DECIDED — Option D (user-approved) — 2026-07-06
-
-Branch `feature/item5-backend-comparison`, PR #22. Four-way comparison per the
-approved brief (dev/260705_rendering_backend_candidates.md) on identical
-datasets: the pinned episode fixture (399 sensors × 108 hourly steps; Leaflet
-reference reproduced byte-exact at 3,456,970 B) and a synthetic 500×200 case.
-Full doc: **dev/item5_backend-comparison_v1.md**; prototypes and build scripts
-in dev/item5_prototypes/ (demo HTML in local aq_maps/item5_*.html, gitignored).
-
-Results: **Option D (Leaflet Canvas + embedded JSON) 0.44 MB / 0.70 MB,
-0.5 ms/step, mode (a) pass — recommended and approved.** MapLibre 1.37/1.63 MB,
-0.1 ms/step, mode (a) pass with inline raster style — recorded V2 path.
-mapdeck disqualified (token-gated basemap, bugsnag telemetry, no time control
-in saved widgets). plotly, redone to best practice after review
-(partial_bundle + partial colour-only frames; v2 script), reaches
-3.33/4.78 MB but with zero headroom and a mandatory ~53 ms full redraw per
-step (verified: redraw:false silently skips mapbox repaints).
-
-Also recorded for later items: plotly's kaleido static export is a borrowable
-fix if webshot2 flakiness persists at item 10; MapLibre persistent labels need
-glyph PBFs (offline cost); **Windy API rejected for item 7** (forecast-only,
-online-only, paid, owns the Leaflet instance) — worldmet + leaflet-velocity
-stands. Item-6 kick-off prompt: dev/item6_start-prompt_v1.md.
-Testthat suite green throughout (173 pass); no package code touched.
-
-### Roadmap item 4 complete (v0.9.6): quickmap() core API — 2026-07-06
-Branch `feature/quickmap-wrapper`. New R/quickmap_api.R: `quickmap(layers,
-boroughs, ...)` is the core entry point — layers may be file paths, qm_layer
-objects, or data frames; pollutant inferred from the first temporal layer;
-two-line call works (`quickmap("tubes.csv", boroughs = "Merton")`). The
-historic `create_pollution_map()` body was renamed to internal
-`render_pollution_map()` (unchanged); `create_pollution_map()` is now a thin
-wrapper converting data_sources to qm_layers and delegating to `quickmap()`.
-from_csv() gained a `temporal` override matching legacy data_dynamic and the
-legacy >1-year-columns auto-detect plus numeric coercion. Faithfulness proof:
-the full characterization suite passes unchanged, and the episode demo
-generated through the new chain is byte-identical to the published map
-(3,456,970 bytes). Docs updated in the same change: CLAUDE.md (Creating Maps,
-version 0.9.6, history), vignettes/quickmap_reference.md, roxygen/man. New
-tests: tests/testthat/test-quickmap-api-item4-v1.R (two-line call, mixed
-inputs, wrapper/direct payload equivalence, pollutant inference). Gate: 173
-pass / 0 fail / 0 skip; smoke OK. Demo script:
-scripts/merton-richmond_dt-bl-schools_2018-2024_item4_v1.R →
-aq_maps/*_item4_v1.html.
-
-### Roadmap item 3 implementation: qm_layer atomic unit — 2026-07-06
-Branch `feature/atomic-unit` (stacked on characterization tests). Implements
-the user-approved rev-3 design (dev/260706_atomic_unit_recommendation.md):
-new R/qm_layer.R with `qm_layer()` constructor (contract validation with
-plain-English errors, alias normalisation siteCode→code / year_str→time_label
-/ Latitude+Longitude→lat+lon from the QM_ALIASES constant, time-column
-inference per the class→name-gate→grammar contract, time_sort POSIXct key —
-decided: stored column — and value/label/shape/name/resolution metadata as
-attributes), `qm_meta()`, `print.qm_layer()`, and wrappers `from_csv()`
-(wide-year pivot, BNG transform, school duck typing), `from_rdata()` (wraps
-the existing duck-typed loader), `from_openair()` (wraps
-convert_openair_to_spatial). Render pipeline untouched — rewiring
-create_pollution_map()/quickmap() around these is item 4. 29 new tests in
-tests/testthat/test-qm-layer.R (synthetic + DATA_PATH fixtures incl. the
-episode file: 108 hourly steps at "hour" resolution). Gate: 165 pass / 0 fail
-/ 0 skip; smoke test OK.
-
-### Item-5 brief v2 ready for approval — 2026-07-06
-Branch `chore/item5-brief` (PR #18). dev/260705_rendering_backend_candidates.md
-rewritten as the approvable comparison brief per user comments: sharing
-constraint relaxed to file-OR-link, ten user feature criteria adopted as the
-scoring checklist, plotly screened in (4th candidate), mapview/RBokeh/
-Highcharter screened out with reasons. Approving PR #18 starts the comparison;
-the final recommendation retains its own STOP.
-
-### Roadmap item 2 complete: characterization test net — 2026-07-06
-Branch `feature/characterization-tests` (stacked on approved feature/packaging-2).
-New `tests/testthat/test-characterization.R` + `helper-characterization.R` pin
-the rendered HTML of two reference maps: (a) annual Merton dt+BL+schools
-2020–2022; (b) the **canonical animation example** (inst/examples/
-episode_example.R map2 — hourly PM2.5, Jan 15–20 2024, all BL sensors,
-Wandsworth+Richmond), which reproduces the published
-parhillresearch.github.io/maps/episode.html **byte-for-byte at 3,456,970
-bytes** — the slow-loading product motivating items 5/6. Pinned: payload
-method counts, marker counts per layer and time step (annual: 59/1, 59/276,
-61/363 dt/BL per year, 53 schools ×3; episode: 108 hourly groups, 369–385
-sites/step, 40,876 site-steps), group names, injected banner/legend/
-year-control/autoplay blocks, no unreplaced `{{placeholders}}`, no external
-script/css loads (self-contained constraint), and the **3.2–3.7 MB file-size
-baseline window** that item 6 must cut (bounds to be lowered in the same
-change). Fixtures generate once per run into tempdir (suite ~41 s); tests skip
-if DATA_PATH fixture files are absent. jsonlite added to Suggests. This is the
-regression net for items 4 and 6.
-Demo script: scripts/260706_item2_demo_maps.R → aq_maps/260706_item2_*.html.
-
-### Roadmap item 1 complete (v0.9.5): quickmap is an installed R package — 2026-07-05
-Branch `feature/packaging-2` (PR pending human review). Salvaged the uncommitted
-work from the stale `feature/packaging` worktree, reviewed critically, and
-ported onto current main; stale worktree and branch deleted. Changes:
-DESCRIPTION 0.9.5 with corrected dependencies (yaml added; unused
-stringr/htmltools/leaflet.extras dropped; openair/httr/testthat in Suggests with
-requireNamespace guards); install.packages preamble removed from R/quickmap.R;
-@export tags + R/quickmap-package.R; NAMESPACE and man/ regenerated with
-roxygen2; LICENSE added; R/symbols_chart.R moved to scripts/; smoke test loads
-`library(quickmap)`. `system.file()` now resolves, so `get_package_dir()` no
-longer falls back to relative inst/ paths. Test gate made fully green
-(72 pass / 0 fail / 0 skip): fixed stale assumptions in test-config /
-test-css-extraction / test-themes; deleted pre-v0.9.2-API test-export /
-test-parameters / test-styling (roadmap item 2's characterization net replaces
-their coverage). Pre-change quickmap.R archived as versions/quickmap_0_9_4.R.
-
-### Bug (fold into UI defect #9, roadmap item 10): image-mode CSS text scaling silently inert — 2026-07-05
-The `image_mode` branch of `inject_banner_legend_controls()` passes regex-escaped
-patterns (e.g. `"1\\.8rem"`) to `apply_template_replacements()`, which matches with
-`fixed = TRUE` — the escaped backslash never matches, so none of the static-export
-banner/legend font-scaling substitutions apply. Even unescaped, the list is
-order-broken: the bare `"1rem"` pattern would consume `"padding: 1rem"` and
-`"gap: 1rem"` before their own patterns run, and some patterns don't exist in the
-image CSS variants at all (e.g. `1.3rem` is only in banner-interactive.css).
-Static exports have been rendering at baseline text sizes regardless of image
-dimensions. Repair belongs to the unified scaling work (UI defect #9, roadmap
-item 10) — do not patch piecemeal. Found 2026-07-05 while adding fail-loud anchor
-checks (dev/260705_risk_handlers_plan.md, handler 3.1).
-
-### Internal-consistency strategy adopted — 2026-07-05
-Full internal consistency (never yet achieved) is confirmed as a v1.0 goal.
-User-approved staged strategy: (1) CLAUDE.md now carries a stale-artifact
-warning — code is the source of truth, docs contradicting code get fixed in the
-same change; (2) `tests/testthat/test-consistency.R` (new, dependency-free,
-always-green) mechanically checks CLAUDE.md against the project — version sync,
-referenced files, cited functions, YAML configs — and caught two live issues on
-first run (nonexistent `scripts/` directory claim; ggplot2 `aes()` needing an
-external-functions allowlist); (3) the full cross-component audit and this
-file's current-vs-history restructure are folded into roadmap item 9, after the
-API stabilises. Branch `chore/autonomous-permissions`.
-
-### Autonomous permissions hardened — 2026-07-05
-Branch `chore/autonomous-permissions`. The 2026-07-04 (~21:00) trial autonomous
-run — the roadmap item 1 packaging agent, transcript recovered — died on
-permission prompts (tilde-in-assignment heuristic, cd-compounds, loops with
-command substitution; allowlist living only in settings.local.json). Added committed `.claude/settings.json` (DATA_PATH env,
-72-rule allowlist, deny rules guarding main, acceptEdits) and a verified
-PreToolUse hook that turns commits on main into a human-approval prompt.
-CLAUDE.md gained a "Permissions and command style" section; the pre-test idea
-was adopted and upgraded to dev/260705_permissions_pretest.md (human runs it
-interactively before the next autonomous session). Full investigation:
-dev/260705_autonomous_permissions_plan.md.
-
-### Housekeeping: _gem docs archived, repo root cleaned — 2026-07-05
-Branch `chore/risk-handlers`. CLAUDE_gem.md / PROJECT_STATUS_gem.md archived to
-dev/archive/ after harvesting unique content into CLAUDE.md (positioning
-statement, API principles). MapLibre experiment files moved to dev/ as evidence
-for roadmap item 5 (backend decision). Root YAML duplicates of inst/ copies
-deleted; root airstat_no2.yaml actually held a deltas scale — archived as
-mislabelled_deltas_scale.yaml. Fail-loud checks added to HTML injection anchors
-and {{placeholder}} substitution (risk handler 3.1).
-
-### Added: quickmap_reference vignette — 2026-07-04
-`vignettes/quickmap_reference.md` — plain markdown quick-reference for `create_pollution_map()`.
-Covers: all parameters with defaults and descriptions, `display_times` format table, colour
-scale catalogue, and full column-by-column tables for both CSV and RData input formats (traced
-from source). Includes `Label` silent-drop gotcha. Committed on `feature/v093-openair-converter`.
-
-### Bug (priority): Sourced-script path resolution — 2026-03-13
-quickmap is sourced as a script so system.file() returns "" and all inst/ paths fall back to
-fragile relative paths anchored to the working directory. Cascading effects: working directory
-must be quickmap root; theme_file requires full paths and fails silently; colour_scale = NULL
-hardcoded for static layers in add_layer. Fix: install as a proper R package via
-devtools::install() — directory structure already matches conventions, DESCRIPTION and NAMESPACE
-are the main additions needed.
-
-### Bug: import_csv_data does not accept ... so na.strings from load_data_file errors — 2026-03-13
-Fix: remove na.strings from load_data_file call; consolidate the two near-identical defaults
-directly into import_csv_data.
-
-### Added: geocode_uk_postcodes() — 2026-03-13
-Bulk postcode geocoder added to quickmap.R. Uses postcodes.io bulk POST API (100 per request).
-Falls back to terminated postcodes endpoint for retired postcodes, converting WGS84 → OSGB36
-via sf. Flags terminated postcodes with a NOTE message.
-
-### Fixed — 2026-03-13
-- import_csv_data rejects static label-only CSVs: skip value columns check when static = TRUE
-- create_generic_icons hardcodes two colours: load from load_yaml_config(colour_scale, subdirectory = "scales")
-- na.strings ... threading error: resolved
-
-## v0.9.3 OpenAir Converter (Current)
-
-**Status**: Active development
-**Branch**: `feature/v093-openair-converter`
-**Implementation Plan**: `dev/archive/251126_Implementation_v093_OpenAir_Converter.md`
-
-**Key Features (v0.9.3.x)**:
-- OpenAir converter functions (importUKAQ, importAURN, importKCL)
-- Duck typing for data loading (columns, not filenames)
-- RData flexible loading (standard names → any compatible data.frame)
-- Type-aware symbol defaults (solid for temporal, non-solid for static)
-- Categorical color fixes for schools layer
+## Open defects
+
+Cleared at item 11. Ids provisional until migrated to GitHub Issues.
+
+- **8. Subfolder generation.** Static export leaves leaflet JS subfolders.
+- **9. Marker, text and legend sizing.** No unified scaling system; marker
+  labels fixed 2026-08-05.
+- **10. Label consistency.** Ward and marker labels differ between static and
+  interactive.
+- **11. Background CPU and memory.** Maps animate when hidden. Pause particles,
+  crossfades and autoplay on `visibilitychange` and off-viewport.
+- **12. Image export unreliable.** chromote startup times out mid-batch; retry
+  each webshot call.
+- **13. Sub-annual limit values.** The indicator hides below annual resolution;
+  needs resolution-aware targets in the YAML. Post-1.0.
+- **14. Fixed panel unexplained.** "Network mean, N sites" counts fewer sites
+  than are on screen; add a tooltip.
+- **15. Split import from map creation.**
+- **16. Automate label placement**, clustering and spread.
+- **LCA-1/2/3.** Collapsible radio buttons bottom-left; open at a zoom filling
+  the screen; choose the layer visible on load.
 
 --------------------------------------------------------------------------------
 
-### FUTURE REFACTORING TASKS
+## Concepts — recorded, not scheduled
 
-#### Refactor-2: Database Import and Modular Architecture (Deferred)
+Index, documents, code and demonstration maps: dev/concepts/README.md.
 
-**Category**: Architecture **Description**: Add database import using duckdb. Note: Layer generalization (v0.9.2) addresses generic layer system without full modular rewrite. **Expected Effort**: 12-16 hours **Complexity**: High
-
-#### Minor Bugs to Fix and Features to Consider
-
-**Category**: Code Quality **Description**: Various improvements and
-optimizations - Replace tick box control with slider for many years - Add data
-caching to avoid repeated data loading - Develop uniform text sizing approach
-across codebase (coordinate with map size) - Remove stray temporary HTML files
-on image generation (eliminate \_files folders) - Simplify and clarify all
-function names for consistency - Rename parameters and restructure using
-ggplot-type approach - Add animations capability - Performance and scalability
-(lazy loading, batch processing) - User experience enhancements (clustering,
-custom popups, export formats) - Error handling and robustness (validation,
-logging, graceful failures) **Expected Effort**: 8-12 hours total
-
-### Completed Fixes
-
-#### RData Duck Typing (v0.9.3.21) - 2026-01-13
-
-**Problem**: RData loading required exact object name "dataOAformat"
-**Fix**: Three-strategy loader - (1) standard names (dataOAformat/data/oa_data/sensor_data), (2) any compatible data.frame (largest), (3) optional explicit data_object_name parameter
-**Impact**: Works with any RData file containing compatible sensor data (siteCode, year, pollutant, lat, lon columns)
-**Testing**: Comprehensive test suite in tests/test_rdata_duck_typing.R validates all strategies
-
-#### School Label Duck Typing (v0.9.3.20) - 2026-01-13
-
-**Problem**: School labels failed with auto-generated layer IDs (e.g., "schools_wandsworth")
-**Fix**: Removed hardcoded `layer_id == "schools"` check; now detects via School column
-**Impact**: Works with any filename; data_ids truly optional
-
-#### Issue 1: Boundary Labels Control (v0.8.8)
-
--   Added `show_boundary_labels` parameter (TRUE/FALSE)
--   Modified `add_boundary_polygons()` for label visibility
-
-#### Issue 2: Banner and Legend System Unification (v0.8.7)
-
--   Unified banner/legend system between HTML and static maps
--   Extended `apply_custom_layout_in_html()` with `image_mode` parameter
-
-#### Issue 3: Banner and Legend Scaling (v0.8.7.1)
-
--   Fixed scale factor calculation using geometric mean
--   Added marker size scaling throughout layer generation
-
-#### Issue 4: Legend Size Issues (v0.8.7.3)
-
--   Reduced legend marker sizes relative to map markers
--   Improved gaps and padding in legend layout
-
-#### Issue 6: Marker Labels Control (v0.8.9)
-
--   Added `show_marker_labels` parameter with 5-state control
--   Unified label behavior across OA, CSV, and Schools data sources
--   Added `generate_marker_labels()` helper function
--   Breaking change: `use_data_labels` parameter removed
-
-#### Issue 5: File Organization (2025-10-15)
-
--   Moved version files to `versions/` directory
--   Moved test files to `tests/` directory
--   Moved utility scripts to `scripts/` directory
-
-#### Issue 7: Marker Labels Fix (v0.8.10)
-
--   Fixed schools label behavior to respect show_marker_labels parameter
--   Fixed OA data label fallback when Label column missing
-
-#### Issue 8: Borough Colour Palettes (v0.8.11)
-
--   Added borough-specific colour palettes in nested named lists
--   Created show_borough_colours() helper function
--   Enables consistent borough branding across maps
-
-#### Issue 9: Parameter Simplification (v0.9.0) - 2025-10-28
-
-**BREAKING CHANGES** - Major parameter refactoring following OpenAir design patterns
-
--   **Reduced parameters**: 21 → 14 (33% reduction)
--   **Reduced code**: 2485 → 2427 lines (58 lines, 2.3% reduction)
--   **Renamed 6 parameters** for clarity (removed "show_" prefixes):
-    -   `years_to_plot` → `years`
-    -   `vignette_overlay_on` → `vignette`
-    -   `csv_data_file` → `diffusion_tube_file`
-    -   `oa_data_file` → `sensor_file`
-    -   `show_marker_labels` → `marker_labels`
-    -   `show_boundary_labels` → `boundary_labels`
--   **Merged 7 parameters into 3**:
-    -   Image Export (3→1): `export_image = NULL` or `c(width, height)`
-    -   Title (2→1): Single `title` for browser tab and banner
-    -   Styling (4→1): `styling_type = "none"` or `"html"`
--   **Removed leaflet controls**: Deleted leaflet legend/title code (28+6 lines)
--   **Fixed HTML legend**: Now only appears when `styling_type = "html"`
--   **Improved API**: Parameters describe WHAT user wants, not HOW implemented
--   **Complete migration guide** in quickmap.R header (lines 39-68)
--   **All tests passing**: 4 test files with actual map outputs for verification
-
-### Historical Completed Tasks
-
-#### Task 1E.1: Fix Legend Text and Marker Scaling Issues (2025-10-15, v0.8.7.1, commit: aa56fc2)
-
--   Fixed scaling problems where legend text and marker sizes didn't scale
-    appropriately
--   Improved scale factor calculation using geometric mean
--   Added layout dimension scaling for padding, gaps, and legend height
--   Implemented marker size scaling based on image dimensions
--   Added image_scale_factor parameter throughout layer generation chain
--   All elements now scale consistently with image size
--   Fixed legend symbol proportions (1.3:1 ratio)
-
-#### Bug 0: Markers too small in static maps (COMPLETED)
-
--   Increased base marker sizes (schools: 8→12, dt_sites/bl_nodes: 15→20)
--   Markers now scale consistently across HTML and static exports
-
-#### Bug 1: CSV File Path Handling (2025-10-15, v0.8.7.3)
-
--   Fixed CSV file path handling to be consistent with RData files
--   Added DATA_PATH environment variable support for relative CSV paths
--   Resolves inconsistency where CSV files required full paths
-
-#### Bug 2: Missing Data Filter Integration
-
--   Sites with \>20% missing data display as white disks
--   Added MISSING_DATA_THRESHOLD constant (20%)
--   Implemented in process_oa_data() function
--   Requires enriched data file with missing_no2 and missing_pm25 columns
-
-#### Bug 3: Legends too big in standard size maps (2025-10-15, v0.8.7.1)
-
--   Reduced legend marker sizes relative to map markers
--   Improved gaps and padding in legend layout
-
-#### Touch-Friendly Year Menu Control (2025-11-15, v0.9.0.2)
-
-**Implementation Details:**
--   **Architecture**: Modular control system with external files (`inst/controls/`)
-    -   `roller-menu.html`: Collapsible button and year list structure
-    -   `roller-menu.css`: rem-based responsive styling with color placeholders
-    -   `roller-menu.js`: Dynamic year population and layer switching logic
--   **Dynamic Color System**: Added `lighten_color()` utility function
-    -   Calculates lighter/darker shades from `banner_colour` parameter
-    -   Menu colors: Button/border/selected use banner color + 15% lighter shade
-    -   Hover effects: Very light tint (85% lighter) for subtle feedback
-    -   Legend header: Tinted with banner color for cohesive theming
--   **Features**:
-    -   Touch/mobile friendly with large click targets and smooth animations
-    -   Years dynamically populated from `window.quickmapLayerCache`
-    -   Slide-in fade animation when opening menu
-    -   Selected year highlighted with accent color and white text
-    -   Scrollable list when >6 years (max-height: 15rem)
-    -   Click outside to close functionality
--   **Integration**: Modified `apply_custom_layout_in_html()` and `load_roller_menu_control()`
-    -   Passes `banner_colour` through to control styling
-    -   8-color sprintf injection for complete theming
-    -   Positioned 2rem from bottom to clear Leaflet attribution
-
-**Files Modified:**
--   `R/quickmap.R`: Added color utility, modified control loading
--   `inst/controls/roller-menu.{html,css,js}`: New control files
--   Version archived to `versions/quickmap_0_9_0_2.R`
-
-#### Legend Refactor with Symbol Keys (2025-11-18, v0.9.0.3)
-
-**Complete legend system refactor for improved readability:**
--   **Symbol Key System**: Traditional footnote symbols (†‡§¶*) for explanations
-    -   Fixed-width colored blocks using monospace font
-    -   Separate collapsible key section for descriptions
-    -   Labels without descriptions (e.g., "50-60") render without symbols
--   **Label Shortening**: 30-50% reduction focusing on key regulatory thresholds
-    -   "Interim" → "Int", "Under" → "<", "Over" → ">"
-    -   Removed multiplier references for extreme values (5x-10x WHO)
-    -   Borough-specific labels: "< LB Richmond", "< LB Wandsworth"
--   **Flexbox Alignment**: Nested containers for perfect alignment
-    -   Eliminated fixed padding calculations
-    -   Symbol key naturally aligns with first numeric block
-    -   Works across all title lengths (NO2, PM<sub>2.5</sub>)
--   **Visual Hierarchy**: Larger text for ranges (1rem), smaller for keys (0.85rem)
--   **Mobile Responsive**: Collapsed default on ≤480px, vertical centering fix
--   **External Templates**: Modular CSS/HTML in `inst/legend/` directory
-
-**New Functions:**
--   `parse_legend_label()`: Extracts range and description from labels
--   `get_symbol_for_index()`: Maps index to footnote symbols
--   `calculate_max_range_width()`: Determines uniform block width
--   `get_contrast_text_color()`: WCAG luminance-based text color selection
-
-**Files Modified:**
--   `R/quickmap.R`: Added 4 utility functions, modified `generate_legend_html()`
--   `inst/legend/legend.{html,css}`: New modular template system
--   All 7 colour scales: Shortened labels across NO2 and PM2.5 scales
--   Version archived to `versions/quickmap_0_9_0_3.R`
-
-**Detailed Documentation:** Archived
-
-#### Unified Architecture
-
--   **Interactive maps**: Use HTML post-processing for banners/legends
--   **Static maps**: Use same HTML post-processing before JPG conversion
--   **Marker scaling**: Different sizes for different image dimensions
--   **Single code path**: No more duplicate legend systems
-
-## Current State Summary
-
-### What Works (v0.9.3.21)
-
--   OpenAir converter functions for UK air quality networks
--   Duck typing: data detected by columns (School, Label, year), not filenames
--   RData loading: standard names first, then any compatible data.frame
--   Simplified API: `data_sources` list replaces individual file params
--   Unified HTML banner/legend system across interactive and static maps
--   Type-aware symbols: solid shapes for temporal, non-solid for static
--   18 test scripts in `tests/` directory
-
-## Outstanding Issues
-
-### CRITICAL: HTML File Size Bloat (Scalability Blocker)
-
-**Design Doc:** `dev/20250118_geojson_option_d_design.md`
-
-**Problem:** HTML files grow to 27MB+ with many markers × time slices, causing slow load times and browser memory issues.
-
-**Root Cause:** Leaflet's R bindings serialize icon SVGs per-marker per-call:
-- 180 `addMarkers()` calls (time slices × layers)
-- Icons deduplicated within call, but **repeated across calls**
-- Same 11 icon SVGs × 180 calls = ~2000 redundant icon definitions
-- Per-marker: ~400 bytes (embedded SVG) vs ~30 bytes (coordinates only)
-
-**Scale Impact:**
-| Markers | Time Slices | Current Size | With Fix |
-|---------|-------------|--------------|----------|
-| 100 | 10 | ~1 MB | ~100 KB |
-| 500 | 50 | ~10 MB | ~750 KB |
-| 500 | 200 | ~27 MB | ~2 MB |
-
-**Proposed Fix (Option D):** GeoJSON + client-side JS styling
-- R sends raw coordinates + values as GeoJSON (~30 bytes/marker)
-- JavaScript applies icons at render time using cached SVG templates
-- Estimated reduction: **90%** (27MB → 2-3MB)
-
-**Implementation Impact:**
-- Significant refactor of `create_generic_icons()` and `add_layer()`
-- Estimated effort: 2-3 days
-- Could implement as optional backend: `create_pollution_map(..., backend = "geojson")`
-
-**Status:** Design complete, not implemented. Blocking for production use with sub-annual data.
+- **Limit-centred indicator**: distance above or below a target, not position on
+  the scale. Needs a decision on which target centres it.
+- **Change-over-time graph**: sparkline of the network mean. Overlaps
+  quickplot's Trend; settle ownership. 1.5–2 days.
+- **Thermometer on the map**: vertical indicator over the map. Only if it
+  restates the legend's bands.
+- **Context polygon layer**: deprivation under the vignette, labelled 1–10. ~2
+  days.
+- **Retired indicator styles**, wakeable with instructions in the files:
+  zero-to-value bar (`260731_indicator_bar-style_v1.R`), standalone track
+  (`260730_indicator_track-style_v1.R`).
 
 --------------------------------------------------------------------------------
 
-### Essential visual site fixes for LCA site
+## Recent work
 
-12. Collapsible Radio Buttons - Make radio buttons collapse and move to bottom
-    left corner
-13. Zoom Level on Map Open - Ensure markers fill screen with no empty borders
-14. Select Start Layer - Allow users to specify which layer is visible on
-    initial map load 4: Recheck the Legend Size Issues (v0.8.7.3) for different
-    screen sizes
-
-### High Priority Issues
-
-8.  Subfolder Generation - Static image generation creates unwanted subfolders
-    with leaflet JS libraries
-9.  Marker/Text/Legend Size Logic - Create unified scaling system for markers,
-    text, and legends
-10. Ward and Marker Labeling Consistency - Make ward and marker labels
-    consistent between static and interactive maps
-11. Background CPU/memory (added 2026-07-12, user report — pre-1.0):
-    interactive maps keep animating when not visible, hogging CPU and
-    memory. Pause ALL animation work — wind particles, marker
-    crossfades, autoplay timers — when the page/tab is hidden
-    (visibilitychange; the slider's autoplay already does this) AND when
-    the map's container or embedding iframe is off-viewport
-    (IntersectionObserver in time-slider.js / wind-controller.js /
-    lazy-time-controller.js). Resume seamlessly on return.
-
-12. Image export unreliable (added 2026-07-29, agent-observed — pre-1.0):
-    `id: 12 | area: static-export | component: webshot2/chromote |
-    severity: high | reported: 2026-07-29 | status: open`
-
-    Static JPG export fails intermittently: Chrome either does not start
-    or times out creating a target, aborting the run mid-batch.
-    Observed 2026-07-29 on the Merton action-plan maps: two of three
-    runs failed, at image one and image two.
-    Cause is chromote's browser startup, not QuickMap logic; rerunning
-    succeeds, so fix by retrying each webshot call.
-
-13. Sub-annual limit values for the aggregate indicator (added
-    2026-07-29, user decision — post-1.0):
-    `id: 13 | area: legend-indicator | component: colour-scales |
-    severity: low | reported: 2026-07-29 | status: open`
-
-    The aggregate indicator hides itself on monthly, daily and hourly
-    maps, because its target lines are annual-mean thresholds.
-    Those maps have their own limit values — daily and hourly NO2
-    objectives — which the indicator could show instead of hiding.
-    Needs a resolution-aware target set in the colour-scale YAML and the
-    numbers confirmed by the user.
-
-14. Explain the indicator's fixed panel to the reader (added 2026-08-14,
-    user request):
-    `id: 14 | area: legend-indicator | component: indicator |
-    severity: medium | reported: 2026-08-14 | status: open`
-
-    The "Network mean, N sites" caption counts only the fixed panel —
-    sites reporting in every displayed step — so N is smaller than the
-    number of markers on screen (e.g. 59 sites averaged while more are
-    visible), and nothing tells the reader why. Surfaced by the Merton
-    combined tubes + Breathe London map, where the gap is large. Add a
-    brief explanation — a tooltip on the caption is the leading idea —
-    saying the mean is held to a constant panel so it tracks the air,
-    not the network.
-
-### Concepts — recorded, not scheduled
-
-All of them, with their demonstration maps, are in one folder with an
-index: `/Users/iarla/Coding/quickmap/dev/concepts/README.md`
-
--   **Animation speed control** (agreed 2026-08-05, not built):
-    `/Users/iarla/Coding/quickmap/dev/concepts/animation-speed-control/260805_animation-speed-control.md`
-    — a speed button on the time slider; also changes the default step
-    timing (1200ms for annual maps, not 500ms) and makes the colour
-    crossfade proportional to the step. About half a day.
--   **Change-over-time graph** (deferred 2026-07-29):
-    `/Users/iarla/Coding/quickmap/dev/concepts/trend-graph/260729_trend-graph.md`
-    — a sparkline of the network mean across the displayed years. The
-    open half of the overlays decision; 1.5–2 days now the indicator has
-    shipped.
--   **Limit-centred indicator** (2026-07-30):
-    `/Users/iarla/Coding/quickmap/dev/concepts/indicator/260730_limit-centred-indicator.md`
-    — an indicator measuring distance above or below a chosen target
-    (UK 40, WHO 10) instead of position on the scale. Answers the
-    question an action plan actually asks. Needs a decision on which
-    target sits at the centre.
--   **Thermometer on the map** (2026-08-01):
-    `/Users/iarla/Coding/quickmap/dev/concepts/thermometer-overlay/260801_thermometer-overlay.md`
-    — a vertical indicator overlaid on the map instead of in the legend.
-    Feasible, but only if it restates the legend's own bands rather than
-    drawing a second scale of its own.
-
-### Archived code — coded up, retired, wakeable
-
--   **Zero-to-value "bar" indicator style** (retired 2026-07-31 when the
-    roundel was chosen):
-    `/Users/iarla/Coding/quickmap/dev/concepts/indicator/code/260731_indicator_bar-style_v1.R`
-    — a bar above the ramp running from zero to the mean. Not retired for
-    being wrong; it lost on readability, because the roundel carries its
-    figure at its own position. Named as a possible future feature: if
-    magnitude ever needs reading as length rather than position, or if the
-    ramp becomes crowded with markers, the bar may read better.
--   **Standalone "track" indicator style** (v0.9.9.9, retired 2026-07-30):
-    `/Users/iarla/Coding/quickmap/dev/concepts/indicator/code/260730_indicator_track-style_v1.R`
-    — an indicator with its own scale and tick marks. Retired because it
-    disagreed geometrically with the legend ramp beside it. The file
-    carries the reason, the case that would justify waking it (maps with
-    the legend switched off), and step-by-step instructions to restore it.
-
-### Medium Priority Issues
-
-### Low Priority Issues
-
-15. Split Import and Map Create - Separate data loading from map generation
-    (version 1)
-16. Automate Label Location - Automate label location, clustering, and spread
-17. Prepare for R Library Packaging - Structure code and documentation for R
-    library packaging
-
-### Code Quality and Refactoring Tasks
-
-#### Refactor-4: Configuration System Enhancement = version 0.9.1+
-
-**Category**: Architecture **Description**: Further configuration enhancements
-**Status**: Phase 1 COMPLETED in v0.9.0 (parameter simplification)
-**Remaining Phases**:
--   Phase 2: Config file system (YAML/JSON) for color scales and defaults
--   Phase 3: Parameter validation system with clear error messages
--   Phase 4: OpenAir compatibility layer for seamless integration
-
-**Completed in v0.9.0**:
--   ✓ Simplified parameter controls (21 → 14 parameters)
--   ✓ Unified legend system (removed duplicate leaflet/HTML controls)
--   ✓ Merged title parameters (single `title` for all contexts)
--   ✓ OpenAir-style parameter design (intent-based, not implementation-based)
-
-**Expected Effort**: 4-6 hours remaining **Complexity**: Medium
-
-#### Refactor-5: Modular Architecture = Version 0.9.x Series
-
-**Category**: Architecture
-**Description**: Split monolithic quickmap.R into focused, maintainable modules
-**Goal**: By v1.0, `create_pollution_map()` becomes a thin wrapper calling modular functions
-
-**Proposed Modules**:
-- `R/data_io.R` - Data loading and transformation
-- `R/data_processing.R` - Filtering and spatial operations
-- `R/layer_generation.R` - Icon and layer creation
-- `R/styling_rendering.R` - Map styling and controls
-- `R/html_export.R` - HTML processing and export
-- `R/config.R` - Configuration and color scales
-- `R/utils.R` - Utilities and helpers
-
-**Evolution Path**:
-- **v0.9.1-v0.9.5**: Extract modules while maintaining single-file compatibility
-- **v0.9.6-v0.9.9**: Refactor `create_pollution_map()` to call modular functions
-- **v1.0**: `create_pollution_map()` as thin wrapper over clean modular architecture
-
-**Expected Effort**: 8-12 hours **Complexity**: High
-
-#### Refactor-6: Modern R Practices and Library Setup = Version 1.0
-
-**Category**: Code Quality
-**Description**: Modernize codebase with contemporary R development practices and prepare for CRAN submission
-
-**Architectural Goal**: `create_pollution_map()` as user-facing wrapper function:
-```r
-# v1.0 architecture
-create_pollution_map <- function(...) {
-  # Thin wrapper that calls:
-  data <- load_pollution_data(...)      # R/data_io.R
-  processed <- process_spatial_data(...) # R/data_processing.R
-  map <- create_base_map(...)           # R/map_creation.R
-  map <- add_pollution_layers(...)      # R/layer_generation.R
-  map <- apply_styling(...)             # R/styling_rendering.R
-  export_map(...)                       # R/html_export.R
-  return(map)
-}
-```
-
-**Key Areas**:
-- Tidyverse consistency
-- Comprehensive error handling
-- Structured logging system
-- Testing infrastructure (testthat)
-- Code quality tools (styler, lintr)
-- Performance monitoring
-- CRAN submission preparation
-
-**Expected Effort**: 12-16 hours **Complexity**: High
-
-#### Technical Debt: Prioritized Action List
-
-**Analysis Date**: 2026-01-23
-
-##### Priority 1: Quick Wins (1-2 hours, immediate value)
-
-| Task | Location | Impact |
-|------|----------|--------|
-| Extract constants | Top of quickmap.R | `BASELINE_IMAGE_SIZE=1200`, `MOBILE_BREAKPOINT=480`, `DEFAULT_BANNER_COLOR="#2c3e50"` appear 5+ times each |
-| Remove commented code | Lines 471-575 | Delete 104 lines of old `load_rdata_file()` implementation |
-| Consolidate symbol lists | `get_measurement_layers()` + `validate_and_fix_icon_shape()` | Two separate lists of valid symbols; single source of truth needed |
-| Standardize NULL pattern | Throughout | Use `%||%` operator consistently; currently 4 different patterns |
-
-##### Priority 2: Error Handling (2-3 hours)
-
-| Task | Current State | Target |
-|------|---------------|--------|
-| Consistent error style | Mix of `stop()`, `warning()+return`, `tryCatch`, silent NULL | Standardize: `stop(msg, call.=FALSE)` for fatal, `warning()` for recoverable |
-| Entry-point validation | Errors caught late in pipeline | Validate data structure in `create_pollution_map()` before calling pipeline |
-| Document failure modes | Silent failures possible | Each public function documents what happens on invalid input |
-
-##### Priority 3: Parameter Threading (4-6 hours, prep for Refactor-5)
-
-| Issue | Example | Solution |
-|-------|---------|----------|
-| 15-18 params through chain | `create_pollution_map → finalize_and_save_map → save_html_and_style` | Group into config objects: `styling_config`, `export_config` |
-| Naming inconsistency | `export_image` vs `image_export` vs `image_mode` | Standardize: `export_*` for output params |
-| Scale factor variants | `image_scale_factor`, `marker_scale_factor`, `label_sizing` | Single `scale_config` object |
-
-##### Priority 4: Dead Code Removal (1 hour)
-
-| Function | Status |
-|----------|--------|
-| `validate_oa_data()` | Defined but never called; logic in `convert_openair_to_spatial()` |
-| `process_oa_data()` | Only called from commented code |
-| `import_csv_data()` | Single caller; consider inlining |
-| Unreachable branches | `year=="static"` check when value is `"static_only"` |
-
-##### Priority 5: Long Functions (feeds into Refactor-5)
-
-| Function | Lines | Issue |
-|----------|-------|-------|
-| `convert_openair_to_spatial()` | 187 | Split: validation, aggregation, sf conversion |
-| `create_pollution_map()` | 184 | Split: setup, data loading, map generation, export |
-| `load_rdata_file()` | 155 | Split: file loading, duck typing, processing |
-| `inject_banner_legend_controls()` | 107 | Split: CSS scaling, HTML injection |
-
-##### Debt Summary
-
-| Category | Items | Est. Hours |
-|----------|-------|------------|
-| Quick wins | 4 | 1-2 |
-| Error handling | 3 | 2-3 |
-| Parameter cleanup | 3 | 4-6 |
-| Dead code | 4 | 1 |
-| Long functions | 4 | (Refactor-5) |
-| **Total pre-refactor** | **14** | **8-12** |
-
---------------------------------------------------------------------------------
-
-#### Version 1.1-1.9
-
-**Category**: New Features - Add slider control for timeline - Add
-animated/auto-start time steps for timeslices - Add animation export
-
-### Quick Start
-
-1.  Load latest version: `source("R/quickmap.R")` (v0.9.3.21)
-2.  Test with: `source("tests/test_quickmap.R")`
-3.  Review documentation: `CLAUDE.md` for system overview
-4.  Check dev docs: `dev/` folder for plans and implementation details
-
-### Development Workflow
-
-1.  **Create branch**: Feature branches like `feature/v09X-feature-name`
-2.  **Implement changes**: Follow patterns in existing code
-3.  **Test thoroughly**: Use test scripts in `tests/` directory
-4.  **Document changes**: Update version in `CLAUDE.md` and commit messages
-5.  **Archive version**: Copy to `versions/quickmap_X_X_X.R` when stable
-
-### Key Functions to Understand
-
--   `create_pollution_map()` - Main entry point
--   `apply_custom_layout_in_html()` - Banner/legend processing
--   `generate_map_layers()` - Unified layer generation
--   `create_generic_icons()` - Marker creation with scaling
--   `add_layer()` - Universal layer addition
-
-### Testing Approach (v0.9.3)
-
--   Core tests: `tests/test_quickmap.R`, `tests/test_comprehensive_5network.R`
--   Converter tests: `tests/test_aurn_converter.R`, `tests/test_laqn_converter.R`
--   Duck typing tests: `tests/test_rdata_duck_typing.R`, `tests/test_school_labels_fix.R`
--   All tests create actual map outputs for visual verification
-
-### Important Notes (v0.9.3)
-
--   **API**: Use `data_sources` list for all data files
--   **Duck typing**: Data types detected by columns, not filenames
--   **RData**: Loads from standard names or any compatible data.frame
--   See `CLAUDE.md` for current API examples
+- **16 August**: project record split by content type — history to NEWS.md and
+  the archive, roadmap and defects here, decisions to dev/ citations. Output
+  paths decided (dev/260816_output_paths_decision.md), which holds PR #48.
+- **15 August**: v0.9.9.12 merged (PR #49, banner key reads `labels`). Item 12
+  fetch code built on PR #51. Items 13 and 14 added. Merton AQAP work moved out
+  of the repo.
+- **5 August**: speed control (PR #42) and legend indicator (PR #38) merged,
+  both signed off. `.gitignore` was excluding
+  `inst/controls/time-slider.html`, so a fresh clone could not build a map.

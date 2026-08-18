@@ -24,7 +24,7 @@ QuickMap's distinctive capability is production-ready temporal animation of moni
 
 ### Current version
 
-DESCRIPTION's `Version:` field is authoritative; dev/PROJECT_STATUS.md states it in prose. Production code is R/quickmap.R with R/qm_layer.R, R/quickmap_api.R and R/wind.R; superseded copies are in versions/. Version history is NEWS.md; the roadmap and known bugs are in dev/PROJECT_STATUS.md.
+DESCRIPTION's `Version:` field is authoritative; dev/PROJECT_STATUS.md states it in prose. Production code is R/quickmap.R with R/qm_layer.R, R/quickmap_api.R and R/wind.R; superseded copies are in versions/. Version history is NEWS.md; the roadmap and open defects are in dev/PROJECT_STATUS.md, whose history to 2026-08-16 is in dev/archive/PROJECT_STATUS_history_to_260816.md.
 
 ## Core Architecture
 
