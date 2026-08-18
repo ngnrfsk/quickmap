@@ -23,7 +23,7 @@ test_that("quickmap works without boroughs: no boundary, viewport from data", {
     title = "no boundary"
   ))
   html <- paste(
-    readLines(file.path("aq_maps", "no_boroughs.html"), warn = FALSE),
+    readLines("no_boroughs.html", warn = FALSE),
     collapse = "\n"
   )
   payload <- char_payload(html)
@@ -51,7 +51,7 @@ test_that("vignette request is ignored without a boundary", {
     title = "vignette ignored"
   ))
   html <- paste(
-    readLines(file.path("aq_maps", "no_boroughs_vignette.html"), warn = FALSE),
+    readLines("no_boroughs_vignette.html", warn = FALSE),
     collapse = "\n"
   )
   expect_equal(sum(char_methods(char_payload(html)) == "addPolygons"), 0)

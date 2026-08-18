@@ -9,7 +9,8 @@ create_pollution_map(
   data_ids = NULL,
   data_symbols = NULL,
   data_dynamic = NULL,
-  output_file = "pollution_map.html",
+  output_file,
+  output_dir = getOption("quickmap.output_dir", NULL),
   export_image = NULL,
   boroughs = NULL,
   pollutant = "no2",
@@ -18,13 +19,14 @@ create_pollution_map(
   vignette = NULL,
   colour_scale = "who_no2",
   styling_type = "html",
-  marker_labels = NULL,
+  symbol_labels = NULL,
   banner_colour = NULL,
   boundary_labels = NULL,
   autoplay = NULL,
   play_speed = NULL,
   theme_file = NULL,
-  wind = NULL
+  wind = NULL,
+  ...
 )
 }
 \arguments{
@@ -37,7 +39,11 @@ create_pollution_map(
 \item{data_dynamic}{Optional logical vector forcing temporal (TRUE) or
 static (FALSE) handling per layer (NULL = auto-detect)}
 
-\item{output_file}{HTML file name written into \verb{aq_maps/}}
+\item{output_file}{Required. Where to write the map: a bare name goes in
+the working directory, a path goes where it says, creating the directory.}
+
+\item{output_dir}{Directory prepended to \code{output_file}, and to any JPGs.
+Default: the \code{quickmap.output_dir} option, else NULL.}
 
 \item{export_image}{NULL, TRUE, or c(width, height) for JPG export}
 
@@ -56,7 +62,7 @@ static (FALSE) handling per layer (NULL = auto-detect)}
 
 \item{styling_type}{"html" or "none"}
 
-\item{marker_labels}{FALSE, TRUE (hover), "values_on", "labels", "labels_on"}
+\item{symbol_labels}{FALSE, TRUE (hover), "values_on", "labels", "labels_on"}
 
 \item{banner_colour}{Banner background colour}
 
@@ -70,10 +76,14 @@ and failing that a pace set by the number of time steps}
 \item{theme_file}{Path to a YAML theme file}
 
 \item{wind}{Optional wind layer (see \code{\link[=quickmap]{quickmap()}})}
+
+\item{...}{Accepts the old argument name \code{marker_labels}, with a warning.
+Any other name is an error.}
 }
 \value{
-Invisible Leaflet map object; writes HTML (and optionally JPGs) to
-\verb{aq_maps/}
+The saved file is the product; the Leaflet object comes back
+invisibly as a byproduct. Writes \code{output_file}, and JPGs when
+\code{export_image} is set.
 }
 \description{
 Compatibility wrapper around \code{\link[=quickmap]{quickmap()}} — the historic QuickMap entry

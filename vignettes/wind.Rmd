@@ -25,7 +25,8 @@ quickmap(
   colour_scale = "stripes_pm25",
   autoplay     = TRUE,
   play_speed   = 500,
-  wind         = heathrow                  # the wind overlay
+  wind         = heathrow,                  # the wind overlay
+  output_file = "episode_wind.html"
 )
 ```
 
@@ -59,7 +60,8 @@ my_wind <- data.frame(
 quickmap(
   from_rdata("episode_london.RData", "pm25", name = "Sensors"),
   boroughs = c("Wandsworth", "Richmond"),
-  wind     = my_wind
+  wind     = my_wind,
+  output_file = "episode_wind.html"
 )
 ```
 

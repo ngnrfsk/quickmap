@@ -33,10 +33,15 @@ directory, as any R function does — the same convention as
 `ggplot2::ggsave(filename, path =)` and `rmarkdown::render(output_file,
 output_dir =)`.
 
-The widget is still returned invisibly. It is not offered as a default,
-because the chrome — banner, legend, time slider, indicator, attribution
-— is injected into the *saved file* by `inject_banner_legend_controls()`.
-An unsaved return is a bare leaflet map, not the product.
+There is no unsaved mode. QuickMap builds standalone HTML and JPGs, not
+interactive R widgets, so a call that writes nothing has no product: the
+chrome — banner, legend, time slider, indicator, attribution — is
+injected into the *saved file* by `inject_banner_legend_controls()`.
+`output_file = NULL` is therefore an error, not a mode. The Leaflet
+object still comes back invisibly, as a byproduct.
+
+*Amended 2026-08-17 (user correction). The paragraph previously offered
+the unsaved return as a supported second mode.*
 
 ## What breaks
 

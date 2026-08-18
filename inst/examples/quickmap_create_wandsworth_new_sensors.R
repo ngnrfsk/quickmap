@@ -12,9 +12,10 @@ map_wandsworth_sensors <- quickmap(
   boroughs = "Wandsworth",
   colour_scale = "lbw_no2",
   output_file = "wandsworth_sites_2017_2024_all.html",
+  output_dir = "aq_maps",
   title = "LB Wandsworth Site Locations, 2017-2024. ● DT ◆ Breathe London ✖ Proposed",
   vignette = TRUE,
-  marker_labels = "labels",
+  symbol_labels = "labels",
   banner_colour = "#00549F",
   boundary_labels = FALSE
 )

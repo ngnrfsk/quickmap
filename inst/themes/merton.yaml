@@ -10,7 +10,7 @@ legend:
 map:
   vignette: true
   boundary_labels: false
-  marker_labels: false
+  symbol_labels: false
 
 controls:
   autoplay: false

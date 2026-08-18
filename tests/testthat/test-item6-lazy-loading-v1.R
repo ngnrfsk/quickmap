@@ -44,7 +44,7 @@ test_that("build_lazy_payload produces the controller contract", {
   )
   layers <- list(dt = list(
     enabled = TRUE, id = "dt", static = FALSE, icon_shape = "circle",
-    options = list(marker_labels = TRUE)
+    options = list(symbol_labels = TRUE)
   ))
   spatial <- list(all_data = list(dt = d))
 
@@ -80,7 +80,7 @@ test_that("build_lazy_payload falls back to values when Label is missing", {
   )
   layers <- list(dt = list(
     enabled = TRUE, id = "dt", static = FALSE, icon_shape = "circle",
-    options = list(marker_labels = "labels")
+    options = list(symbol_labels = "labels")
   ))
   spatial <- list(all_data = list(dt = d))
 
@@ -114,11 +114,11 @@ test_that("forced-lazy annual map keeps static schools layer and both temporal l
     title = "Forced lazy annual",
     styling_type = "html",
     vignette = TRUE,
-    marker_labels = "labels"
+    symbol_labels = "labels"
   ))
 
   html <- paste(
-    readLines(file.path("aq_maps", "item6_forced_lazy.html"), warn = FALSE),
+    readLines("item6_forced_lazy.html", warn = FALSE),
     collapse = "\n"
   )
   payload <- char_payload(html)

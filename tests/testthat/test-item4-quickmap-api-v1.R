@@ -11,7 +11,7 @@ generate_in_tmp <- function(expr) {
 }
 
 api_payload <- function(name) {
-  path <- file.path(tempdir(), "quickmap-api-item4", "aq_maps", name)
+  path <- file.path(tempdir(), "quickmap-api-item4", name)
   html <- paste(readLines(path, warn = FALSE), collapse = "\n")
   char_payload(html)
 }
@@ -87,7 +87,7 @@ test_that("quickmap() infers pollutant from the first temporal layer", {
              output_file = "richmond_bl_2024jan15_item4_v1.html")
   )
   expect_true(file.exists(file.path(
-    tempdir(), "quickmap-api-item4", "aq_maps",
+    tempdir(), "quickmap-api-item4",
     "richmond_bl_2024jan15_item4_v1.html"
   )))
 })

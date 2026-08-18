@@ -80,11 +80,14 @@ as_qm_layer <- function(x, pollutant, temporal = NULL) {
 #'   first time-varying layer's value column.
 #' @param display_times Time periods to display (NULL = all available)
 #' @param colour_scale Name of a bundled colour scale (see inst/config/scales/)
-#' @param output_file HTML file name written into `aq_maps/`
+#' @param output_file Required. Where to write the map: a bare name goes in
+#'   the working directory, a path goes where it says, creating the directory.
+#' @param output_dir Directory prepended to `output_file`, and to any JPGs.
+#'   Default: the `quickmap.output_dir` option, else NULL.
 #' @param title Banner title
 #' @param styling_type "html" (banner + legend + time control) or "none"
 #' @param export_image NULL, TRUE, or c(width, height) for JPG export
-#' @param marker_labels FALSE, TRUE (hover), "values_on", "labels", "labels_on"
+#' @param symbol_labels FALSE, TRUE (hover), "values_on", "labels", "labels_on"
 #' @param vignette Dim the area outside the boundary
 #' @param banner_colour Banner background colour
 #' @param boundary_labels Show boundary name labels
@@ -102,14 +105,18 @@ as_qm_layer <- function(x, pollutant, temporal = NULL) {
 #'   frame with `date`/`ws`/`wd` columns. Rendered as an animated particle
 #'   overlay (leaflet-velocity) that advances with the time control.
 #'   Interactive HTML only — omitted from static JPG exports.
-#' @return Invisible Leaflet map object; writes HTML (and optionally JPGs) to
-#'   `aq_maps/`
+#' @param ... Accepts the old argument name `marker_labels`, with a warning.
+#'   Any other name is an error.
+#' @return The saved file is the product; the Leaflet object comes back
+#'   invisibly as a byproduct. Writes `output_file`, and JPGs when
+#'   `export_image` is set.
 #'
 #' @examples
 #' \dontrun{
-#' # two lines: a usable map
+#' # two arguments: a usable map
 #' library(quickmap)
-#' quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth")
+#' quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth",
+#'          output_file = "wandsworth.html")
 #'
 #' # several layers plus styling
 #' quickmap(
@@ -121,7 +128,8 @@ as_qm_layer <- function(x, pollutant, temporal = NULL) {
 #' )
 #'
 #' # expert: hand-built atomic unit
-#' quickmap(qm_layer(my_data, value_col = "pm25"), boroughs = "Richmond")
+#' quickmap(qm_layer(my_data, value_col = "pm25"), boroughs = "Richmond",
+#'          output_file = "richmond_pm25.html")
 #' }
 #' @family map
 #' @export
@@ -131,11 +139,12 @@ quickmap <- function(
   pollutant = NULL,
   display_times = NULL,
   colour_scale = "who_no2",
-  output_file = "quickmap.html",
+  output_file,
+  output_dir = getOption("quickmap.output_dir", NULL),
   title = NULL,
   styling_type = "html",
   export_image = NULL,
-  marker_labels = NULL,
+  symbol_labels = NULL,
   vignette = NULL,
   banner_colour = NULL,
   boundary_labels = NULL,
@@ -143,8 +152,10 @@ quickmap <- function(
   play_speed = NULL,
   theme_file = NULL,
   data_symbols = NULL,
-  wind = NULL
+  wind = NULL,
+  ...
 ) {
+  symbol_labels <- absorb_legacy_args(symbol_labels, ...)
   # A single layer may be passed unwrapped — quickmap("data.csv") is the
   # two-line call the package is built around. Note the data.frame test comes
   # first: a data.frame is also a list, and would otherwise be split into
@@ -189,6 +200,7 @@ quickmap <- function(
     data_ids = ids,
     data_symbols = data_symbols,
     output_file = output_file,
+    output_dir = output_dir,
     export_image = export_image,
     boroughs = boroughs,
     pollutant = pollutant,
@@ -197,7 +209,7 @@ quickmap <- function(
     vignette = vignette,
     colour_scale = colour_scale,
     styling_type = styling_type,
-    marker_labels = marker_labels,
+    symbol_labels = symbol_labels,
     banner_colour = banner_colour,
     boundary_labels = boundary_labels,
     autoplay = autoplay,
@@ -219,7 +231,10 @@ quickmap <- function(
 #' @param data_symbols Optional marker symbols per layer
 #' @param data_dynamic Optional logical vector forcing temporal (TRUE) or
 #'   static (FALSE) handling per layer (NULL = auto-detect)
-#' @param output_file HTML file name written into `aq_maps/`
+#' @param output_file Required. Where to write the map: a bare name goes in
+#'   the working directory, a path goes where it says, creating the directory.
+#' @param output_dir Directory prepended to `output_file`, and to any JPGs.
+#'   Default: the `quickmap.output_dir` option, else NULL.
 #' @param export_image NULL, TRUE, or c(width, height) for JPG export
 #' @param boroughs Character vector of borough names (or "All"). NULL
 #'   (default) draws no boundary and fits the map to the data.
@@ -229,7 +244,7 @@ quickmap <- function(
 #' @param vignette Dim the area outside the boundary
 #' @param colour_scale Name of a bundled colour scale
 #' @param styling_type "html" or "none"
-#' @param marker_labels FALSE, TRUE (hover), "values_on", "labels", "labels_on"
+#' @param symbol_labels FALSE, TRUE (hover), "values_on", "labels", "labels_on"
 #' @param banner_colour Banner background colour
 #' @param boundary_labels Show boundary name labels
 #' @param autoplay Auto-advance the time control
@@ -237,8 +252,11 @@ quickmap <- function(
 #'   and failing that a pace set by the number of time steps
 #' @param theme_file Path to a YAML theme file
 #' @param wind Optional wind layer (see [quickmap()])
-#' @return Invisible Leaflet map object; writes HTML (and optionally JPGs) to
-#'   `aq_maps/`
+#' @param ... Accepts the old argument name `marker_labels`, with a warning.
+#'   Any other name is an error.
+#' @return The saved file is the product; the Leaflet object comes back
+#'   invisibly as a byproduct. Writes `output_file`, and JPGs when
+#'   `export_image` is set.
 #' @family map
 #' @export
 create_pollution_map <- function(
@@ -246,7 +264,8 @@ create_pollution_map <- function(
   data_ids = NULL,
   data_symbols = NULL,
   data_dynamic = NULL,
-  output_file = "pollution_map.html",
+  output_file,
+  output_dir = getOption("quickmap.output_dir", NULL),
   export_image = NULL,
   boroughs = NULL,
   pollutant = "no2",
@@ -255,14 +274,16 @@ create_pollution_map <- function(
   vignette = NULL,
   colour_scale = "who_no2",
   styling_type = "html",
-  marker_labels = NULL,
+  symbol_labels = NULL,
   banner_colour = NULL,
   boundary_labels = NULL,
   autoplay = NULL,
   play_speed = NULL,
   theme_file = NULL,
-  wind = NULL
+  wind = NULL,
+  ...
 ) {
+  symbol_labels <- absorb_legacy_args(symbol_labels, ...)
   qm_layers <- lapply(seq_along(data_sources), function(i) {
     layer <- as_qm_layer(
       data_sources[[i]],
@@ -280,10 +301,11 @@ create_pollution_map <- function(
     display_times = display_times,
     colour_scale = colour_scale,
     output_file = output_file,
+    output_dir = output_dir,
     title = title,
     styling_type = styling_type,
     export_image = export_image,
-    marker_labels = marker_labels,
+    symbol_labels = symbol_labels,
     vignette = vignette,
     banner_colour = banner_colour,
     boundary_labels = boundary_labels,

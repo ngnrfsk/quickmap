@@ -11,6 +11,11 @@ fixes are item-9 work proper, sequenced below.
 ## Errors (must fix)
 
 **E1 — Example fails: `create_pollution_map()` roxygen example.**
+**Fixed 2026-08-17 (v0.9.9.13)**, with item 9.1: both
+`render_pollution_map()` examples are now `\dontrun{}`. An example that
+runs would also write a file, which is the policy 9.1 exists to satisfy.
+E2 below is still open, so a check with tests still errors.
+
 The help-page example sets `DATA_PATH = "~/data"` and reads
 `wandsworth_2017_2024.csv`, which doesn't exist on a checking machine, so
 R CMD CHECK executes it and dies. Fix: wrap map-rendering examples in

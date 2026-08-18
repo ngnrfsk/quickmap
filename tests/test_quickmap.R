@@ -17,10 +17,11 @@ map1_richmond_no2 <- create_pollution_map(
   #  display_times = 2022:2024,
   colour_scale = "stripes_no2",
   output_file = "debug_0926b_richmond_dt_bl.html",
+  output_dir = "aq_maps",
   title = "debug_0926b - Richmond full data (New API)",
   styling_type = "html", # HTML banner + legend
   vignette = TRUE,
-  marker_labels = TRUE, # Auto-hide labels
+  symbol_labels = TRUE, # Auto-hide labels
   boundary_labels = FALSE
 )
 
@@ -35,11 +36,12 @@ map2_merton_pm25 <- create_pollution_map(
   display_times = 2022:2024,
   colour_scale = "gla_pm25",
   output_file = "debug_0926b_merton_pm25_2018_2024_dt_bl.html",
+  output_dir = "aq_maps",
   title = "debug_0926b LB Merton Annual Mean PM2.5 (New API)",
   theme_file = "inst/themes/wandsworth.yaml",
   styling_type = "html", # HTML banner + legend
   # vignette = TRUE,
-  marker_labels = TRUE, # Auto-hide labels
+  symbol_labels = TRUE, # Auto-hide labels
   boundary_labels = FALSE
 )
 
@@ -57,11 +59,12 @@ map3_merton_no2_image <- create_pollution_map(
   display_times = 2020:2022,
   colour_scale = "who_no2",
   output_file = "debug_0926b_image_merton_no2_2018_2024_dt_bl.html",
+  output_dir = "aq_maps",
   title = "debug_0926b LB Merton Annual Mean NO2 with Image Export (New API)",
   styling_type = "html", # HTML banner + legend
   vignette = TRUE,
   export_image = TRUE,
-  marker_labels = TRUE, # Auto-hide labels
+  symbol_labels = TRUE, # Auto-hide labels
   banner_colour = theme$palette$green,
   boundary_labels = FALSE
 )

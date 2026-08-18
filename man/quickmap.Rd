@@ -10,11 +10,12 @@ quickmap(
   pollutant = NULL,
   display_times = NULL,
   colour_scale = "who_no2",
-  output_file = "quickmap.html",
+  output_file,
+  output_dir = getOption("quickmap.output_dir", NULL),
   title = NULL,
   styling_type = "html",
   export_image = NULL,
-  marker_labels = NULL,
+  symbol_labels = NULL,
   vignette = NULL,
   banner_colour = NULL,
   boundary_labels = NULL,
@@ -22,7 +23,8 @@ quickmap(
   play_speed = NULL,
   theme_file = NULL,
   data_symbols = NULL,
-  wind = NULL
+  wind = NULL,
+  ...
 )
 }
 \arguments{
@@ -40,7 +42,11 @@ first time-varying layer's value column.}
 
 \item{colour_scale}{Name of a bundled colour scale (see inst/config/scales/)}
 
-\item{output_file}{HTML file name written into \verb{aq_maps/}}
+\item{output_file}{Required. Where to write the map: a bare name goes in
+the working directory, a path goes where it says, creating the directory.}
+
+\item{output_dir}{Directory prepended to \code{output_file}, and to any JPGs.
+Default: the \code{quickmap.output_dir} option, else NULL.}
 
 \item{title}{Banner title}
 
@@ -48,7 +54,7 @@ first time-varying layer's value column.}
 
 \item{export_image}{NULL, TRUE, or c(width, height) for JPG export}
 
-\item{marker_labels}{FALSE, TRUE (hover), "values_on", "labels", "labels_on"}
+\item{symbol_labels}{FALSE, TRUE (hover), "values_on", "labels", "labels_on"}
 
 \item{vignette}{Dim the area outside the boundary}
 
@@ -74,10 +80,14 @@ symbols for static layers}
 frame with \code{date}/\code{ws}/\code{wd} columns. Rendered as an animated particle
 overlay (leaflet-velocity) that advances with the time control.
 Interactive HTML only — omitted from static JPG exports.}
+
+\item{...}{Accepts the old argument name \code{marker_labels}, with a warning.
+Any other name is an error.}
 }
 \value{
-Invisible Leaflet map object; writes HTML (and optionally JPGs) to
-\verb{aq_maps/}
+The saved file is the product; the Leaflet object comes back
+invisibly as a byproduct. Writes \code{output_file}, and JPGs when
+\code{export_image} is set.
 }
 \description{
 The core QuickMap entry point. Takes one layer or a list of layers — file
@@ -98,9 +108,10 @@ that layer — e.g.
 
 \examples{
 \dontrun{
-# two lines: a usable map
+# two arguments: a usable map
 library(quickmap)
-quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth")
+quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth",
+         output_file = "wandsworth.html")
 
 # several layers plus styling
 quickmap(
@@ -112,7 +123,8 @@ quickmap(
 )
 
 # expert: hand-built atomic unit
-quickmap(qm_layer(my_data, value_col = "pm25"), boroughs = "Richmond")
+quickmap(qm_layer(my_data, value_col = "pm25"), boroughs = "Richmond",
+         output_file = "richmond_pm25.html")
 }
 }
 \seealso{

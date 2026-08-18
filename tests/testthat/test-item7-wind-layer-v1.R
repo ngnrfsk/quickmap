@@ -105,7 +105,7 @@ test_that("wind map embeds the velocity dependency and controller hook", {
   ))
 
   html <- paste(
-    readLines(file.path("aq_maps", "item7_wind_test.html"), warn = FALSE),
+    readLines("item7_wind_test.html", warn = FALSE),
     collapse = "\n"
   )
   expect_true(grepl("quickmapWindController", html, fixed = TRUE))

@@ -1308,7 +1308,7 @@ get_default_theme <- function() {
       base_tiles = NULL,
       zoom_level = NULL,
       boundary_labels = FALSE,
-      symbol_labels = FALSE,
+      marker_labels = FALSE,
       # Multiplier on marker-label text. 1 puts labels on MARKER_LABEL_REM,
       # the same size as the smallest text in the legend, at every export
       # size — there is no page-size correction to make, because the labels
@@ -1382,20 +1382,6 @@ load_theme <- function(theme_file = NULL) {
 
   if (is.null(theme)) {
     return(defaults)
-  }
-
-  # A theme file written before v0.9.9.13 says map.marker_labels. Honour it,
-  # so an existing theme keeps working, and say what to change.
-  if (!is.null(theme$map$marker_labels)) {
-    warning(
-      "theme ", basename(theme_file),
-      " uses map.marker_labels; rename it to map.symbol_labels.",
-      call. = FALSE
-    )
-    if (is.null(theme$map$symbol_labels)) {
-      theme$map$symbol_labels <- theme$map$marker_labels
-    }
-    theme$map$marker_labels <- NULL
   }
 
   modifyList(defaults, theme)
@@ -2327,79 +2313,6 @@ add_year_and_static_layers <- function(
     )
 }
 
-#' Resolve where a map is written
-#'
-#' Every write is user-specified: `output_file` is required and is used as
-#' given, `output_dir` is prepended when supplied. Nothing is invented, so the
-#' package never creates a directory the caller did not name. A directory in
-#' either argument is created, because naming it is the instruction to make it.
-#'
-#' @param output_file File name, or a path. Required.
-#' @param output_dir Directory prepended to `output_file`, or NULL.
-#' @return The path to write, with `~` expanded.
-#' @keywords internal
-resolve_output_path <- function(output_file, output_dir = NULL) {
-  if (missing(output_file) || is.null(output_file) ||
-      !is.character(output_file) || length(output_file) != 1L ||
-      is.na(output_file) || !nzchar(output_file)) {
-    stop(
-      "output_file is required: name the file to write, e.g. ",
-      'output_file = "map.html". Give a path or set output_dir to write ',
-      "elsewhere.",
-      call. = FALSE
-    )
-  }
-  path <- path.expand(output_file)
-  if (!is.null(output_dir)) {
-    if (!is.character(output_dir) || length(output_dir) != 1L ||
-        is.na(output_dir)) {
-      stop("output_dir must be a single directory path, or NULL.", call. = FALSE)
-    }
-    path <- file.path(path.expand(output_dir), path)
-  }
-  parent <- dirname(path)
-  if (parent != "." && !dir.exists(parent)) {
-    dir.create(parent, recursive = TRUE, showWarnings = TRUE)
-  }
-  path
-}
-
-#' Accept the pre-1.0 argument names
-#'
-#' `marker_labels` became `symbol_labels` in v0.9.9.13. The old name still
-#' works and warns. Anything else in `...` is an error, so the capture cannot
-#' swallow a misspelled argument.
-#'
-#' @param symbol_labels The new argument's value, as passed.
-#' @param ... Whatever the caller supplied under no known name.
-#' @return The value to use for `symbol_labels`.
-#' @keywords internal
-absorb_legacy_args <- function(symbol_labels, ...) {
-  extra <- list(...)
-  if (length(extra) == 0L) return(symbol_labels)
-  unknown <- setdiff(names(extra), "marker_labels")
-  if (length(unknown) > 0L || is.null(names(extra))) {
-    stop(
-      "unused argument(s): ",
-      paste(if (is.null(names(extra))) "unnamed" else unknown, collapse = ", "),
-      call. = FALSE
-    )
-  }
-  if (!is.null(symbol_labels)) {
-    stop(
-      "give either symbol_labels or marker_labels, not both. ",
-      "marker_labels is the old name for the same thing.",
-      call. = FALSE
-    )
-  }
-  warning(
-    "marker_labels is now symbol_labels; the old name still works but will ",
-    "go at 1.0.",
-    call. = FALSE
-  )
-  extra$marker_labels
-}
-
 #' Add the map furniture, save the file, and export a JPG if asked
 #'
 #' The last step of one output pass. Boundary, vignette, viewport and time
@@ -2811,17 +2724,17 @@ build_lazy_payload <- function(
     d <- d[d$year_str %in% times & !is.na(d[[pollutant]]), , drop = FALSE]
     if (nrow(d) == 0) next
 
-    symbol_labels <- layer_config$options$symbol_labels %||% FALSE
-    want_custom <- isTRUE(symbol_labels %in% c("labels", "labels_on"))
+    marker_labels <- layer_config$options$marker_labels %||% FALSE
+    want_custom <- isTRUE(marker_labels %in% c("labels", "labels_on"))
     has_label_col <- "Label" %in% names(d)
-    label_mode <- if (isTRUE(symbol_labels) ||
-                      identical(symbol_labels, "values_on")) {
+    label_mode <- if (isTRUE(marker_labels) ||
+                      identical(marker_labels, "values_on")) {
       "values"
     } else if (want_custom && has_label_col) {
       "custom"
     } else if (want_custom) {
       warning(
-        "symbol_labels set to '", symbol_labels,
+        "marker_labels set to '", marker_labels,
         "' but no Label column found. Showing pollution values instead.",
         call. = FALSE
       )
@@ -2864,7 +2777,7 @@ build_lazy_payload <- function(
       radius = get_icon_shape_config(layer_config$icon_shape)$base_size / 2,
       nonsolid = layer_config$icon_shape %in% NONSOLID_SHAPES,
       labelMode = label_mode,
-      noHide = symbol_labels %in% c("values_on", "labels_on"),
+      noHide = marker_labels %in% c("values_on", "labels_on"),
       sites = sites
     )
   }
@@ -3205,7 +3118,7 @@ create_generic_icons <- function(
 #' @keywords internal
 get_measurement_layers <- function(
   spatial_data,
-  symbol_labels,
+  marker_labels,
   data_symbols = NULL
 ) {
   layer_ids <- spatial_data$ids
@@ -3268,7 +3181,7 @@ get_measurement_layers <- function(
       id = layer_id,
       static = is_static,
       icon_shape = icon_shape,
-      options = list(symbol_labels = symbol_labels)
+      options = list(marker_labels = marker_labels)
     )
   }
 
@@ -3298,14 +3211,14 @@ prepare_generic_layer_data <- function(
   if (nrow(year_data) == 0) return(NULL)
 
   show_labels <- if (!is.null(layer_config$options))
-    layer_config$options$symbol_labels else FALSE
+    layer_config$options$marker_labels else FALSE
 
   # Static layers don't have pollutant columns
   use_pollutant <- if (layer_config$static) NULL else pollutant
 
   result <- list(
     data = year_data,
-    labels = generate_symbol_labels(
+    labels = generate_marker_labels(
       year_data,
       use_pollutant,
       show_labels,
@@ -3327,7 +3240,7 @@ add_layer <- function(
   colour_scale = NULL,
   label_sizing = 1.0,
   image_scale_factor = 1.0,
-  symbol_labels = FALSE,
+  marker_labels = FALSE,
   label_background = TRUE
 ) {
   if (is.null(layer_data)) return(map)
@@ -3349,7 +3262,7 @@ add_layer <- function(
   label_text_size <- label_font_size(label_sizing)
 
   # Always-visible labels for values_on/labels_on
-  no_hide <- symbol_labels %in% c("values_on", "labels_on")
+  no_hide <- marker_labels %in% c("values_on", "labels_on")
 
   label_opts <- labelOptions(
     noHide = no_hide,
@@ -3390,17 +3303,17 @@ add_layer <- function(
 }
 
 
-#' Generate symbol labels via duck typing (School/Label/pollutant columns)
+#' Generate marker labels via duck typing (School/Label/pollutant columns)
 #'
 #' @param data Data frame with spatial data
 #' @param pollutant Pollutant name or NULL for static layers
-#' @param symbol_labels Label visibility setting
+#' @param marker_labels Label visibility setting
 #' @param layer_id Layer identifier (not used for detection)
 #' @return Character vector of labels
 #' @keywords internal
-generate_symbol_labels <- function(data, pollutant, symbol_labels, layer_id) {
-  show_values <- symbol_labels %in% c(TRUE, "values_on")
-  show_custom <- symbol_labels %in% c("labels", "labels_on")
+generate_marker_labels <- function(data, pollutant, marker_labels, layer_id) {
+  show_values <- marker_labels %in% c(TRUE, "values_on")
+  show_custom <- marker_labels %in% c("labels", "labels_on")
 
   if (!show_values && !show_custom) {
     return(rep("", nrow(data)))
@@ -3419,8 +3332,8 @@ generate_symbol_labels <- function(data, pollutant, symbol_labels, layer_id) {
     # Fallback: show pollution values if available
     if (!is.null(pollutant) && pollutant %in% names(data)) {
       warning(
-        "symbol_labels set to '",
-        symbol_labels,
+        "marker_labels set to '",
+        marker_labels,
         "' but no Label column found. Showing pollution values instead.",
         call. = FALSE
       )
@@ -3431,8 +3344,8 @@ generate_symbol_labels <- function(data, pollutant, symbol_labels, layer_id) {
       ))
     }
     warning(
-      "symbol_labels set to '",
-      symbol_labels,
+      "marker_labels set to '",
+      marker_labels,
       "' but no Label column found. No labels will be shown.",
       call. = FALSE
     )
@@ -3697,7 +3610,7 @@ generate_map_layers <- function(
         )
         if (!is.null(layer_data)) {
           show_labels <- if (!is.null(layer_config$options))
-            layer_config$options$symbol_labels else FALSE
+            layer_config$options$marker_labels else FALSE
 
           base_map <- add_layer(
             base_map,
@@ -3708,7 +3621,7 @@ generate_map_layers <- function(
             colour_scale,
             label_sizing,
             image_scale_factor,
-            symbol_labels = show_labels,
+            marker_labels = show_labels,
             label_background
           )
         }
@@ -3718,7 +3631,7 @@ generate_map_layers <- function(
       layer_data <- prepare_generic_layer_data(layer_config, static_data)
 
       show_labels <- if (!is.null(layer_config$options))
-        layer_config$options$symbol_labels else FALSE
+        layer_config$options$marker_labels else FALSE
 
       base_map <- add_layer(
         base_map,
@@ -3729,7 +3642,7 @@ generate_map_layers <- function(
         colour_scale = colour_scale,
         label_sizing,
         image_scale_factor,
-        symbol_labels = show_labels,
+        marker_labels = show_labels,
         label_background
       )
     }
@@ -3984,11 +3897,9 @@ determine_times_and_viewport <- function(
 #'   "triangle", "star", "plus" and every renderer symbol name (18 in all;
 #'   an unknown name errors with the full list).
 #' @param data_dynamic Logical vector indicating temporal (TRUE) vs static (FALSE) layers (default: NULL, auto-detected).
-#' @param output_file Required. Where to write the map, used verbatim
-#'   (include the .html extension). A bare name writes to the working
-#'   directory; a path writes there, creating the directory.
-#' @param output_dir Directory prepended to \code{output_file}, and to the JPG
-#'   set. Default: the \code{quickmap.output_dir} option, else NULL.
+#' @param output_file Output file name, used verbatim (include the .html
+#'   extension). Saved to the 'aq_maps/' directory; NULL returns the widget
+#'   without writing a file.
 #' @param export_image NULL (no export), TRUE (export 1200x1200), or c(width, height) vector for custom dimensions.
 #' @param boroughs Borough name(s) for boundary display. NULL (default) draws
 #'   no boundary and fits the map to the data.
@@ -3999,10 +3910,8 @@ determine_times_and_viewport <- function(
 #' @param vignette If TRUE, darkens areas outside borough(s). Default: NULL (uses theme).
 #' @param colour_scale Color scale name (default: "who_no2"). See \code{load_colour_scale()} for options.
 #' @param styling_type Controls banner/legend display: "html" (default) or "none".
-#' @param symbol_labels Label visibility: FALSE, TRUE (hover), "values_on" (always), "labels" (custom/hover),
+#' @param marker_labels Label visibility: FALSE, TRUE (hover), "values_on" (always), "labels" (custom/hover),
 #'   "labels_on" (custom/always). Default: NULL (uses theme). Content: School/Label/pollutant columns.
-#' @param ... Accepts the old argument name \code{marker_labels}, with a
-#'   warning. Any other name is an error.
 #' @param banner_colour Color for banner and vignette. Default: NULL (uses theme).
 #' @param boundary_labels If TRUE, shows borough boundary labels. Default: NULL (uses theme).
 #' @param autoplay Auto-start year animation on load. Default: NULL (uses theme).
@@ -4015,10 +3924,8 @@ determine_times_and_viewport <- function(
 #' @param wind Wind data for the particle overlay: a \code{from_worldmet()}
 #'   object or a data frame of date/ws/wd. Interactive HTML only.
 #'
-#' @return The saved file is the product; the Leaflet object is returned
-#'   invisibly as a byproduct, without the injected chrome. Side effects:
-#'   writes \code{output_file}, and one JPG per time step when
-#'   \code{export_image} is not NULL.
+#' @return Invisible Leaflet map object. Side effects: Saves HTML to \code{aq_maps/}.
+#'   If \code{export_image} is not NULL, also saves JPG files (one per year).
 #'
 #' @details
 #' \strong{Data Files:} CSV files (diffusion tubes, schools) require Easting/Northing columns.
@@ -4032,9 +3939,7 @@ determine_times_and_viewport <- function(
 #' \strong{Symbols:} Auto-assigned by data type. Override with data_symbols parameter.
 #'
 #' @examples
-#' \dontrun{
-#' # Basic interactive map (annual). Not run: it needs the user's data, and
-#' # writes a file, which an example may not do.
+#' # Basic interactive map (annual)
 #' Sys.setenv(DATA_PATH = "~/data")
 #' create_pollution_map(
 #'   data_sources = list("wandsworth_2017_2024.csv", "schools_Wandsworth.csv"),
@@ -4043,15 +3948,13 @@ determine_times_and_viewport <- function(
 #'   output_file = "wandsworth_2024.html"
 #' )
 #'
-#' # Monthly data (sub-annual), written into a folder of the caller's choosing
+#' # Monthly data (sub-annual)
 #' create_pollution_map(
 #'   data_sources = list("sensor_monthly.Rdata"),
 #'   boroughs = "Merton",
 #'   display_times = c("2024-01", "2024-02", "2024-03"),
-#'   output_file = "merton_q1_2024.html",
-#'   output_dir = "aq_maps"
+#'   output_file = "merton_q1_2024"
 #' )
-#' }
 #'
 #' @note
 #' Year columns in CSV files must be YYYY format (e.g., "2024").
@@ -4064,8 +3967,7 @@ render_pollution_map <- function(
   data_ids = NULL,
   data_symbols = NULL,
   data_dynamic = NULL,
-  output_file,
-  output_dir = getOption("quickmap.output_dir", NULL),
+  output_file = "pollution_map.html",
   export_image = NULL,
   boroughs = NULL,
   pollutant = "no2",
@@ -4074,20 +3976,17 @@ render_pollution_map <- function(
   vignette = NULL,
   colour_scale = "who_no2",
   styling_type = "html",
-  symbol_labels = NULL,
+  marker_labels = NULL,
   banner_colour = NULL,
   boundary_labels = NULL,
   autoplay = NULL,
   play_speed = NULL,
   theme_file = NULL,
-  wind = NULL,
-  ...
+  wind = NULL
 ) {
   # -- 1. Settings ---------------------------------------------------------
   # An explicit argument always wins over the theme file; the theme fills in
   # everything the caller left NULL. This is what lets a one-line call work.
-  symbol_labels <- absorb_legacy_args(symbol_labels, ...)
-  output_path <- resolve_output_path(output_file, output_dir)
   if (!styling_type %in% c("html", "none")) {
     stop('styling_type must be "html" or "none".', call. = FALSE)
   }
@@ -4100,7 +3999,7 @@ render_pollution_map <- function(
     vignette,
     banner_colour,
     boundary_labels,
-    symbol_labels,
+    marker_labels,
     autoplay,
     play_speed,
     base_tiles_provider
@@ -4110,7 +4009,7 @@ render_pollution_map <- function(
       vignette %||% theme$map$vignette,
       banner_colour %||% theme$banner$background,
       boundary_labels %||% theme$map$boundary_labels,
-      symbol_labels %||% theme$map$symbol_labels,
+      marker_labels %||% theme$map$marker_labels,
       autoplay %||% theme$controls$autoplay,
       play_speed %||% theme$controls$play_speed,
       theme$map$base_tiles
@@ -4128,6 +4027,8 @@ render_pollution_map <- function(
     borough_sf <- get_boundary_sf(boroughs)
     if (is.null(borough_sf)) return()
   }
+
+  if (!dir.exists("aq_maps")) dir.create("aq_maps", showWarnings = TRUE)
 
   # -- 3. Data, time steps and viewport ------------------------------------
   spatial_data <- load_spatial_data_sources(
@@ -4171,7 +4072,7 @@ render_pollution_map <- function(
 
   measurement_layers <- get_measurement_layers(
     spatial_data,
-    symbol_labels,
+    marker_labels,
     data_symbols
   )
 
@@ -4275,15 +4176,8 @@ render_pollution_map <- function(
         label_background
       )
 
-      # One image per step, beside the HTML the caller asked for. The step
-      # goes in the filename, so a sub-annual label such as
-      # "2024-01-15 10:00" is stripped to characters a filename can hold.
-      file_parts <- tools::file_path_sans_ext(basename(output_path))
-      step_tag <- gsub("[^A-Za-z0-9_-]+", "-", yr)
-      html_file <- file.path(
-        dirname(output_path),
-        paste0(file_parts, "_", step_tag, ".html")
-      )
+      file_parts <- tools::file_path_sans_ext(basename(output_file))
+      html_file <- file.path("aq_maps", paste0(file_parts, "_", yr, ".html"))
 
       finalize_and_save_map(
         static_map,
@@ -4330,36 +4224,53 @@ render_pollution_map <- function(
   }
 
   # -- 7. Save -------------------------------------------------------------
-  # The product is the saved file: the chrome is injected into it, so an
-  # unsaved return would be a bare leaflet map, not a QuickMap.
-  html_map <- finalize_and_save_map(
-    html_map,
-    output_path,
-    borough_sf,
-    vignette_overlay,
-    vignette,
-    bbox,
-    TRUE,
-    display_times,
-    boundary_labels,
-    theme$map$zoom_level,
-    title,
-    styling_type,
-    show_banner,
-    banner_colour,
-    colour_scale,
-    autoplay,
-    play_speed,
-    data_max,
-    NULL,
-    lazy_payload,
-    banner_style,
-    indicator,
-    indicator_label,
-    indicator_show_max,
-    indicator_placement,
-    banner_key
-  )
+  # With no output_file the widget is returned unsaved, for a user working at
+  # the console or knitting the map into a document.
+  if (!is.null(output_file)) {
+    html_file <- file.path("aq_maps", output_file)
+
+    html_map <- finalize_and_save_map(
+      html_map,
+      html_file,
+      borough_sf,
+      vignette_overlay,
+      vignette,
+      bbox,
+      TRUE,
+      display_times,
+      boundary_labels,
+      theme$map$zoom_level,
+      title,
+      styling_type,
+      show_banner,
+      banner_colour,
+      colour_scale,
+      autoplay,
+      play_speed,
+      data_max,
+      NULL,
+      lazy_payload,
+      banner_style,
+      indicator,
+      indicator_label,
+      indicator_show_max,
+      indicator_placement,
+      banner_key
+    )
+  } else {
+    html_map <- add_map_controls(
+      html_map,
+      borough_sf,
+      vignette_overlay,
+      vignette,
+      bbox,
+      TRUE,
+      display_times,
+      boundary_labels,
+      theme$map$zoom_level,
+      lazy_payload
+    )
+  }
 
   return(invisible(html_map))
 }

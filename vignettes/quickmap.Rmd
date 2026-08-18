@@ -42,17 +42,21 @@ devtools::install_github("ngnrfsk/quickmap")
 One dataset (a Wandsworth diffusion tube survey), one map, growing by one
 line per step.
 
-## 2. Make your first map — one argument
+## 2. Make your first map — two arguments
 
 ```{r first-map, purl = FALSE}
 library(quickmap)                           # load the quickmap library
 quickmap(
-  "~/my_data/tubes_wandsworth.csv"  # diffusion tube data
+  "~/my_data/tubes_wandsworth.csv", # diffusion tube data
+  output_file = "wandsworth.html"   # where to write the map
 )
 ```
 
-One input — the measurement data — is all `quickmap()` needs. The data
-here is an ordinary diffusion tube spreadsheet saved as CSV:
+Two things — the measurement data, and where to put the result — are all
+`quickmap()` needs. It never picks the location for you: a bare name like
+`"wandsworth.html"` goes in your working directory, a path such as
+`"maps/wandsworth.html"` goes there and creates the folder. The data here
+is an ordinary diffusion tube spreadsheet saved as CSV:
 
 | Easting | Northing | 2017 | 2018 | ... | 2024 | Label |
 |---------|----------|------|------|-----|------|-------|
@@ -64,7 +68,7 @@ Anything else is optional. (Full input specifications: the* Your data
 *chapter.)*
 
 QuickMap converts the coordinates, colours each site by the WHO NO2
-bands, fits the view to the data, and writes `aq_maps/quickmap.html` —
+bands, fits the view to the data, and writes `wandsworth.html` —
 a single self-contained file. Open it in any browser, attach it to an
 email, or put it on a website (it does need an internet connection to
 download the background map). Here is that exact file:
@@ -90,7 +94,8 @@ boundary and frames the map around it:
 ```{r boundary, purl = FALSE}
 quickmap(
   "~/my_data/tubes_wandsworth.csv",
-  boroughs = "Wandsworth"                   # NEW: the boundary to draw
+  boroughs    = "Wandsworth",               # NEW: the boundary to draw
+  output_file = "wandsworth.html"
 )
 ```
 
@@ -114,9 +119,10 @@ eye goes to the area the map is about. Written out explicitly:
 ```{r vignette, purl = FALSE}
 quickmap(
   "~/my_data/tubes_wandsworth.csv",
-  boroughs = "Wandsworth",
-  vignette = TRUE                           # NEW: dim outside the boundary
-)                                           #      (the default with a boundary)
+  boroughs    = "Wandsworth",
+  vignette    = TRUE,                       # NEW: dim outside the boundary
+  output_file = "wandsworth.html"           #      (the default with a boundary)
+)
 ```
 
 <iframe src="maps/getstarted-boundary.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Vignette on: dimmed outside the boundary"></iframe>
@@ -140,7 +146,8 @@ Sys.setenv(
 )
 quickmap(
   "tubes_wandsworth.csv",          # NEW: just the filename
-  boroughs = "Wandsworth"
+  boroughs    = "Wandsworth",
+  output_file = "wandsworth.html"
 )
 ```
 
@@ -155,7 +162,8 @@ quickmap(
   "tubes_wandsworth.csv",
   boroughs      = "Wandsworth",
   display_times = "2024",                  # NEW: one year -> one image
-  export_image  = c(1200, 900)             # NEW: JPG width x height, pixels
+  export_image  = c(1200, 900),            # NEW: JPG width x height, pixels
+  output_file   = "wandsworth.html"        #      the JPG goes beside it
 )
 ```
 
@@ -166,19 +174,25 @@ quickmap(
 subsets interactive maps — pick any years, months or hours present in
 the data.*
 
-## 7. Add a title and choose the file name
+## 7. Add a title, and put the file where you want it
 
 Maps usually need a title for the banner, and a file name you'll
-recognise later:
+recognise later. `output_dir` sets the folder once, so the file names
+stay short:
 
 ```{r step-further}
 quickmap(
   "tubes_wandsworth.csv",
   boroughs    = "Wandsworth",
   title       = "Wandsworth NO2, 2017-2024", # NEW: banner text
-  output_file = "wandsworth_no2.html"        # NEW: file written to aq_maps/
+  output_file = "wandsworth_no2.html",       # NEW: a name you'll recognise
+  output_dir  = "aq_maps"                    # NEW: the folder to write into
 )
 ```
+
+*`output_dir` is created if it does not exist. To use one folder for a
+whole session, set `options(quickmap.output_dir = "aq_maps")` — in
+`.Rprofile` if you always want it — and drop the argument.*
 
 <iframe src="maps/getstarted-titled.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The map with its banner title"></iframe>
 
@@ -188,7 +202,7 @@ the full colour scheme are theme settings (`?load_theme`).*
 
 ## 8. Add labels to the symbols
 
-Readers often want the number behind a colour. `marker_labels = TRUE`
+Readers often want the number behind a colour. `symbol_labels = TRUE`
 shows each site's value when you hover over its symbol — try it on the
 map below:
 
@@ -197,7 +211,9 @@ quickmap(
   "tubes_wandsworth.csv",
   boroughs      = "Wandsworth",
   title         = "Wandsworth NO2, 2017-2024",
-  marker_labels = TRUE                       # NEW: values appear on hover
+  symbol_labels = TRUE,                      # NEW: values appear on hover
+  output_file   = "wandsworth_no2.html",
+  output_dir    = "aq_maps"
 )
 ```
 
@@ -205,7 +221,7 @@ quickmap(
 
 *Labels have five modes — off, values on hover, values always shown, and
 site names (from a `Label` or `School` column) on hover or always shown:
-`marker_labels = "values_on"`, `"labels"`, `"labels_on"` (`?quickmap`).*
+`symbol_labels = "values_on"`, `"labels"`, `"labels_on"` (`?quickmap`).*
 
 ## 9. Combine several measurement networks
 
@@ -221,7 +237,9 @@ quickmap(
     "schools_merton.csv"                                   # school locations
   ),
   boroughs = "Merton",
-  title = "Merton NO2: ● tubes ◆ sensors ✖ schools" # NEW: symbols as a key
+  title = "Merton NO2: ● tubes ◆ sensors ✖ schools", # NEW: symbols as a key
+  output_file = "merton_no2.html",
+  output_dir = "aq_maps"
 )
 ```
 

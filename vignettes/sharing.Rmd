@@ -17,7 +17,8 @@ makes sharing simple: the file *is* the product.
 
 ## 1. Email it
 
-The file in `aq_maps/` attaches to an email like any document. Sizes stay
+The file you named in `output_file` attaches to an email like any
+document. Sizes stay
 email-friendly: a typical annual map is well under 1 MB, and even a
 108-step hourly animation is about 1 MB (the compact storage format —
 [Time and animation](time.html)). The recipient double-clicks and the
