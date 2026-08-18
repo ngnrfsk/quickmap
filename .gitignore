@@ -1,25 +1,19 @@
-# Output files
+# Generated map output. Named directories only — a blanket *.html rule has
+# three times hidden files the package needs (inst/controls/time-slider.html,
+# so a fresh clone could not build a map; dev/concepts/.../examples, the only
+# evidence retired ideas worked; vignettes/maps, the manual's own examples).
+# Ignore where output lands, not what it is called.
 aq_maps/
-*.html
-*.jpg
-*.png
 
-# pkgdown site (built locally, never committed)
+# The built manual site. GitHub Pages is meant to serve it from here, and
+# the vignettes embed their example maps from that site because the maps
+# are too large to ship inside the package (12.6 MB against CRAN's 5 MB).
+# Committing it is PR #52's business; until that merges, docs/ is built
+# locally and stays out of the history.
 docs/
 
-# manual screenshots are committed
-!vignettes/figures/*.png
-
-# the package's own HTML templates ARE committed: *.html above was aimed at
-# generated maps, but it was also swallowing these, so a fresh clone could not
-# build a map at all (found 2026-08-05, and they had never been committed)
-!inst/**/*.html
-
-# concept demonstrations ARE committed: they are the only evidence a retired
-# or deferred idea was built and worked, and aq_maps is not in the repository
-!dev/concepts/examples/*.html
-!dev/concepts/examples/*.jpg
-!dev/concepts/examples/*.png
+# Downloaded package tarballs kept for reference, not ours to version
+dev/*.tgz
 
 # System files
 .DS_Store

@@ -25,7 +25,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/labels-hover.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Hover a symbol to see its value"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/labels-hover.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Hover a symbol to see its value"></iframe>
 
 ## 1. The five modes
 
@@ -51,7 +51,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/labels-values-on.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Values always shown beside each symbol"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/labels-values-on.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Values always shown beside each symbol"></iframe>
 
 ## 3. Site names instead of values
 
@@ -68,7 +68,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/labels-names.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Hover to see site and school names"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/labels-names.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Hover to see site and school names"></iframe>
 
 ## 4. How label content is chosen
 
@@ -85,6 +85,12 @@ Per layer, by its columns (duck typing):
   cells.
 - Mixed maps mix naturally: in the example above the tubes show their
   labels and the schools their names, each layer from its own column.
+
+Because the choice is made per layer, one setting can do two jobs.
+`symbol_labels = "values_on"` on a map of tubes *and* schools gives every
+tube its value and every school its name — even if the tube file also has
+a `Label` column, since a `School` column always wins. Values read
+`28 µg/m³`.
 
 ## 5. Shorter school names
 
@@ -117,9 +123,45 @@ The vocabulary is schools-only (`Primary`, `Secondary`, `Infant`,
 `Junior`, and a trailing `School`, `Academy` or `College`). Hospitals and
 GP surgeries need their own, which is planned after 1.0.
 
+## 6. Size and background
+
+Labels are the smallest text on a map, matched to the smallest text in
+the legend, and they scale with a static export automatically — a
+4000-pixel image gets 4000-pixel-sized labels without being asked.
+
+Two theme keys adjust them:
+
+```yaml
+map:
+  label_scale: 1           # multiplier: 2 is twice the legend's small text
+  label_background: true   # the translucent plate behind each label
+```
+
+`label_background: false` removes the plate, leaving the text alone on
+the map. The plate buys legibility over busy tiles and costs clutter
+where labels are dense — worth turning off on a print map.
+
+`label_scale` is a trade, not a free win: bigger labels collide sooner.
+On a crowded borough map, labels twice this size begin to overlap in the
+built-up centre, and much beyond that they cover the map. If you need
+larger text on paper, print the image bigger before raising this — the
+same file across A3 is twice the point size for nothing.
+
+## 7. Reference layers get a key, not labels
+
+A layer with no values — schools are the usual case — has no place on
+the colour ramp, so its symbol is explained in the banner instead. Where
+such a layer has a `Level` column, its categories appear at the end of
+the banner as small marks in their own colours ("✕ Primary ✕ Secondary").
+
+That key is what lets the map labels drop the words every school shares:
+it is why `shorten_labels = TRUE` above is safe.
+
 ## See also
 
 - [Get started](quickmap.html) step 8 — labels in the build-up.
 - [Your data](your-data.html) — where `Label` and `School` columns fit
   in each input format.
 - `?quickmap` — the `symbol_labels` parameter.
+- [Sharing and export](sharing.html) — sizing labels for the printed
+  page.

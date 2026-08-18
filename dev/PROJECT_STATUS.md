@@ -16,24 +16,28 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 ## Where the project stands
 
 - Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain. Item 9 is in
-  progress: 9.1 and 9.3 done on `feature/item9-output-paths`, awaiting visual
-  sign-off; 9.2 and 9.4 to 9.7 remain.
+  progress: 9.1, 9.3 and 9.8 done on `feature/item9-output-paths`, awaiting
+  visual sign-off; 9.2 and 9.4 to 9.7 remain.
 - Four PRs open, three waiting on Iarla, plus the item 9 branch to raise.
 
 ## Waiting on Iarla
 
-1.  **Review PR #52** — vignettes were missing from the built package; adds the
-    first README.
+1.  **Review the manual** on `feature/item9-output-paths`, built at
+    file:///Users/iarla/Coding/quickmap/docs/index.html. It now carries PR
+    #48's chapters, PR #52's example maps and item 9's API, so **PRs #48 and
+    #52 are superseded by that branch** — close them when it merges, or say
+    if you would rather they stayed separate.
 2.  **Review PR #50** — merging now asks for approval at a prompt.
 3.  **Switch on GitHub Pages**: settings → Pages → main branch, `/docs`. The
-    manual's example-map links stay broken until it is on.
+    chapters embed their maps from the hosted site (12.6 MB of maps against
+    CRAN's 5 MB, so they cannot ship inside the package), which means the
+    embeds are blank anywhere but the local build until Pages answers.
+    Turning it on also needs `docs/` committed — that is PR #52's change, and
+    the item 9 branch deliberately does not carry it.
 4.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
     `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
 5.  **Upload three maps** to swlonrsp.github.io from
     `/Users/iarla/Coding/260814 Merton AQAP maps and figures refresh/animations/`.
-
-PR #48, the manual, is held until item 9 changes output paths and renames
-`marker_labels`. Reviewing it now would mean reviewing it twice.
 
 --------------------------------------------------------------------------------
 
@@ -174,6 +178,16 @@ Index, documents, code and demonstration maps: dev/concepts/README.md.
 
 ## Recent work
 
+- **17 August (later)**: the manual folded onto `feature/item9-output-paths` —
+  PR #48's five rewritten chapters and front page, PR #52's 17 example maps and
+  README, and item 9's `output_file`/`symbol_labels` reconciled across them.
+  Fixed while doing it: `generate_legend_html()` had no roxygen block, which
+  stops pkgdown building the reference index at all; three chunks called
+  `quickmap()` with no `output_file`, which has been an error since 9.1;
+  `test-item9-school-labels-v1.R` called an internal function unqualified, so
+  six tests errored; and the chunk harness wrote its maps into the repository
+  root, which PR #52's narrower `.gitignore` no longer hides. 526 tests pass,
+  the chunk harness is ALL OK, and the built site has no broken local link.
 - **17 August**: items 9.1 and 9.3 built on `feature/item9-output-paths`
   (v0.9.9.13). Two filename defects fixed in passing: the per-step JPG loop
   dropped any directory the caller gave, and put the raw time step in the

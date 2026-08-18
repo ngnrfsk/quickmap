@@ -40,11 +40,22 @@ run_vignette_chunks <- function(rmd) {
   failures
 }
 
-rmds <- list.files("vignettes", pattern = "\\.Rmd$", full.names = TRUE)
+rmds <- normalizePath(list.files("vignettes", pattern = "\\.Rmd$",
+                                 full.names = TRUE))
+
+# The chunks name their own output files (item 9.1) and write them relative to
+# the working directory, so the harness runs in a scratch directory: otherwise
+# a run leaves maps loose in the repository, where `git add` would take them.
+scratch <- file.path(tempdir(), "manual-chunks")
+dir.create(scratch, showWarnings = FALSE)
+old_wd <- setwd(scratch)
+on.exit(setwd(old_wd), add = TRUE)
+
 total <- 0L
 for (rmd in rmds) {
-  cat(rmd, "\n")
+  cat(basename(rmd), "\n")
   total <- total + run_vignette_chunks(rmd)
 }
+cat("output written to", scratch, "\n")
 cat("\nchunk harness:", if (total == 0L) "ALL OK" else paste(total, "FAILURES"), "\n")
 if (total > 0L) stop("manual chunk harness failed")

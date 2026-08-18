@@ -1,11 +1,11 @@
-# Roadmap item 9.8: shorten_school_names() brought into the package from the
+# Roadmap item 9.8: quickmap:::shorten_school_names() brought into the package from the
 # LB Merton AQAP print script (2026-08-05), where it lived as shorten_school().
 # The rule that matters is the collision guard: a label must not stand for two
 # schools that the reader cannot tell apart.
 
 test_that("the school type is dropped", {
   expect_equal(
-    shorten_school_names(c("Abbotsbury Primary School",
+    quickmap:::shorten_school_names(c("Abbotsbury Primary School",
                            "Aragon Primary School",
                            "Ursuline Secondary School")),
     c("Abbotsbury", "Aragon", "Ursuline")
@@ -14,7 +14,7 @@ test_that("the school type is dropped", {
 
 test_that("a trailing Academy or College goes too", {
   expect_equal(
-    shorten_school_names(c("Wimbledon College",
+    quickmap:::shorten_school_names(c("Wimbledon College",
                            "Harris Academy",
                            "St Mark's Community College")),
     c("Wimbledon", "Harris", "St Mark's")
@@ -24,22 +24,22 @@ test_that("a trailing Academy or College goes too", {
 test_that("names that would collide keep their full form", {
   full <- c("Harris Primary Academy Merton", "Harris Academy Merton")
   # same Level: the reader has nothing left to tell them apart
-  expect_equal(shorten_school_names(full, c("Primary", "Primary")), full)
+  expect_equal(quickmap:::shorten_school_names(full, c("Primary", "Primary")), full)
 })
 
 test_that("a shared short name survives when the cross colour separates it", {
   full <- c("Harris Primary Academy Merton", "Harris Academy Merton")
-  short <- shorten_school_names(full, c("Primary", "Secondary"))
+  short <- quickmap:::shorten_school_names(full, c("Primary", "Secondary"))
   expect_equal(short, c("Harris Academy Merton", "Harris Academy Merton"))
 })
 
 test_that("with no Level given, any collision reverts", {
   full <- c("Harris Primary Academy Merton", "Harris Academy Merton")
-  expect_equal(shorten_school_names(full), full)
+  expect_equal(quickmap:::shorten_school_names(full), full)
 })
 
 test_that("a name that is nothing but its type is left alone", {
-  expect_equal(shorten_school_names("Primary School"), "Primary School")
+  expect_equal(quickmap:::shorten_school_names("Primary School"), "Primary School")
 })
 
 test_that("qm_layer shortens the label column, not the marker identity", {
