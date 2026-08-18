@@ -106,6 +106,26 @@ Items are never renumbered; other documents cite these numbers.
 2.  Rename to `YYMMDD_name_vN.md`, update references, grep for old names.
 3.  Known stale reference: dev/260816_output_paths_decision.md:67.
 
+### 15. Squash the repo: scrub personal email history — in progress 2026-08-18
+
+1.  209 commits across every branch, including `main`, carried
+    `iarla.kilbane-dawe@merton.gov.uk` (a workplace address that should never
+    have been used) or `iarlakd@gmail.com` in the commit author field. Fixed
+    by rewriting every commit's author/committer identity via `git
+    filter-repo` with a mailmap, to `ngnrfsk@users.noreply.github.com`, then
+    force-pushing every branch — `main` included, overriding the standing
+    "never push to main" rule with Iarla's explicit sign-off, since `main`
+    carries no GitHub branch-protection rule.
+2.  Not covered: `DESCRIPTION`'s `Authors@R` still names `iarlakd@gmail.com`
+    as file content, not commit metadata — untouched by the rewrite, and
+    outside GitHub's control if published to CRAN. Flagged, not yet decided.
+3.  Every commit SHA in the repo changed. The two SHAs cited elsewhere in
+    project docs (`4b4d0d4`, `686e174`) were captured before the rewrite;
+    anything else citing an old SHA is now stale.
+4.  Of 13 non-`main` branches, only 3 have live purpose (open PRs #50, #51,
+    plus `feature/item9-output-paths`); the other 10 have no open PR and are
+    candidates for deletion once confirmed merged or abandoned.
+
 ### Numbering history
 
 Items 2 and 5 inserted 2026-07-05; item 10 on 07-06, renumbering UI defects to
