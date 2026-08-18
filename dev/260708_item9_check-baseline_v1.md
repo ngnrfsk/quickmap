@@ -11,11 +11,6 @@ fixes are item-9 work proper, sequenced below.
 ## Errors (must fix)
 
 **E1 — Example fails: `create_pollution_map()` roxygen example.**
-**Fixed 2026-08-17 (v0.9.9.13)**, with item 9.1: both
-`render_pollution_map()` examples are now `\dontrun{}`. An example that
-runs would also write a file, which is the policy 9.1 exists to satisfy.
-E2 below is still open, so a check with tests still errors.
-
 The help-page example sets `DATA_PATH = "~/data"` and reads
 `wandsworth_2017_2024.csv`, which doesn't exist on a checking machine, so
 R CMD CHECK executes it and dies. Fix: wrap map-rendering examples in
@@ -60,6 +55,27 @@ NSE false-positives from dplyr/data.table code (`siteCode`, `year`,
 `:=`, …) plus two genuinely missing stats imports. Fix:
 `importFrom(stats, complete.cases, median)` in roxygen, and a
 `utils::globalVariables()` declaration for the NSE column names.
+
+## Added 2026-08-15: the vignettes were excluded from the build
+
+`.Rbuildignore` carried `^vignettes$`, so the eleven manual chapters were
+never in the built package: `R CMD check` reported "Vignette sources only
+in 'inst/doc' ... these will not be indexed nor checked". Fixed on branch
+`docs/package-rationale` by ignoring only `vignettes/maps` and
+`vignettes/archive`.
+
+**That exposes an unresolved conflict, which needs a user decision.** The
+chapters embed their live example maps as iframes (`maps/*.html`), and
+that folder is 12.6 MB across 17 files. CRAN's package size limit is 5 MB.
+So:
+
+- include `vignettes/maps` → the package is too large for CRAN;
+- exclude it (current state) → the built vignettes have broken iframes.
+
+Options, none yet chosen: point the iframes at the hosted pkgdown site by
+absolute URL; replace them with static screenshots plus a link to the live
+map; or ship two or three small maps and link the rest. The vignettes also
+still need `%\VignetteEngine{}` builds to succeed with whatever is chosen.
 
 ## Adjacent item-9 debts (not surfaced by this check but queued)
 

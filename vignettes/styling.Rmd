@@ -28,7 +28,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/styling-scale.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="PM2.5 mapped with the GLA scale"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/styling-scale.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="PM2.5 mapped with the GLA scale"></iframe>
 
 ## 1. The bundled colour scales
 
@@ -40,6 +40,7 @@ quickmap(
 | `airstat_no2` | NO2 | AirStat |
 | `gla_pm25` | PM2.5 | GLA |
 | `lbw_no2`, `lbrut_no2`, `lbm_no2` | NO2 | borough-specific (Wandsworth, Richmond, Merton) |
+| `lbm_aqap_no2`, `lbm_aqap_pm10` | NO2, PM10 | Merton Air Quality Action Plan (print) |
 | `deltas` | any | year-on-year change |
 | `schools` | — | categorical (school type) |
 
@@ -65,7 +66,47 @@ The legend is generated from this file — labels with a description after
 the range (like "10: Good") gain a footnote symbol and appear in the
 legend's key row.
 
-## 3. Themes — one file for the whole look
+Two optional keys change how the legend reads:
+
+```yaml
+shape: circle             # the symbol drawn for this layer
+footnote_symbols: false   # drop the † ‡ § markers, keep the key pills
+```
+
+`footnote_symbols: false` is worth setting for print. The markers pair a
+ramp label with its pill, but each pill already carries its band's
+colour, and at print size the markers are the first thing to become
+illegible.
+
+## 3. The figures on the legend
+
+Every annual map shows the network **mean** for the year on the legend's
+own ramp — a disc at its position, with the figure beside it — and the
+**highest** site as a diamond. Colour already tells you the band, so the
+two are told apart by shape.
+
+The mean is over a fixed panel: only sites reporting in *every* year
+shown are counted, so the figure moves with the air and not with the
+network. Its caption gives the count. The maximum is the worst site
+actually reporting that year, so its count can change between steps —
+both captions say which basis they use.
+
+```yaml
+indicator:
+  show: true              # the mean (default true)
+  show_max: true          # and the maximum (default true)
+  label: null             # null builds "Network mean, N sites"
+  placement: "title_row"  # or "under_title", or "right" of the ramp
+```
+
+Narrowing `display_times` can *raise* the number of sites counted, since
+a shorter run of years admits sites that did not report throughout.
+
+**Annual maps only.** On a monthly or hourly map the figures do not
+appear: the thresholds behind them are annual-mean limits, and marking a
+month's mean against an annual limit would be wrong.
+
+## 4. Themes — one file for the whole look
 
 A theme bundles every visual choice so a series of maps stays consistent:
 
@@ -79,7 +120,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/styling-theme.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The Merton borough theme"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/styling-theme.html" width="100%" height="440" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="The Merton borough theme"></iframe>
 
 The main sections (all optional — anything omitted keeps its default;
 there is also a `legend:` section and a free-form `palette:` of named
@@ -94,9 +135,12 @@ map:
   vignette: true
   base_tiles: null        # null = OpenStreetMap; or e.g. "CartoDB.Positron"
   boundary_labels: false
+  symbol_labels: false    # labels off unless a map asks for them
+  label_scale: 1          # marker-label size (see the Labels chapter)
+  label_background: true  # the plate behind each label
 controls:
   autoplay: false
-  play_speed: 500
+  play_speed: 500         # omit to let the step count decide
 wind:                     # wind-particle styling (see the Wind chapter)
   particle_density: 0.0033
   line_width: 1.5
@@ -106,7 +150,7 @@ Bundled themes: `merton`, `wandsworth`, `richmond`, `airstat`,
 `high_contrast` (`show_borough_colours()` lists them with their
 palettes).
 
-## 4. Who wins: parameter, theme, or default
+## 5. Who wins: parameter, theme, or default
 
 Explicit `quickmap()` arguments beat the theme; the theme beats the
 built-in defaults. So a theme sets the house style, and any single map
@@ -122,7 +166,7 @@ quickmap(
 )
 ```
 
-## 5. The background tiles
+## 6. The background tiles
 
 `map: base_tiles:` in the theme takes any
 [Leaflet provider name](https://leaflet-extras.github.io/leaflet-providers/preview/).

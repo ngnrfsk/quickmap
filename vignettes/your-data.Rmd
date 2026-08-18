@@ -23,7 +23,8 @@ for when you have no file at all.
 
 ```{r csv, purl = FALSE}
 library(quickmap)                           # load the quickmap library
-quickmap("~/my_data/tubes_wandsworth.csv")  # tubes -> a map
+quickmap("~/my_data/tubes_wandsworth.csv",  # tubes -> a map
+         output_file = "wandsworth.html")   # you name the file
 ```
 
 | Easting | Northing | 2017 | 2018 | ... | 2024 | Label |
@@ -109,7 +110,8 @@ my_sites <- data.frame(
   lon  = c(-0.17, -0.19, -0.21),           # longitude, WGS84 (required)
   no2  = c(18, 27, 41)                     # the values to map (required)
 )
-quickmap(qm_layer(my_sites, name = "My survey"))
+quickmap(qm_layer(my_sites, name = "My survey"),
+         output_file = "my_survey.html")
 ```
 
 The full column contract (time columns, labels, value inference):

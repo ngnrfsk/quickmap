@@ -30,7 +30,7 @@ quickmap(
 )
 ```
 
-<iframe src="maps/getstarted-wind.html" width="100%" height="480" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Wind particles over the episode animation"></iframe>
+<iframe src="https://ngnrfsk.github.io/quickmap/articles/maps/getstarted-wind.html" width="100%" height="480" loading="lazy" style="border:1px solid #ddd; border-radius:6px;" title="Wind particles over the episode animation"></iframe>
 
 ## 1. Where the wind data comes from
 

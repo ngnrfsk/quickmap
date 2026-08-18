@@ -40,21 +40,67 @@ quickmap(
   "tubes_wandsworth.csv",
   boroughs      = "Wandsworth",
   display_times = "2024",                  # one step -> one image
-  export_image  = c(1200, 900)             # JPG width x height, pixels
+  export_image  = c(1200, 900),            # JPG width x height, pixels
+  output_file   = "wandsworth_2024.html"   # required: you name the file
 )
 ```
 
-![The exported JPG, 1200×900](maps/getstarted-export.jpg)
+![The exported JPG, 1200×900](https://ngnrfsk.github.io/quickmap/articles/maps/getstarted-export.jpg)
 
 - `export_image = TRUE` uses the default 1200×1200.
-- Text, legend and symbols scale with the image size — a 2400px poster
-  export is as legible as a 700px thumbnail.
+- Text, legend, symbols and marker labels all scale with the image size —
+  a 2400px poster export is as legible as a 700px thumbnail.
 - Several selected time steps produce one JPG per step.
 - The interactive HTML is written as well — the JPG is an extra, not a
   replacement. Wind overlays are omitted from stills.
+
+## 4. Where the files land
+
+QuickMap writes only where you tell it to. `output_file` is required and
+has no default; it may carry a path of its own. `output_dir` puts a
+folder in front of it, and `options(quickmap.output_dir = )` sets that
+folder for a whole session:
+
+```{r paths}
+quickmap(
+  "tubes_wandsworth.csv",
+  boroughs     = "Wandsworth",
+  export_image = TRUE,
+  output_file  = "wandsworth_2024.html",
+  output_dir   = "aq_maps"                 # created if it does not exist
+)
+```
+
+- The JPG is written beside the HTML, under the same name.
+- With an export, each time step gets its own pair, the step appended to
+  your name: `aq_maps/wandsworth_2024_2024.html` and `…_2024.jpg`. A
+  sub-annual step is reduced to characters a filename can hold, so
+  `2024-01-15 10:00` becomes `2024-01-15-10-00`.
+- Only the directory you named is created; nothing else is. Earlier
+  versions wrote into an `aq_maps/` folder of their own — from
+  v0.9.9.13 they do not.
+
+## 5. Sizing for the printed page
+
+A big export is not automatically a legible one: what matters is how wide
+the image is *printed*, not how many pixels it has. A 4000-pixel image
+across 190 mm of A4 is about 21 pixels per millimetre, so the map's small
+text lands near 7 point — readable, but no more.
+
+Two ways to get bigger text on paper, in order of preference:
+
+1. **Print the image larger.** Nothing in the file changes. The same
+   export across A3 is twice the point size.
+2. **Label fewer things.** `symbol_labels = FALSE` with the values in a
+   table beside the map, or labels on one layer only.
+
+Raising `map: label_scale:` is the last resort — see
+[Labels](labels.html) for why bigger labels collide.
 
 ## See also
 
 - [Get started](quickmap.html) step 6 — export in the build-up.
 - [Time and animation](time.html) — the compact format that keeps
   animations email-sized.
+- [Labels](labels.html) — label size, the plate behind them, and the
+  banner key for reference layers.

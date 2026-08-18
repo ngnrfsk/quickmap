@@ -1,7 +1,10 @@
 # pkgdown configuration — see dev/260707_manual_prospectus_v1.md.
-# Build locally with pkgdown::build_site(); docs/ is gitignored (§8a:
-# no Pages deployment while the repo is private).
-url: ~
+# The repo went public on 2026-08-15 and the site is served from docs/ by
+# GitHub Pages. The manual's example maps are too large to ship inside the
+# package (12.6 MB against CRAN's 5 MB), so the chapters embed them from
+# this URL instead of relatively — which means the site must stay
+# deployed for the built vignettes to show their maps.
+url: https://ngnrfsk.github.io/quickmap/
 
 template:
   bootstrap: 5
