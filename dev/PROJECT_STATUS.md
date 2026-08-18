@@ -93,8 +93,12 @@ Items are never renumbered; other documents cite these numbers.
     tmap v4 now builds on mapgl.
 2.  Three grounds must be re-tested, not assumed: self-contained animated HTML; per-layer
     symbols on one scale in both outputs; one emailable file.
-3.  dev/260706_atomic_unit_recommendation.md,
-    dev/item5_backend-comparison_v1.md.
+3.  dev/260706_atomic_unit_recommendation.md. The July benchmark document
+    was deleted on 2026-08-17: its conclusions survive in
+    dev/archive/PROJECT_STATUS_history_to_260816.md, and the numbers behind
+    them in `git show 4b4d0d4:dev/item5_backend-comparison_v1.md`. The retest
+    reruns the measurements rather than reading them off, so nothing is
+    blocked by the deletion.
 
 ### 14. Rename the dev/ documents by date
 

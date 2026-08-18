@@ -209,7 +209,7 @@ A uniform city-scale field from one worldmet station, decomposed to U/V on a 2×
 
 ### Rendering backend — decided, do not change without approval
 
-Leaflet, with Canvas markers restyled from one embedded JSON payload ("Option D"), user-approved 2026-07-06. MapLibre/mapgl is the post-1.0 path. Benchmarks and rejected candidates: dev/item5_backend-comparison_v1.md.
+Leaflet, with Canvas markers restyled from one embedded JSON payload ("Option D"), user-approved 2026-07-06. MapLibre/mapgl is the post-1.0 path. The benchmark document was deleted on 2026-08-17; its findings are summarised in dev/archive/PROJECT_STATUS_history_to_260816.md and the full text is `git show 4b4d0d4:dev/item5_backend-comparison_v1.md`.
 
 ### Time steps and file size
 

@@ -124,10 +124,10 @@ What is left is **leaflet**, which QuickMap builds on directly. Everything
 above the base map — banner, colour-ramp legend, time slider, network
 indicator, attribution — is QuickMap's own, injected into the saved HTML.
 
-The full surveys are in the repository: `dev/260706_atomic_unit_recommendation.md`
-compares the APIs, and `dev/item5_backend-comparison_v1.md` compares
-rendering backends (Leaflet, MapLibre/mapgl, mapdeck), with MapLibre
-recorded as the migration path beyond v1.
+The API survey is in the repository, at
+`dev/260706_atomic_unit_recommendation.md`. The rendering backends
+(Leaflet, MapLibre/mapgl, mapdeck) were benchmarked separately in July
+2026, with MapLibre recorded as the migration path beyond v1.
 
 ## See also
 
