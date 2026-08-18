@@ -6,44 +6,46 @@ editor_options:
 
 # QuickMap Project Status Summary
 
-**Last Updated**: 2026-08-05 **Current Version**: v0.9.9.10
+**Last Updated**: 2026-08-16 **Current Version**: v0.9.9.12
 
 --------------------------------------------------------------------------------
 
 ## Where the project stands
 
-QuickMap is at v0.9.9.10, close to v1.0. Working and signed off: the new
-map look (white title strip, colour-ramp legend, draggable time slider,
-playback speed button), optional borough boundaries, per-layer symbol
-choice, the wind overlay, the network mean and maximum shown on the
-legend, small email-able animations, and a complete ten-chapter user
+QuickMap is at v0.9.9.12, close to v1.0. Working and signed off: the map
+look (title strip or colour bar, colour-ramp legend, draggable time
+slider, playback speed button), optional borough boundaries, per-layer
+symbol choice, the wind overlay, the network mean and maximum shown on
+the legend, small email-able animations, and an eleven-chapter user
 manual built as a website with live example maps.
 
-**Waiting on Iarla:**
+**Waiting on Iarla (as at 16 August):**
 
-1. Review and merge two open PRs.
-   - **#45** https://github.com/ngnrfsk/quickmap/pull/45 — the quickplot
-     figures (Heatmap, Trend, Exceedance) plus the tidy-up of `scripts/`,
-     `dev/concepts/` and `dev/archive/`.
-   - **#43** https://github.com/ngnrfsk/quickmap/pull/43 — documentation
-     fixes to baseline references. Docs only.
+1. **Three open pull requests to review.**
+   - **#52** https://github.com/ngnrfsk/quickmap/pull/52 — the manual
+     chapters were being left out of the built package; also adds the
+     first README and records why QuickMap is not tmap or mapview.
+   - **#50** https://github.com/ngnrfsk/quickmap/pull/50 — merging a PR
+     now asks for your approval at a prompt instead of being forbidden.
+   - **#51** https://github.com/ngnrfsk/quickmap/pull/51 — draft, the new
+     Breathe London data fetch. Waiting on the API key, not on you.
 
-2. **The manual is out of date** (noticed 7 August). Its eleven chapters in
-   `/Users/iarla/Coding/quickmap/vignettes/` were written before 5 August
-   and mention none of what shipped since: the playback speed button, the
-   step-count default pace, `indicator.show_max` now defaulting on,
-   `map.label_scale`, `map.label_background`, `footnote_symbols` on a colour
-   scale, the banner's reference-layer key, and value labels reading µg/m³.
-   Needs a rewrite pass before v1.0.
+2. **The manual (#48) is deliberately on hold.** See the note below on
+   where maps get saved: approving the manual now would mean reviewing it
+   twice.
 
-3. **The Merton AQAP print pack needs regenerating.** The seven images in
-   `/Users/iarla/Coding/quickmap/aq_maps/print_aqap_260805/` were made
-   before the pill wording changed to "meets / over Merton 2030 target".
-   About four minutes to rebuild with
-   `Rscript scripts/clients/merton_print-set_v5.R`.
+3. **Publish the manual website.** Repository settings, Pages, source =
+   main branch, `/docs` folder. The chapters now load their example maps
+   from that site, so the links stay broken until it is switched on.
 
-*(The manual, PR #37, and the legend indicator, PR #38, were both merged
-on 5 August; the animation speed control, PR #42, on 6 August.)*
+4. **A Breathe London API key.** Register at
+   https://www.breathelondon.org/developers, then put it in `~/.Renviron`
+   as `BREATHE_LONDON_KEY`. The old key stopped working: that service was
+   shut down in 2025.
+
+5. **Three maps to upload** to swlonrsp.github.io, in
+   `/Users/iarla/Coding/260814 Merton AQAP maps and figures refresh/animations/`.
+   They replace the two Merton maps on the site.
 
 *(Decided 13 July: `marker_labels` will be renamed to `symbol_labels`
 with the old name kept working — happens in the final tidy-up,
