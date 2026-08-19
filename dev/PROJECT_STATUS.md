@@ -16,24 +16,24 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 ## Where the project stands
 
 - Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain. Item 9 is in
-  progress: 9.1, 9.3 and 9.8 done on `feature/item9-output-paths`, awaiting
-  visual sign-off; 9.2 and 9.4 to 9.7 remain.
+  progress: 9.1, 9.3, 9.8 and 9.9 done on `feature/item9-output-paths`, 9.9's
+  real-data visual sign-off given 2026-08-18; 9.2 and 9.4 to 9.7 remain.
 - Four PRs open, three waiting on Iarla, plus the item 9 branch to raise.
 
 ## Waiting on Iarla
 
 1.  **Review the manual** on `feature/item9-output-paths`, built at
-    file:///Users/iarla/Coding/quickmap/docs/index.html. It now carries PR
-    #48's chapters, PR #52's example maps and item 9's API, so **PRs #48 and
-    #52 are superseded by that branch** — close them when it merges, or say
-    if you would rather they stayed separate.
+    file:///Users/iarla/Coding/quickmap/docs/index.html. It now carries PR #48's
+    chapters, PR #52's example maps and item 9's API, so **PRs #48 and #52 are
+    superseded by that branch** — close them when it merges, or say if you would
+    rather they stayed separate.
 2.  **Review PR #50** — merging now asks for approval at a prompt.
 3.  **Switch on GitHub Pages**: settings → Pages → main branch, `/docs`. The
     chapters embed their maps from the hosted site (12.6 MB of maps against
-    CRAN's 5 MB, so they cannot ship inside the package), which means the
-    embeds are blank anywhere but the local build until Pages answers.
-    Turning it on also needs `docs/` committed — that is PR #52's change, and
-    the item 9 branch deliberately does not carry it.
+    CRAN's 5 MB, so they cannot ship inside the package), which means the embeds
+    are blank anywhere but the local build until Pages answers. Turning it on
+    also needs `docs/` committed — that is PR #52's change, and the item 9
+    branch deliberately does not carry it.
 4.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
     `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
 5.  **Upload three maps** to swlonrsp.github.io from
@@ -65,17 +65,35 @@ Items are never renumbered; other documents cite these numbers.
 6.  Four `sapply()` calls to `vapply()`; the live one is in
     `create_generic_icons()`, around R/quickmap.R:3092.
 7.  Audit docs against code; mark dev docs current or historical.
-8.  **Done (v0.9.9.13).** `shorten_school_names()` brought into the package
-    from the Merton print script, as `qm_layer(shorten_labels =)` and
-    `from_csv(shorten_labels =)`, defaulting FALSE. Schools only; the
-    vocabulary for other place types is post-1.0. Added 2026-08-17 after the
-    demonstration map showed full school names — the shortening had never been
-    in the package.
+8.  **Done (v0.9.9.13).** `shorten_school_names()` brought into the package from
+    the Merton print script, as `qm_layer(shorten_labels =)` and
+    `from_csv(shorten_labels =)`, defaulting FALSE. Schools only; the vocabulary
+    for other place types is post-1.0. Added 2026-08-17 after the demonstration
+    map showed full school names — the shortening had never been in the package.
+9.  **Done, visual sign-off given 2026-08-18.** Retested against the real LB
+    Merton AQAP scripts (not just synthetic testthat fixtures) — see
+    dev/260818_merton_comparison_testset.md, now the canonical real-data
+    comparison set. Found and fixed a real regression first:
+    `merton_print-set_v6.R` relied on the removed implicit `aq_maps/` default
+    and silently wrote "0 images" until given an explicit `output_dir`.
+    `dev/260818_html_dom_compare_v1.py` (structural HTML/DOM + embedded-payload
+    diff, stdlib only) confirmed the regenerated animation maps match the
+    originals; Iarla confirmed all outputs pass visual inspection.
 
-### 11. Clear the open defects — last item before release
+### 11. Last before release: clear open defects, add some trivial, but essential features
 
-1.  The list is "Open defects" below. Not to be picked off piecemeal.
-2.  Marker/text scaling was done early on 2026-08-05.
+1.  **Create a small set of routines to extract a table of diffusion tube data**
+    from a standard Defra Excel template sheet \[\*\*stretch goal\*\* and from a
+    historic ASR PDF or Word document\].
+2.  Check whethercoom removing the symbols from the legend pills is a flag
+3.  **Create a simple selector when outputting images** for print quality (e.g.
+    something like an A4 shaped rectangle with 300dpi) or email quality (e.g. 72
+    dpi).
+4.  The quickmap default data directory is a poor choice - that needs to be an
+    ENV selection for standing situations, or else just defaulting to pickup up
+    the data in the working directory.
+5.  Clear the list of "Open defects" below. Not to be picked off piecemeal.
+6.  Marker/text scaling was done early on 2026-08-05.
 
 ### 12. Breathe London fetch for the 2025 API — after 9, before 11
 
@@ -91,14 +109,14 @@ Items are never renumbered; other documents cite these numbers.
 
 1.  README and the "For R users" vignette state July 2026 conclusions publicly.
     tmap v4 now builds on mapgl.
-2.  Three grounds must be re-tested, not assumed: self-contained animated HTML; per-layer
-    symbols on one scale in both outputs; one emailable file.
-3.  dev/260706_atomic_unit_recommendation.md. The July benchmark document
-    was deleted on 2026-08-17: its conclusions survive in
-    dev/archive/PROJECT_STATUS_history_to_260816.md, and the numbers behind
-    them in `git show 4b4d0d4:dev/item5_backend-comparison_v1.md`. The retest
-    reruns the measurements rather than reading them off, so nothing is
-    blocked by the deletion.
+2.  Three grounds must be re-tested, not assumed: self-contained animated HTML;
+    per-layer symbols on one scale in both outputs; one emailable file.
+3.  dev/260706_atomic_unit_recommendation.md. The July benchmark document was
+    deleted on 2026-08-17: its conclusions survive in
+    dev/archive/PROJECT_STATUS_history_to_260816.md, and the numbers behind them
+    in `git show 4b4d0d4:dev/item5_backend-comparison_v1.md`. The retest reruns
+    the measurements rather than reading them off, so nothing is blocked by the
+    deletion.
 
 ### 14. Rename the dev/ documents by date
 
@@ -110,20 +128,20 @@ Items are never renumbered; other documents cite these numbers.
 
 1.  209 commits across every branch, including `main`, carried
     `iarla.kilbane-dawe@merton.gov.uk` (a workplace address that should never
-    have been used) or `iarlakd@gmail.com` in the commit author field. Fixed
-    by rewriting every commit's author/committer identity via `git
-    filter-repo` with a mailmap, to `ngnrfsk@users.noreply.github.com`, then
-    force-pushing every branch — `main` included, overriding the standing
-    "never push to main" rule with Iarla's explicit sign-off, since `main`
-    carries no GitHub branch-protection rule.
-2.  Not covered: `DESCRIPTION`'s `Authors@R` still names `iarlakd@gmail.com`
-    as file content, not commit metadata — untouched by the rewrite, and
-    outside GitHub's control if published to CRAN. Flagged, not yet decided.
+    have been used) or `iarlakd@gmail.com` in the commit author field. Fixed by
+    rewriting every commit's author/committer identity via `git filter-repo`
+    with a mailmap, to `ngnrfsk@users.noreply.github.com`, then force-pushing
+    every branch — `main` included, overriding the standing "never push to main"
+    rule with Iarla's explicit sign-off, since `main` carries no GitHub
+    branch-protection rule.
+2.  Not covered: `DESCRIPTION`'s `Authors@R` still names `iarlakd@gmail.com` as
+    file content, not commit metadata — untouched by the rewrite, and outside
+    GitHub's control if published to CRAN. Flagged, not yet decided.
 3.  Every commit SHA in the repo changed. The two SHAs cited elsewhere in
     project docs (`4b4d0d4`, `686e174`) were captured before the rewrite;
     anything else citing an old SHA is now stale.
-4.  Of 13 non-`main` branches, only 3 have live purpose (open PRs #50, #51,
-    plus `feature/item9-output-paths`); the other 10 have no open PR and are
+4.  Of 13 non-`main` branches, only 3 have live purpose (open PRs #50, #51, plus
+    `feature/item9-output-paths`); the other 10 have no open PR and are
     candidates for deletion once confirmed merged or abandoned.
 
 ### Numbering history
