@@ -11,17 +11,15 @@ vignette: >
 knitr::opts_chunk$set(eval = FALSE)
 ```
 
-QuickMap makes air quality maps from the data you already have — a
-diffusion tube file, a sensor-network export, or a live data source such
-as an [OpenAir](https://openair-project.github.io/book/) data pull. Maps
-are self-contained files, so you can email them or put them on a website,
-and compact, fast animations are easy to create.
+**QuickMap makes making gorgeous, interesting air quality maps easy.** Maps are **ready in minutes for publication or to put on a website.** Quickmap is **designed for UK council air quality officers**, so it uses the kind of data you already have, like the Excel tables you use for an ASR. It can also pull in data from a live data source like Breathe London API, or the Defra AURN data provided through [OpenAir](https://openair-project.github.io/book/) data pull. 
 
-This page works through two builds. **Part 1** grows one report map, a
-step at a time, from a single line of code; **Part 2** grows an animated
-pollution episode. The maps shown are real QuickMap output — click, drag
-and play with them. Along the way, each step points to the chapter that
-takes that feature further.
+The **map images are print quality**, suitable to include in an AQAP, newsletter or local report.
+
+The **web maps are self-contained files**, so you can email them or put them on a website. Compact, fast animations are easy to create, so they can be emailed emailed to a colleague, a local interest group or a councillor to show them what's been going on.
+
+This page takes you through two fully worked examples - they might be all you ever need to know. **Make a nice report map** shows you how to make a perfect map for a report or publication, one step at a time, from importing some data, through to choosing the colour scheme, adjusting the various titles, overlaying school locations, and so on.
+
+**Make an animated map** takes you further, creating an animated map you can put on a website, or a GIF. The animated map lets you zoom, show the actual values, and loop over time. The maps shown are real QuickMap output — click, drag and play with them. Along the way, each step points to the chapter that takes that feature further.
 
 ## 1. Install
 
@@ -35,7 +33,7 @@ devtools::install_github("ngnrfsk/quickmap")
 > The repository is public, so no GitHub token is needed. A CRAN release
 > is planned, after which `install.packages("quickmap")` will do.
 
-# Part 1 — Build a report map
+# Basics - customise nice report maps
 
 One dataset (a Wandsworth diffusion tube survey), one map, growing by one
 line per step.
