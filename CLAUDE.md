@@ -192,7 +192,17 @@ Automated tests verify HTML structure, not appearance. The deliverable is a self
 - Every roadmap item produces fresh demonstration maps in `aq_maps/`: at least one annual multi-year, one sub-annual, one with schools and labels. They are gitignored, so the PR must list the generating script, the output paths and what to look at.
 - **Naming, mandatory for new artefacts**: `[item]_[description]_[version]` — `speed_merton-annual_v3.html`, `speed_demo-maps_v3.R`, and testthat files keep the prefix, `test-item4-quickmap-api-v1.R`. Bump the version on material revision rather than overwriting what the human inspected.
 - Keep the previously signed-off outputs for comparison; copy them to a dated folder before regenerating. **There is no baseline folder today** — both were cleared on 2026-08-05/06, so the next item creates its own.
-- The human does all merging. PRs touching rendering, UI or HTML post-processing block on visual sign-off; pure internal refactors merge on green tests plus an unchanged smoke-test output; ambiguous cases count as rendering-touching.
+- Merging requires the human's formal approval, given at the permission prompt.
+  The agent may run `gh pr merge <N>` only when the user has named that PR
+  number for merging in the current conversation; the
+  `.claude/hooks/confirm-merge.sh` hook then raises a prompt naming the exact
+  command, and the human's answer there is the approval. Never treat earlier
+  or general approval as covering a merge, and approval for one PR covers
+  that one merge only. In unattended runs the prompt is a stall, which is
+  correct: merging never happens unattended. PRs touching rendering, UI or
+  HTML post-processing block on visual sign-off; pure internal refactors merge
+  on green tests plus an unchanged smoke-test output; ambiguous cases count as
+  rendering-touching.
 - Never stack more than one unreviewed roadmap item.
 
 ### The atomic data unit — settled
@@ -233,7 +243,7 @@ Leaflet output satisfies (a), which remains the operative constraint.
 
 ### Permissions and command style — autonomous safety
 
-Permission config lives in `.claude/settings.json` (committed): the DATA_PATH env var, the command allowlist, deny rules guarding `main`, and two PreToolUse hooks. `protect-main.sh` turns a commit on `main` into an approval prompt; `gatekeeper.py` denies any Bash/WebFetch call that could raise a prompt, reading the allowlist live. A denial names the offending segment — rewrite as it suggests, usually by putting the work in a script run via `Rscript`/`python3`. After changing the hook or allowlist, run `python3 .claude/hooks/test_gatekeeper.py`. Rationale: dev/260705_autonomous_permissions_plan.md.
+Permission config lives in `.claude/settings.json` (committed): the DATA_PATH env var, the command allowlist, deny rules guarding `main`, and three PreToolUse hooks. `protect-main.sh` turns a commit on `main` into an approval prompt; `confirm-merge.sh` turns any `gh pr merge` (allowlisted under `gh pr:*`) into a human-approval prompt naming the exact command — the formal merge approval described under "Human visual testing" above; `gatekeeper.py` denies any Bash/WebFetch call that could raise a prompt, reading the allowlist live. A denial names the offending segment — rewrite as it suggests, usually by putting the work in a script run via `Rscript`/`python3`. After changing the hook or allowlist, run `python3 .claude/hooks/test_gatekeeper.py`. Rationale: dev/260705_autonomous_permissions_plan.md.
 
 Claude Code's parse-safety heuristics force a prompt **regardless of the allowlist**, and in an unattended run a prompt is a stall. Never write:
 
