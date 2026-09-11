@@ -100,7 +100,7 @@ wind:                     # wind-particle styling (see the Wind chapter)
   line_width: 1.5
 ```
 
-Bundled themes: `merton`, `wandsworth`, `richmond`, `airstat`,
+Bundled themes: `merton`, `wandsworth`, `richmond`, `croydon`, `airstat`,
 `high_contrast` (`show_borough_colours()` lists them with their
 palettes).
 

@@ -61,6 +61,10 @@ Items are never renumbered; other documents cite these numbers.
 
 1.  The list is "Open defects" below. Not to be picked off piecemeal.
 2.  Marker/text scaling was done early on 2026-08-05.
+3.  Defra tube-workbook reader drafted 2026-09-11 as
+    dev/item11_defra-tubes-xlsx_v1.R (branch feature/item11-defra-tubes),
+    with a bundled Croydon theme. Test files for it live outside the repo in
+    /Users/iarla/Coding/260911 Croydon LCA maps/.
 
 ### 12. Breathe London fetch for the 2025 API — after 9, before 11
 
@@ -131,6 +135,11 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
 - **16. Automate label placement**, clustering and spread.
 - **LCA-1/2/3.** Collapsible radio buttons bottom-left; open at a zoom filling
   the screen; choose the layer visible on load.
+- **17. Theme `legend: background` is read by nothing.** Item 10 fixed the
+  legend chrome white and derives the header hover from the banner colour
+  (`build_legend_css()`), but `get_default_theme()`, every bundled theme and
+  CLAUDE.md still list the key. Found 2026-09-11 wiring the Croydon theme.
+  Decide: honour the key again, or drop it from the themes and docs.
 
 --------------------------------------------------------------------------------
 
