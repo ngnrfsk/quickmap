@@ -1,10 +1,14 @@
 # Croydon Council theme. Colours are the council website's CSS variables
-# (--primary #880088 and companions), taken 2026-09-11.
+# (--primary #880088 and companions), taken 2026-09-11. Banner and crosses
+# passed visual sign-off 2026-09-22.
 
 banner:
   background: "#880088"     # brand primary purple, the site header colour
   text_color: "white"
   title: "Croydon Air Quality"
+  # "bar" fills the banner with the brand colour, as the council site header
+  # does. The default "strip" paints it white with only a 3px purple rule.
+  style: "bar"
 
 legend:
   show: true
@@ -16,6 +20,11 @@ map:
   vignette: true
   boundary_labels: false
   symbol_labels: false
+  # OSM's tile server (the NULL default) now requires an HTTP Referer, and a
+  # map opened from disk sends none, so every tile is the "Access blocked"
+  # notice — open defect 18. Carto Voyager is OSM-derived, similar in colour,
+  # and serves without a Referer. Checked 2026-09-22.
+  base_tiles: "CartoDB.Voyager"
 
 controls:
   autoplay: false
