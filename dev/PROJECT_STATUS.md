@@ -30,12 +30,13 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 5.  **Upload three maps** to swlonrsp.github.io from
     `/Users/iarla/Coding/260814 Merton AQAP maps and figures refresh/animations/`.
 6.  **Decide the default base tiles** (defect 18). Every map opened from disk
-    now shows OSM's "Access blocked" tile. Recommended: `CartoDB.Voyager` as
+    now shows OSM's "Access blocked" tile. Recommended: `OpenStreetMap.DE` as
     the `base_tiles` default in `get_default_theme()`, restated in CLAUDE.md
-    and the styling vignette. Alternatives: `CartoDB.Positron` (pale; the
-    vignette dimming was judged too faint on it, 2026-07-11) or
-    `OpenStreetMap.DE`. Hosted maps (swlonrsp.github.io) send a Referer and
-    are unaffected either way.
+    and the styling vignette: same cartography as today, no key, no Referer.
+    Carto is out — it watermarks "API KEY REQUIRED" without a Referer.
+    Fallbacks that also render from disk: `OpenStreetMap.France`,
+    `Esri.WorldStreetMap`. Hosted maps (swlonrsp.github.io) send a Referer
+    and are unaffected either way.
 
 PR #48, the manual, is held until item 9 changes output paths and renames
 `marker_labels`. Reviewing it now would mean reviewing it twice.
@@ -152,9 +153,14 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
   Referer (osm.wiki/Blocked, "Referer is required"), and a `file://` page
   sends none, so Leaflet's `referrerPolicy` cannot help. Not a quickmap
   change: the 11 Sep and 22 Sep Croydon outputs request the same URL. Found
-  at visual sign-off 2026-09-22. Workaround in use: `base_tiles:
-  "CartoDB.Voyager"` in the theme; Carto and openstreetmap.de serve without a
-  Referer (probed 2026-09-22). Default change is "Waiting on Iarla" 6.
+  at visual sign-off 2026-09-22. A file:// page cannot send a Referer at all
+  (browsers strip it; `fetch` forbids setting it), so the only route is a
+  host that does not require one. Headless-Chrome check from file://,
+  2026-09-22: Carto watermarks "API KEY REQUIRED"; openstreetmap.de,
+  openstreetmap.fr (HOT and France styles), Esri WorldStreetMap and
+  WorldGrayCanvas, and OpenTopoMap all render. Workaround in use:
+  `base_tiles: "OpenStreetMap.DE"` in the theme. Default change is "Waiting
+  on Iarla" 6.
 
 --------------------------------------------------------------------------------
 
