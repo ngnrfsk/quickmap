@@ -20,11 +20,13 @@ map:
   vignette: true
   boundary_labels: false
   symbol_labels: false
-  # OSM's tile server (the NULL default) now requires an HTTP Referer, and a
-  # map opened from disk sends none, so every tile is the "Access blocked"
-  # notice — open defect 18. Carto Voyager is OSM-derived, similar in colour,
-  # and serves without a Referer. Checked 2026-09-22.
-  base_tiles: "CartoDB.Voyager"
+  # OSM's own tile server (the NULL default) now requires an HTTP Referer,
+  # and a map opened from disk sends none, so every tile is the "Access
+  # blocked" notice. Carto watermarks "API KEY REQUIRED" under the same
+  # condition. openstreetmap.de serves the same OSM cartography, no key, no
+  # Referer (headless-Chrome check from file:// 2026-09-22). Fallbacks that
+  # also passed: OpenStreetMap.France, Esri.WorldStreetMap.
+  base_tiles: "OpenStreetMap.DE"
 
 controls:
   autoplay: false
