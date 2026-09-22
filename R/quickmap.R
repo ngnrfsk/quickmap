@@ -1310,7 +1310,9 @@ get_default_theme <- function() {
     ),
     map = list(
       # default reverted to OSM 2026-07-11 (user): the vignette dimming is
-      # too faint on the pale Positron tiles; Positron stays a theme option
+      # too faint on the pale Positron tiles. Positron is no longer an option
+      # for a map sent as a file (Carto watermarks from disk, 2026-09-22);
+      # Esri.WorldGrayCanvas is the pale choice now
       vignette = TRUE,
       # "OpenStreetMap.DE" since 2026-09-22 (user decision, defect 18).
       # tile.openstreetmap.org — the NULL/addTiles() default until then —
@@ -2155,6 +2157,32 @@ check_chrome_contrast <- function(text, background, what) {
     ), call. = FALSE)
   }
   invisible(ratio)
+}
+
+#' Warn when the base tiles will not render from a local file
+#'
+#' A quickmap output is meant to be sent as a file (CLAUDE.md, "Sharing
+#' constraint"). Opened from disk a page sends no Referer, and two tile
+#' hosts then refuse it: tile.openstreetmap.org (`NULL`, Leaflet's
+#' `addTiles()`) returns a 403 "Access blocked" tile, and Carto watermarks
+#' "API KEY REQUIRED". Found 2026-09-22 (defect 18) in a headless-Chrome test
+#' from `file://`; openstreetmap.de, openstreetmap.fr, Esri and OpenTopoMap
+#' rendered.
+#'
+#' @param base_tiles The theme's `map.base_tiles`: a provider name or NULL
+#' @return `base_tiles`, invisibly
+#' @keywords internal
+check_tiles_from_disk <- function(base_tiles) {
+  blocked <- is.null(base_tiles) || grepl("^CartoDB", base_tiles)
+  if (blocked) {
+    warning(sprintf(
+      "base_tiles %s will not render when the map is opened from disk: %s. Use \"OpenStreetMap.DE\" (the default), \"OpenStreetMap.France\", \"Esri.WorldStreetMap\" or \"Esri.WorldGrayCanvas\" for a map that will be sent as a file.",
+      if (is.null(base_tiles)) "NULL (tile.openstreetmap.org)" else base_tiles,
+      if (is.null(base_tiles)) "the server refuses browser requests without a Referer, and a local file sends none"
+      else "Carto watermarks tiles \"API KEY REQUIRED\" without a Referer"
+    ), call. = FALSE)
+  }
+  invisible(base_tiles)
 }
 
 # Marker labels are the smallest annotation on the map, the same class of text
@@ -4213,6 +4241,7 @@ render_pollution_map <- function(
   banner_text_colour <- theme$banner$text_color %||% "white"
   legend_background <- theme$legend$background %||% "white"
   wind_style <- theme$wind
+  check_tiles_from_disk(base_tiles_provider)
 
   # -- 2. Boundary ---------------------------------------------------------
   # boroughs are optional (2026-07-10): NULL means no boundary is drawn,

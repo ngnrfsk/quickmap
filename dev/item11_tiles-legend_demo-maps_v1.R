@@ -31,7 +31,7 @@ create_pollution_map(
   pollutant = "pm25",
   colour_scale = "stripes_pm25",
   theme_file = system.file("themes", "airstat.yaml", package = "quickmap"),
-  output_file = "item11_episode-subannual_v1.html",
+  output_file = "item11_episode-subannual_v2.html",   # v1: Positron, failed from disk
   title = "PM2.5 Episode, 15-20 Jan 2024 (item 11 tiles/legend demo)",
   vignette = FALSE,
   autoplay = TRUE

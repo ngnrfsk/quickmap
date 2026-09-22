@@ -256,7 +256,7 @@ A new dataset (five days of hourly sensor readings during a January 2024
 pollution episode), and two steps. These maps keep the default
 OpenStreetMap background; for dense data a paler background can suit
 better — switching is one theme line
-(`map: base_tiles: "CartoDB.Positron"`, `?load_theme`).
+(`map: base_tiles: "Esri.WorldGrayCanvas"`, `?load_theme`).
 
 ## 10. Animate a pollution episode
 

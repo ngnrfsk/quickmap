@@ -67,3 +67,22 @@ test_that("bundled themes all pass the contrast check", {
       quickmap:::LEGEND_TEXT_COLOUR, theme$legend$background, basename(f)))
   }
 })
+
+test_that("check_tiles_from_disk warns for osm.org and Carto, not for the rest", {
+  expect_warning(quickmap:::check_tiles_from_disk(NULL), "tile.openstreetmap.org")
+  expect_warning(quickmap:::check_tiles_from_disk("CartoDB.Positron"),
+                 "API KEY REQUIRED")
+  expect_silent(quickmap:::check_tiles_from_disk("OpenStreetMap.DE"))
+  expect_silent(quickmap:::check_tiles_from_disk("Esri.WorldGrayCanvas"))
+})
+
+test_that("every bundled theme names tiles that render from disk", {
+  themes <- list.files(system.file("themes", package = "quickmap"),
+                       pattern = "\\.yaml$", full.names = TRUE)
+  for (f in themes) {
+    theme <- load_theme(f)
+    expect_silent(quickmap:::check_tiles_from_disk(theme$map$base_tiles))
+    expect_true(theme$map$base_tiles %in% names(leaflet::providers),
+                info = basename(f))
+  }
+})

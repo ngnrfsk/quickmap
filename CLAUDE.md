@@ -109,7 +109,7 @@ Categorical scales use `domain` for the values matched against the data, and `la
 - `banner`: background, text_color, title, style (`strip` default, or `bar`). `text_color` is read by `bar` only; `strip` is always dark text on white. A `bar` whose text and background contrast below 3:1 warns (`check_chrome_contrast()`).
 - `legend`: show, background. The panel background is honoured again since 2026-09-22 (item 10 had fixed it white); a background too dark for the legend's `#333333` text warns.
 - `indicator`: show, label, show_max, placement
-- `map`: vignette, base_tiles (`"OpenStreetMap.DE"` default since 2026-09-22: tile.openstreetmap.org refuses browser requests without a Referer, which a map opened from disk cannot send; NULL means osm.org, for hosted-only maps), zoom_level, boundary_labels, symbol_labels, label_scale, label_background. A theme file still using the old `marker_labels` key is accepted with a warning.
+- `map`: vignette, base_tiles (`"OpenStreetMap.DE"` default since 2026-09-22: tile.openstreetmap.org refuses browser requests without a Referer, which a map opened from disk cannot send; NULL means osm.org, for hosted-only maps; NULL and any `CartoDB.*` provider warn via `check_tiles_from_disk()`, since Carto watermarks from disk), zoom_level, boundary_labels, symbol_labels, label_scale, label_background. A theme file still using the old `marker_labels` key is accepted with a warning.
 - `controls`: autoplay, play_speed (NULL = step-count pacing), background, text_color
 - `wind`: colour_ramp, particle_density, line_width, velocity_scale
 

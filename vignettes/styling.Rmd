@@ -131,7 +131,8 @@ quickmap(
 [Leaflet provider name](https://leaflet-extras.github.io/leaflet-providers/preview/).
 The default is `"OpenStreetMap.DE"`, the OpenStreetMap cartography served
 from openstreetmap.de. It carries the vignette well; the pale
-`"CartoDB.Positron"` suits dense data.
+`"Esri.WorldGrayCanvas"` suits dense data and is what the `airstat` theme
+uses.
 
 Why not OpenStreetMap's own server: since 2026 tile.openstreetmap.org
 refuses any browser request that carries no `Referer` header, and a map
@@ -139,7 +140,9 @@ opened from disk, the file you email, never sends one. Every tile then
 shows an "Access blocked" notice. A hosted map is unaffected. `null`
 still selects osm.org, for a map that will only ever be served from a
 website. Carto's free tiles watermark under the same condition, so they
-are not a way round it.
+are not a way round it. A theme naming `null` or a `CartoDB.*` provider
+gets a warning from `quickmap()` saying the map will not render from
+disk.
 
 A theme's `banner: text_color` (read by the `bar` style) and
 `legend: background` can be any colour. If the pairing would be
