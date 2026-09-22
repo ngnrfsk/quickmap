@@ -73,6 +73,51 @@ Items are never renumbered; other documents cite these numbers.
     dev/item11_defra-tubes-xlsx_v1.R (branch feature/item11-defra-tubes),
     with a bundled Croydon theme. Test files for it live outside the repo in
     /Users/iarla/Coding/260911 Croydon LCA maps/.
+4.  **Checklist from the Croydon live-data test (11–22 Sep 2026).** Gate on
+    the branch 2026-09-22: testthat 132 files, 0 failures, 1 CRAN skip;
+    tests/test_quickmap.R completed.
+
+    *11.1 reader, script to helper:*
+    - [ ] Move the four functions to R/ as `from_defra_xlsx()`, roxygen,
+          returning a `qm_layer` with site metadata carried; no CSV round-trip.
+    - [ ] `readxl` to Suggests behind `requireNamespace()`.
+    - [ ] Fixture workbook and `test-item11-defra-xlsx-v1.R` covering: two-row
+          header with "(m)"/"(Y/N)" fragments; spacer columns and rows;
+          relocation suffix (CY55a vs CY55); year headers as text and as
+          2022.00; flagged values ("42.77 c", "25.06c"); a site on one sheet
+          only, each way.
+    - [ ] Flags kept as `attr(, "flags")`; whether the map marks flagged
+          values (the workbook does not define "c") is post-1.0 unless cheap.
+    - [ ] Unmatched sites attached as `attr(, "unmatched")`, not only messaged.
+    - [ ] Header-to-column regex map to a YAML under inst/config/.
+    - [ ] Stretch: same table from an ASR PDF or Word document. Not started.
+    - [ ] vignettes/your-data.Rmd section on the workbook layout.
+
+    *Extensions the data exposed:*
+    - [ ] `from_csv()` to accept `latitude`/`longitude` (and `lat`/`lon`) as
+          the coordinate pair; council schools scrapes arrive that way and
+          the Croydon script had to convert through sf.
+    - [ ] `shorten_school_names()`: strip trust suffixes ("- The Pegasus
+          Academy Trust", "- FACT Academy", "- The Inspire Partnership"),
+          parentheticals, and "and Nursery"/", Nursery and Children's
+          Centre" tails. Croydon's 115 names as the test; one legitimate
+          duplicate across levels (Oasis Academy Shirley Park).
+    - [ ] `import_csv_data()` drops rows missing Easting/Northing/Label with
+          no message (CY114 vanished silently). Message count and ids.
+    - [ ] `generate_symbol_labels()` treats an unknown `symbol_labels` value
+          as FALSE: `"Labels"` gives no labels and no error. Stop with the
+          accepted values.
+    - [ ] `build_banner_css()` "bar" style hard-codes `color: white`;
+          `banner: text_color` is honoured only by "strip".
+
+    *Defects logged here:* 18 (default tiles; decision "Waiting on Iarla"
+    6) and 17 (unread `legend: background`). Docs to follow each: CLAUDE.md
+    Themes bullet, `get_default_theme()` comment, vignettes/styling.Rmd; run
+    test-consistency.R after.
+
+    *Admin:* push the branch and open the PR (no rendering code changed);
+    items 9 and 11 both edit this file, the second merge conflicts here; an
+    untracked copy of the reader script sits in the item 9 checkout.
 
 ### 12. Breathe London fetch for the 2025 API — after 9, before 11
 
