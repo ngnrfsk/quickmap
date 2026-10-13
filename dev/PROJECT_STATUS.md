@@ -22,7 +22,7 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
   #52 are closed; their content is on `docs/manual-v2`.
 
 - **Order of work, set 2026-10-13:** PR #53 (merged) → September styling
-  (`feature/item11-tiles-legend`) → 16 → 17 → 12 → rest of 11 → 18. One item
+  (PR #54, merged) → 16 → 17 → 12 → rest of 11 → 18. One item
   is in review at a time: each branches from `main` after the one before has
   merged. Item 16 changes no package code.
 
@@ -65,9 +65,8 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 
 ## Waiting on Iarla
 
-1.  **Sign off the three item 11 demo maps, review the styling PR, then name
-    it for merging.** Maps, what to look at and their sign-off history are
-    under item 11.8.
+1.  **Say where the item 16 scripts are kept**: the swlonrsp.github.io repo
+    itself, or a workspace repo (item 9.5). Item 16 is next.
 2.  **Read the manual**, on `docs/manual-v2`, after it has been brought up to
     date. No deadline. It carries PR #48's chapters, PR #52's example maps and
     README.md, which `main` does not have.
@@ -180,8 +179,8 @@ Items are never renumbered; other documents cite these numbers.
     single save call), DESCRIPTION, NEWS.md and CLAUDE.md. Gate 2026-10-13:
     full run 567 passed, 1 failed, 2 CRAN skips; the failure was the
     consistency test, because this file still stated v0.9.9.13, and that test
-    file passes since the correction. tests/test_quickmap.R completed. Rendering-touching, so it blocks on
-    visual sign-off. Demo maps regenerated 2026-10-13 from
+    file passes since the correction. tests/test_quickmap.R completed. **All three demo maps signed
+    off by Iarla, 2026-10-13; merged as PR #54.** Demo maps regenerated 2026-10-13 from
     dev/item11_tiles-legend_demo-maps_v2.R into
     `/Users/iarla/Coding/260911 Croydon LCA maps/aq_maps/`:
     - item11_merton-annual_v2.html — streets visible when opened from disk;
@@ -384,7 +383,7 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
   text_color` reaches the "bar" style (it was hard-coded white) and
   `check_chrome_contrast()` warns below 3:1 for banner text on its
   background and for the legend's `#333333` text on `legend.background`.
-  Awaits visual sign-off.
+  Signed off 2026-10-13, PR #54.
 - **18. OSM tiles blocked for maps opened from disk.** tile.openstreetmap.org
   serves a 403 "Access blocked" tile to any browser request without a
   Referer (osm.wiki/Blocked), and a `file://` page cannot send one. Found at
@@ -394,7 +393,7 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
   **Decided 2026-09-22 (user): default to openstreetmap.de.** Fixed on
   `feature/item11-tiles-legend` (v0.9.9.14): `get_default_theme()` sets
   `base_tiles = "OpenStreetMap.DE"`; NULL still means osm.org for hosted-only
-  maps. Awaits visual sign-off.
+  maps. Signed off 2026-10-13, PR #54.
 
 ### Documentation that contradicts the code
 
