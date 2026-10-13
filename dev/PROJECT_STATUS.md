@@ -19,7 +19,8 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
   progress: 9.1, 9.3, 9.8 and 9.9 done on `feature/item9-output-paths`, 9.9's
   real-data visual sign-off given 2026-08-18; 9.2 and 9.4 to 9.7 remain.
 - Two PRs open (#53, #51), both waiting on Iarla. PR #50 (merge-approval hook)
-  merged 2026-08-19. PRs #48 and #52 closed as superseded by #53.
+  merged 2026-08-19. PRs #48 and #52 closed; their content is on
+  `docs/manual-v2`, not in #53.
 
 - **Urgent, added 2026-10-13: items 16 and 17.** Order of work: PR #53 conflict
   → 16 → 17 → 12 → 11 → 18. Neither is stacked on another unreviewed item: 16
@@ -46,21 +47,30 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
   DOC-10.
 - 2026-10-13: dev/260819_status_checklist_v1.md deleted; its task-to-PR table
   is under "Which PR each open task belongs to" below.
+- 2026-10-13: the manual leaves PR #53. There is no time for the full
+  read-through and the text is out of date. It is held on `docs/manual-v2`
+  (PR #53's tip before the split, d0c52db). PR #53 keeps the code, tests, help
+  pages, dev/ documents and the chapter edits from its first two commits that
+  keep code chunks matching the API. Item 9.2 also leaves #53 for its own PR.
+- 2026-10-13: PR #53 must be squash-merged. Its branch history still holds the
+  17 example maps (12.6 MB), added then removed; a merge commit would put them
+  in `main`'s history.
 
 ## Waiting on Iarla
 
-1.  **Review PR #53** — output paths, `symbol_labels` rename, `shorten_labels`,
-    and the manual text corrected to match, built at
-    file:///Users/iarla/Coding/quickmap/docs/index.html. The manual itself still
-    needs your review; it carries PR #48's chapters and PR #52's example maps,
-    both already closed as superseded by this branch.
-2.  **Switch on GitHub Pages**: settings → Pages → main branch, `/docs`. The
+1.  **Review PR #53, then name it for merging (squash)** — output paths,
+    `symbol_labels` rename, `shorten_labels`. Code only since 2026-10-13; the
+    visual sign-off is the one given on 2026-08-18 for item 9.9.
+2.  **Read the manual**, on `docs/manual-v2`, after it has been brought up to
+    date. No deadline. It carries PR #48's chapters, PR #52's example maps and
+    README.md, which `main` does not have.
+3.  **Switch on GitHub Pages**, after the manual merges: settings → Pages → main branch, `/docs`. The
     chapters embed their maps from the hosted site (12.6 MB of maps against
     CRAN's 5 MB, so they cannot ship inside the package), which means the embeds
     are blank anywhere but the local build until Pages answers. Turning it on
     also needs `docs/` committed — that was PR #52's change; no open branch
     currently carries it.
-3.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
+4.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
     `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
 
 --------------------------------------------------------------------------------
@@ -230,7 +240,8 @@ Items are never renumbered; other documents cite these numbers.
 
 | Task | PR |
 |---|---|
-| 9.2 `R CMD CHECK` clean | #53 |
+| 9.2 `R CMD CHECK` clean | new PR, after #53 merges |
+| Manual: chapters, example maps, README.md, pkgdown config | new PR from `docs/manual-v2`, after #53 merges |
 | 9.4 GitHub Issues, `URL:`/`BugReports:` | new small PR |
 | 9.6 `sapply()` to `vapply()` | new small PR |
 | Built `docs/` site for GitHub Pages | new PR from `docs/package-rationale`, carrying only the `docs/` commit; PR #52 is not reopened |
@@ -311,8 +322,8 @@ R/wind.R.
 - **DOC-2. "One loop emits HTML and static exports".** `generate_map_layers()`
   only draws markers; static frames use `add_year_and_static_layers()` in the
   shared loop. Q:2309, Q:4279.
-- **DOC-3. First `quickmap()` example in CLAUDE.md has no `output_file`**, so
-  it errors. Q:2354.
+- **DOC-3. Fixed 2026-10-13.** The first `quickmap()` example in CLAUDE.md had
+  no `output_file`, so it errored.
 - **DOC-4. The `who_no2` YAML example in CLAUDE.md** shows 5 bands with `name`
   and `pollutant` keys. The real file has no `name` or `pollutant` key, and 11
   bands by the diagram's count.

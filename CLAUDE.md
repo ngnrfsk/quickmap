@@ -51,7 +51,8 @@ source("tests/test_quickmap.R")
 `quickmap()` is the core API (v0.9.6+). Layers may be file paths, `qm_layer()` objects or data frames.
 
 ``` r
-quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth")
+quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth",
+         output_file = "wandsworth_no2.html")
 
 quickmap(
   list("merton_dt_2018_2024.csv", "bl_sensors.Rdata", "schools_Merton.csv"),
