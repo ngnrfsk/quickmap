@@ -1,0 +1,51 @@
+# Croydon Council theme. Colours are the council website's CSS variables
+# (--primary #880088 and companions), taken 2026-09-11. Banner and crosses
+# passed visual sign-off 2026-09-22.
+
+banner:
+  background: "#880088"     # brand primary purple, the site header colour
+  text_color: "white"
+  title: "Croydon Air Quality"
+  # "bar" fills the banner with the brand colour, as the council site header
+  # does. The default "strip" paints it white with only a 3px purple rule.
+  style: "bar"
+
+legend:
+  show: true
+  # The site's panel tint. Not read since item 10 fixed the legend chrome
+  # white — open defect 17 in dev/PROJECT_STATUS.md.
+  background: "#F8EEF8"
+
+map:
+  vignette: true
+  boundary_labels: false
+  symbol_labels: false
+  # OSM's own tile server (the NULL default) now requires an HTTP Referer,
+  # and a map opened from disk sends none, so every tile is the "Access
+  # blocked" notice. Carto watermarks "API KEY REQUIRED" under the same
+  # condition. openstreetmap.de serves the same OSM cartography, no key, no
+  # Referer (headless-Chrome check from file:// 2026-09-22). Fallbacks that
+  # also passed: OpenStreetMap.France, Esri.WorldStreetMap.
+  base_tiles: "OpenStreetMap.DE"
+
+controls:
+  autoplay: false
+  # play_speed unset: the pace follows the step count.
+  background: "#880088"
+  text_color: "white"
+
+palette:
+  purple: "#880088"
+  indigo: "#540055"
+  pink: "#AD52AD"
+  yellow: "#FFBB00"
+  teal: "#006263"
+  blue: "#0059A4"
+  green: "#77BB55"
+  orange: "#FF5500"
+  red: "#AE1100"
+  black: "#121212"
+  grey: "#DBDFE3"
+  grey_light: "#EDEDED"
+  purple_pale: "#F8EEF8"
+  white: "#FFFFFF"

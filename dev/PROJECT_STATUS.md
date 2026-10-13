@@ -6,7 +6,7 @@ editor_options:
 
 # QuickMap Project Status
 
-**Last Updated**: 2026-10-13 **Current Version**: v0.9.9.13
+**Last Updated**: 2026-10-13 **Current Version**: v0.9.9.14
 
 Version history: NEWS.md. History before 2026-08-16:
 dev/archive/PROJECT_STATUS_history_to_260816.md.
@@ -15,28 +15,21 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 
 ## Where the project stands
 
-- Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain. Item 9 is in
-  progress: 9.1, 9.3, 9.8 and 9.9 done on `feature/item9-output-paths`, 9.9's
-  real-data visual sign-off given 2026-08-18; 9.2 and 9.4 to 9.7 remain.
-- Two PRs open (#53, #51), both waiting on Iarla. PR #50 (merge-approval hook)
-  merged 2026-08-19. PRs #48 and #52 closed; their content is on
-  `docs/manual-v2`, not in #53.
+- Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain, plus 16, 17 and
+  18. Item 9: 9.1, 9.3, 9.7, 9.8 and 9.9 merged as PR #53 on 2026-10-13
+  (v0.9.9.13); 9.2, 9.4, 9.5 and 9.6 remain.
+- PR #51 (Breathe London, draft) is open, waiting on the API key. PRs #48 and
+  #52 are closed; their content is on `docs/manual-v2`.
 
-- **Order of work, set 2026-10-13:** PR #53 → September styling
-  (`feature/item11-tiles-legend`) → 16 → 17 → 12 → rest of 11 → 18. One item
+- **Order of work, set 2026-10-13:** PR #53 (merged) → September styling
+  (PR #54, merged) → 16 → 17 → 12 → rest of 11 → 18. One item
   is in review at a time: each branches from `main` after the one before has
   merged. Item 16 changes no package code.
 
-- **September styling work**, `feature/item11-tiles-legend`: 8 commits, 11 to
-  22 September, pushed 2026-10-13, no PR yet. It contains all of
-  `feature/item11-defra-tubes` (item 11.1, the Defra workbook reader). It
-  changes the default tiles to openstreetmap.de, honours the legend background
-  key, adds a contrast check, a from-disk tile warning and the Croydon theme:
-  150 lines of R/quickmap.R. It forks from `main` at e4f591b, before PR #53. A
-  trial merge with #53 on 2026-10-13 conflicts in five files: R/quickmap.R,
-  DESCRIPTION, NEWS.md, CLAUDE.md and dev/PROJECT_STATUS.md. It is rebased
-  onto `main` and its PR opened once #53 has merged. The manual's 17 example
-  maps predate it and are regenerated after it merges.
+- **September styling work**, `feature/item11-tiles-legend` (v0.9.9.14),
+  rebased onto `main` on 2026-10-13 after PR #53 merged. Detail under items
+  11.7 and 11.8. It contains all of `feature/item11-defra-tubes`. The manual's
+  17 example maps predate it and are regenerated after it merges.
 
 ## Steer
 
@@ -72,9 +65,8 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 
 ## Waiting on Iarla
 
-1.  **Review PR #53, then name it for merging (squash)** — output paths,
-    `symbol_labels` rename, `shorten_labels`. Code only since 2026-10-13; the
-    visual sign-off is the one given on 2026-08-18 for item 9.9.
+1.  **Say where the item 16 scripts are kept**: the swlonrsp.github.io repo
+    itself, or a workspace repo (item 9.5). Item 16 is next.
 2.  **Read the manual**, on `docs/manual-v2`, after it has been brought up to
     date. No deadline. It carries PR #48's chapters, PR #52's example maps and
     README.md, which `main` does not have.
@@ -112,7 +104,8 @@ Items are never renumbered; other documents cite these numbers.
     ones. May finish post-1.0 if the package no longer depends on them.
 6.  Four `sapply()` calls to `vapply()`; the live one is in
     `create_generic_icons()`, around R/quickmap.R:3092.
-7.  Audit docs against code; mark dev docs current or historical.
+7.  **Done (PR #53).** Audit docs against code; mark dev docs current or
+    historical.
 8.  **Done (v0.9.9.13).** `shorten_school_names()` brought into the package from
     the Merton print script, as `qm_layer(shorten_labels =)` and
     `from_csv(shorten_labels =)`, defaulting FALSE. Schools only; the vocabulary
@@ -142,6 +135,67 @@ Items are never renumbered; other documents cite these numbers.
     the data in the working directory.
 5.  Clear the list of "Open defects" below. Not to be picked off piecemeal.
 6.  Marker/text scaling was done early on 2026-08-05.
+7.  **Defra workbook reader (11.1), drafted 2026-09-11** as
+    dev/item11_defra-tubes-xlsx_v1.R, with a bundled Croydon theme
+    (`inst/themes/croydon.yaml`). Test files live outside the repo in
+    `/Users/iarla/Coding/260911 Croydon LCA maps/`. Still to do, from the
+    Croydon live-data test of 11 to 22 September:
+
+    *Reader, script to package function:*
+    - [ ] Move the four functions to R/ as `from_defra_xlsx()`, with roxygen,
+          returning a `qm_layer` that carries site metadata; no CSV round-trip.
+    - [ ] `readxl` to Suggests behind `requireNamespace()`.
+    - [ ] Fixture workbook and `test-item11-defra-xlsx-v1.R` covering: two-row
+          header with "(m)"/"(Y/N)" fragments; spacer columns and rows;
+          relocation suffix (CY55a vs CY55); year headers as text and as
+          2022.00; flagged values ("42.77 c", "25.06c"); a site on one sheet
+          only, each way.
+    - [ ] Flags kept as `attr(, "flags")`; whether the map marks flagged
+          values (the workbook does not define "c") is post-1.0 unless cheap.
+    - [ ] Unmatched sites attached as `attr(, "unmatched")`, not only messaged.
+    - [ ] Header-to-column regex map to a YAML under inst/config/.
+    - [ ] Stretch: same table from an ASR PDF or Word document. Not started.
+    - [ ] vignettes/your-data.Rmd section on the workbook layout.
+
+    *Extensions the data exposed:*
+    - [ ] `from_csv()` to accept `latitude`/`longitude` (and `lat`/`lon`) as
+          the coordinate pair; council schools scrapes arrive that way and
+          the Croydon script had to convert through sf.
+    - [ ] `shorten_school_names()`: strip trust suffixes ("- The Pegasus
+          Academy Trust", "- FACT Academy", "- The Inspire Partnership"),
+          parentheticals, and "and Nursery"/", Nursery and Children's
+          Centre" tails. Croydon's 115 names as the test; one legitimate
+          duplicate across levels (Oasis Academy Shirley Park).
+    - [ ] `import_csv_data()` drops rows missing Easting/Northing/Label with
+          no message (CY114 vanished silently). Message count and ids.
+    - [ ] `generate_symbol_labels()` treats an unknown `symbol_labels` value
+          as FALSE: `"Labels"` gives no labels and no error. Stop with the
+          accepted values.
+8.  **Tiles, legend and banner fixes (v0.9.9.14)** on
+    `feature/item11-tiles-legend`: defects 17 and 18 as decided 2026-09-22,
+    `bar` reading `banner.text_color`, `check_chrome_contrast()` and
+    `check_tiles_from_disk()`. Rebased onto `main` on 2026-10-13 after PR #53;
+    conflicts resolved in R/quickmap.R (the two new arguments added to main's
+    single save call), DESCRIPTION, NEWS.md and CLAUDE.md. Gate 2026-10-13:
+    full run 567 passed, 1 failed, 2 CRAN skips; the failure was the
+    consistency test, because this file still stated v0.9.9.13, and that test
+    file passes since the correction. tests/test_quickmap.R completed. **All three demo maps signed
+    off by Iarla, 2026-10-13; merged as PR #54.** Demo maps regenerated 2026-10-13 from
+    dev/item11_tiles-legend_demo-maps_v2.R into
+    `/Users/iarla/Coding/260911 Croydon LCA maps/aq_maps/`:
+    - item11_merton-annual_v2.html — streets visible when opened from disk;
+      legend panel lavender from merton.yaml with a white heading pill. v1
+      signed off 2026-09-22: the lavender legend, white banner and purple rule
+      are merton.yaml's own settings, and "strip" stays the default banner.
+    - item11_episode-subannual_v3.html — same tiles on the hourly animation,
+      airstat theme on `Esri.WorldGrayCanvas`. v1 failed sign-off 2026-09-22
+      (`CartoDB.Positron` watermarks from disk); **v2 was never signed off.**
+    - item11_croydon-schools-labels_v2.html — purple bar banner, white text
+      from the theme, pale-purple legend panel, school crosses and key. v1
+      signed off 2026-09-22.
+    The v1 and v2 maps of 22 September are kept in the same folder for
+    comparison. After it merges, regenerate the hosted LBM/LBRUT/LBW maps
+    (item 16): sent as files, they show the blocked tile.
 
 ### 12. Breathe London fetch for the 2025 API — after 9, before 11
 
@@ -259,7 +313,7 @@ Items are never renumbered; other documents cite these numbers.
 | 9.4 GitHub Issues, `URL:`/`BugReports:` | new small PR |
 | 9.6 `sapply()` to `vapply()` | new small PR |
 | Built `docs/` site for GitHub Pages | new PR from `docs/package-rationale`, carrying only the `docs/` commit; PR #52 is not reopened |
-| September styling and 11.1 Defra reader | new PR from `feature/item11-tiles-legend`, rebased after #53 merges |
+| September styling (11.8) and Defra reader draft (11.7) | PR from `feature/item11-tiles-legend`, opened 2026-10-13 |
 | Rest of 11, defects and features | new PR, after #51 merges |
 | 13 stack retest | new PR, not urgent |
 | 14 dev/ rename | new PR, low priority |
@@ -321,6 +375,25 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
   names (item 9.8) buys width but does not place anything.
 - **LCA-1/2/3.** Collapsible radio buttons bottom-left; open at a zoom filling
   the screen; choose the layer visible on load.
+- **17. Theme `legend: background` was read by nothing.** Item 10 fixed the
+  legend white and left the key in every bundled theme. Found 2026-09-11.
+  **Decided 2026-09-22 (user): honour the key; item 10's fixed white was an
+  error.** Fixed on `feature/item11-tiles-legend` (v0.9.9.14): the panel
+  takes `legend.background`, the heading pill stays white. With it, `banner:
+  text_color` reaches the "bar" style (it was hard-coded white) and
+  `check_chrome_contrast()` warns below 3:1 for banner text on its
+  background and for the legend's `#333333` text on `legend.background`.
+  Signed off 2026-10-13, PR #54.
+- **18. OSM tiles blocked for maps opened from disk.** tile.openstreetmap.org
+  serves a 403 "Access blocked" tile to any browser request without a
+  Referer (osm.wiki/Blocked), and a `file://` page cannot send one. Found at
+  visual sign-off 2026-09-22. Headless-Chrome check from file:// that day:
+  Carto watermarks "API KEY REQUIRED"; openstreetmap.de, openstreetmap.fr,
+  Esri WorldStreetMap and WorldGrayCanvas, and OpenTopoMap all render.
+  **Decided 2026-09-22 (user): default to openstreetmap.de.** Fixed on
+  `feature/item11-tiles-legend` (v0.9.9.14): `get_default_theme()` sets
+  `base_tiles = "OpenStreetMap.DE"`; NULL still means osm.org for hosted-only
+  maps. Signed off 2026-10-13, PR #54.
 
 ### Documentation that contradicts the code
 
@@ -344,7 +417,8 @@ R/wind.R.
   bands by the diagram's count.
 - **DOC-5. Theme keys not read anywhere in R/quickmap.R**: `legend.show`,
   `legend.background`, `banner.text_color`, `controls.background`,
-  `controls.text_color`. Q:1274-1344.
+  `controls.text_color`. Q:1274-1344. `legend.background` and
+  `banner.text_color` are read once item 11.8 merges (defect 17).
 - **DOC-6. "A missing placeholder is a hard error".** Only a `{{key}}` absent
   from the template errors; a template placeholder left unfilled passes
   silently. Q:72-88.

@@ -7,7 +7,10 @@ map:
   boundary_labels: false
   symbol_labels: false
   zoom_level: 11
-  base_tiles: "CartoDB.Positron"  # Clean light basemap
+  # Clean light basemap. Was CartoDB.Positron until 2026-09-22: Carto
+  # watermarks "API KEY REQUIRED" on a map opened from disk (defect 18). Esri's
+  # grey canvas is the nearest pale style that renders from disk without a key.
+  base_tiles: "Esri.WorldGrayCanvas"
 
 controls:
   autoplay: false

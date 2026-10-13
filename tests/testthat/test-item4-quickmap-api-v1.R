@@ -25,8 +25,9 @@ test_that("two-line quickmap() call produces a map", {
   )
   payload <- api_payload("merton_dt_2018-2024_item4_v1.html")
   methods <- char_methods(payload)
-  # default tiles: OSM (addTiles) — Positron default reverted 2026-07-11
-  expect_equal(sum(methods == "addTiles"), 1)
+  # default tiles: OpenStreetMap.DE via addProviderTiles since 2026-09-22
+  # (defect 18); osm.org addTiles() was the default from 2026-07-11
+  expect_equal(sum(methods == "addProviderTiles"), 1)
   expect_gt(sum(methods == "addMarkers"), 0)
 })
 

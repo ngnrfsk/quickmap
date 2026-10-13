@@ -7,7 +7,7 @@
 /* Legend styles - Image mode (item 10: thin ramp, neutral chrome).
    Sizes are rem-based; the root font-size is scaled per export dimensions. */
 .legend {
-  background: #ffffff;
+  background: {{legend_bg}};
   border-top: 1px solid #e5e5e5;
   flex-shrink: 0;
 }

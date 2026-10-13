@@ -1275,12 +1275,19 @@ get_default_theme <- function() {
   list(
     banner = list(
       background = "#5F3E94",
+      # Read by the "bar" style only. "strip" is always dark text on a white
+      # strip with the background colour as its rule (item 10). A bar whose
+      # text would be unreadable on its background warns — see
+      # check_chrome_contrast().
       text_color = "white",
       title = "Air Quality Map",
       style = "strip"
     ),
     legend = list(
       show = TRUE,
+      # The legend panel's background. Item 10 fixed the panel white and
+      # ignored this key; reversed 2026-09-22 (user: the item 10 choice was an
+      # error). The heading pill stays white on whatever this is.
       background = "white"
     ),
     # Aggregate indicator (user-approved 2026-07-29): the network mean for
@@ -1303,9 +1310,18 @@ get_default_theme <- function() {
     ),
     map = list(
       # default reverted to OSM 2026-07-11 (user): the vignette dimming is
-      # too faint on the pale Positron tiles; Positron stays a theme option
+      # too faint on the pale Positron tiles. Positron is no longer an option
+      # for a map sent as a file (Carto watermarks from disk, 2026-09-22);
+      # Esri.WorldGrayCanvas is the pale choice now
       vignette = TRUE,
-      base_tiles = NULL,
+      # "OpenStreetMap.DE" since 2026-09-22 (user decision, defect 18).
+      # tile.openstreetmap.org — the NULL/addTiles() default until then —
+      # returns a 403 "Access blocked" tile to any browser request without a
+      # Referer, and a map opened from disk sends none, so every map sent as
+      # a file lost its streets. openstreetmap.de draws the same cartography
+      # and served without a Referer in a headless-Chrome test from file://.
+      # NULL still means osm.org, for maps that will only ever be hosted.
+      base_tiles = "OpenStreetMap.DE",
       zoom_level = NULL,
       boundary_labels = FALSE,
       symbol_labels = FALSE,
@@ -2096,6 +2112,79 @@ get_contrast_text_color <- function(color) {
   }
 }
 
+#' WCAG 2 contrast ratio between two colours
+#'
+#' Relative luminance with sRGB linearisation, per
+#' https://www.w3.org/TR/WCAG21/#dfn-contrast-ratio. Symmetric in its
+#' arguments; 1 is no contrast, 21 is black on white.
+#'
+#' @param a,b Colours as hex strings or R colour names
+#' @return The ratio, a number from 1 to 21
+#' @family colour
+#' @keywords internal
+contrast_ratio <- function(a, b) {
+  luminance <- function(colour) {
+    v <- col2rgb(colour)[, 1] / 255
+    v <- ifelse(v <= 0.04045, v / 12.92, ((v + 0.055) / 1.055)^2.4)
+    sum(c(0.2126, 0.7152, 0.0722) * v)
+  }
+  l <- sort(c(luminance(a), luminance(b)), decreasing = TRUE)
+  (l[1] + 0.05) / (l[2] + 0.05)
+}
+
+# WCAG's floor for large text. The banner title and the legend heading are
+# large text; anything below this is hard to read, and below about 1.5
+# invisible. User decision 2026-09-22: a theme that pairs text and background
+# badly warns, rather than shipping a map with a blank banner.
+CHROME_CONTRAST_MIN <- 3
+
+# The legend's text colour, fixed in inst/legend/*.css. Checked against the
+# theme's legend.background, which can be anything.
+LEGEND_TEXT_COLOUR <- "#333333"
+
+#' Warn when chrome text will be hard to read on its background
+#'
+#' @param text,background Colours as hex strings or R colour names
+#' @param what Name for the message: "Banner" or "Legend"
+#' @return The contrast ratio, invisibly
+#' @keywords internal
+check_chrome_contrast <- function(text, background, what) {
+  ratio <- contrast_ratio(text, background)
+  if (ratio < CHROME_CONTRAST_MIN) {
+    warning(sprintf(
+      "%s text %s on background %s has a contrast ratio of %.1f:1, below %d:1: it will be hard or impossible to read. Change the theme's text or background colour.",
+      what, text, background, ratio, CHROME_CONTRAST_MIN
+    ), call. = FALSE)
+  }
+  invisible(ratio)
+}
+
+#' Warn when the base tiles will not render from a local file
+#'
+#' A quickmap output is meant to be sent as a file (CLAUDE.md, "Sharing
+#' constraint"). Opened from disk a page sends no Referer, and two tile
+#' hosts then refuse it: tile.openstreetmap.org (`NULL`, Leaflet's
+#' `addTiles()`) returns a 403 "Access blocked" tile, and Carto watermarks
+#' "API KEY REQUIRED". Found 2026-09-22 (defect 18) in a headless-Chrome test
+#' from `file://`; openstreetmap.de, openstreetmap.fr, Esri and OpenTopoMap
+#' rendered.
+#'
+#' @param base_tiles The theme's `map.base_tiles`: a provider name or NULL
+#' @return `base_tiles`, invisibly
+#' @keywords internal
+check_tiles_from_disk <- function(base_tiles) {
+  blocked <- is.null(base_tiles) || grepl("^CartoDB", base_tiles)
+  if (blocked) {
+    warning(sprintf(
+      "base_tiles %s will not render when the map is opened from disk: %s. Use \"OpenStreetMap.DE\" (the default), \"OpenStreetMap.France\", \"Esri.WorldStreetMap\" or \"Esri.WorldGrayCanvas\" for a map that will be sent as a file.",
+      if (is.null(base_tiles)) "NULL (tile.openstreetmap.org)" else base_tiles,
+      if (is.null(base_tiles)) "the server refuses browser requests without a Referer, and a local file sends none"
+      else "Carto watermarks tiles \"API KEY REQUIRED\" without a Referer"
+    ), call. = FALSE)
+  }
+  invisible(base_tiles)
+}
+
 # Marker labels are the smallest annotation on the map, the same class of text
 # as the legend's captions. 0.75rem is not a taste: the old base was 12px
 # against a 16px root, and 12/16 is 0.75 — so this is the size the labels have
@@ -2209,7 +2298,7 @@ generate_banner_key_html <- function(key) {
 
 #' @keywords internal
 build_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE,
-                             banner_style = "strip") {
+                             banner_style = "strip", text_colour = "white") {
   banner_dir <- get_package_dir("banner")
   css_variant <- if (image_mode) "banner-image.css" else
     "banner-interactive.css"
@@ -2231,10 +2320,10 @@ build_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE,
              " border-bottom: 3px solid ", banner_colour, "; }")
     },
     bar = if (image_mode) {
-      paste0(".banner { background: ", banner_colour, "; color: white;",
+      paste0(".banner { background: ", banner_colour, "; color: ", text_colour, ";",
              " text-align: left; padding: 1.6rem; font-size: 1.8rem; }")
     } else {
-      paste0(".banner { background: ", banner_colour, "; color: white;",
+      paste0(".banner { background: ", banner_colour, "; color: ", text_colour, ";",
              " text-align: left; padding: 0.7rem 1.25rem; font-size: 1.1rem;",
              " font-weight: 600; }")
     },
@@ -2280,16 +2369,20 @@ build_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE,
 }
 
 #' @keywords internal
-build_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE) {
+build_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE,
+                             legend_background = "white") {
   legend_dir <- get_package_dir("legend")
   css_variant <- if (image_mode) "legend-image.css" else
     "legend-interactive.css"
   css_file <- file.path(legend_dir, css_variant)
   css_content <- read_template_file(css_file)
 
-  # Item 10 (approved design): neutral chrome — the legend header no longer
-  # tints with the brand colour; hover uses a faint brand-tinted wash.
+  # Item 10 (approved design): neutral chrome — the legend header pill is
+  # white, its hover a faint brand-tinted wash. The panel behind it takes the
+  # theme's legend.background again since 2026-09-22 (user: item 10's fixed
+  # white was an error).
   replacements <- list(
+    "{{legend_bg}}" = legend_background,
     "{{legend_header_bg}}" = "#ffffff",
     "{{legend_header_hover}}" = lighten_color(banner_colour, 92)
   )
@@ -2476,7 +2569,9 @@ finalize_and_save_map <- function(
   indicator_label = NULL,
   indicator_show_max = FALSE,
   indicator_placement = "right",
-  banner_key = NULL
+  banner_key = NULL,
+  banner_text_colour = "white",
+  legend_background = "white"
 ) {
   map <- add_map_controls(
     map,
@@ -2511,7 +2606,9 @@ finalize_and_save_map <- function(
     indicator_label,
     indicator_show_max,
     indicator_placement,
-    banner_key
+    banner_key,
+    banner_text_colour,
+    legend_background
   )
 
   if (!is.null(image_dimensions)) {
@@ -2561,7 +2658,9 @@ save_html_and_style <- function(
   indicator_label = NULL,
   indicator_show_max = FALSE,
   indicator_placement = "right",
-  banner_key = NULL
+  banner_key = NULL,
+  banner_text_colour = "white",
+  legend_background = "white"
 ) {
   htmlwidgets::saveWidget(
     map,
@@ -2588,7 +2687,9 @@ save_html_and_style <- function(
       indicator_label = indicator_label,
       indicator_show_max = indicator_show_max,
       indicator_placement = indicator_placement,
-      banner_key = banner_key
+      banner_key = banner_key,
+      banner_text_colour = banner_text_colour,
+      legend_background = legend_background
     )
   }
 
@@ -2935,7 +3036,9 @@ inject_banner_legend_controls <- function(
   indicator_label = NULL,
   indicator_show_max = FALSE,
   indicator_placement = "right",
-  banner_key = NULL
+  banner_key = NULL,
+  banner_text_colour = "white",
+  legend_background = "white"
 ) {
   if (!file.exists(html_file)) {
     stop("HTML file not found: ", html_file)
@@ -2958,9 +3061,15 @@ inject_banner_legend_controls <- function(
 
   viewport_meta <- '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
 
-  banner_css <- build_banner_css(banner_colour, image_mode, banner_style)
+  if (identical(banner_style, "bar")) {
+    check_chrome_contrast(banner_text_colour, banner_colour, "Banner")
+  }
+  check_chrome_contrast(LEGEND_TEXT_COLOUR, legend_background, "Legend")
 
-  legend_css <- build_legend_css(banner_colour, image_mode)
+  banner_css <- build_banner_css(banner_colour, image_mode, banner_style,
+                                 banner_text_colour)
+
+  legend_css <- build_legend_css(banner_colour, image_mode, legend_background)
 
   custom_css <- paste0(banner_css, legend_css)
 
@@ -4129,7 +4238,10 @@ render_pollution_map <- function(
       theme$map$base_tiles
     )
   banner_style <- theme$banner$style %||% "strip"
+  banner_text_colour <- theme$banner$text_color %||% "white"
+  legend_background <- theme$legend$background %||% "white"
   wind_style <- theme$wind
+  check_tiles_from_disk(base_tiles_provider)
 
   # -- 2. Boundary ---------------------------------------------------------
   # boroughs are optional (2026-07-10): NULL means no boundary is drawn,
@@ -4324,7 +4436,9 @@ render_pollution_map <- function(
         indicator_label,
         indicator_show_max,
         indicator_placement,
-        banner_key
+        banner_key,
+        banner_text_colour,
+        legend_background
       )
     }
   }
@@ -4371,7 +4485,9 @@ render_pollution_map <- function(
     indicator_label,
     indicator_show_max,
     indicator_placement,
-    banner_key
+    banner_key,
+    banner_text_colour,
+    legend_background
   )
 
   return(invisible(html_map))

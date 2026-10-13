@@ -16,10 +16,11 @@ test_that("annual map: payload method counts are stable", {
   payload <- char_payload(char_html("char_annual.html"))
   methods <- char_methods(payload)
 
-  # v0.9.9.5 made Positron the default; REVERTED 2026-07-11 (v0.9.9.7):
-  # OSM default again (vignette too faint on pale tiles).
-  expect_equal(sum(methods == "addTiles"), 1)
-  expect_equal(sum(methods == "addProviderTiles"), 0)
+  # v0.9.9.5 made Positron the default; reverted to osm.org 2026-07-11
+  # (v0.9.9.7); OpenStreetMap.DE via addProviderTiles since 2026-09-22
+  # (v0.9.9.14, defect 18: osm.org blocks maps opened from disk).
+  expect_equal(sum(methods == "addTiles"), 0)
+  expect_equal(sum(methods == "addProviderTiles"), 1)
   expect_equal(sum(methods == "addPolygons"), 2) # borough boundary + vignette
   expect_equal(sum(methods == "addMarkers"), 9)  # (dt + bl + schools) x 3 years
   expect_equal(sum(methods == "showGroup"), 3)
