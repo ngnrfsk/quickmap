@@ -30,9 +30,11 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 - 2026-10-13: items 16 (rebuild the swlonrsp.github.io maps) and 17 (GIF
   export) go ahead of items 12 and 11, as urgent.
 - 2026-10-13: copyright holder stays Iarla Kilbane-Dawe for now. Iarla owns
-  the code and intends to sell it to Par Hill Research Ltd; the `DESCRIPTION`
-  (`cph`) and `LICENSE` edits naming the company stay uncommitted until that
-  sale, then go in their own PR with `man/quickmap-package.Rd` regenerated.
+  the code and intends to sell it to Par Hill Research Ltd; the working-tree
+  edits naming the company were reverted. At the sale, in its own PR: add
+  `person("Par Hill Research Ltd", role = "cph")` to `Authors@R` in
+  `DESCRIPTION`, set `COPYRIGHT HOLDER` in `LICENSE` to the company, and
+  regenerate `man/quickmap-package.Rd`.
 - 2026-10-13: the deletion of dev/260712_api_catalogue_v1.md and the rename of
   dev/20250118_geojson_option_d_design.md stay uncommitted until item 14.
 
