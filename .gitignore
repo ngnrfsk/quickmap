@@ -43,3 +43,10 @@ quickmap.Rproj
 
 # Editor workspace files
 *.code-workspace
+
+# Architecture diagrams: rendered output of dev/archviz_build_v1.py and
+# dev/archviz_png_v1.R. The scripts and dev/archviz_v1/README.md are tracked.
+dev/archviz_v1/svg/
+dev/archviz_v1/png/
+dev/archviz_v1/index.html
+dev/archviz_v1/*.zip

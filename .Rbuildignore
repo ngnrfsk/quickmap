@@ -1,6 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^dev$
+^plans$
 ^versions$
 ^aq_maps$
 ^\.claude$
