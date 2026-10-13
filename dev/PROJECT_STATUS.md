@@ -26,6 +26,16 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
   → 16 → 17 → 12 → 11 → 18. Neither is stacked on another unreviewed item: 16
   changes no package code, 17 branches from `main` once #53 has merged.
 
+- **Found 2026-10-13: the September styling work is on no PR.**
+  `feature/item11-tiles-legend` (8 commits, 11 to 22 September) and
+  `feature/item11-defra-tubes` exist only on this machine. The first changes
+  the default tiles to openstreetmap.de, honours the legend background key,
+  adds a contrast check, a from-disk tile warning and the Croydon theme: 150
+  lines of R/quickmap.R. It forks from `main` at e4f591b, before PR #53, so it
+  needs rebasing onto #53 once that merges. Until it merges, "current code"
+  for item 16 and the manual's 17 example maps does not include it. Open:
+  whether it merges before items 16 and 17.
+
 ## Steer
 
 - 2026-10-13: items 16 (rebuild the swlonrsp.github.io maps) and 17 (GIF
