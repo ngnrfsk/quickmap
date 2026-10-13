@@ -6,7 +6,7 @@ editor_options:
 
 # QuickMap Project Status
 
-**Last Updated**: 2026-08-17 **Current Version**: v0.9.9.13
+**Last Updated**: 2026-10-13 **Current Version**: v0.9.9.13
 
 Version history: NEWS.md. History before 2026-08-16:
 dev/archive/PROJECT_STATUS_history_to_260816.md.
@@ -18,26 +18,39 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 - Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain. Item 9 is in
   progress: 9.1, 9.3, 9.8 and 9.9 done on `feature/item9-output-paths`, 9.9's
   real-data visual sign-off given 2026-08-18; 9.2 and 9.4 to 9.7 remain.
-- Four PRs open, three waiting on Iarla, plus the item 9 branch to raise.
+- Two PRs open (#53, #51), both waiting on Iarla. PR #50 (merge-approval hook)
+  merged 2026-08-19. PRs #48 and #52 closed as superseded by #53.
+
+- **Urgent, added 2026-10-13: items 16 and 17.** Order of work: PR #53 conflict
+  → 16 → 17 → 12 → 11. Neither is stacked on another unreviewed item: 16
+  changes no package code, 17 branches from `main` once #53 has merged.
+
+## Steer
+
+- 2026-10-13: items 16 (rebuild the swlonrsp.github.io maps) and 17 (GIF
+  export) go ahead of items 12 and 11, as urgent.
+- 2026-10-13: copyright holder stays Iarla Kilbane-Dawe for now. Iarla owns
+  the code and intends to sell it to Par Hill Research Ltd; the `DESCRIPTION`
+  (`cph`) and `LICENSE` edits naming the company stay uncommitted until that
+  sale, then go in their own PR with `man/quickmap-package.Rd` regenerated.
+- 2026-10-13: the deletion of dev/260712_api_catalogue_v1.md and the rename of
+  dev/20250118_geojson_option_d_design.md stay uncommitted until item 14.
 
 ## Waiting on Iarla
 
-1.  **Review the manual** on `feature/item9-output-paths`, built at
-    file:///Users/iarla/Coding/quickmap/docs/index.html. It now carries PR #48's
-    chapters, PR #52's example maps and item 9's API, so **PRs #48 and #52 are
-    superseded by that branch** — close them when it merges, or say if you would
-    rather they stayed separate.
-2.  **Review PR #50** — merging now asks for approval at a prompt.
-3.  **Switch on GitHub Pages**: settings → Pages → main branch, `/docs`. The
+1.  **Review PR #53** — output paths, `symbol_labels` rename, `shorten_labels`,
+    and the manual text corrected to match, built at
+    file:///Users/iarla/Coding/quickmap/docs/index.html. The manual itself still
+    needs your review; it carries PR #48's chapters and PR #52's example maps,
+    both already closed as superseded by this branch.
+2.  **Switch on GitHub Pages**: settings → Pages → main branch, `/docs`. The
     chapters embed their maps from the hosted site (12.6 MB of maps against
     CRAN's 5 MB, so they cannot ship inside the package), which means the embeds
     are blank anywhere but the local build until Pages answers. Turning it on
-    also needs `docs/` committed — that is PR #52's change, and the item 9
-    branch deliberately does not carry it.
-4.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
+    also needs `docs/` committed — that was PR #52's change; no open branch
+    currently carries it.
+3.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
     `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
-5.  **Upload three maps** to swlonrsp.github.io from
-    `/Users/iarla/Coding/260814 Merton AQAP maps and figures refresh/animations/`.
 
 --------------------------------------------------------------------------------
 
@@ -70,22 +83,22 @@ Items are never renumbered; other documents cite these numbers.
     `from_csv(shorten_labels =)`, defaulting FALSE. Schools only; the vocabulary
     for other place types is post-1.0. Added 2026-08-17 after the demonstration
     map showed full school names — the shortening had never been in the package.
-9.  **Done, visual sign-off given 2026-08-18.** Retested against the real LB
-    Merton AQAP scripts (not just synthetic testthat fixtures) — see
-    dev/260818_merton_comparison_testset.md, now the canonical real-data
-    comparison set. Found and fixed a real regression first:
-    `merton_print-set_v6.R` relied on the removed implicit `aq_maps/` default
-    and silently wrote "0 images" until given an explicit `output_dir`.
-    `dev/260818_html_dom_compare_v1.py` (structural HTML/DOM + embedded-payload
-    diff, stdlib only) confirmed the regenerated animation maps match the
-    originals; Iarla confirmed all outputs pass visual inspection.
+9.   **DONE (PR#53)** Retested API changes to correct paths against real client
+    scripts (LB Merton AQAP maps), not just synthetic tests. Found and fixed a
+    real bug: `merton_print-set_v6.R` relied on the removed automatic `aq_maps/`
+    folder, silently producing zero output. Built a structural HTML comparison
+    tool to verify the fix; confirmed regenerated maps visually. *This was
+    rolled into PR #53 ("Require output_file, rename marker_labels, merge
+    shorten_labels; manual corrected to match") along with the rest of the work
+    of `9 CRAN Compliance`*
 
 ### 11. Last before release: clear open defects, add some trivial, but essential features
 
 1.  **Create a small set of routines to extract a table of diffusion tube data**
     from a standard Defra Excel template sheet \[\*\*stretch goal\*\* and from a
     historic ASR PDF or Word document\].
-2.  Check whethercoom removing the symbols from the legend pills is a flag
+2.  Check whether removing the symbols from the legend pills is a simple to use
+    flag
 3.  **Create a simple selector when outputting images** for print quality (e.g.
     something like an A4 shaped rectangle with 300dpi) or email quality (e.g. 72
     dpi).
@@ -102,8 +115,14 @@ Items are never renumbered; other documents cite these numbers.
 2.  The 75% capture rule voids 117 of 345 Merton site-years, including every raw
     mean above 60 µg/m³. Survivors differ from published values by up to 16.5
     µg/m³, unexplained.
-3.  Remaining: live probes, and licence attribution in the chrome (needs visual
-    sign-off). dev/260815_bl_fetch_plan.md.
+3.  **Attribution and credit approved by Iarla, 2026-08-15**, on the demo map
+    (`scripts/demos/bl-attribution_demo_v1.R` →
+    `aq_maps/item12_bl-attribution_v1.html`) — recorded in PR #51's description,
+    not previously here. Three credits: the Breathe London licence statement
+    under the legend key; a software credit ("QuickMap \| Leaflet") via the new
+    `map.credit` theme key, default `TRUE`; source metadata naming the installed
+    version. Remaining: only the live-API probes, blocked on the API key.
+    dev/260815_bl_fetch_plan.md.
 
 ### 13. Retest the alternative stacks
 
@@ -123,6 +142,13 @@ Items are never renumbered; other documents cite these numbers.
 1.  Three naming conventions coexist, so the folder cannot be read in order.
 2.  Rename to `YYMMDD_name_vN.md`, update references, grep for old names.
 3.  Known stale reference: dev/260816_output_paths_decision.md:67.
+4.  Started in the working tree, uncommitted: `20250118_geojson_option_d_design.md`
+    renamed to `250118_…` (still cited under the old name at CLAUDE.md:227 and
+    dev/260705_rendering_backend_candidates.md:66), and
+    `260712_api_catalogue_v1.md` deleted with no surviving copy (still cited at
+    NEWS.md:37, dev/260708_item9_check-baseline_v1.md:88 and
+    tests/testthat/test-manual2-small-fixes-v1.R:2). Decide here whether the
+    catalogue is restored or its three citations removed.
 
 ### 15. Squash the repo: scrub personal email history — in progress 2026-08-18
 
@@ -134,9 +160,9 @@ Items are never renumbered; other documents cite these numbers.
     every branch — `main` included, overriding the standing "never push to main"
     rule with Iarla's explicit sign-off, since `main` carries no GitHub
     branch-protection rule.
-2.  Not covered: `DESCRIPTION`'s `Authors@R` still names `iarlakd@gmail.com` as
-    file content, not commit metadata — untouched by the rewrite, and outside
-    GitHub's control if published to CRAN. Flagged, not yet decided.
+2.  `DESCRIPTION`'s `Authors@R` named `iarlakd@gmail.com` as file content, which
+    the rewrite did not touch. Changed to the noreply address in commit
+    "Maintainer email to the GitHub noreply address".
 3.  Every commit SHA in the repo changed. The two SHAs cited elsewhere in
     project docs (`4b4d0d4`, `686e174`) were captured before the rewrite;
     anything else citing an old SHA is now stale.
@@ -144,7 +170,43 @@ Items are never renumbered; other documents cite these numbers.
     `feature/item9-output-paths`); the other 10 have no open PR and are
     candidates for deletion once confirmed merged or abandoned.
 
+### 16. Rebuild the swlonrsp.github.io maps with current code — urgent, next after PR #53's conflict
+
+1.  Target folder:
+    `/Users/iarla/Library/Mobile Documents/com~apple~CloudDocs/0 - Projects/swlonrsp.github.io`
+    (its own git repo). 13 maps plus `index.html`: Croydon NO2 (1), Merton (5,
+    three of them `*_latest`), Richmond (2), Wandsworth (3), the PM2.5 episode
+    of 15–20 January 2024 (1), Wandsworth sensor locations (1). The oldest
+    files date from October 2025 to January 2026 and predate v0.9.9.13.
+2.  Deliverable: one generating script per map, or one per borough, written
+    against the current API (`output_file` required, `symbol_labels`), so the
+    whole folder regenerates from one command.
+3.  No branch in this repo and no package code: client scripts live outside
+    the package (item 9.5). Where the scripts are kept is undecided — the
+    swlonrsp.github.io repo itself, or the workspace repo item 9.5 creates.
+4.  Not yet known: which scripts built the current files, and whether the
+    Breathe London layers can be rebuilt from RData already held or need the
+    API key that blocks item 12.
+5.  Depends on PR #53's code, not on its merge: install from
+    `feature/item9-output-paths`.
+
+### 17. GIF export of the animation — urgent, after PR #53 merges
+
+1.  Does not exist: no `gif`, `gifski`, `magick` or `av` anywhere in R/,
+    DESCRIPTION or NEWS.md (checked 2026-10-13).
+2.  Builds on the per-step JPG loop that `export_image` already drives; a GIF
+    is those frames assembled. The encoder goes in `Suggests`.
+3.  Branch `feature/item17-gif-export` from `main` after #53 merges. PR #53
+    rewrote the same per-step loop (filenames and directories), so a branch cut
+    earlier would conflict with it.
+4.  Rendering-touching: blocks on visual sign-off.
+5.  Overlaps item 11.3 (print/email quality selector — the GIF needs a pixel
+    size and frame delay) and open defect 12 (chromote times out mid-batch; a
+    GIF needs every frame, so the retry may have to come first).
+
 ### Numbering history
+
+Items 16 and 17 added 2026-10-13.
 
 Items 2 and 5 inserted 2026-07-05; item 10 on 07-06, renumbering UI defects to
 11; items 12–14 on 08-15/16. Earlier dev docs use the old numbering.
