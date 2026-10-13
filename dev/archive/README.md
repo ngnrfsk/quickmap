@@ -35,6 +35,11 @@ bottleneck" decision is still open and was never revisited.
 `scripts/demos/symbols_chart.R` — most of this folder's weight),
 `template.html`, `PLAN_ACCESSIBILITY.md`, `mislabelled_deltas_scale.yaml`.
 
+**Superseded reference, added 2026-10-13 (1).** `260712_api_catalogue_v1.md`,
+the API traced from the code at v0.9.9.7. Out of date since v0.9.9.13; kept
+because NEWS.md and a test header cite it, and as the model for its
+replacement (roadmap item 18).
+
 ## What was taken out and put somewhere better
 
 - The two indicator style prototypes went to `dev/concepts/indicator/code/`.

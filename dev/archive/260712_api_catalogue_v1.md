@@ -1,5 +1,12 @@
 # QuickMap API catalogue — traced from the code (v0.9.9.7)
 
+> **Historical, archived 2026-10-13.** Describes v0.9.9.7. Wrong for v0.9.9.13
+> and later: `output_file` has no default, nothing is written to `aq_maps/`
+> automatically, there is no unsaved-widget mode, `marker_labels` is now
+> `symbol_labels`, and `play_speed` defaults to step-count pacing. The audit
+> worklist at the end is finished. Its replacement is roadmap item 18 in
+> dev/PROJECT_STATUS.md.
+
 **Date:** 2026-07-12 · **Method:** every exported function and every argument traced to its consumption point in R/ source; behaviour stated is what the code does, not what older docs claim. Organised per R help-file conventions (Description / Usage / Arguments / Details / Value / See also), grouped as the pkgdown reference index groups them. This is the groundwork document for the item-9 roxygen audit — discrepancies between this and the current .Rd text are the audit's worklist.
 
 ------------------------------------------------------------------------

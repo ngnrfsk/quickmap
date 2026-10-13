@@ -85,7 +85,7 @@ still need `%\VignetteEngine{}` builds to succeed with whatever is chosen.
 - Full docs-vs-code audit and dev/PROJECT_STATUS.md restructure
   (current-state section + archived history), per the roadmap item text.
   (Restructure done early, 2026-07-13 — plain-language rewrite; the
-  docs-vs-code audit remains, with dev/260712_api_catalogue_v1.md as its
+  docs-vs-code audit remains, with dev/archive/260712_api_catalogue_v1.md as its
   worklist.)
 - Ship small teaching-data extracts inside the package (inst/extdata) so
   manual examples and R CMD CHECK examples run on any machine — the

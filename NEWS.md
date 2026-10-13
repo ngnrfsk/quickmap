@@ -34,7 +34,7 @@ CRAN and pkgdown both render this file.
 
 - **v0.9.9.7**: default base tiles reverted to OSM (user decision 2026-07-11): the vignette dimming is too faint on the pale CartoDB.Positron tiles that v0.9.9.5 made the default; Positron remains a one-line theme option (`map.base_tiles`)
 
-- **v0.9.9.8**: small fixes from the traced API catalogue (dev/260712_api_catalogue_v1.md): non-matching `display_times` now warns naming the available steps; `styling_type` validated against "html"/"none"; roxygen corrected (output_file used verbatim; data_symbols accepts all 18 renderer names)
+- **v0.9.9.8**: small fixes from the traced API catalogue (dev/archive/260712_api_catalogue_v1.md): non-matching `display_times` now warns naming the available steps; `styling_type` validated against "html"/"none"; roxygen corrected (output_file used verbatim; data_symbols accepts all 18 renderer names)
 
 - **v0.9.9.9**: legend indicator (user-approved 2026-07-29, feasibility study dev/concepts/indicator/260729_overlays_feasibility.md): the network mean for the displayed step, drawn in the legend as an inline-SVG track with tick marks at the colour scale's thresholds and a pointer in the value's band colour; `build_indicator_data()` aggregates a **fixed panel** (sites reporting in every displayed step) into a single combined mean across layers, returning NULL for anything but an annual map; moves with the time slider via `window.quickmapIndicatorController` (`inst/controls/indicator.js`), hooked above the lazy-path branch so it works on both rendering paths; static exports draw their own step server-side with no script; theme keys `indicator.show` / `indicator.label`; `inst/legend/legend.html` converted from positional `sprintf` to `{{placeholder}}` substitution
 

@@ -22,7 +22,7 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
   merged 2026-08-19. PRs #48 and #52 closed as superseded by #53.
 
 - **Urgent, added 2026-10-13: items 16 and 17.** Order of work: PR #53 conflict
-  → 16 → 17 → 12 → 11. Neither is stacked on another unreviewed item: 16
+  → 16 → 17 → 12 → 11 → 18. Neither is stacked on another unreviewed item: 16
   changes no package code, 17 branches from `main` once #53 has merged.
 
 ## Steer
@@ -35,8 +35,17 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
   `person("Par Hill Research Ltd", role = "cph")` to `Authors@R` in
   `DESCRIPTION`, set `COPYRIGHT HOLDER` in `LICENSE` to the company, and
   regenerate `man/quickmap-package.Rd`.
-- 2026-10-13: the deletion of dev/260712_api_catalogue_v1.md and the rename of
-  dev/20250118_geojson_option_d_design.md stay uncommitted until item 14.
+- 2026-10-13: the v0.9.9.7 API catalogue is archived, not deleted, at
+  dev/archive/260712_api_catalogue_v1.md, marked historical. A new API guide
+  is item 18.
+- 2026-10-13: the lone rename of dev/20250118_geojson_option_d_design.md was
+  undone; item 14 renames every dev/ document in one PR.
+- 2026-10-13: architecture diagrams (dev/archviz_*) go on their own branch,
+  `docs/architecture-diagrams`: scripts, plan and README tracked, rendered
+  outputs ignored. Their ten documentation findings are open defects DOC-1 to
+  DOC-10.
+- 2026-10-13: dev/260819_status_checklist_v1.md deleted; its task-to-PR table
+  is under "Which PR each open task belongs to" below.
 
 ## Waiting on Iarla
 
@@ -144,13 +153,11 @@ Items are never renumbered; other documents cite these numbers.
 1.  Three naming conventions coexist, so the folder cannot be read in order.
 2.  Rename to `YYMMDD_name_vN.md`, update references, grep for old names.
 3.  Known stale reference: dev/260816_output_paths_decision.md:67.
-4.  Started in the working tree, uncommitted: `20250118_geojson_option_d_design.md`
-    renamed to `250118_…` (still cited under the old name at CLAUDE.md:227 and
-    dev/260705_rendering_backend_candidates.md:66), and
-    `260712_api_catalogue_v1.md` deleted with no surviving copy (still cited at
-    NEWS.md:37, dev/260708_item9_check-baseline_v1.md:88 and
-    tests/testthat/test-manual2-small-fixes-v1.R:2). Decide here whether the
-    catalogue is restored or its three citations removed.
+4.  `20250118_geojson_option_d_design.md` becomes `250118_…`: its header gives
+    the date as 2025-01-18. Cited at CLAUDE.md:227 and
+    dev/260705_rendering_backend_candidates.md:66. Its header also says "not
+    implemented"; lazy rendering shipped in v0.9.7, so correct that line in the
+    same change.
 
 ### 15. Squash the repo: scrub personal email history — in progress 2026-08-18
 
@@ -206,9 +213,36 @@ Items are never renumbered; other documents cite these numbers.
     size and frame delay) and open defect 12 (chromote times out mid-batch; a
     GIF needs every frame, so the retry may have to come first).
 
+### 18. Create a new API guide — after items 17, 12 and 11, before the v1.0 tag
+
+1.  Replaces dev/archive/260712_api_catalogue_v1.md, which describes v0.9.9.7.
+    Same method: every exported function and argument traced to where the code
+    reads it, grouped as the pkgdown reference index groups them.
+2.  Placed after the last three items that change the public API: 17 adds a
+    GIF export argument, 12 adds `bl_sensors()`, `bl_data()` and
+    `from_breathelondon()`, 11 adds the image-quality selector and changes the
+    data directory default. Written earlier, it is out of date at each merge.
+3.  Its discrepancies against the roxygen text are the last docs-vs-code check
+    before `R CMD CHECK` (9.2) is declared clean for release.
+4.  Open: whether it stays a dev/ document or becomes a manual chapter.
+
+### Which PR each open task belongs to
+
+| Task | PR |
+|---|---|
+| 9.2 `R CMD CHECK` clean | #53 |
+| 9.4 GitHub Issues, `URL:`/`BugReports:` | new small PR |
+| 9.6 `sapply()` to `vapply()` | new small PR |
+| Built `docs/` site for GitHub Pages | new PR from `docs/package-rationale`, carrying only the `docs/` commit; PR #52 is not reopened |
+| 11 defects and features | new PR, after #53 and #51 merge |
+| 13 stack retest | new PR, not urgent |
+| 14 dev/ rename | new PR, low priority |
+| 17 GIF export | new PR, after #53 merges |
+| Architecture diagrams | new PR from `docs/architecture-diagrams` |
+
 ### Numbering history
 
-Items 16 and 17 added 2026-10-13.
+Items 16 and 17 added 2026-10-13; item 18 the same day.
 
 Items 2 and 5 inserted 2026-07-05; item 10 on 07-06, renumbering UI defects to
 11; items 12–14 on 08-15/16. Earlier dev docs use the old numbering.
@@ -261,6 +295,42 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
   names (item 9.8) buys width but does not place anything.
 - **LCA-1/2/3.** Collapsible radio buttons bottom-left; open at a zoom filling
   the screen; choose the layer visible on load.
+
+### Documentation that contradicts the code
+
+Found 2026-10-05 by a source read at v0.9.9.13 (diagram 8 of
+`dev/archviz_build_v1.py`, on branch `docs/architecture-diagrams`). Line
+numbers are from that date. DOC-3 and DOC-4 re-checked 2026-10-13; the other
+eight were not, and DOC-5 was found by grep only. Q: is R/quickmap.R, W: is
+R/wind.R.
+
+- **DOC-1. Pipeline order in CLAUDE.md.** `quickmap()` passes sf layers, so
+  `load_data_file()` is not reached on that path. `generate_map_layers()` is
+  the outer driver: it calls `prepare_generic_layer_data()` and `add_layer()`,
+  and `add_layer()` calls `create_generic_icons()`. Q:3823, Q:3674.
+- **DOC-2. "One loop emits HTML and static exports".** `generate_map_layers()`
+  only draws markers; static frames use `add_year_and_static_layers()` in the
+  shared loop. Q:2309, Q:4279.
+- **DOC-3. First `quickmap()` example in CLAUDE.md has no `output_file`**, so
+  it errors. Q:2354.
+- **DOC-4. The `who_no2` YAML example in CLAUDE.md** shows 5 bands with `name`
+  and `pollutant` keys. The real file has no `name` or `pollutant` key, and 11
+  bands by the diagram's count.
+- **DOC-5. Theme keys not read anywhere in R/quickmap.R**: `legend.show`,
+  `legend.background`, `banner.text_color`, `controls.background`,
+  `controls.text_color`. Q:1274-1344.
+- **DOC-6. "A missing placeholder is a hard error".** Only a `{{key}}` absent
+  from the template errors; a template placeholder left unfilled passes
+  silently. Q:72-88.
+- **DOC-7. "Two timer-start sites must read `currentInterval`".** One
+  `startTimer()` reads it; the lazy fade reads `window.quickmapPlayInterval`.
+  inst/controls/time-slider.js:143-148.
+- **DOC-8. "Wind comes from one worldmet station".** Any data frame with
+  `date`, `ws`, `wd` is accepted. W:25-58.
+- **DOC-9. `indicator.placement` default.** `title_row` in
+  `get_default_theme()`, but function fallbacks use `right`. Q:4216, Q:2937.
+- **DOC-10. Comments in inst/controls/wind-controller.js:4** describe the
+  roller menu and `switchToYear`, both replaced by the time slider.
 
 --------------------------------------------------------------------------------
 

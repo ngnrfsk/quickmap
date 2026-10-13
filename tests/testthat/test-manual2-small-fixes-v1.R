@@ -1,5 +1,5 @@
 # Small fixes from the traced API catalogue's audit worklist
-# (dev/260712_api_catalogue_v1.md), applied 2026-07-12 (v0.9.9.8).
+# (dev/archive/260712_api_catalogue_v1.md), applied 2026-07-12 (v0.9.9.8).
 
 small_fix_layer <- function() {
   d <- data.frame(
