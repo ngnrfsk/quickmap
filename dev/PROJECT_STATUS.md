@@ -65,10 +65,9 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 
 ## Waiting on Iarla
 
-1.  **Check the 12 rebuilt site maps** (item 16.5), then say whether to copy
-    them to the site folder. Also decide: keep or retire the Wandsworth sites
-    map and the two dated Merton maps; create a GitHub remote for
-    `swlonrsp-maps-build`, public or private.
+1.  **Check the 8 rebuilt site maps** (item 16.5), then say whether to copy
+    them to the site folder. Then repoint the six Squarespace lightbox links
+    to the `_latest` names. Open points are in that repo's STATUS.md.
 2.  **Read the manual**, on `docs/manual-v2`, after it has been brought up to
     date. No deadline. It carries PR #48's chapters, PR #52's example maps and
     README.md, which `main` does not have.
@@ -283,7 +282,15 @@ Items are never renumbered; other documents cite these numbers.
     tiles now openstreetmap.de; Breathe London sensors clipped to the borough;
     the faulty 786 µg/m³ reading blanked; the Wandsworth sites map's
     location-only style not reproduced.
-5.  Remaining: Iarla's visual check of the 12 maps (review pack at
+5.  **Reworked the same day to rules agreed with Iarla** (that repo's
+    RULES.md, commit a368659): 8 maps replace 12. One map per borough per
+    pollutant on the latest data, under a permanent `_latest` name; uniform
+    symbols and generated banner text; the legend mean and maximum on every
+    annual map. The six file names linked from
+    lovecleanair.org/air-quality-in-my-area, and Croydon's, stay as temporary
+    copies until Iarla repoints the Squarespace links. Deprecated and removed
+    at deploy: `LBM_NO2_DT_BL_latest.html` and the Wandsworth sites map.
+    Remaining: Iarla's visual check of the 8 maps (review pack at
     `/Users/iarla/Library/Mobile Documents/com~apple~CloudDocs/dev/item16_swlonrsp-maps/`),
     then `deploy_to_site.py` and a push of the site repo. Nothing has been
     copied to the site folder.
@@ -380,7 +387,9 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
 - **12. Image export unreliable.** chromote startup times out mid-batch; retry
   each webshot call.
 - **13. Sub-annual limit values.** The indicator hides below annual resolution;
-  needs resolution-aware targets in the YAML. Post-1.0.
+  needs resolution-aware targets in the YAML. Post-1.0. When resolved,
+  rebuild the hosted episode map with the mean and maximum on:
+  `/Users/iarla/Coding/swlonrsp-maps-build/RULES.md`, rule 21.
 - **14. Fixed panel unexplained.** "Network mean, N sites" counts fewer sites
   than are on screen; add a tooltip.
 - **15. Split import from map creation.**
