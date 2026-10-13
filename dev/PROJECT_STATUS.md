@@ -22,24 +22,28 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
   merged 2026-08-19. PRs #48 and #52 closed; their content is on
   `docs/manual-v2`, not in #53.
 
-- **Urgent, added 2026-10-13: items 16 and 17.** Order of work: PR #53 conflict
-  → 16 → 17 → 12 → 11 → 18. Neither is stacked on another unreviewed item: 16
-  changes no package code, 17 branches from `main` once #53 has merged.
+- **Order of work, set 2026-10-13:** PR #53 → September styling
+  (`feature/item11-tiles-legend`) → 16 → 17 → 12 → rest of 11 → 18. One item
+  is in review at a time: each branches from `main` after the one before has
+  merged. Item 16 changes no package code.
 
-- **Found 2026-10-13: the September styling work is on no PR.**
-  `feature/item11-tiles-legend` (8 commits, 11 to 22 September) and
-  `feature/item11-defra-tubes` exist only on this machine. The first changes
-  the default tiles to openstreetmap.de, honours the legend background key,
-  adds a contrast check, a from-disk tile warning and the Croydon theme: 150
-  lines of R/quickmap.R. It forks from `main` at e4f591b, before PR #53, so it
-  needs rebasing onto #53 once that merges. Until it merges, "current code"
-  for item 16 and the manual's 17 example maps does not include it. Open:
-  whether it merges before items 16 and 17.
+- **September styling work**, `feature/item11-tiles-legend`: 8 commits, 11 to
+  22 September, pushed 2026-10-13, no PR yet. It contains all of
+  `feature/item11-defra-tubes` (item 11.1, the Defra workbook reader). It
+  changes the default tiles to openstreetmap.de, honours the legend background
+  key, adds a contrast check, a from-disk tile warning and the Croydon theme:
+  150 lines of R/quickmap.R. It forks from `main` at e4f591b, before PR #53. A
+  trial merge with #53 on 2026-10-13 conflicts in five files: R/quickmap.R,
+  DESCRIPTION, NEWS.md, CLAUDE.md and dev/PROJECT_STATUS.md. It is rebased
+  onto `main` and its PR opened once #53 has merged. The manual's 17 example
+  maps predate it and are regenerated after it merges.
 
 ## Steer
 
 - 2026-10-13: items 16 (rebuild the swlonrsp.github.io maps) and 17 (GIF
   export) go ahead of items 12 and 11, as urgent.
+- 2026-10-13: the September styling branch merges before items 16 and 17, so
+  the operational maps are rebuilt once, with the new tiles and legend.
 - 2026-10-13: copyright holder stays Iarla Kilbane-Dawe for now. Iarla owns
   the code and intends to sell it to Par Hill Research Ltd; the working-tree
   edits naming the company were reverted. At the sale, in its own PR: add
@@ -255,7 +259,8 @@ Items are never renumbered; other documents cite these numbers.
 | 9.4 GitHub Issues, `URL:`/`BugReports:` | new small PR |
 | 9.6 `sapply()` to `vapply()` | new small PR |
 | Built `docs/` site for GitHub Pages | new PR from `docs/package-rationale`, carrying only the `docs/` commit; PR #52 is not reopened |
-| 11 defects and features | new PR, after #53 and #51 merge |
+| September styling and 11.1 Defra reader | new PR from `feature/item11-tiles-legend`, rebased after #53 merges |
+| Rest of 11, defects and features | new PR, after #51 merges |
 | 13 stack retest | new PR, not urgent |
 | 14 dev/ rename | new PR, low priority |
 | 17 GIF export | new PR, after #53 merges |
