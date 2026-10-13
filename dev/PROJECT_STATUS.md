@@ -65,8 +65,10 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 
 ## Waiting on Iarla
 
-1.  **Say where the item 16 scripts are kept**: the swlonrsp.github.io repo
-    itself, or a workspace repo (item 9.5). Item 16 is next.
+1.  **Check the 12 rebuilt site maps** (item 16.5), then say whether to copy
+    them to the site folder. Also decide: keep or retire the Wandsworth sites
+    map and the two dated Merton maps; create a GitHub remote for
+    `swlonrsp-maps-build`, public or private.
 2.  **Read the manual**, on `docs/manual-v2`, after it has been brought up to
     date. No deadline. It carries PR #48's chapters, PR #52's example maps and
     README.md, which `main` does not have.
@@ -257,25 +259,37 @@ Items are never renumbered; other documents cite these numbers.
     `feature/item9-output-paths`); the other 10 have no open PR and are
     candidates for deletion once confirmed merged or abandoned.
 
-### 16. Rebuild the swlonrsp.github.io maps with current code — urgent, next after PR #53's conflict
+### 16. Rebuild the swlonrsp.github.io maps with current code — built 2026-10-13, awaiting visual check
 
 1.  Target folder:
     `/Users/iarla/Library/Mobile Documents/com~apple~CloudDocs/0 - Projects/swlonrsp.github.io`
-    (its own git repo). 13 maps plus `index.html`: Croydon NO2 (1), Merton (5,
-    three of them `*_latest`), Richmond (2), Wandsworth (3), the PM2.5 episode
-    of 15–20 January 2024 (1), Wandsworth sensor locations (1). The oldest
-    files date from October 2025 to January 2026 and predate v0.9.9.13.
-2.  Deliverable: one generating script per map, or one per borough, written
-    against the current API (`output_file` required, `symbol_labels`), so the
-    whole folder regenerates from one command.
-3.  No branch in this repo and no package code: client scripts live outside
-    the package (item 9.5). Where the scripts are kept is undecided — the
-    swlonrsp.github.io repo itself, or the workspace repo item 9.5 creates.
-4.  Not yet known: which scripts built the current files, and whether the
-    Breathe London layers can be rebuilt from RData already held or need the
-    API key that blocks item 12.
-5.  Depends on PR #53's code, not on its merge: install from
-    `feature/item9-output-paths`.
+    (its own git repo). 12 maps plus `index.html` (an earlier count of 13 was
+    wrong): Croydon NO2 (1), Merton (5, three of them `*_latest`), Richmond
+    (2), Wandsworth (2), Wandsworth sensor locations (1), the PM2.5 episode of
+    15–20 January 2024 (1).
+2.  **Done.** Scripts are in a new local repo,
+    `/Users/iarla/Coding/swlonrsp-maps-build` (first commit 20e76d6, no GitHub
+    remote yet): one script per borough plus the episode, run by
+    `Rscript build_all.R`. All 12 rebuild with v0.9.9.14 into its `build/`.
+3.  Sources of each map's method: `inst/examples/quickmap_create_RSP_maps.R`
+    (six `*_Map_*` files), the Merton AQAP `merton_animation_v1.R` (three
+    `*_latest`), the Croydon `croydon_maps_v4.R`, `inst/examples/
+    episode_example.R` and `inst/examples/
+    quickmap_create_wandsworth_new_sensors.R`. All inputs were already held;
+    the Breathe London API key was not needed.
+4.  Compared with the hosted copies by title, time steps and legend bands:
+    titles and steps match on all 12. Ten differences are listed in that
+    repo's README.md; its STATUS.md holds the open points. The main ones:
+    tiles now openstreetmap.de; Breathe London sensors clipped to the borough;
+    the faulty 786 µg/m³ reading blanked; the Wandsworth sites map's
+    location-only style not reproduced.
+5.  Remaining: Iarla's visual check of the 12 maps (review pack at
+    `/Users/iarla/Library/Mobile Documents/com~apple~CloudDocs/dev/item16_swlonrsp-maps/`),
+    then `deploy_to_site.py` and a push of the site repo. Nothing has been
+    copied to the site folder.
+6.  Found while building, for item 11: `from_rdata()` prepends `DATA_PATH`
+    to an absolute path, so a prepared `.Rdata` outside `DATA_PATH` cannot be
+    passed by path (same subject as 11.4).
 
 ### 17. GIF export of the animation — urgent, after PR #53 merges
 
