@@ -1,5 +1,5 @@
 # Small fixes from the traced API catalogue's audit worklist
-# (dev/260712_api_catalogue_v1.md), applied 2026-07-12 (v0.9.9.8).
+# (dev/archive/260712_api_catalogue_v1.md), applied 2026-07-12 (v0.9.9.8).
 
 small_fix_layer <- function() {
   d <- data.frame(
@@ -25,7 +25,7 @@ test_that("non-matching display_times warns and names the available steps", {
 test_that("styling_type rejects unknown values", {
   expect_error(
     quickmap(small_fix_layer(), styling_type = "fancy",
-             output_file = NULL),
+             output_file = "never_written.html"),
     'styling_type must be "html" or "none"'
   )
 })
@@ -35,7 +35,7 @@ test_that("styling_type = 'none' still works (bare widget)", {
   withr::local_dir(work)
   m <- quickmap(small_fix_layer(), styling_type = "none",
                 output_file = "bare.html", title = "t")
-  html <- paste(readLines(file.path("aq_maps", "bare.html"), warn = FALSE),
+  html <- paste(readLines("bare.html", warn = FALSE),
                 collapse = "\n")
   expect_false(grepl('class="banner"', html, fixed = TRUE))
   expect_false(grepl('id="yearControl"', html, fixed = TRUE))

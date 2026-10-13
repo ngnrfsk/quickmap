@@ -60,7 +60,7 @@ quickmap(
   colour_scale = "lbm_no2",
   theme_file = merton_theme,
   title = "Merton NO₂ annual mean, diffusion tube network 2019–2025",
-  marker_labels = "labels",
+  symbol_labels = "labels",
   autoplay = TRUE,
   play_speed = 1200,
   output_file = "merton_no2_annual_2019_2025.html"
@@ -83,7 +83,7 @@ quickmap(
   colour_scale = "lbm_no2",
   theme_file = merton_theme,
   title = "Merton NO₂ annual mean concentrations (µg/m³)",
-  marker_labels = "values_on",
+  symbol_labels = "values_on",
   export_image = c(4000, 3000),
   output_file = "merton_no2_print.html"
 )

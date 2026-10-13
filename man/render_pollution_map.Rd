@@ -9,7 +9,8 @@ render_pollution_map(
   data_ids = NULL,
   data_symbols = NULL,
   data_dynamic = NULL,
-  output_file = "pollution_map.html",
+  output_file,
+  output_dir = getOption("quickmap.output_dir", NULL),
   export_image = NULL,
   boroughs = NULL,
   pollutant = "no2",
@@ -18,13 +19,14 @@ render_pollution_map(
   vignette = NULL,
   colour_scale = "who_no2",
   styling_type = "html",
-  marker_labels = NULL,
+  symbol_labels = NULL,
   banner_colour = NULL,
   boundary_labels = NULL,
   autoplay = NULL,
   play_speed = NULL,
   theme_file = NULL,
-  wind = NULL
+  wind = NULL,
+  ...
 )
 }
 \arguments{
@@ -41,9 +43,12 @@ an unknown name errors with the full list).}
 
 \item{data_dynamic}{Logical vector indicating temporal (TRUE) vs static (FALSE) layers (default: NULL, auto-detected).}
 
-\item{output_file}{Output file name, used verbatim (include the .html
-extension). Saved to the 'aq_maps/' directory; NULL returns the widget
-without writing a file.}
+\item{output_file}{Required. Where to write the map, used verbatim
+(include the .html extension). A bare name writes to the working
+directory; a path writes there, creating the directory.}
+
+\item{output_dir}{Directory prepended to \code{output_file}, and to the JPG
+set. Default: the \code{quickmap.output_dir} option, else NULL.}
 
 \item{export_image}{NULL (no export), TRUE (export 1200x1200), or c(width, height) vector for custom dimensions.}
 
@@ -63,7 +68,7 @@ NULL uses all available periods from data. Must match year_str format in data.}
 
 \item{styling_type}{Controls banner/legend display: "html" (default) or "none".}
 
-\item{marker_labels}{Label visibility: FALSE, TRUE (hover), "values_on" (always), "labels" (custom/hover),
+\item{symbol_labels}{Label visibility: FALSE, TRUE (hover), "values_on" (always), "labels" (custom/hover),
 "labels_on" (custom/always). Default: NULL (uses theme). Content: School/Label/pollutant columns.}
 
 \item{banner_colour}{Color for banner and vignette. Default: NULL (uses theme).}
@@ -82,10 +87,15 @@ map, from a quarter of it to eight times.}
 
 \item{wind}{Wind data for the particle overlay: a \code{from_worldmet()}
 object or a data frame of date/ws/wd. Interactive HTML only.}
+
+\item{...}{Accepts the old argument name \code{marker_labels}, with a
+warning. Any other name is an error.}
 }
 \value{
-Invisible Leaflet map object. Side effects: Saves HTML to \code{aq_maps/}.
-If \code{export_image} is not NULL, also saves JPG files (one per year).
+The saved file is the product; the Leaflet object is returned
+invisibly as a byproduct, without the injected chrome. Side effects:
+writes \code{output_file}, and one JPG per time step when
+\code{export_image} is not NULL.
 }
 \description{
 Main function to create Leaflet maps showing air pollution data with optional
@@ -107,7 +117,9 @@ Year columns in CSV files must be YYYY format (e.g., "2024").
 Static JPG exports require Chrome/Chromium for webshot2.
 }
 \examples{
-# Basic interactive map (annual)
+\dontrun{
+# Basic interactive map (annual). Not run: it needs the user's data, and
+# writes a file, which an example may not do.
 Sys.setenv(DATA_PATH = "~/data")
 create_pollution_map(
   data_sources = list("wandsworth_2017_2024.csv", "schools_Wandsworth.csv"),
@@ -116,13 +128,15 @@ create_pollution_map(
   output_file = "wandsworth_2024.html"
 )
 
-# Monthly data (sub-annual)
+# Monthly data (sub-annual), written into a folder of the caller's choosing
 create_pollution_map(
   data_sources = list("sensor_monthly.Rdata"),
   boroughs = "Merton",
   display_times = c("2024-01", "2024-02", "2024-03"),
-  output_file = "merton_q1_2024"
+  output_file = "merton_q1_2024.html",
+  output_dir = "aq_maps"
 )
+}
 
 }
 \seealso{

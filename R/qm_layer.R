@@ -172,6 +172,12 @@ qm_find_time_col <- function(data, time_col = NULL) {
 #'   for static layers, cycling in layer order). A map-level `data_symbols`
 #'   argument to [quickmap()] overrides this.
 #' @param name Human-visible layer name (legends, controls, errors)
+#' @param shorten_labels Drop the school type from the label column, so
+#'   "Abbotsbury Primary School" reads "Abbotsbury" and the type appears once
+#'   in the banner key instead of on every marker. Default FALSE, because it
+#'   changes what an existing map says. Names that would collide keep their
+#'   full form — see [shorten_school_names()]. Schools only for 1.0; the
+#'   layer is left alone when it has no label column.
 #' @return The data as a `qm_layer` (still an sf data.frame)
 #' @family atomic unit
 #' @export
@@ -181,7 +187,8 @@ qm_layer <- function(
   time_col = NULL,
   label_col = NULL,
   shape = NULL,
-  name = "layer"
+  name = "layer",
+  shorten_labels = FALSE
 ) {
   if (!is.null(shape)) shape <- qm_normalise_shape(shape)
   if (!is.data.frame(data) || nrow(data) == 0) {
@@ -225,6 +232,20 @@ qm_layer <- function(
   } else if (!label_col %in% names(data)) {
     stop("label_col '", label_col, "' is not a column of the data",
          call. = FALSE)
+  }
+
+  # Shorten after `code` is set upstream, so marker identity keeps the full
+  # name and only the displayed text changes.
+  if (isTRUE(shorten_labels)) {
+    if (is.null(label_col)) {
+      warning("shorten_labels = TRUE but the layer has no label column; ",
+              "nothing to shorten.", call. = FALSE)
+    } else {
+      data[[label_col]] <- shorten_school_names(
+        data[[label_col]],
+        if ("Level" %in% names(data)) data$Level else NULL
+      )
+    }
   }
 
   # Time column per the inference contract
@@ -317,6 +338,46 @@ print.qm_layer <- function(x, ...) {
   NextMethod()
 }
 
+#' Drop the school type from school names
+#'
+#' "Abbotsbury Primary School" becomes "Abbotsbury". The type is what the
+#' banner key says once ([build_banner_key()]), so repeating it on every
+#' marker costs width and tells the reader nothing new: on the Merton print
+#' set it cut the longest label from 47 characters to 32.
+#'
+#' **Two schools must never merge into one label.** Where shortening would
+#' give two rows the same name, they keep their full names — unless their
+#' `Level` differs, in which case the cross colour already separates them and
+#' the short form is safe. "Harris Primary Academy Merton" and "Harris
+#' Academy Merton" are different schools, and both keep their full names.
+#'
+#' Written for the LB Merton AQAP print set (2026-08-05) and brought into the
+#' package on 2026-08-17. The vocabulary is schools-only; hospitals and GP
+#' surgeries need their own, which is the post-1.0 place-type YAML.
+#'
+#' @param name Character vector of school names.
+#' @param level Category per school (the `Level` column), or NULL. Used only
+#'   to decide whether a shared short name is safe.
+#' @return Character vector the same length as `name`.
+#' @family atomic unit
+#' @keywords internal
+shorten_school_names <- function(name, level = NULL) {
+  name <- as.character(name)
+  short <- gsub("\\b(Primary|Secondary|Infant|Junior)\\b", "", name)
+  short <- sub("\\s*\\b(High|Community)?\\s*(School|Academy|College)\\s*$", "",
+               short)
+  short <- trimws(gsub("\\s+", " ", short))
+  # A name that was nothing but its type keeps the original
+  short[!nzchar(short)] <- name[!nzchar(short)]
+
+  for (dup in unique(short[duplicated(short)])) {
+    grp <- which(short == dup)
+    same_level <- is.null(level) || anyDuplicated(level[grp]) > 0
+    if (same_level) short[grp] <- name[grp]
+  }
+  short
+}
+
 # ---- wrappers: one per input format --------------------------------------
 
 #' Build a qm_layer from a CSV file
@@ -331,10 +392,13 @@ print.qm_layer <- function(x, ...) {
 #' @param name Layer name (default: the file name without extension)
 #' @param temporal Force temporal (TRUE) or static (FALSE) handling; NULL
 #'   (default) auto-detects: more than one year column means temporal
+#' @param shorten_labels Drop the school type from school names — see
+#'   [qm_layer()]. Default FALSE.
 #' @return A [qm_layer()]
 #' @family atomic unit
 #' @export
-from_csv <- function(file, pollutant = "no2", name = NULL, temporal = NULL) {
+from_csv <- function(file, pollutant = "no2", name = NULL, temporal = NULL,
+                     shorten_labels = FALSE) {
   name <- name %||% tools::file_path_sans_ext(basename(file))
   imported <- import_csv_data(file)
   data <- imported$data
@@ -355,7 +419,7 @@ from_csv <- function(file, pollutant = "no2", name = NULL, temporal = NULL) {
     sf_data$code <- if ("Label" %in% names(sf_data)) sf_data$Label else
       paste0("site_", as.integer(factor(paste(sf_data$Longitude, sf_data$Latitude))))
     return(qm_layer(sf_data, value_col = pollutant, shape = "circle",
-                    name = name))
+                    name = name, shorten_labels = shorten_labels))
   }
 
   # static/contextual layer (schools etc.); non-school static layers leave
@@ -367,7 +431,8 @@ from_csv <- function(file, pollutant = "no2", name = NULL, temporal = NULL) {
     sf_data,
     value_col = if ("Level" %in% names(sf_data)) "Level" else NULL,
     shape = if (is_school) "cross" else NULL,
-    name = name
+    name = name,
+    shorten_labels = shorten_labels
   )
 }
 

@@ -23,7 +23,8 @@ quickmap(
              "pm25",                       # a PM2.5 map...
              name = "Sensors"),
   boroughs     = "Merton",
-  colour_scale = "gla_pm25"                # ...needs a PM2.5 scale
+  colour_scale = "gla_pm25",                # ...needs a PM2.5 scale
+  output_file = "merton_styled.html"
 )
 ```
 
@@ -73,7 +74,8 @@ quickmap(
   "tubes_merton.csv",
   boroughs   = "Merton",
   theme_file = system.file("themes", "merton.yaml", # NEW: a bundled theme
-                           package = "quickmap")
+                           package = "quickmap"),
+  output_file = "merton_styled.html"
 )
 ```
 
@@ -115,7 +117,8 @@ quickmap(
   "tubes_merton.csv",
   boroughs      = "Merton",
   theme_file    = "my_theme.yaml",         # house style...
-  banner_colour = "#078141"                # ...this map's banner differs
+  banner_colour = "#078141",               # ...this map's banner differs
+  output_file   = "merton_styled.html"
 )
 ```
 

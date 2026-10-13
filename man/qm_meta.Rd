@@ -20,6 +20,7 @@ Other atomic unit:
 \code{\link{from_csv}()},
 \code{\link{from_openair}()},
 \code{\link{from_rdata}()},
-\code{\link{qm_layer}()}
+\code{\link{qm_layer}()},
+\code{\link{shorten_school_names}()}
 }
 \concept{atomic unit}

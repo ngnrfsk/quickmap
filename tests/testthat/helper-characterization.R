@@ -16,16 +16,15 @@ char_data_available <- function() {
 
 .char_cache <- new.env(parent = emptyenv())
 
-# Generate both fixture maps in a session tempdir (maps land in <dir>/aq_maps/)
+# Generate both fixture maps in a session tempdir. Since v0.9.9.13 the caller
+# names the directory, so no working-directory switch is needed.
 char_map_dir <- function() {
   if (!is.null(.char_cache$dir)) return(.char_cache$dir)
 
   work <- file.path(tempdir(), "quickmap-characterization")
   dir.create(work, showWarnings = FALSE, recursive = TRUE)
-  old_wd <- setwd(work)
-  on.exit(setwd(old_wd))
 
-  # merton_dt CSV has no Label column: marker_labels = "labels" falls back to
+  # merton_dt CSV has no Label column: symbol_labels = "labels" falls back to
   # values with a warning; that is a known data property, not a test signal
   suppressWarnings(create_pollution_map(
     data_sources = list(
@@ -38,10 +37,11 @@ char_map_dir <- function() {
     display_times = 2020:2022,
     colour_scale = "who_no2",
     output_file = "char_annual.html",
+    output_dir = work,
     title = "Characterization annual",
     styling_type = "html",
     vignette = TRUE,
-    marker_labels = "labels"
+    symbol_labels = "labels"
   ))
 
   # Canonical animation example (inst/examples/episode_example.R, map2):
@@ -56,16 +56,17 @@ char_map_dir <- function() {
     colour_scale = "stripes_pm25",
     theme_file = system.file("themes", "airstat.yaml", package = "quickmap"),
     output_file = "char_episode.html",
+    output_dir = work,
     title = "PM2.5 Episode: Jan 15-20, 2024",
     styling_type = "html",
     vignette = FALSE,
-    marker_labels = TRUE,
+    symbol_labels = TRUE,
     banner_colour = "#005794",
     autoplay = TRUE,
     play_speed = 500
   )
 
-  .char_cache$dir <- file.path(work, "aq_maps")
+  .char_cache$dir <- work
   .char_cache$dir
 }
 

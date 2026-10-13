@@ -51,7 +51,8 @@ source("tests/test_quickmap.R")
 `quickmap()` is the core API (v0.9.6+). Layers may be file paths, `qm_layer()` objects or data frames.
 
 ``` r
-quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth")
+quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth",
+         output_file = "wandsworth_no2.html")
 
 quickmap(
   list("merton_dt_2018_2024.csv", "bl_sensors.Rdata", "schools_Merton.csv"),
@@ -108,7 +109,7 @@ Categorical scales use `domain` for the values matched against the data, and `la
 - `banner`: background, text_color, title, style (`strip` default, or `bar`)
 - `legend`: show, background
 - `indicator`: show, label, show_max, placement
-- `map`: vignette, base_tiles (NULL = OSM), zoom_level, boundary_labels, marker_labels, label_scale, label_background
+- `map`: vignette, base_tiles (NULL = OSM), zoom_level, boundary_labels, symbol_labels, label_scale, label_background. A theme file still using the old `marker_labels` key is accepted with a warning.
 - `controls`: autoplay, play_speed (NULL = step-count pacing), background, text_color
 - `wind`: colour_ramp, particle_density, line_width, velocity_scale
 
@@ -143,7 +144,7 @@ CSS/JS templates use `{{placeholder_name}}`, substituted by `apply_template_repl
 
 ## Outputs
 
-Maps are written to an auto-created `aq_maps/` directory: HTML always, JPG when `export_image` is set, with temporary `_files` folders removed. **This changes at roadmap item 9** — a package may not write to the working directory.
+The caller names every write (item 9.1, v0.9.9.13). `output_file` is required and has no default; `output_dir`, or the `quickmap.output_dir` option, prepends a directory. A directory named in either is created; nothing else is. `resolve_output_path()` owns this. HTML always, JPG beside it when `export_image` is set, with temporary `_files` folders removed. There is no unsaved-widget mode: the chrome is injected into the saved file.
 
 ## Dependencies
 
@@ -162,7 +163,7 @@ Duck typing over filenames and IDs. `data_ids` auto-generates when NULL. OpenAir
 1.  **User intent over implementation**: parameters say what the user wants.
 2.  **Progressive disclosure**: common parameters top-level, advanced ones secondary.
 3.  **Context-aware defaults**: unmodified defaults should serve 90% of uses.
-4.  **Multi-value over boolean**: `marker_labels = "values_on"` beats a stack of flags.
+4.  **Multi-value over boolean**: `symbol_labels = "values_on"` beats a stack of flags.
 5.  **Parameters live where they belong** (user-approved 2026-07-06): layer properties on the layer, map properties on `quickmap()`. No per-layer parallel-vector arguments at map level.
 
 ### Code minimalism
@@ -189,7 +190,7 @@ The other `tests/test_*.R` scripts are historical one-offs, not a gate. `tests/t
 
 Automated tests verify HTML structure, not appearance. The deliverable is a self-contained interactive file, so a human checks it:
 
-- Every roadmap item produces fresh demonstration maps in `aq_maps/`: at least one annual multi-year, one sub-annual, one with schools and labels. They are gitignored, so the PR must list the generating script, the output paths and what to look at.
+- Every roadmap item produces fresh demonstration maps, written with `output_dir = "aq_maps"`: at least one annual multi-year, one sub-annual, one with schools and labels. They are gitignored, so the PR must list the generating script, the output paths and what to look at.
 - **Naming, mandatory for new artefacts**: `[item]_[description]_[version]` — `speed_merton-annual_v3.html`, `speed_demo-maps_v3.R`, and testthat files keep the prefix, `test-item4-quickmap-api-v1.R`. Bump the version on material revision rather than overwriting what the human inspected.
 - Keep the previously signed-off outputs for comparison; copy them to a dated folder before regenerating. **There is no baseline folder today** — both were cleared on 2026-08-05/06, so the next item creates its own.
 - Merging requires the human's formal approval, given at the permission prompt.
@@ -219,7 +220,7 @@ A uniform city-scale field from one worldmet station, decomposed to U/V on a 2×
 
 ### Rendering backend — decided, do not change without approval
 
-Leaflet, with Canvas markers restyled from one embedded JSON payload ("Option D"), user-approved 2026-07-06. MapLibre/mapgl is the post-1.0 path. Benchmarks and rejected candidates: dev/item5_backend-comparison_v1.md.
+Leaflet, with Canvas markers restyled from one embedded JSON payload ("Option D"), user-approved 2026-07-06. MapLibre/mapgl is the post-1.0 path. The benchmark document was deleted on 2026-08-17; its findings are summarised in dev/archive/PROJECT_STATUS_history_to_260816.md and the full text is `git show 4b4d0d4:dev/item5_backend-comparison_v1.md`.
 
 ### Time steps and file size
 

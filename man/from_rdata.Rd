@@ -29,6 +29,7 @@ Other atomic unit:
 \code{\link{from_csv}()},
 \code{\link{from_openair}()},
 \code{\link{qm_layer}()},
-\code{\link{qm_meta}()}
+\code{\link{qm_meta}()},
+\code{\link{shorten_school_names}()}
 }
 \concept{atomic unit}

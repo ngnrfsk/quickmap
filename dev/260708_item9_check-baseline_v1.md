@@ -56,6 +56,27 @@ NSE false-positives from dplyr/data.table code (`siteCode`, `year`,
 `importFrom(stats, complete.cases, median)` in roxygen, and a
 `utils::globalVariables()` declaration for the NSE column names.
 
+## Added 2026-08-15: the vignettes were excluded from the build
+
+`.Rbuildignore` carried `^vignettes$`, so the eleven manual chapters were
+never in the built package: `R CMD check` reported "Vignette sources only
+in 'inst/doc' ... these will not be indexed nor checked". Fixed on branch
+`docs/package-rationale` by ignoring only `vignettes/maps` and
+`vignettes/archive`.
+
+**That exposes an unresolved conflict, which needs a user decision.** The
+chapters embed their live example maps as iframes (`maps/*.html`), and
+that folder is 12.6 MB across 17 files. CRAN's package size limit is 5 MB.
+So:
+
+- include `vignettes/maps` → the package is too large for CRAN;
+- exclude it (current state) → the built vignettes have broken iframes.
+
+Options, none yet chosen: point the iframes at the hosted pkgdown site by
+absolute URL; replace them with static screenshots plus a link to the live
+map; or ship two or three small maps and link the rest. The vignettes also
+still need `%\VignetteEngine{}` builds to succeed with whatever is chosen.
+
 ## Adjacent item-9 debts (not surfaced by this check but queued)
 
 - 11 internal helpers lack `@keywords internal` (currently hidden via
@@ -64,7 +85,7 @@ NSE false-positives from dplyr/data.table code (`siteCode`, `year`,
 - Full docs-vs-code audit and dev/PROJECT_STATUS.md restructure
   (current-state section + archived history), per the roadmap item text.
   (Restructure done early, 2026-07-13 — plain-language rewrite; the
-  docs-vs-code audit remains, with dev/260712_api_catalogue_v1.md as its
+  docs-vs-code audit remains, with dev/archive/260712_api_catalogue_v1.md as its
   worklist.)
 - Ship small teaching-data extracts inside the package (inst/extdata) so
   manual examples and R CMD CHECK examples run on any machine — the

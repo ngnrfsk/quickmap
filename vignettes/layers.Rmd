@@ -22,7 +22,8 @@ library(quickmap)                          # load the quickmap library
 quickmap(
   list("tubes_merton.csv",          # diffusion tube data
        "schools_merton.csv"),              # school locations
-  boroughs = "Merton"                      # the borough boundary to draw
+  boroughs = "Merton",                      # the borough boundary to draw
+  output_file = "merton_layers.html"
 )
 ```
 
@@ -47,7 +48,8 @@ quickmap(
     "schools_merton.csv"                                   # schools -> crosses
   ),
   boroughs = "Merton",                     # the borough boundary to draw
-  title = "Merton NO2: ● tubes ◆ sensors ✖ schools" # symbols key the banner
+  title = "Merton NO2: ● tubes ◆ sensors ✖ schools", # symbols key the banner
+  output_file = "merton_layers.html"
 )
 ```
 
@@ -71,7 +73,8 @@ quickmap(
              name = "Council tubes"),      # your name, not the filename
     "schools_merton.csv"                   # untouched layers stay as paths
   ),
-  boroughs = "Merton"
+  boroughs = "Merton",
+  output_file = "merton_layers.html"
 )
 ```
 
@@ -89,7 +92,8 @@ quickmap(
              "pm25",                       # the pollutant column to map
              name = "Breathe London"),
   boroughs = "Merton",
-  colour_scale = "gla_pm25"                # a PM2.5 colour scale
+  colour_scale = "gla_pm25",                # a PM2.5 colour scale
+  output_file = "merton_layers.html"
 )
 ```
 
@@ -109,7 +113,8 @@ quickmap(
                avg.time = "month",         # aggregate hours -> monthly means
                source = "aurn",            # network, for coordinate lookup
                name = "AURN"),             # layer name for the map
-  boroughs = "All"                         # all London borough boundaries
+  boroughs = "All",                         # all London borough boundaries
+  output_file = "merton_layers.html"
 )
 ```
 
@@ -133,7 +138,8 @@ my_sites <- data.frame(
 )
 quickmap(
   qm_layer(my_sites, name = "My survey"),  # wrap the data frame as a layer
-  boroughs = "Wandsworth"
+  boroughs = "Wandsworth",
+  output_file = "merton_layers.html"
 )
 ```
 
@@ -150,7 +156,8 @@ quickmap(
              shape = "star",               # this layer draws as stars
              name = "My survey")
   ),
-  boroughs = "Merton"
+  boroughs = "Merton",
+  output_file = "merton_layers.html"
 )
 ```
 
