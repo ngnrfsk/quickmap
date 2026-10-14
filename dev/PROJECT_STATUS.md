@@ -290,10 +290,12 @@ Items are never renumbered; other documents cite these numbers.
     lovecleanair.org/air-quality-in-my-area, and Croydon's, stay as temporary
     copies until Iarla repoints the Squarespace links. Deprecated and removed
     at deploy: `LBM_NO2_DT_BL_latest.html` and the Wandsworth sites map.
-    Remaining: Iarla's visual check of the 8 maps (review pack at
-    `/Users/iarla/Library/Mobile Documents/com~apple~CloudDocs/dev/item16_swlonrsp-maps/`),
-    then `deploy_to_site.py` and a push of the site repo. Nothing has been
-    copied to the site folder.
+    2026-10-14 (Iarla): every map built on the lazy path
+    (`options(quickmap.lazy_step_threshold = 0)`, files 15–29% smaller), and
+    deployed with `--remove` to the site folder, commit 01db370. Remaining:
+    Iarla's visual check of the 8 maps (review pack at
+    `/Users/iarla/Library/Mobile Documents/com~apple~CloudDocs/dev/item16_swlonrsp-maps/`)
+    and a commit and push of the site repo, not yet done.
 6.  Found while building, for item 11: `from_rdata()` prepends `DATA_PATH`
     to an absolute path, so a prepared `.Rdata` outside `DATA_PATH` cannot be
     passed by path (same subject as 11.4).
@@ -417,6 +419,15 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
   `feature/item11-tiles-legend` (v0.9.9.14): `get_default_theme()` sets
   `base_tiles = "OpenStreetMap.DE"`; NULL still means osm.org for hosted-only
   maps. Signed off 2026-10-13, PR #54.
+- **19. Lazy path ignores the label theme keys; lazy as default undecided.**
+  Found 2026-10-14 (item 16). `build_lazy_payload()` carries no
+  `label_scale` or `label_background`, and `lazy-time-controller.js`
+  hard-codes its tooltip style with no font size, so labels on lazy maps are
+  not sized by `label_font_size()`. Its `colourFor()` reads `thresholds`
+  only, so a temporal layer on a categorical (`domain`) scale is untested.
+  Forcing lazy on the seven site annual maps cut them 15–29%. Making it the
+  default needs these fixed first, and means interactive maps and static
+  exports always render through different code (exports stay pre-built).
 
 ### Documentation that contradicts the code
 
