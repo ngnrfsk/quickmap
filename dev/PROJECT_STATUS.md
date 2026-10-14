@@ -65,9 +65,9 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 
 ## Waiting on Iarla
 
-1.  **Check the 8 rebuilt site maps** (item 16.5), then say whether to copy
-    them to the site folder. Then repoint the six Squarespace lightbox links
-    to the `_latest` names. Open points are in that repo's STATUS.md.
+1.  **Repoint the six Squarespace lightbox links** to the `_latest` names
+    (item 16.5; maps live since 2026-10-14). Open points are in
+    `/Users/iarla/Coding/swlonrsp-maps-build/STATUS.md`.
 2.  **Read the manual**, on `docs/manual-v2`, after it has been brought up to
     date. No deadline. It carries PR #48's chapters, PR #52's example maps and
     README.md, which `main` does not have.
@@ -258,7 +258,7 @@ Items are never renumbered; other documents cite these numbers.
     `feature/item9-output-paths`); the other 10 have no open PR and are
     candidates for deletion once confirmed merged or abandoned.
 
-### 16. Rebuild the swlonrsp.github.io maps with current code — built 2026-10-13, awaiting visual check
+### 16. Rebuild the swlonrsp.github.io maps with current code — live 2026-10-14
 
 1.  Target folder:
     `/Users/iarla/Library/Mobile Documents/com~apple~CloudDocs/0 - Projects/swlonrsp.github.io`
@@ -292,10 +292,12 @@ Items are never renumbered; other documents cite these numbers.
     at deploy: `LBM_NO2_DT_BL_latest.html` and the Wandsworth sites map.
     2026-10-14 (Iarla): every map built on the lazy path
     (`options(quickmap.lazy_step_threshold = 0)`, files 15–29% smaller), and
-    deployed with `--remove` to the site folder, commit 01db370. Remaining:
-    Iarla's visual check of the 8 maps (review pack at
-    `/Users/iarla/Library/Mobile Documents/com~apple~CloudDocs/dev/item16_swlonrsp-maps/`)
-    and a commit and push of the site repo, not yet done.
+    deployed with `--remove` to the site folder, commit 01db370. Approved by
+    Iarla and live 2026-10-14 (site commit 4ef9e09). Remaining, not blocking
+    other items: Iarla repoints the six Squarespace links to `_latest`, then
+    the copies retire; Wandsworth banner contrast (2.7:1, fix in
+    `inst/themes/wandsworth.yaml`); open points in
+    `/Users/iarla/Coding/swlonrsp-maps-build/STATUS.md`.
 6.  Found while building, for item 11: `from_rdata()` prepends `DATA_PATH`
     to an absolute path, so a prepared `.Rdata` outside `DATA_PATH` cannot be
     passed by path (same subject as 11.4).
