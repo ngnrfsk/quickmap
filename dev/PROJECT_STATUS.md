@@ -76,22 +76,25 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 - 2026-10-15: the Merton NO2 site map starts at the oldest data held (2012).
 - 2026-10-15: network mean and maximum over long records with few early sites
   is a new issue, item 20.
+- 2026-10-15: move rule agreed (Iarla): a site has moved only when it shifts
+  over 25 m AND its description changes; 45 and 50 corrected by address.
+  Every rule is documented in the script header, the data README and item 19.
+- 2026-10-15: item 16.5 done: Squarespace links repointed to `_latest`.
+- 2026-10-15: Iarla asked for A1–A3 unattended: PR for `chore/status-item16`,
+  defect 12 retry, item 17 GIF export.
 
 ## Waiting on Iarla
 
-1.  **Repoint the six Squarespace lightbox links** to the `_latest` names
-    (item 16.5; maps live since 2026-10-14). Open points are in
-    `/Users/iarla/Coding/swlonrsp-maps-build/STATUS.md`.
-2.  **Read the manual**, on `docs/manual-v2`, after it has been brought up to
+1.  **Read the manual**, on `docs/manual-v2`, after it has been brought up to
     date. No deadline. It carries PR #48's chapters, PR #52's example maps and
     README.md, which `main` does not have.
-3.  **Switch on GitHub Pages**, after the manual merges: settings → Pages → main branch, `/docs`. The
+2.  **Switch on GitHub Pages**, after the manual merges: settings → Pages → main branch, `/docs`. The
     chapters embed their maps from the hosted site (12.6 MB of maps against
     CRAN's 5 MB, so they cannot ship inside the package), which means the embeds
     are blank anywhere but the local build until Pages answers. Turning it on
     also needs `docs/` committed — that was PR #52's change; no open branch
     currently carries it.
-4.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
+3.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
     `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
 
 --------------------------------------------------------------------------------
@@ -307,9 +310,10 @@ Items are never renumbered; other documents cite these numbers.
     2026-10-14 (Iarla): every map built on the lazy path
     (`options(quickmap.lazy_step_threshold = 0)`, files 15–29% smaller), and
     deployed with `--remove` to the site folder, commit 01db370. Approved by
-    Iarla and live 2026-10-14 (site commit 4ef9e09). Remaining, not blocking
-    other items: Iarla repoints the six Squarespace links to `_latest`, then
-    the copies retire; Wandsworth banner contrast (2.7:1, fix in
+    Iarla and live 2026-10-14 (site commit 4ef9e09). Squarespace links
+    repointed to `_latest` by Iarla (done, 2026-10-15); the temporary copies
+    can now retire (clear the old names in `maps.csv`, deploy with
+    `--remove`, with Iarla's go-ahead). Remaining: Wandsworth banner contrast (2.7:1, fix in
     `inst/themes/wandsworth.yaml`); open points in
     `/Users/iarla/Coding/swlonrsp-maps-build/STATUS.md`.
 6.  Found while building, for item 11: `from_rdata()` prepends `DATA_PATH`
@@ -376,45 +380,42 @@ Items are never renumbered; other documents cite these numbers.
     `from_defra_xlsx()`, which shares the ID tidying and site table. Readers
     for the GLA London files and ASR tables would be further `from_*()`
     wrappers. **In v1.0** (Iarla, 2026-10-15): with 11.1, before item 18.
-6.  The Merton site map is not yet switched to this table. It will start in
-    2012 (Iarla, 2026-10-15), after the rules in 19.7 are built.
-7.  **Merge rules to build (Iarla, 2026-10-15), proposed actions awaiting
-    go-ahead:**
-    - Triples: detected from IDs `N/1`–`N/3` or `N, N/2, N/3`, averaged to
-      `N`; the number of tubes averaged is kept per value (GLA 2021 and 2023
-      list only two of 47's three). Merton has one triple, 47.
-    - Later dataset wins, ranked by publication date, for values and for
-      coordinates in any year two tables both cover.
-    - Moved sites: each year takes the coordinates of the latest table
-      reporting that year. Where they shift more than a set distance between
-      years, the earlier years become a separate site, labelled e.g.
-      `13 (2017–18)`; the current location keeps the plain ID. Merton
-      candidates, all at 2018→2019: 13 (50 m), 25 (40 m), 45 (1388 m).
-      Same-year disagreements (GLA 2021–2024 against the ASR, 12–1219 m)
-      stop being conflicts: the later ASR wins.
-    - Site 45 is not a move (checked 2026-10-15): every source names it
-      HSBC (GLA 2021: "HSBC, London Rd Morden"), and All Annuals and the ASR
-      give the same values for 2019–2023. All Annuals places it 57 m from 47
-      Civic Centre, in Morden; the ASR and GLA place it 1.4 km north, 168 m
-      from S01 Merton Abbey PS. The ASR coordinate is probably the error, so
-      the later-wins rule needs a short list of coordinate corrections that
-      override it. Iarla confirmed 2026-10-15: 45 takes the All Annuals
-      location for every year. Confirmed by address: bank directories give
-      HSBC Morden at Crown House, 102 London Road, SM4 5AY (now a terminated
-      postcode, so the branch may have closed); that postcode is 34 m from
-      the All Annuals point and 1407 m from the ASR point.
-    - Location check of all 12 conflicting sites (2026-10-15), OSM
-      reverse geocoding against each source's description:
-      `~/Coding/Library/data/tubes/merton_location_check.csv`. Site 50 is a
-      second ASR coordinate error: ASR easting 525638 lands on London Road,
-      Morden; GLA's 524638 (1000 m off, a one-digit slip) lands on 85–87
-      Martin Way. No All Annuals→ASR shift is a move: 13 (50 m) and 25
-      (40 m) stay at the same address. Only GLA 2021 gives different
-      descriptions (2: "A24 Jct with Garth Drive", 635 m; 9: "2 Lambton Rd"
-      vs "12", 60 m; 46: "80 Crown Lane" vs "11", 34 m; 29: "44 High St",
-      309 m), all in years the later ASR also covers. Proposed: a move needs
-      both a shift over 25 m and a changed description; otherwise the later
-      source wins. Awaiting Iarla.
+6.  **Merton site map switched** (2026-10-15): `scripts/merton.R` reads the
+    combined table, 2012–2025, 14 steps (Iarla: start at the oldest data
+    held). Built in that repo's `build/`, not deployed: deploying needs
+    Iarla's go-ahead. Legend mean from 2012 rests on 7 sites (item 20).
+7.  **Merge rules built** (Iarla, 2026-10-15; commit in the scripts repo).
+    Full text, the rules' only authoritative statement, is the header of
+    `scripts/tubes/tube_merge.R`; also in
+    `~/Coding/Library/data/tubes/README.md` and the plan. In short:
+    - IDs matched within a council, never by location.
+    - Triplicates (`N/1`–`N/3`, or one row `N, N/2, N/3`; three tubes usually
+      beside an automatic monitor) are one site `N`, the mean of the tubes
+      reported; `n_tubes` kept per value. Merton: 47 Civic Centre.
+    - The later dataset wins: each site-year takes value, coordinates and
+      description from the newest source that has them; older sources'
+      disagreements are logged (value > 1 µg/m³, location > 10 m).
+    - Corrections list per council, for coordinates wrong in the newest
+      source and checked by address. Merton: 45 HSBC (ASR 1.4 km north; the
+      branch is Crown House, 102 London Road, SM4 5AY, 34 m from the All
+      Annuals point) and 50 Martin Way (ASR easting 525638 is on London Road;
+      524638 is on Martin Way).
+    - A move needs a shift over 25 m between years **and** a changed
+      description (compared ignoring case, punctuation, postcodes and
+      Rd/St/Ave/Pk/Jct/Ln; one containing the other is the same). Earlier
+      locations become their own site, ID `13 (2015-16)`, Label
+      `<description> (2015-16 location)`; the current location keeps the
+      plain ID. A single wide source cannot show a move inside its span.
+    - Merton result: no moves; log of 3 value, 2 correction and 14
+      same-year location entries. Location check of the 12 sites in
+      `~/Coding/Library/data/tubes/merton_location_check.csv`. Worth a check
+      on the ground: site 2, which GLA 2021 describes as "A24 Jct with Garth
+      Drive", 635 m from the ASR point.
+    - Verified with synthetic data: a 300 m move with a new description is
+      versioned; a 40 m shift with the same description is not; a
+      triplicate with one tube missing averages two, `n_tubes` 2.
+8.  For the package function: the rules above are the specification; its
+    roxygen must state them, and the tests must cover each.
 
 ### 20. Network mean and maximum over long records — raised 2026-10-15
 
