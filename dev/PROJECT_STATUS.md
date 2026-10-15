@@ -6,7 +6,7 @@ editor_options:
 
 # QuickMap Project Status
 
-**Last Updated**: 2026-10-15 **Current Version**: v0.9.9.14
+**Last Updated**: 2026-10-15 **Current Version**: v0.9.9.15
 
 Version history: NEWS.md. History before 2026-08-16:
 dev/archive/PROJECT_STATUS_history_to_260816.md.
@@ -351,6 +351,25 @@ Items are never renumbered; other documents cite these numbers.
 5.  Overlaps item 11.3 (print/email quality selector — the GIF needs a pixel
     size and frame delay) and open defect 12 (chromote times out mid-batch; a
     GIF needs every frame, so the retry may have to come first).
+6.  **Built 2026-10-15, awaiting review** on `feature/item17-gif-export`
+    (v0.9.9.15), with defect 12; asked for unattended by Iarla.
+    `export_animation = NULL | "gif"` on `quickmap()` and
+    `create_pollution_map()`: one frame per step at `play_speed`, looping,
+    frame size `export_image`'s or 1200×1200, frames in a temporary folder;
+    gifski in Suggests. Open for review: the argument's name and shape
+    (chosen over a boolean `export_gif` for API principle 4, leaving room for
+    `"mp4"`).
+7.  Two defects found while building, both fixed on the branch: (a) with
+    `display_times` unset, steps followed the first layer's row order (the
+    combined Merton table ran 2017…2025 then 2012), now sorted; (b) one
+    `webshot()` call writing two files loads the pages concurrently, which
+    drew frames as a 2×2 grid of the page or before tiles and boundary had
+    drawn; now one call per file.
+8.  Demo (`dev/item17_gif-export_demo-maps_v1.R`, 6.1 min): Merton 2012–2025,
+    14 frames, 1200 px, 3.1 MB; episode, 108 frames, 800 px, 1.3 MB; Croydon
+    with JPGs, 6 frames, 1000 px, 1.3 MB. Every frame checked for count and
+    blank or undersized frames; none. For 11.3: a 1200 px annual GIF is 3 MB,
+    so an email preset should be smaller.
 
 ### 18. Create a new API guide — after items 17, 12 and 11, before the v1.0 tag
 
@@ -521,7 +540,11 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
 - **11. Background CPU and memory.** Maps animate when hidden. Pause particles,
   crossfades and autoplay on `visibilitychange` and off-viewport.
 - **12. Image export unreliable.** chromote startup times out mid-batch; retry
-  each webshot call.
+  each webshot call. **Fixed on `feature/item17-gif-export`, awaiting
+  review** (2026-10-15): `take_screenshots()` retries a failed or empty
+  screenshot, 3 attempts with a 1 s then 2 s pause
+  (`quickmap.screenshot_attempts`), then stops naming the frame and Chrome's
+  error. Tested with a mocked webshot; the timeout itself was not reproduced.
 - **13. Sub-annual limit values.** The indicator hides below annual resolution;
   needs resolution-aware targets in the YAML. Post-1.0. When resolved,
   rebuild the hosted episode map with the mean and maximum on:

@@ -26,7 +26,9 @@ test_that("a failed screenshot is retried until it succeeds", {
   work <- withr::local_tempdir()
   out <- file.path(work, c("a.jpg", "a.png"))
   quickmap:::take_screenshots(file.path(work, "a.html"), out, c(100, 100))
-  expect_equal(calls, 2)
+  # one failed call, then one call per file: concurrent loading of several
+  # files in one call drew frames as a 2x2 grid of the page
+  expect_equal(calls, 3)
   expect_true(all(file.exists(out)))
 })
 
