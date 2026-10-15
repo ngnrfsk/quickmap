@@ -2645,13 +2645,18 @@ take_screenshots <- function(
   last_error <- NULL
   for (i in seq_len(attempts)) {
     unlink(image_files)
+    # One call per file, in turn. A single call given several files loads the
+    # pages concurrently, and the sessions interfered: frames came out as the
+    # page repeated in a 2x2 grid, or before the tiles and boundary had drawn.
     last_error <- tryCatch({
-      webshot2::webshot(
-        rep(html_file, length(image_files)),
-        image_files,
-        vwidth = image_dimensions[1],
-        vheight = image_dimensions[2]
-      )
+      for (f in image_files) {
+        webshot2::webshot(
+          html_file,
+          f,
+          vwidth = image_dimensions[1],
+          vheight = image_dimensions[2]
+        )
+      }
       NULL
     }, error = conditionMessage)
     if (is.null(last_error) && all(file.exists(image_files) & file.size(image_files) > 0)) {
