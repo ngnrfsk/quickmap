@@ -392,6 +392,13 @@ Items are never renumbered; other documents cite these numbers.
       candidates, all at 2018→2019: 13 (50 m), 25 (40 m), 45 (1388 m).
       Same-year disagreements (GLA 2021–2024 against the ASR, 12–1219 m)
       stop being conflicts: the later ASR wins.
+    - Site 45 is not a move (checked 2026-10-15): every source names it
+      HSBC (GLA 2021: "HSBC, London Rd Morden"), and All Annuals and the ASR
+      give the same values for 2019–2023. All Annuals places it 57 m from 47
+      Civic Centre, in Morden; the ASR and GLA place it 1.4 km north, 168 m
+      from S01 Merton Abbey PS. The ASR coordinate is probably the error, so
+      the later-wins rule needs a short list of coordinate corrections that
+      override it. Awaiting Iarla's confirmation.
 
 ### 20. Network mean and maximum over long records — raised 2026-10-15
 
