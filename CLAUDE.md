@@ -144,7 +144,7 @@ CSS/JS templates use `{{placeholder_name}}`, substituted by `apply_template_repl
 
 ## Outputs
 
-The caller names every write (item 9.1, v0.9.9.13). `output_file` is required and has no default; `output_dir`, or the `quickmap.output_dir` option, prepends a directory. A directory named in either is created; nothing else is. `resolve_output_path()` owns this. HTML always, JPG beside it when `export_image` is set, with temporary `_files` folders removed. There is no unsaved-widget mode: the chrome is injected into the saved file.
+The caller names every write (item 9.1, v0.9.9.13). `output_file` is required and has no default; `output_dir`, or the `quickmap.output_dir` option, prepends a directory. A directory named in either is created; nothing else is. `resolve_output_path()` owns this. HTML always, JPG beside it when `export_image` is set, GIF beside it when `export_animation = "gif"` (item 17; frames in a temporary folder), with temporary `_files` folders removed. Every screenshot goes through `take_screenshots()`, which retries (defect 12). There is no unsaved-widget mode: the chrome is injected into the saved file.
 
 ## Dependencies
 

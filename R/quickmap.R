@@ -2506,13 +2506,13 @@ absorb_legacy_args <- function(symbol_labels, ...) {
   extra$marker_labels
 }
 
-#' Add the map furniture, save the file, and export a JPG if asked
+#' Add the map furniture, save the file, and export images if asked
 #'
 #' The last step of one output pass. Boundary, vignette, viewport and time
 #' controls go on, the HTML is written and post-processed, and — for an image
-#' pass — the saved HTML is screenshotted to JPG and then deleted, because the
-#' image is the deliverable and the intermediate HTML is styled for a camera,
-#' not for a reader.
+#' pass — the saved HTML is screenshotted to `image_files` and then deleted,
+#' because the images are the deliverable and the intermediate HTML is styled
+#' for a camera, not for a reader.
 #'
 #' @param map Leaflet map object
 #' @param html_file Output path for the HTML
@@ -2541,6 +2541,8 @@ absorb_legacy_args <- function(symbol_labels, ...) {
 #'   or "right" of the ramp
 #' @param banner_key Reference-layer key from [build_banner_key()], drawn at
 #'   the end of the banner. NULL for no key.
+#' @param image_files Images to write from an image pass (format by
+#'   extension); default a JPG beside `html_file`
 #' @return The map object, invisibly used by the caller's loop
 #' @keywords internal
 finalize_and_save_map <- function(
@@ -2571,7 +2573,8 @@ finalize_and_save_map <- function(
   indicator_placement = "right",
   banner_key = NULL,
   banner_text_colour = "white",
-  legend_background = "white"
+  legend_background = "white",
+  image_files = sub("\\.html$", ".jpg", html_file)
 ) {
   map <- add_map_controls(
     map,
@@ -2612,17 +2615,92 @@ finalize_and_save_map <- function(
   )
 
   if (!is.null(image_dimensions)) {
-    img_file <- sub("\\.html$", ".jpg", html_file)
-    webshot2::webshot(
-      html_file,
-      img_file,
-      vwidth = image_dimensions[1],
-      vheight = image_dimensions[2]
-    )
+    take_screenshots(html_file, image_files, image_dimensions)
     unlink(html_file)
   }
 
   return(map)
+}
+
+#' Screenshot one saved frame to one or more image files, retrying failures
+#'
+#' Chrome sometimes fails to start or times out partway through a run of
+#' frames (defect 12). A GIF needs every frame, so a failed screenshot is
+#' retried, with a pause that lengthens each time, before the export stops.
+#' The output format follows each file's extension.
+#'
+#' @param html_file The saved single-frame map
+#' @param image_files Paths to write, e.g. a JPG to keep and a PNG for a GIF
+#' @param image_dimensions c(width, height) in pixels
+#' @param attempts Tries before giving up; the `quickmap.screenshot_attempts`
+#'   option, default 3
+#' @return `image_files`, invisibly
+#' @keywords internal
+take_screenshots <- function(
+  html_file,
+  image_files,
+  image_dimensions,
+  attempts = getOption("quickmap.screenshot_attempts", 3)
+) {
+  last_error <- NULL
+  for (i in seq_len(attempts)) {
+    unlink(image_files)
+    last_error <- tryCatch({
+      webshot2::webshot(
+        rep(html_file, length(image_files)),
+        image_files,
+        vwidth = image_dimensions[1],
+        vheight = image_dimensions[2]
+      )
+      NULL
+    }, error = conditionMessage)
+    if (is.null(last_error) && all(file.exists(image_files) & file.size(image_files) > 0)) {
+      return(invisible(image_files))
+    }
+    if (i < attempts) Sys.sleep(i)
+  }
+  stop(sprintf(
+    "Image export failed after %d attempts at %s: %s",
+    attempts, basename(html_file), last_error %||% "no image written"
+  ), call. = FALSE)
+}
+
+#' Assemble per-step PNG frames into an animated GIF
+#'
+#' @param png_files Frames in display order
+#' @param gif_file Path to write
+#' @param image_dimensions c(width, height) in pixels
+#' @param play_speed Milliseconds per frame, the interactive map's pace
+#' @return `gif_file`, invisibly
+#' @keywords internal
+write_animation_gif <- function(png_files, gif_file, image_dimensions, play_speed) {
+  if (!requireNamespace("gifski", quietly = TRUE)) {
+    stop('export_animation = "gif" needs the gifski package: install.packages("gifski")',
+         call. = FALSE)
+  }
+  gifski::gifski(
+    png_files,
+    gif_file = gif_file,
+    width = image_dimensions[1],
+    height = image_dimensions[2],
+    delay = play_speed / 1000,
+    loop = TRUE,
+    progress = FALSE
+  )
+  invisible(gif_file)
+}
+
+#' Check the export_animation argument
+#'
+#' @param export_animation NULL, or "gif"
+#' @return The format, or NULL
+#' @keywords internal
+parse_export_animation <- function(export_animation) {
+  if (is.null(export_animation)) return(NULL)
+  if (!identical(export_animation, "gif")) {
+    stop('export_animation must be NULL or "gif".', call. = FALSE)
+  }
+  export_animation
 }
 
 #' Write the widget to a self-contained HTML file and style it
@@ -4069,7 +4147,12 @@ determine_times_and_viewport <- function(
   if (is.null(primary_data)) {
     display_times <- requested_times %||% "static_only"
   } else {
-    available_times <- unique(primary_data$year_str)
+    # Chronological, not row order: a table whose first rows start late
+    # (a site opened in 2017 listed above one from 2012) would otherwise put
+    # 2012 after 2025 on the slider and in a GIF. Every year_str format is
+    # ISO-like ("2024", "2024-01", "2024-01-15 10:00"), so sorting the strings
+    # sorts the times.
+    available_times <- sort(unique(primary_data$year_str))
     display_times <- if (is.null(requested_times)) {
       available_times
     } else {
@@ -4112,6 +4195,9 @@ determine_times_and_viewport <- function(
 #' @param output_dir Directory prepended to \code{output_file}, and to the JPG
 #'   set. Default: the \code{quickmap.output_dir} option, else NULL.
 #' @param export_image NULL (no export), TRUE (export 1200x1200), or c(width, height) vector for custom dimensions.
+#' @param export_animation NULL (none) or "gif": the time steps as an animated
+#'   GIF beside the HTML, at the \code{export_image} size (1200x1200 when that
+#'   is NULL) and the map's \code{play_speed}. Needs the gifski package.
 #' @param boroughs Borough name(s) for boundary display. NULL (default) draws
 #'   no boundary and fits the map to the data.
 #' @param pollutant Pollutant type: "no2" or "pm25" (default: "no2").
@@ -4139,8 +4225,9 @@ determine_times_and_viewport <- function(
 #'
 #' @return The saved file is the product; the Leaflet object is returned
 #'   invisibly as a byproduct, without the injected chrome. Side effects:
-#'   writes \code{output_file}, and one JPG per time step when
-#'   \code{export_image} is not NULL.
+#'   writes \code{output_file}, one JPG per time step when
+#'   \code{export_image} is not NULL, and a GIF when \code{export_animation}
+#'   is "gif".
 #'
 #' @details
 #' \strong{Data Files:} CSV files (diffusion tubes, schools) require Easting/Northing columns.
@@ -4203,6 +4290,7 @@ render_pollution_map <- function(
   play_speed = NULL,
   theme_file = NULL,
   wind = NULL,
+  export_animation = NULL,
   ...
 ) {
   # -- 1. Settings ---------------------------------------------------------
@@ -4215,6 +4303,9 @@ render_pollution_map <- function(
   }
   c(image_export, map_width_px, map_height_px) %<-%
     parse_export_params(export_image)
+  gif_export <- identical(parse_export_animation(export_animation), "gif")
+  # Frames are rendered for the JPGs, the GIF, or both
+  frame_export <- image_export || gif_export
   show_banner <- (styling_type == "html")
   theme <- load_theme(theme_file)
   c(
@@ -4286,7 +4377,7 @@ render_pollution_map <- function(
   base_map_data <- primary_data %||% borough_sf
   html_map <- create_base_map(base_map_data, TRUE, base_tiles_provider)
 
-  if (image_export) {
+  if (frame_export) {
     static_map_template <- create_base_map(
       base_map_data,
       FALSE,
@@ -4327,7 +4418,7 @@ render_pollution_map <- function(
   indicator_show_max <- isTRUE(theme$indicator$show_max)
   indicator_placement <- theme$indicator$placement %||% "right"
 
-  marker_scale_factor <- if (image_export) {
+  marker_scale_factor <- if (frame_export) {
     sqrt((map_width_px * map_height_px) / (1200 * 1200))
   } else NULL
 
@@ -4373,7 +4464,18 @@ render_pollution_map <- function(
 
   # One pass per time step. The same loop feeds both outputs (CLAUDE.md,
   # "Single Loop Processing"): the interactive map gains a layer group per
-  # step, and each JPG is a complete map saved and screenshotted on its own.
+  # step, and each image frame is a complete map saved and screenshotted on
+  # its own. GIF frames are PNGs in a temporary folder, removed once the GIF
+  # is written; only the JPGs the caller asked for are kept.
+  if (gif_export) {
+    if (length(unique(display_times)) < 2) {
+      stop('export_animation = "gif" needs more than one time step.', call. = FALSE)
+    }
+    frame_dir <- tempfile("quickmap_frames_")
+    dir.create(frame_dir)
+    on.exit(unlink(frame_dir, recursive = TRUE), add = TRUE)
+    gif_frames <- character()
+  }
   for (yr in unique(display_times)) {
     if (!lazy) {
       html_map <- generate_map_layers(
@@ -4387,7 +4489,7 @@ render_pollution_map <- function(
       )
     }
 
-    if (image_export) {
+    if (frame_export) {
       static_map <- add_year_and_static_layers(
         static_map_template,
         yr,
@@ -4406,9 +4508,14 @@ render_pollution_map <- function(
       file_parts <- tools::file_path_sans_ext(basename(output_path))
       step_tag <- gsub("[^A-Za-z0-9_-]+", "-", yr)
       html_file <- file.path(
-        dirname(output_path),
+        if (image_export) dirname(output_path) else frame_dir,
         paste0(file_parts, "_", step_tag, ".html")
       )
+      image_files <- c(
+        if (image_export) sub("\\.html$", ".jpg", html_file),
+        if (gif_export) file.path(frame_dir, sprintf("frame_%04d.png", length(gif_frames) + 1))
+      )
+      if (gif_export) gif_frames <- c(gif_frames, image_files[length(image_files)])
 
       finalize_and_save_map(
         static_map,
@@ -4438,9 +4545,19 @@ render_pollution_map <- function(
         indicator_placement,
         banner_key,
         banner_text_colour,
-        legend_background
+        legend_background,
+        image_files
       )
     }
+  }
+
+  if (gif_export) {
+    write_animation_gif(
+      gif_frames,
+      paste0(tools::file_path_sans_ext(output_path), ".gif"),
+      c(map_width_px, map_height_px),
+      play_speed
+    )
   }
 
   # -- 6. Wind overlay -----------------------------------------------------

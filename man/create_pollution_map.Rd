@@ -26,6 +26,7 @@ create_pollution_map(
   play_speed = NULL,
   theme_file = NULL,
   wind = NULL,
+  export_animation = NULL,
   ...
 )
 }
@@ -77,13 +78,15 @@ and failing that a pace set by the number of time steps}
 
 \item{wind}{Optional wind layer (see \code{\link[=quickmap]{quickmap()}})}
 
+\item{export_animation}{NULL, or "gif" (see \code{\link[=quickmap]{quickmap()}})}
+
 \item{...}{Accepts the old argument name \code{marker_labels}, with a warning.
 Any other name is an error.}
 }
 \value{
 The saved file is the product; the Leaflet object comes back
-invisibly as a byproduct. Writes \code{output_file}, and JPGs when
-\code{export_image} is set.
+invisibly as a byproduct. Writes \code{output_file}, JPGs when
+\code{export_image} is set, and a GIF when \code{export_animation = "gif"}.
 }
 \description{
 Compatibility wrapper around \code{\link[=quickmap]{quickmap()}} — the historic QuickMap entry
