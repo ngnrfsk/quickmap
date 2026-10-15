@@ -399,7 +399,10 @@ Items are never renumbered; other documents cite these numbers.
       from S01 Merton Abbey PS. The ASR coordinate is probably the error, so
       the later-wins rule needs a short list of coordinate corrections that
       override it. Iarla confirmed 2026-10-15: 45 takes the All Annuals
-      location for every year.
+      location for every year. Confirmed by address: bank directories give
+      HSBC Morden at Crown House, 102 London Road, SM4 5AY (now a terminated
+      postcode, so the branch may have closed); that postcode is 34 m from
+      the All Annuals point and 1407 m from the ASR point.
     - Location check of all 12 conflicting sites (2026-10-15), OSM
       reverse geocoding against each source's description:
       `~/Coding/Library/data/tubes/merton_location_check.csv`. Site 50 is a
