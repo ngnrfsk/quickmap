@@ -6,7 +6,7 @@ editor_options:
 
 # QuickMap Project Status
 
-**Last Updated**: 2026-10-13 **Current Version**: v0.9.9.14
+**Last Updated**: 2026-10-15 **Current Version**: v0.9.9.14
 
 Version history: NEWS.md. History before 2026-08-16:
 dev/archive/PROJECT_STATUS_history_to_260816.md.
@@ -15,8 +15,8 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 
 ## Where the project stands
 
-- Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain, plus 16, 17 and
-  18. Item 9: 9.1, 9.3, 9.7, 9.8 and 9.9 merged as PR #53 on 2026-10-13
+- Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain, plus 17, 18 and
+  19 (16 is live, with follow-ups). Item 9: 9.1, 9.3, 9.7, 9.8 and 9.9 merged as PR #53 on 2026-10-13
   (v0.9.9.13); 9.2, 9.4, 9.5 and 9.6 remain.
 - PR #51 (Breathe London, draft) is open, waiting on the API key. PRs #48 and
   #52 are closed; their content is on `docs/manual-v2`.
@@ -62,6 +62,10 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 - 2026-10-13: PR #53 must be squash-merged. Its branch history still holds the
   17 example maps (12.6 MB), added then removed; a merge commit would put them
   in `main`'s history.
+- 2026-10-15: combining a council's tube sources into one table is item 19,
+  likely a quickmap deliverable. Prototyped for Merton in the scripts repo;
+  Richmond and Wandsworth wait until Iarla has their data. Whether it ships
+  in v1.0 is decided at item 11.
 
 ## Waiting on Iarla
 
@@ -329,6 +333,42 @@ Items are never renumbered; other documents cite these numbers.
     before `R CMD CHECK` (9.2) is declared clean for release.
 4.  Open: whether it stays a dev/ document or becomes a manual chapter.
 
+### 19. One combined tube table per council — Merton built 2026-10-15
+
+1.  Each council's tube history is split across its annual status report
+    (ASR) table, the GLA London files and project workbooks. The site maps
+    used only the ASR table, so the Merton map starts in 2019 although
+    Merton data goes back to 2012.
+2.  Prototype in `/Users/iarla/Coding/swlonrsp-maps-build/scripts/tubes/`:
+    `tube_merge.R` holds general functions (`normalise_tube_id()`,
+    `tube_long_from_wide()`, `merge_colocated_tubes()`,
+    `combine_tube_sources()`, `write_tube_outputs()`); `merton_tubes.R` holds
+    Merton's sources. Plan and source survey: that repo's
+    `plans/261015_canonical_tube_tables_per_council.md`.
+3.  **Merton done.** `~/Coding/Library/data/tubes/merton_no2_tubes_2012_2025`
+    as `.csv` (quickmap layout) and `.Rdata` (wide table, OpenAir long table
+    with the source of each value, site table, conflict log), plus
+    `_conflicts.csv`. 65 sites, 593 site-years; sites per year 9–18 to 2016,
+    48 in 2017–18, 59–62 from 2019. Precedence: Merton ASR 2019–2025, then
+    GLA 2021–2024, then the RSP "All Annuals" sheet (2012–2018). Matched by
+    site ID; triplicate 47/1–3 is one site, 47. Both `from_csv()` and
+    `from_rdata()` read it (593 rows). 20 conflicts for Iarla's review:
+    sites 21 and 22 swapped in GLA 2021; site 51, 2022, differs by 4.2; 17
+    coordinate disagreements of 12–1388 m where the site names agree (ASR
+    coordinates kept).
+4.  Richmond and Wandsworth: held until Iarla obtains their data
+    (2026-10-15). Sources found so far are in the plan; Richmond's "All
+    Annuals" rows for 2020–2023 are unreliable and excluded. Croydon has one
+    source (its Defra workbook, 2020–2025) and needs no merge.
+5.  **Package deliverable: likely yes (Iarla, 2026-10-15).** Proposed shape:
+    `combine_tube_sources()` returning a `qm_layer` that carries the source
+    of each value and the conflict log as attributes, beside item 11.1's
+    `from_defra_xlsx()`, which shares the ID tidying and site table. Readers
+    for the GLA London files and ASR tables would be further `from_*()`
+    wrappers. Open: in v1.0 (then with 11.1, before item 18) or after.
+6.  The Merton site map is not yet switched to this table; its start year is
+    open point 12 in that repo's STATUS.md.
+
 ### Which PR each open task belongs to
 
 | Task | PR |
@@ -344,10 +384,11 @@ Items are never renumbered; other documents cite these numbers.
 | 14 dev/ rename | new PR, low priority |
 | 17 GIF export | new PR, after #53 merges |
 | Architecture diagrams | new PR from `docs/architecture-diagrams` |
+| 19 tube-source merge as a package function | with 11.1 if in v1.0; otherwise after 1.0 |
 
 ### Numbering history
 
-Items 16 and 17 added 2026-10-13; item 18 the same day.
+Items 16 and 17 added 2026-10-13; item 18 the same day; item 19 on 2026-10-15.
 
 Items 2 and 5 inserted 2026-07-05; item 10 on 07-06, renumbering UI defects to
 11; items 12–14 on 08-15/16. Earlier dev docs use the old numbering.
