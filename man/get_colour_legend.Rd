@@ -18,6 +18,7 @@ Extract the legend fields from a colour scale
 \seealso{
 Other colour: 
 \code{\link{assign_colour}()},
+\code{\link{contrast_ratio}()},
 \code{\link{convert_colors_to_hex}()},
 \code{\link{get_contrast_text_color}()},
 \code{\link{lighten_color}()}

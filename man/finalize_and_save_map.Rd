@@ -2,7 +2,7 @@
 % Please edit documentation in R/quickmap.R
 \name{finalize_and_save_map}
 \alias{finalize_and_save_map}
-\title{Add the map furniture, save the file, and export a JPG if asked}
+\title{Add the map furniture, save the file, and export images if asked}
 \usage{
 finalize_and_save_map(
   map,
@@ -30,7 +30,10 @@ finalize_and_save_map(
   indicator_label = NULL,
   indicator_show_max = FALSE,
   indicator_placement = "right",
-  banner_key = NULL
+  banner_key = NULL,
+  banner_text_colour = "white",
+  legend_background = "white",
+  image_files = sub("\\\\.html$", ".jpg", html_file)
 )
 }
 \arguments{
@@ -85,6 +88,9 @@ or "right" of the ramp}
 
 \item{banner_key}{Reference-layer key from \code{\link[=build_banner_key]{build_banner_key()}}, drawn at
 the end of the banner. NULL for no key.}
+
+\item{image_files}{Images to write from an image pass (format by
+extension); default a JPG beside \code{html_file}}
 }
 \value{
 The map object, invisibly used by the caller's loop
@@ -92,8 +98,8 @@ The map object, invisibly used by the caller's loop
 \description{
 The last step of one output pass. Boundary, vignette, viewport and time
 controls go on, the HTML is written and post-processed, and — for an image
-pass — the saved HTML is screenshotted to JPG and then deleted, because the
-image is the deliverable and the intermediate HTML is styled for a camera,
-not for a reader.
+pass — the saved HTML is screenshotted to \code{image_files} and then deleted,
+because the images are the deliverable and the intermediate HTML is styled
+for a camera, not for a reader.
 }
 \keyword{internal}

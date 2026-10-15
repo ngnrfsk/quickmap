@@ -53,6 +53,31 @@ quickmap(
 - The interactive HTML is written as well — the JPG is an extra, not a
   replacement. Wind overlays are omitted from stills.
 
+## 4. Export the animation as a GIF
+
+Where a reader cannot open an HTML file — a slide, an email body, a
+social media post — the animation can go as a GIF:
+
+```{r gif}
+library(quickmap)
+quickmap(
+  "tubes_wandsworth.csv",
+  boroughs         = "Wandsworth",
+  export_animation = "gif",                # wandsworth.gif beside the HTML
+  output_file      = "wandsworth.html"
+)
+```
+
+- One frame per time step, each shown for the map's `play_speed`; the
+  GIF loops.
+- Frames are the still images above: the size is `export_image`'s, or
+  1200×1200 when that is not set. Set `export_image` as well to keep a
+  JPG of each step.
+- Needs the gifski package (`install.packages("gifski")`) and, like the
+  JPGs, Chrome. A long animation takes a few seconds per frame to export.
+- A GIF has no hover, no slider and no legend interaction: send the HTML
+  where the reader can open it.
+
 ## See also
 
 - [Get started](quickmap.html) step 6 — export in the build-up.

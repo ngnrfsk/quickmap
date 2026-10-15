@@ -26,6 +26,7 @@ render_pollution_map(
   play_speed = NULL,
   theme_file = NULL,
   wind = NULL,
+  export_animation = NULL,
   ...
 )
 }
@@ -88,14 +89,19 @@ map, from a quarter of it to eight times.}
 \item{wind}{Wind data for the particle overlay: a \code{from_worldmet()}
 object or a data frame of date/ws/wd. Interactive HTML only.}
 
+\item{export_animation}{NULL (none) or "gif": the time steps as an animated
+GIF beside the HTML, at the \code{export_image} size (1200x1200 when that
+is NULL) and the map's \code{play_speed}. Needs the gifski package.}
+
 \item{...}{Accepts the old argument name \code{marker_labels}, with a
 warning. Any other name is an error.}
 }
 \value{
 The saved file is the product; the Leaflet object is returned
 invisibly as a byproduct, without the injected chrome. Side effects:
-writes \code{output_file}, and one JPG per time step when
-\code{export_image} is not NULL.
+writes \code{output_file}, one JPG per time step when
+\code{export_image} is not NULL, and a GIF when \code{export_animation}
+is "gif".
 }
 \description{
 Main function to create Leaflet maps showing air pollution data with optional

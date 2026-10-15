@@ -20,6 +20,7 @@ Lighten or darken a hex color
 \seealso{
 Other colour: 
 \code{\link{assign_colour}()},
+\code{\link{contrast_ratio}()},
 \code{\link{convert_colors_to_hex}()},
 \code{\link{get_colour_legend}()},
 \code{\link{get_contrast_text_color}()}
