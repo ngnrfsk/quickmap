@@ -20,6 +20,7 @@ Missing or non-numeric values return white, which the scales label as
 }
 \seealso{
 Other colour: 
+\code{\link{contrast_ratio}()},
 \code{\link{convert_colors_to_hex}()},
 \code{\link{get_colour_legend}()},
 \code{\link{get_contrast_text_color}()},
