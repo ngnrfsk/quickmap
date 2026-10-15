@@ -398,7 +398,20 @@ Items are never renumbered; other documents cite these numbers.
       Civic Centre, in Morden; the ASR and GLA place it 1.4 km north, 168 m
       from S01 Merton Abbey PS. The ASR coordinate is probably the error, so
       the later-wins rule needs a short list of coordinate corrections that
-      override it. Awaiting Iarla's confirmation.
+      override it. Iarla confirmed 2026-10-15: 45 takes the All Annuals
+      location for every year.
+    - Location check of all 12 conflicting sites (2026-10-15), OSM
+      reverse geocoding against each source's description:
+      `~/Coding/Library/data/tubes/merton_location_check.csv`. Site 50 is a
+      second ASR coordinate error: ASR easting 525638 lands on London Road,
+      Morden; GLA's 524638 (1000 m off, a one-digit slip) lands on 85–87
+      Martin Way. No All Annuals→ASR shift is a move: 13 (50 m) and 25
+      (40 m) stay at the same address. Only GLA 2021 gives different
+      descriptions (2: "A24 Jct with Garth Drive", 635 m; 9: "2 Lambton Rd"
+      vs "12", 60 m; 46: "80 Crown Lane" vs "11", 34 m; 29: "44 High St",
+      309 m), all in years the later ASR also covers. Proposed: a move needs
+      both a shift over 25 m and a changed description; otherwise the later
+      source wins. Awaiting Iarla.
 
 ### 20. Network mean and maximum over long records — raised 2026-10-15
 
