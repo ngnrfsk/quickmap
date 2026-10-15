@@ -15,8 +15,8 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 
 ## Where the project stands
 
-- Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain, plus 17, 18 and
-  19 (16 is live, with follow-ups). Item 9: 9.1, 9.3, 9.7, 9.8 and 9.9 merged as PR #53 on 2026-10-13
+- Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain, plus 17, 18, 19
+  and 20 (16 is live, with follow-ups). Item 9: 9.1, 9.3, 9.7, 9.8 and 9.9 merged as PR #53 on 2026-10-13
   (v0.9.9.13); 9.2, 9.4, 9.5 and 9.6 remain.
 - PR #51 (Breathe London, draft) is open, waiting on the API key. PRs #48 and
   #52 are closed; their content is on `docs/manual-v2`.
@@ -66,6 +66,16 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
   likely a quickmap deliverable. Prototyped for Merton in the scripts repo;
   Richmond and Wandsworth wait until Iarla has their data. Whether it ships
   in v1.0 is decided at item 11.
+- 2026-10-15: item 19's function ships in v1.0 (Iarla), with 11.1 and before
+  item 18.
+- 2026-10-15: tube merge rules (Iarla): co-located triples (usually beside an
+  automatic monitor) are averaged to one site; the later dataset is always
+  taken as the more accurate; a site ID whose coordinates change between
+  tables is a moved site and gets a new versioned site, not a coordinate
+  overwrite.
+- 2026-10-15: the Merton NO2 site map starts at the oldest data held (2012).
+- 2026-10-15: network mean and maximum over long records with few early sites
+  is a new issue, item 20.
 
 ## Waiting on Iarla
 
@@ -365,9 +375,40 @@ Items are never renumbered; other documents cite these numbers.
     of each value and the conflict log as attributes, beside item 11.1's
     `from_defra_xlsx()`, which shares the ID tidying and site table. Readers
     for the GLA London files and ASR tables would be further `from_*()`
-    wrappers. Open: in v1.0 (then with 11.1, before item 18) or after.
-6.  The Merton site map is not yet switched to this table; its start year is
-    open point 12 in that repo's STATUS.md.
+    wrappers. **In v1.0** (Iarla, 2026-10-15): with 11.1, before item 18.
+6.  The Merton site map is not yet switched to this table. It will start in
+    2012 (Iarla, 2026-10-15), after the rules in 19.7 are built.
+7.  **Merge rules to build (Iarla, 2026-10-15), proposed actions awaiting
+    go-ahead:**
+    - Triples: detected from IDs `N/1`–`N/3` or `N, N/2, N/3`, averaged to
+      `N`; the number of tubes averaged is kept per value (GLA 2021 and 2023
+      list only two of 47's three). Merton has one triple, 47.
+    - Later dataset wins, ranked by publication date, for values and for
+      coordinates in any year two tables both cover.
+    - Moved sites: each year takes the coordinates of the latest table
+      reporting that year. Where they shift more than a set distance between
+      years, the earlier years become a separate site, labelled e.g.
+      `13 (2017–18)`; the current location keeps the plain ID. Merton
+      candidates, all at 2018→2019: 13 (50 m), 25 (40 m), 45 (1388 m).
+      Same-year disagreements (GLA 2021–2024 against the ASR, 12–1219 m)
+      stop being conflicts: the later ASR wins.
+
+### 20. Network mean and maximum over long records — raised 2026-10-15
+
+1.  The legend indicator's mean uses a fixed panel: sites reporting in every
+    displayed year. Over a long record that panel is the few oldest sites:
+    Merton from 2012 gives 7 of 62, Richmond from 1993 gives 4. The mean
+    then describes a handful of sites, not the network shown.
+2.  The maximum has the opposite problem: it is taken over whatever reports
+    each year, so early years' maxima come from 9–18 sites, later ones from
+    60.
+3.  Open: how to handle both. Candidates to assess: a minimum panel size
+    below which the panel restarts at a later year (a stepped panel, stated
+    in the caption); mean of all sites reporting, with the count shown; a
+    `quickmap()` argument setting the panel's first year. Needed before the
+    Merton 2012 map is useful for trend reading; does not block building it.
+4.  Open: whether in v1.0. It changes `build_indicator_data()` and
+    `indicator.js`, so it is rendering-touching and needs visual sign-off.
 
 ### Which PR each open task belongs to
 
@@ -384,11 +425,12 @@ Items are never renumbered; other documents cite these numbers.
 | 14 dev/ rename | new PR, low priority |
 | 17 GIF export | new PR, after #53 merges |
 | Architecture diagrams | new PR from `docs/architecture-diagrams` |
-| 19 tube-source merge as a package function | with 11.1 if in v1.0; otherwise after 1.0 |
+| 19 tube-source merge as a package function | with 11.1, in v1.0 |
+| 20 indicator over long records | undecided |
 
 ### Numbering history
 
-Items 16 and 17 added 2026-10-13; item 18 the same day; item 19 on 2026-10-15.
+Items 16 and 17 added 2026-10-13; item 18 the same day; items 19 and 20 on 2026-10-15.
 
 Items 2 and 5 inserted 2026-07-05; item 10 on 07-06, renumbering UI defects to
 11; items 12–14 on 08-15/16. Earlier dev docs use the old numbering.
