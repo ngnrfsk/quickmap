@@ -21,7 +21,9 @@ inject_banner_legend_controls(
   indicator_label = NULL,
   indicator_show_max = FALSE,
   indicator_placement = "right",
-  banner_key = NULL
+  banner_key = NULL,
+  banner_text_colour = "white",
+  legend_background = "white"
 )
 }
 \arguments{
