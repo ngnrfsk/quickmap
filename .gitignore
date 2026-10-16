@@ -12,6 +12,11 @@ aq_maps/
 # locally and stays out of the history.
 docs/
 
+# Work done with quickmap. Each folder is its own project, usually its own
+# git repository, with data and outputs this repository must not carry.
+work/*
+!work/README.md
+
 # Downloaded package tarballs kept for reference, not ours to version
 dev/*.tgz
 

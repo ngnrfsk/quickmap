@@ -82,6 +82,15 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 - 2026-10-15: item 16.5 done: Squarespace links repointed to `_latest`.
 - 2026-10-15: Iarla asked for A1–A3 unattended: PR for `chore/status-item16`,
   defect 12 retry, item 17 GIF export.
+- 2026-10-16: banners stay as they are: "strip" (white, theme colour as a
+  rule) is the default, "bar" is set per theme (Croydon). Documented in
+  `vignettes/styling.Rmd` and CLAUDE.md Themes.
+- 2026-10-16: PR #55 merged (squash).
+- 2026-10-16: new `work/` folder for work done with quickmap, one folder per
+  job, ignored by quickmap's git and the package build (`work/README.md`).
+  `swlonrsp-maps-build` moved into it from `~/Coding/`.
+- 2026-10-16: item 18 must also list every setting outside function
+  arguments: theme keys, colour-scale keys and `quickmap.*` options.
 
 ## Waiting on Iarla
 
@@ -284,7 +293,7 @@ Items are never renumbered; other documents cite these numbers.
     (2), Wandsworth (2), Wandsworth sensor locations (1), the PM2.5 episode of
     15–20 January 2024 (1).
 2.  **Done.** Scripts are in a new local repo,
-    `/Users/iarla/Coding/swlonrsp-maps-build` (first commit 20e76d6, no GitHub
+    `/Users/iarla/Coding/quickmap/work/swlonrsp-maps-build` (first commit 20e76d6, no GitHub
     remote yet): one script per borough plus the episode, run by
     `Rscript build_all.R`. All 12 rebuild with v0.9.9.14 into its `build/`.
 3.  Sources of each map's method: `inst/examples/quickmap_create_RSP_maps.R`
@@ -315,7 +324,7 @@ Items are never renumbered; other documents cite these numbers.
     can now retire (clear the old names in `maps.csv`, deploy with
     `--remove`, with Iarla's go-ahead). Remaining: Wandsworth banner contrast (2.7:1, fix in
     `inst/themes/wandsworth.yaml`); open points in
-    `/Users/iarla/Coding/swlonrsp-maps-build/STATUS.md`.
+    `/Users/iarla/Coding/quickmap/work/swlonrsp-maps-build/STATUS.md`.
 6.  Found while building, for item 11: `from_rdata()` prepends `DATA_PATH`
     to an absolute path, so a prepared `.Rdata` outside `DATA_PATH` cannot be
     passed by path (same subject as 11.4).
@@ -346,6 +355,13 @@ Items are never renumbered; other documents cite these numbers.
 3.  Its discrepancies against the roxygen text are the last docs-vs-code check
     before `R CMD CHECK` (9.2) is declared clean for release.
 4.  Open: whether it stays a dev/ document or becomes a manual chapter.
+5.  Also lists every setting that is not a function argument, each traced to
+    where the code reads it (added 2026-10-16; checked then: no complete list
+    exists): theme YAML keys (defined by `get_default_theme()`; partly in
+    `vignettes/styling.Rmd` and CLAUDE.md), colour-scale YAML keys (CLAUDE.md
+    and `vignettes/styling.Rmd`), and `quickmap.*` options (`time_step_cap`,
+    `lazy_step_threshold`, `lazy_size_threshold`, `output_dir`,
+    `screenshot_attempts`; documented only where each is used).
 
 ### 19. One combined tube table per council — Merton built 2026-10-15
 
@@ -353,7 +369,7 @@ Items are never renumbered; other documents cite these numbers.
     (ASR) table, the GLA London files and project workbooks. The site maps
     used only the ASR table, so the Merton map starts in 2019 although
     Merton data goes back to 2012.
-2.  Prototype in `/Users/iarla/Coding/swlonrsp-maps-build/scripts/tubes/`:
+2.  Prototype in `/Users/iarla/Coding/quickmap/work/swlonrsp-maps-build/scripts/tubes/`:
     `tube_merge.R` holds general functions (`normalise_tube_id()`,
     `tube_long_from_wide()`, `merge_colocated_tubes()`,
     `combine_tube_sources()`, `write_tube_outputs()`); `merton_tubes.R` holds
@@ -500,7 +516,7 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
 - **13. Sub-annual limit values.** The indicator hides below annual resolution;
   needs resolution-aware targets in the YAML. Post-1.0. When resolved,
   rebuild the hosted episode map with the mean and maximum on:
-  `/Users/iarla/Coding/swlonrsp-maps-build/RULES.md`, rule 21.
+  `/Users/iarla/Coding/quickmap/work/swlonrsp-maps-build/RULES.md`, rule 21.
 - **14. Fixed panel unexplained.** "Network mean, N sites" counts fewer sites
   than are on screen; add a tooltip.
 - **15. Split import from map creation.**
