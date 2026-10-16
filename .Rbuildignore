@@ -16,6 +16,7 @@
 ^REORGANIZATION_PROPOSAL\.md$
 ^\.RDataTmp$
 ^scripts$
+^work$
 ^LICENSE\.md$
 ^[^/]+\.yaml$
 ^[^/]+\.Rdata$

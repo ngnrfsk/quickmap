@@ -36,6 +36,7 @@ create_generic_icons() → add_layer() → generate_map_layers()
 Interactive sessions follow this section. Autonomous sessions follow "Autonomous Agent Instructions" below, which overrides it.
 
 - Plans live in dev/ as `YYMMDD_project_name_plan.md`.
+- Work done *with* quickmap for a real job (council maps, the swlonrsp.github.io maps) goes in work/, one folder per job, each its own project; quickmap's git and the package build ignore it. Rules: work/README.md.
 - **Starting**: confirm the plan with the user, then branch.
 - **Ending**: ask the user to finish testing; draft documentation in outline here and in detail in dev/PROJECT_STATUS.md; ask whether to commit; copy the version to versions/ either way.
 
