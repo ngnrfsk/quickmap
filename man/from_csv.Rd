@@ -9,7 +9,7 @@ from_csv(
   pollutant = "no2",
   name = NULL,
   temporal = NULL,
-  shorten_labels = FALSE
+  shorten_labels = NULL
 )
 }
 \arguments{
@@ -23,7 +23,8 @@ from_csv(
 (default) auto-detects: more than one year column means temporal}
 
 \item{shorten_labels}{Drop the school type from school names — see
-\code{\link[=qm_layer]{qm_layer()}}. Default FALSE.}
+\code{\link[=qm_layer]{qm_layer()}}. NULL (default) shortens school files; FALSE keeps full
+names.}
 }
 \value{
 A \code{\link[=qm_layer]{qm_layer()}}

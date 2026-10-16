@@ -82,6 +82,11 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 - 2026-10-15: item 16.5 done: Squarespace links repointed to `_latest`.
 - 2026-10-15: Iarla asked for A1–A3 unattended: PR for `chore/status-item16`,
   defect 12 retry, item 17 GIF export.
+- 2026-10-16: item 17 demos look right, but always-on labels made them
+  unreadable; demos show names on hover only (`symbol_labels = "labels"`).
+- 2026-10-16: school names are shortened by default (`shorten_labels = NULL`
+  shortens `School` labels only; FALSE keeps full names). Reverses the
+  v0.9.9.13 default.
 
 ## Waiting on Iarla
 
@@ -352,6 +357,12 @@ Items are never renumbered; other documents cite these numbers.
     with JPGs, 6 frames, 1000 px, 1.3 MB. Every frame checked for count and
     blank or undersized frames; none. For 11.3: a 1200 px annual GIF is 3 MB,
     so an email preset should be smaller.
+9.  Review 2026-10-16 (Iarla): the GIFs are right; always-on labels
+    (`symbol_labels = "values_on"` / `"labels_on"`) made the maps unreadable.
+    Demo v2 (`dev/item17_gif-export_demo-maps_v2.R`) shows names on hover
+    only (`"labels"`), so the GIF and JPGs carry no labels; the episode GIF
+    had none and is not rebuilt.
+    School-name shortening became the default on this branch.
 
 ### 18. Create a new API guide — after items 17, 12 and 11, before the v1.0 tag
 

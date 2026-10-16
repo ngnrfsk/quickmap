@@ -61,9 +61,9 @@ quickmap(
 what makes QuickMap treat the file as a context layer (outline symbols,
 no time steps); its text becomes the site's label. `Level` colours
 schools categorically with the `schools` colour scale, and names the
-categories in the banner key — which is what lets
-`from_csv(..., shorten_labels = TRUE)` drop "Primary School" from every
-marker ([Labels](labels.html), section 5).*
+categories in the banner key — which is why "Primary School" is dropped
+from every marker by default; `from_csv(..., shorten_labels = FALSE)`
+keeps it ([Labels](labels.html), section 5).*
 
 ## 3. Sensor-network exports (RData)
 
