@@ -55,13 +55,17 @@ test_that("qm_layer shortens the label column, not the marker identity", {
   expect_equal(as.character(lay$code), d$code)
 })
 
-test_that("the default leaves names untouched", {
+test_that("the default shortens school names only; FALSE keeps them", {
   d <- data.frame(
     School = "Abbotsbury Primary School", Level = "Primary",
     code = "a", lat = 51.4, lon = -0.19
   )
-  expect_equal(qm_layer(d, value_col = "Level")$School,
+  expect_equal(qm_layer(d, value_col = "Level")$School, "Abbotsbury")
+  expect_equal(qm_layer(d, value_col = "Level", shorten_labels = FALSE)$School,
                "Abbotsbury Primary School")
+  tubes <- data.frame(Label = "Abbotsbury Primary School", code = "a",
+                      no2 = 30, lat = 51.4, lon = -0.19)
+  expect_equal(qm_layer(tubes)$Label, "Abbotsbury Primary School")
 })
 
 test_that("asking to shorten a layer with no labels warns", {
@@ -74,8 +78,10 @@ test_that("from_csv passes the option through", {
   skip_if_not(char_data_available(), "DATA_PATH fixtures absent")
   f <- file.path(Sys.getenv("DATA_PATH"), "schools_Merton.csv")
   raw <- utils::read.csv(f, check.names = FALSE)
-  lay <- from_csv(f, name = "schools", shorten_labels = TRUE)
+  lay <- from_csv(f, name = "schools")
   expect_equal(sum(lay$School != raw$School), 47)
   expect_equal(max(nchar(lay$School)), 32)
   expect_equal(as.character(lay$code), as.character(raw$School))
+  full <- from_csv(f, name = "schools", shorten_labels = FALSE)
+  expect_equal(full$School, raw$School)
 })
