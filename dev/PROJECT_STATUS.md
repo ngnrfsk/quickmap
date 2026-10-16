@@ -6,7 +6,7 @@ editor_options:
 
 # QuickMap Project Status
 
-**Last Updated**: 2026-10-13 **Current Version**: v0.9.9.14
+**Last Updated**: 2026-10-15 **Current Version**: v0.9.9.14
 
 Version history: NEWS.md. History before 2026-08-16:
 dev/archive/PROJECT_STATUS_history_to_260816.md.
@@ -15,8 +15,8 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 
 ## Where the project stands
 
-- Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain, plus 16, 17 and
-  18. Item 9: 9.1, 9.3, 9.7, 9.8 and 9.9 merged as PR #53 on 2026-10-13
+- Close to v1.0. Roadmap items 9, 11, 12, 13 and 14 remain, plus 17, 18, 19
+  and 20 (16 is live, with follow-ups). Item 9: 9.1, 9.3, 9.7, 9.8 and 9.9 merged as PR #53 on 2026-10-13
   (v0.9.9.13); 9.2, 9.4, 9.5 and 9.6 remain.
 - PR #51 (Breathe London, draft) is open, waiting on the API key. PRs #48 and
   #52 are closed; their content is on `docs/manual-v2`.
@@ -62,21 +62,39 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 - 2026-10-13: PR #53 must be squash-merged. Its branch history still holds the
   17 example maps (12.6 MB), added then removed; a merge commit would put them
   in `main`'s history.
+- 2026-10-15: combining a council's tube sources into one table is item 19,
+  likely a quickmap deliverable. Prototyped for Merton in the scripts repo;
+  Richmond and Wandsworth wait until Iarla has their data. Whether it ships
+  in v1.0 is decided at item 11.
+- 2026-10-15: item 19's function ships in v1.0 (Iarla), with 11.1 and before
+  item 18.
+- 2026-10-15: tube merge rules (Iarla): co-located triples (usually beside an
+  automatic monitor) are averaged to one site; the later dataset is always
+  taken as the more accurate; a site ID whose coordinates change between
+  tables is a moved site and gets a new versioned site, not a coordinate
+  overwrite.
+- 2026-10-15: the Merton NO2 site map starts at the oldest data held (2012).
+- 2026-10-15: network mean and maximum over long records with few early sites
+  is a new issue, item 20.
+- 2026-10-15: move rule agreed (Iarla): a site has moved only when it shifts
+  over 25 m AND its description changes; 45 and 50 corrected by address.
+  Every rule is documented in the script header, the data README and item 19.
+- 2026-10-15: item 16.5 done: Squarespace links repointed to `_latest`.
+- 2026-10-15: Iarla asked for A1–A3 unattended: PR for `chore/status-item16`,
+  defect 12 retry, item 17 GIF export.
 
 ## Waiting on Iarla
 
-1.  **Say where the item 16 scripts are kept**: the swlonrsp.github.io repo
-    itself, or a workspace repo (item 9.5). Item 16 is next.
-2.  **Read the manual**, on `docs/manual-v2`, after it has been brought up to
+1.  **Read the manual**, on `docs/manual-v2`, after it has been brought up to
     date. No deadline. It carries PR #48's chapters, PR #52's example maps and
     README.md, which `main` does not have.
-3.  **Switch on GitHub Pages**, after the manual merges: settings → Pages → main branch, `/docs`. The
+2.  **Switch on GitHub Pages**, after the manual merges: settings → Pages → main branch, `/docs`. The
     chapters embed their maps from the hosted site (12.6 MB of maps against
     CRAN's 5 MB, so they cannot ship inside the package), which means the embeds
     are blank anywhere but the local build until Pages answers. Turning it on
     also needs `docs/` committed — that was PR #52's change; no open branch
     currently carries it.
-4.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
+3.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
     `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
 
 --------------------------------------------------------------------------------
@@ -257,25 +275,50 @@ Items are never renumbered; other documents cite these numbers.
     `feature/item9-output-paths`); the other 10 have no open PR and are
     candidates for deletion once confirmed merged or abandoned.
 
-### 16. Rebuild the swlonrsp.github.io maps with current code — urgent, next after PR #53's conflict
+### 16. Rebuild the swlonrsp.github.io maps with current code — live 2026-10-14
 
 1.  Target folder:
     `/Users/iarla/Library/Mobile Documents/com~apple~CloudDocs/0 - Projects/swlonrsp.github.io`
-    (its own git repo). 13 maps plus `index.html`: Croydon NO2 (1), Merton (5,
-    three of them `*_latest`), Richmond (2), Wandsworth (3), the PM2.5 episode
-    of 15–20 January 2024 (1), Wandsworth sensor locations (1). The oldest
-    files date from October 2025 to January 2026 and predate v0.9.9.13.
-2.  Deliverable: one generating script per map, or one per borough, written
-    against the current API (`output_file` required, `symbol_labels`), so the
-    whole folder regenerates from one command.
-3.  No branch in this repo and no package code: client scripts live outside
-    the package (item 9.5). Where the scripts are kept is undecided — the
-    swlonrsp.github.io repo itself, or the workspace repo item 9.5 creates.
-4.  Not yet known: which scripts built the current files, and whether the
-    Breathe London layers can be rebuilt from RData already held or need the
-    API key that blocks item 12.
-5.  Depends on PR #53's code, not on its merge: install from
-    `feature/item9-output-paths`.
+    (its own git repo). 12 maps plus `index.html` (an earlier count of 13 was
+    wrong): Croydon NO2 (1), Merton (5, three of them `*_latest`), Richmond
+    (2), Wandsworth (2), Wandsworth sensor locations (1), the PM2.5 episode of
+    15–20 January 2024 (1).
+2.  **Done.** Scripts are in a new local repo,
+    `/Users/iarla/Coding/swlonrsp-maps-build` (first commit 20e76d6, no GitHub
+    remote yet): one script per borough plus the episode, run by
+    `Rscript build_all.R`. All 12 rebuild with v0.9.9.14 into its `build/`.
+3.  Sources of each map's method: `inst/examples/quickmap_create_RSP_maps.R`
+    (six `*_Map_*` files), the Merton AQAP `merton_animation_v1.R` (three
+    `*_latest`), the Croydon `croydon_maps_v4.R`, `inst/examples/
+    episode_example.R` and `inst/examples/
+    quickmap_create_wandsworth_new_sensors.R`. All inputs were already held;
+    the Breathe London API key was not needed.
+4.  Compared with the hosted copies by title, time steps and legend bands:
+    titles and steps match on all 12. Ten differences are listed in that
+    repo's README.md; its STATUS.md holds the open points. The main ones:
+    tiles now openstreetmap.de; Breathe London sensors clipped to the borough;
+    the faulty 786 µg/m³ reading blanked; the Wandsworth sites map's
+    location-only style not reproduced.
+5.  **Reworked the same day to rules agreed with Iarla** (that repo's
+    RULES.md, commit a368659): 8 maps replace 12. One map per borough per
+    pollutant on the latest data, under a permanent `_latest` name; uniform
+    symbols and generated banner text; the legend mean and maximum on every
+    annual map. The six file names linked from
+    lovecleanair.org/air-quality-in-my-area, and Croydon's, stay as temporary
+    copies until Iarla repoints the Squarespace links. Deprecated and removed
+    at deploy: `LBM_NO2_DT_BL_latest.html` and the Wandsworth sites map.
+    2026-10-14 (Iarla): every map built on the lazy path
+    (`options(quickmap.lazy_step_threshold = 0)`, files 15–29% smaller), and
+    deployed with `--remove` to the site folder, commit 01db370. Approved by
+    Iarla and live 2026-10-14 (site commit 4ef9e09). Squarespace links
+    repointed to `_latest` by Iarla (done, 2026-10-15); the temporary copies
+    can now retire (clear the old names in `maps.csv`, deploy with
+    `--remove`, with Iarla's go-ahead). Remaining: Wandsworth banner contrast (2.7:1, fix in
+    `inst/themes/wandsworth.yaml`); open points in
+    `/Users/iarla/Coding/swlonrsp-maps-build/STATUS.md`.
+6.  Found while building, for item 11: `from_rdata()` prepends `DATA_PATH`
+    to an absolute path, so a prepared `.Rdata` outside `DATA_PATH` cannot be
+    passed by path (same subject as 11.4).
 
 ### 17. GIF export of the animation — urgent, after PR #53 merges
 
@@ -304,6 +347,93 @@ Items are never renumbered; other documents cite these numbers.
     before `R CMD CHECK` (9.2) is declared clean for release.
 4.  Open: whether it stays a dev/ document or becomes a manual chapter.
 
+### 19. One combined tube table per council — Merton built 2026-10-15
+
+1.  Each council's tube history is split across its annual status report
+    (ASR) table, the GLA London files and project workbooks. The site maps
+    used only the ASR table, so the Merton map starts in 2019 although
+    Merton data goes back to 2012.
+2.  Prototype in `/Users/iarla/Coding/swlonrsp-maps-build/scripts/tubes/`:
+    `tube_merge.R` holds general functions (`normalise_tube_id()`,
+    `tube_long_from_wide()`, `merge_colocated_tubes()`,
+    `combine_tube_sources()`, `write_tube_outputs()`); `merton_tubes.R` holds
+    Merton's sources. Plan and source survey: that repo's
+    `plans/261015_canonical_tube_tables_per_council.md`.
+3.  **Merton done.** `~/Coding/Library/data/tubes/merton_no2_tubes_2012_2025`
+    as `.csv` (quickmap layout) and `.Rdata` (wide table, OpenAir long table
+    with the source of each value, site table, conflict log), plus
+    `_conflicts.csv`. 65 sites, 593 site-years; sites per year 9–18 to 2016,
+    48 in 2017–18, 59–62 from 2019. Precedence: Merton ASR 2019–2025, then
+    GLA 2021–2024, then the RSP "All Annuals" sheet (2012–2018). Matched by
+    site ID; triplicate 47/1–3 is one site, 47. Both `from_csv()` and
+    `from_rdata()` read it (593 rows). 20 conflicts for Iarla's review:
+    sites 21 and 22 swapped in GLA 2021; site 51, 2022, differs by 4.2; 17
+    coordinate disagreements of 12–1388 m where the site names agree (ASR
+    coordinates kept).
+4.  Richmond and Wandsworth: held until Iarla obtains their data
+    (2026-10-15). Sources found so far are in the plan; Richmond's "All
+    Annuals" rows for 2020–2023 are unreliable and excluded. Croydon has one
+    source (its Defra workbook, 2020–2025) and needs no merge.
+5.  **Package deliverable: likely yes (Iarla, 2026-10-15).** Proposed shape:
+    `combine_tube_sources()` returning a `qm_layer` that carries the source
+    of each value and the conflict log as attributes, beside item 11.1's
+    `from_defra_xlsx()`, which shares the ID tidying and site table. Readers
+    for the GLA London files and ASR tables would be further `from_*()`
+    wrappers. **In v1.0** (Iarla, 2026-10-15): with 11.1, before item 18.
+6.  **Merton site map switched** (2026-10-15): `scripts/merton.R` reads the
+    combined table, 2012–2025, 14 steps (Iarla: start at the oldest data
+    held). Built in that repo's `build/`, not deployed: deploying needs
+    Iarla's go-ahead. Legend mean from 2012 rests on 7 sites (item 20).
+7.  **Merge rules built** (Iarla, 2026-10-15; commit in the scripts repo).
+    Full text, the rules' only authoritative statement, is the header of
+    `scripts/tubes/tube_merge.R`; also in
+    `~/Coding/Library/data/tubes/README.md` and the plan. In short:
+    - IDs matched within a council, never by location.
+    - Triplicates (`N/1`–`N/3`, or one row `N, N/2, N/3`; three tubes usually
+      beside an automatic monitor) are one site `N`, the mean of the tubes
+      reported; `n_tubes` kept per value. Merton: 47 Civic Centre.
+    - The later dataset wins: each site-year takes value, coordinates and
+      description from the newest source that has them; older sources'
+      disagreements are logged (value > 1 µg/m³, location > 10 m).
+    - Corrections list per council, for coordinates wrong in the newest
+      source and checked by address. Merton: 45 HSBC (ASR 1.4 km north; the
+      branch is Crown House, 102 London Road, SM4 5AY, 34 m from the All
+      Annuals point) and 50 Martin Way (ASR easting 525638 is on London Road;
+      524638 is on Martin Way).
+    - A move needs a shift over 25 m between years **and** a changed
+      description (compared ignoring case, punctuation, postcodes and
+      Rd/St/Ave/Pk/Jct/Ln; one containing the other is the same). Earlier
+      locations become their own site, ID `13 (2015-16)`, Label
+      `<description> (2015-16 location)`; the current location keeps the
+      plain ID. A single wide source cannot show a move inside its span.
+    - Merton result: no moves; log of 3 value, 2 correction and 14
+      same-year location entries. Location check of the 12 sites in
+      `~/Coding/Library/data/tubes/merton_location_check.csv`. Worth a check
+      on the ground: site 2, which GLA 2021 describes as "A24 Jct with Garth
+      Drive", 635 m from the ASR point.
+    - Verified with synthetic data: a 300 m move with a new description is
+      versioned; a 40 m shift with the same description is not; a
+      triplicate with one tube missing averages two, `n_tubes` 2.
+8.  For the package function: the rules above are the specification; its
+    roxygen must state them, and the tests must cover each.
+
+### 20. Network mean and maximum over long records — raised 2026-10-15
+
+1.  The legend indicator's mean uses a fixed panel: sites reporting in every
+    displayed year. Over a long record that panel is the few oldest sites:
+    Merton from 2012 gives 7 of 62, Richmond from 1993 gives 4. The mean
+    then describes a handful of sites, not the network shown.
+2.  The maximum has the opposite problem: it is taken over whatever reports
+    each year, so early years' maxima come from 9–18 sites, later ones from
+    60.
+3.  Open: how to handle both. Candidates to assess: a minimum panel size
+    below which the panel restarts at a later year (a stepped panel, stated
+    in the caption); mean of all sites reporting, with the count shown; a
+    `quickmap()` argument setting the panel's first year. Needed before the
+    Merton 2012 map is useful for trend reading; does not block building it.
+4.  Open: whether in v1.0. It changes `build_indicator_data()` and
+    `indicator.js`, so it is rendering-touching and needs visual sign-off.
+
 ### Which PR each open task belongs to
 
 | Task | PR |
@@ -319,10 +449,12 @@ Items are never renumbered; other documents cite these numbers.
 | 14 dev/ rename | new PR, low priority |
 | 17 GIF export | new PR, after #53 merges |
 | Architecture diagrams | new PR from `docs/architecture-diagrams` |
+| 19 tube-source merge as a package function | with 11.1, in v1.0 |
+| 20 indicator over long records | undecided |
 
 ### Numbering history
 
-Items 16 and 17 added 2026-10-13; item 18 the same day.
+Items 16 and 17 added 2026-10-13; item 18 the same day; items 19 and 20 on 2026-10-15.
 
 Items 2 and 5 inserted 2026-07-05; item 10 on 07-06, renumbering UI defects to
 11; items 12–14 on 08-15/16. Earlier dev docs use the old numbering.
@@ -366,7 +498,9 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
 - **12. Image export unreliable.** chromote startup times out mid-batch; retry
   each webshot call.
 - **13. Sub-annual limit values.** The indicator hides below annual resolution;
-  needs resolution-aware targets in the YAML. Post-1.0.
+  needs resolution-aware targets in the YAML. Post-1.0. When resolved,
+  rebuild the hosted episode map with the mean and maximum on:
+  `/Users/iarla/Coding/swlonrsp-maps-build/RULES.md`, rule 21.
 - **14. Fixed panel unexplained.** "Network mean, N sites" counts fewer sites
   than are on screen; add a tooltip.
 - **15. Split import from map creation.**
@@ -394,6 +528,15 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
   `feature/item11-tiles-legend` (v0.9.9.14): `get_default_theme()` sets
   `base_tiles = "OpenStreetMap.DE"`; NULL still means osm.org for hosted-only
   maps. Signed off 2026-10-13, PR #54.
+- **19. Lazy path ignores the label theme keys; lazy as default undecided.**
+  Found 2026-10-14 (item 16). `build_lazy_payload()` carries no
+  `label_scale` or `label_background`, and `lazy-time-controller.js`
+  hard-codes its tooltip style with no font size, so labels on lazy maps are
+  not sized by `label_font_size()`. Its `colourFor()` reads `thresholds`
+  only, so a temporal layer on a categorical (`domain`) scale is untested.
+  Forcing lazy on the seven site annual maps cut them 15–29%. Making it the
+  default needs these fixed first, and means interactive maps and static
+  exports always render through different code (exports stay pre-built).
 
 ### Documentation that contradicts the code
 
