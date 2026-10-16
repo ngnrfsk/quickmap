@@ -11,7 +11,7 @@ qm_layer(
   label_col = NULL,
   shape = NULL,
   name = "layer",
-  shorten_labels = FALSE
+  shorten_labels = NULL
 )
 }
 \arguments{
@@ -40,10 +40,10 @@ argument to \code{\link[=quickmap]{quickmap()}} overrides this.}
 
 \item{shorten_labels}{Drop the school type from the label column, so
 "Abbotsbury Primary School" reads "Abbotsbury" and the type appears once
-in the banner key instead of on every marker. Default FALSE, because it
-changes what an existing map says. Names that would collide keep their
-full form — see \code{\link[=shorten_school_names]{shorten_school_names()}}. Schools only for 1.0; the
-layer is left alone when it has no label column.}
+in the banner key instead of on every marker. NULL (default) shortens
+when the labels come from a \code{School} column and leaves other labels
+alone; FALSE keeps full names. Names that would collide keep their
+full form — see \code{\link[=shorten_school_names]{shorten_school_names()}}. Schools only for 1.0.}
 }
 \value{
 The data as a \code{qm_layer} (still an sf data.frame)
