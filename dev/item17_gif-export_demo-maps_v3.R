@@ -1,20 +1,19 @@
 # Demo GIFs for visual sign-off of feature/item17-gif-export (v0.9.9.15).
 # Install the branch, then from the repository root:
-#   Rscript dev/item17_gif-export_demo-maps_v2.R
+#   Rscript dev/item17_gif-export_demo-maps_v3.R
 # Writes to aq_maps/ (gitignored).
 #
-# v2 (2026-10-16): v1's always-on labels made the maps unreadable, so both
-# maps show names on hover only (symbol_labels = "labels"): in the HTML, not
-# in the GIF or JPGs. School names are now shortened by default. The v1 episode GIF had no labels and
-# is not rebuilt: item17_episode-hourly_v1.gif stands.
+# v3 (2026-10-19): the legend's mean and maximum figures now have a fixed
+# width, so the ramp no longer shifts sideways as they change. Otherwise as v2.
+# v2 (2026-10-16): names on hover only (symbol_labels = "labels"), school
+# names shortened by default. The v1 episode GIF is not rebuilt.
 #
 # What to look at:
-#   1. item17_merton-annual_v2.gif: 14 frames, 2012-2025, from the combined
-#      Merton tube table (quickmap item 19), 1200x1200 default size, 800 ms a
-#      frame. Years in order; banner, legend mean and maximum change with the
-#      frame; school crosses stay put; markers readable. Loops.
-#   2. item17_croydon_v2.gif plus its six JPGs at 1000x1000: the GIF frames
-#      match the JPGs.
+#   1. item17_merton-annual_v3.gif: 14 frames, 2012-2025, 800 ms a frame. The
+#      legend ramp stays still from frame to frame; years in order; banner,
+#      legend mean and maximum change with the frame. Loops.
+#   2. item17_croydon_v3.gif plus its six JPGs at 1000x1000: ramp still; the
+#      GIF frames match the JPGs.
 
 library(quickmap)
 
@@ -29,7 +28,7 @@ quickmap(
   title = "LB Merton, Annual Mean NO2, 2012-2025 (item 17 GIF demo)",
   symbol_labels = "labels",
   export_animation = "gif",
-  output_file = "item17_merton-annual_v2.html",
+  output_file = "item17_merton-annual_v3.html",
   output_dir = out
 )
 
@@ -43,6 +42,6 @@ quickmap(
   symbol_labels = "labels",
   export_image = c(1000, 1000),
   export_animation = "gif",
-  output_file = "item17_croydon_v2.html",
+  output_file = "item17_croydon_v3.html",
   output_dir = out
 )

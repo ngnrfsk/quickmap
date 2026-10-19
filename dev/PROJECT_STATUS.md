@@ -97,6 +97,8 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 - 2026-10-16: school names are shortened by default (`shorten_labels = NULL`
   shortens `School` labels only; FALSE keeps full names). Reverses the
   v0.9.9.13 default.
+- 2026-10-19: fix the legend ramp's sideways shift in PR #56 rather than
+  backlog it.
 
 ## Waiting on Iarla
 
@@ -381,6 +383,12 @@ Items are never renumbered; other documents cite these numbers.
     only (`"labels"`), so the GIF and JPGs carry no labels; the episode GIF
     had none and is not rebuilt.
     School-name shortening became the default on this branch.
+10. Review 2026-10-19 (Iarla): v2 GIFs near right; the legend ramp shifted a
+    few pixels as the mean and maximum figures changed width. Fixed: the
+    figures have equal-width digits in a fixed 4ch box (both legend CSS
+    files). Ramp left edge across Merton frames: v2 391–395 px, v3 405 px in
+    all 14. Demo v3: `dev/item17_gif-export_demo-maps_v3.R`. A maximum of
+    100 or more still widens the box.
 
 ### 18. Create a new API guide — after items 17, 12 and 11, before the v1.0 tag
 
