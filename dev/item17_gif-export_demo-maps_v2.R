@@ -19,7 +19,7 @@
 library(quickmap)
 
 out <- "aq_maps"
-croydon <- "/Users/iarla/Coding/260911 Croydon LCA maps/data"
+croydon <- "/Users/iarla/Coding/quickmap-work/260911 Croydon LCA maps/data"
 
 quickmap(
   list("tubes/merton_no2_tubes_2012_2025.csv", "schools_Merton.csv"),
