@@ -113,6 +113,11 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
     currently carries it.
 3.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
     `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
+4.  **Sign off item 17 v3 (PR #56)**: the GIFs and HTML maps in iCloud
+    `dev/item17/maps/` (`*_v3*`); check the legend ramp holds still. Also
+    decide `export_animation = "gif"` against `export_gif = TRUE`.
+5.  **Name PRs #56 and #58 to merge.** Both edit this file; the second to
+    merge needs a rebase. #58 (item 9.5) is small and suggested first.
 
 --------------------------------------------------------------------------------
 
@@ -510,7 +515,8 @@ Items are never renumbered; other documents cite these numbers.
 | Rest of 11, defects and features | new PR, after #51 merges |
 | 13 stack retest | new PR, not urgent |
 | 14 dev/ rename | new PR, low priority |
-| 17 GIF export | new PR, after #53 merges |
+| 17 GIF export | #56, v3 awaiting sign-off |
+| 9.5 operational work out of the package | #58, awaiting merge |
 | Architecture diagrams | new PR from `docs/architecture-diagrams` |
 | 19 tube-source merge as a package function | with 11.1, in v1.0 |
 | 20 indicator over long records | undecided |
