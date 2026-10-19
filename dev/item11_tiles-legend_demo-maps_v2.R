@@ -15,7 +15,7 @@
 
 library(quickmap)
 
-folder <- "/Users/iarla/Coding/260911 Croydon LCA maps"
+folder <- "/Users/iarla/Coding/quickmap-work/260911 Croydon LCA maps"
 out <- file.path(folder, "aq_maps")
 
 quickmap(

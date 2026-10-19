@@ -118,7 +118,7 @@ defra_tubes_to_csv <- function(xlsx, csv = sub("\\.xlsx?$", ".csv", xlsx),
 
 # ---- run ------------------------------------------------------------------
 
-folder <- "/Users/iarla/Coding/260911 Croydon LCA maps/data"
+folder <- "/Users/iarla/Coding/quickmap-work/260911 Croydon LCA maps/data"
 tubes <- defra_tubes_to_csv(
   file.path(folder, "Diffusion Tube Data Croydon 2020-2025.xlsx"),
   file.path(folder, "croydon_dt_2020_2025.csv")

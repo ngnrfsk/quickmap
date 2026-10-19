@@ -36,6 +36,7 @@ create_generic_icons() → add_layer() → generate_map_layers()
 Interactive sessions follow this section. Autonomous sessions follow "Autonomous Agent Instructions" below, which overrides it.
 
 - Plans live in dev/ as `YYMMDD_project_name_plan.md`.
+- Operational work done *with* quickmap (council maps, the swlonrsp.github.io maps) is not part of the package: it lives in `~/Coding/quickmap-work/`, one folder per job, using the installed package. Never add job scripts to this repository.
 - **Starting**: confirm the plan with the user, then branch.
 - **Ending**: ask the user to finish testing; draft documentation in outline here and in detail in dev/PROJECT_STATUS.md; ask whether to commit; copy the version to versions/ either way.
 

@@ -12,7 +12,7 @@
 #   3. croydon-schools-labels: purple bar banner with white text from the
 #      theme; school crosses with the banner key; tube names on hover.
 
-folder <- "/Users/iarla/Coding/260911 Croydon LCA maps"
+folder <- "/Users/iarla/Coding/quickmap-work/260911 Croydon LCA maps"
 setwd(folder)
 
 quickmap(
