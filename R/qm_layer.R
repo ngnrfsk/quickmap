@@ -174,10 +174,10 @@ qm_find_time_col <- function(data, time_col = NULL) {
 #' @param name Human-visible layer name (legends, controls, errors)
 #' @param shorten_labels Drop the school type from the label column, so
 #'   "Abbotsbury Primary School" reads "Abbotsbury" and the type appears once
-#'   in the banner key instead of on every marker. Default FALSE, because it
-#'   changes what an existing map says. Names that would collide keep their
-#'   full form — see [shorten_school_names()]. Schools only for 1.0; the
-#'   layer is left alone when it has no label column.
+#'   in the banner key instead of on every marker. NULL (default) shortens
+#'   when the labels come from a `School` column and leaves other labels
+#'   alone; FALSE keeps full names. Names that would collide keep their
+#'   full form — see [shorten_school_names()]. Schools only for 1.0.
 #' @return The data as a `qm_layer` (still an sf data.frame)
 #' @family atomic unit
 #' @export
@@ -188,7 +188,7 @@ qm_layer <- function(
   label_col = NULL,
   shape = NULL,
   name = "layer",
-  shorten_labels = FALSE
+  shorten_labels = NULL
 ) {
   if (!is.null(shape)) shape <- qm_normalise_shape(shape)
   if (!is.data.frame(data) || nrow(data) == 0) {
@@ -236,6 +236,7 @@ qm_layer <- function(
 
   # Shorten after `code` is set upstream, so marker identity keeps the full
   # name and only the displayed text changes.
+  shorten_labels <- shorten_labels %||% identical(label_col, "School")
   if (isTRUE(shorten_labels)) {
     if (is.null(label_col)) {
       warning("shorten_labels = TRUE but the layer has no label column; ",
@@ -393,12 +394,13 @@ shorten_school_names <- function(name, level = NULL) {
 #' @param temporal Force temporal (TRUE) or static (FALSE) handling; NULL
 #'   (default) auto-detects: more than one year column means temporal
 #' @param shorten_labels Drop the school type from school names — see
-#'   [qm_layer()]. Default FALSE.
+#'   [qm_layer()]. NULL (default) shortens school files; FALSE keeps full
+#'   names.
 #' @return A [qm_layer()]
 #' @family atomic unit
 #' @export
 from_csv <- function(file, pollutant = "no2", name = NULL, temporal = NULL,
-                     shorten_labels = FALSE) {
+                     shorten_labels = NULL) {
   name <- name %||% tools::file_path_sans_ext(basename(file))
   imported <- import_csv_data(file)
   data <- imported$data

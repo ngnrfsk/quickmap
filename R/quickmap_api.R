@@ -87,6 +87,10 @@ as_qm_layer <- function(x, pollutant, temporal = NULL) {
 #' @param title Banner title
 #' @param styling_type "html" (banner + legend + time control) or "none"
 #' @param export_image NULL, TRUE, or c(width, height) for JPG export
+#' @param export_animation NULL, or "gif" for an animated GIF of the time
+#'   steps beside the HTML (same name, `.gif`). Frame size is `export_image`'s
+#'   (1200x1200 when NULL); each frame shows for `play_speed` ms. Needs the
+#'   gifski package.
 #' @param symbol_labels FALSE, TRUE (hover), "values_on", "labels", "labels_on"
 #' @param vignette Dim the area outside the boundary
 #' @param banner_colour Banner background colour
@@ -108,8 +112,8 @@ as_qm_layer <- function(x, pollutant, temporal = NULL) {
 #' @param ... Accepts the old argument name `marker_labels`, with a warning.
 #'   Any other name is an error.
 #' @return The saved file is the product; the Leaflet object comes back
-#'   invisibly as a byproduct. Writes `output_file`, and JPGs when
-#'   `export_image` is set.
+#'   invisibly as a byproduct. Writes `output_file`, JPGs when
+#'   `export_image` is set, and a GIF when `export_animation = "gif"`.
 #'
 #' @examples
 #' \dontrun{
@@ -126,6 +130,10 @@ as_qm_layer <- function(x, pollutant, temporal = NULL) {
 #'   title = "Merton NO2",
 #'   output_file = "merton_no2.html"
 #' )
+#'
+#' # the animation as a GIF for email or slides, beside the HTML
+#' quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth",
+#'          export_animation = "gif", output_file = "wandsworth.html")
 #'
 #' # expert: hand-built atomic unit
 #' quickmap(qm_layer(my_data, value_col = "pm25"), boroughs = "Richmond",
@@ -153,6 +161,7 @@ quickmap <- function(
   theme_file = NULL,
   data_symbols = NULL,
   wind = NULL,
+  export_animation = NULL,
   ...
 ) {
   symbol_labels <- absorb_legacy_args(symbol_labels, ...)
@@ -215,7 +224,8 @@ quickmap <- function(
     autoplay = autoplay,
     play_speed = play_speed,
     theme_file = theme_file,
-    wind = wind
+    wind = wind,
+    export_animation = export_animation
   )
 }
 
@@ -252,11 +262,12 @@ quickmap <- function(
 #'   and failing that a pace set by the number of time steps
 #' @param theme_file Path to a YAML theme file
 #' @param wind Optional wind layer (see [quickmap()])
+#' @param export_animation NULL, or "gif" (see [quickmap()])
 #' @param ... Accepts the old argument name `marker_labels`, with a warning.
 #'   Any other name is an error.
 #' @return The saved file is the product; the Leaflet object comes back
-#'   invisibly as a byproduct. Writes `output_file`, and JPGs when
-#'   `export_image` is set.
+#'   invisibly as a byproduct. Writes `output_file`, JPGs when
+#'   `export_image` is set, and a GIF when `export_animation = "gif"`.
 #' @family map
 #' @export
 create_pollution_map <- function(
@@ -281,6 +292,7 @@ create_pollution_map <- function(
   play_speed = NULL,
   theme_file = NULL,
   wind = NULL,
+  export_animation = NULL,
   ...
 ) {
   symbol_labels <- absorb_legacy_args(symbol_labels, ...)
@@ -313,6 +325,7 @@ create_pollution_map <- function(
     play_speed = play_speed,
     theme_file = theme_file,
     data_symbols = data_symbols,
-    wind = wind
+    wind = wind,
+    export_animation = export_animation
   )
 }

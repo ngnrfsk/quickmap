@@ -24,6 +24,7 @@ quickmap(
   theme_file = NULL,
   data_symbols = NULL,
   wind = NULL,
+  export_animation = NULL,
   ...
 )
 }
@@ -81,13 +82,18 @@ frame with \code{date}/\code{ws}/\code{wd} columns. Rendered as an animated part
 overlay (leaflet-velocity) that advances with the time control.
 Interactive HTML only — omitted from static JPG exports.}
 
+\item{export_animation}{NULL, or "gif" for an animated GIF of the time
+steps beside the HTML (same name, \code{.gif}). Frame size is \code{export_image}'s
+(1200x1200 when NULL); each frame shows for \code{play_speed} ms. Needs the
+gifski package.}
+
 \item{...}{Accepts the old argument name \code{marker_labels}, with a warning.
 Any other name is an error.}
 }
 \value{
 The saved file is the product; the Leaflet object comes back
-invisibly as a byproduct. Writes \code{output_file}, and JPGs when
-\code{export_image} is set.
+invisibly as a byproduct. Writes \code{output_file}, JPGs when
+\code{export_image} is set, and a GIF when \code{export_animation = "gif"}.
 }
 \description{
 The core QuickMap entry point. Takes one layer or a list of layers — file
@@ -121,6 +127,10 @@ quickmap(
   title = "Merton NO2",
   output_file = "merton_no2.html"
 )
+
+# the animation as a GIF for email or slides, beside the HTML
+quickmap("wandsworth_2017_2024.csv", boroughs = "Wandsworth",
+         export_animation = "gif", output_file = "wandsworth.html")
 
 # expert: hand-built atomic unit
 quickmap(qm_layer(my_data, value_col = "pm25"), boroughs = "Richmond",

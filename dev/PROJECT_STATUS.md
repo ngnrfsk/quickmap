@@ -6,7 +6,7 @@ editor_options:
 
 # QuickMap Project Status
 
-**Last Updated**: 2026-10-15 **Current Version**: v0.9.9.14
+**Last Updated**: 2026-10-15 **Current Version**: v0.9.9.15
 
 Version history: NEWS.md. History before 2026-08-16:
 dev/archive/PROJECT_STATUS_history_to_260816.md.
@@ -92,6 +92,18 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
   `~/Coding/quickmap-work/`, outside the package, not in a folder inside it
   (PR #57, which added `work/` to the package, closed). A step towards the
   package standing alone as a library. Item 9.5.
+- 2026-10-16: item 17 demos look right, but always-on labels made them
+  unreadable; demos show names on hover only (`symbol_labels = "labels"`).
+- 2026-10-16: school names are shortened by default (`shorten_labels = NULL`
+  shortens `School` labels only; FALSE keeps full names). Reverses the
+  v0.9.9.13 default.
+- 2026-10-19: fix the legend ramp's sideways shift in PR #56 rather than
+  backlog it.
+- 2026-10-21: item 17 v3 signed off. Flag settings follow the code's own
+  practice, else best practice: `export_animation = "gif"` stays.
+- 2026-10-21: review API interface consistency before v1.0 (item 18.6).
+- 2026-10-21: PR #58 (item 9.5) merged, then PR #56 (item 17, v0.9.9.15),
+  both squash.
 
 ## Waiting on Iarla
 
@@ -338,7 +350,7 @@ Items are never renumbered; other documents cite these numbers.
     to an absolute path, so a prepared `.Rdata` outside `DATA_PATH` cannot be
     passed by path (same subject as 11.4).
 
-### 17. GIF export of the animation — urgent, after PR #53 merges
+### 17. GIF export of the animation — done 2026-10-21 (PR #56)
 
 1.  Does not exist: no `gif`, `gifski`, `magick` or `av` anywhere in R/,
     DESCRIPTION or NEWS.md (checked 2026-10-13).
@@ -351,6 +363,41 @@ Items are never renumbered; other documents cite these numbers.
 5.  Overlaps item 11.3 (print/email quality selector — the GIF needs a pixel
     size and frame delay) and open defect 12 (chromote times out mid-batch; a
     GIF needs every frame, so the retry may have to come first).
+6.  **Built 2026-10-15, awaiting review** on `feature/item17-gif-export`
+    (v0.9.9.15), with defect 12; asked for unattended by Iarla.
+    `export_animation = NULL | "gif"` on `quickmap()` and
+    `create_pollution_map()`: one frame per step at `play_speed`, looping,
+    frame size `export_image`'s or 1200×1200, frames in a temporary folder;
+    gifski in Suggests. Open for review: the argument's name and shape
+    (chosen over a boolean `export_gif` for API principle 4, leaving room for
+    `"mp4"`).
+7.  Two defects found while building, both fixed on the branch: (a) with
+    `display_times` unset, steps followed the first layer's row order (the
+    combined Merton table ran 2017…2025 then 2012), now sorted; (b) one
+    `webshot()` call writing two files loads the pages concurrently, which
+    drew frames as a 2×2 grid of the page or before tiles and boundary had
+    drawn; now one call per file.
+8.  Demo (`dev/item17_gif-export_demo-maps_v1.R`, 6.1 min): Merton 2012–2025,
+    14 frames, 1200 px, 3.1 MB; episode, 108 frames, 800 px, 1.3 MB; Croydon
+    with JPGs, 6 frames, 1000 px, 1.3 MB. Every frame checked for count and
+    blank or undersized frames; none. For 11.3: a 1200 px annual GIF is 3 MB,
+    so an email preset should be smaller.
+9.  Review 2026-10-16 (Iarla): the GIFs are right; always-on labels
+    (`symbol_labels = "values_on"` / `"labels_on"`) made the maps unreadable.
+    Demo v2 (`dev/item17_gif-export_demo-maps_v2.R`) shows names on hover
+    only (`"labels"`), so the GIF and JPGs carry no labels; the episode GIF
+    had none and is not rebuilt.
+    School-name shortening became the default on this branch.
+10. Review 2026-10-19 (Iarla): v2 GIFs near right; the legend ramp shifted a
+    few pixels as the mean and maximum figures changed width. Fixed: the
+    figures have equal-width digits in a fixed 4ch box (both legend CSS
+    files). Ramp left edge across Merton frames: v2 391–395 px, v3 405 px in
+    all 14. Demo v3: `dev/item17_gif-export_demo-maps_v3.R`. A maximum of
+    100 or more still widens the box.
+11. Signed off 2026-10-21 (Iarla): v3 passed. Argument kept as
+    `export_animation = "gif"`: no `quickmap()` argument takes TRUE/FALSE,
+    `export_image` takes a value (dimensions), and CLAUDE.md principle 4 is
+    multi-value over boolean.
 
 ### 18. Create a new API guide — after items 17, 12 and 11, before the v1.0 tag
 
@@ -371,6 +418,11 @@ Items are never renumbered; other documents cite these numbers.
     and `vignettes/styling.Rmd`), and `quickmap.*` options (`time_step_cap`,
     `lazy_step_threshold`, `lazy_size_threshold`, `output_dir`,
     `screenshot_attempts`; documented only where each is used).
+6.  Review API interface consistency (Iarla, 2026-10-21), using the
+    catalogue: argument names and spelling, value types (multi-value over
+    boolean), defaults, and the same setting named alike across functions and
+    theme keys. Changes land before the v1.0 tag, with the old names kept
+    with a warning as `marker_labels` was.
 
 ### 19. One combined tube table per council — Merton built 2026-10-15
 
@@ -472,7 +524,9 @@ Items are never renumbered; other documents cite these numbers.
 | Rest of 11, defects and features | new PR, after #51 merges |
 | 13 stack retest | new PR, not urgent |
 | 14 dev/ rename | new PR, low priority |
-| 17 GIF export | new PR, after #53 merges |
+| 17 GIF export | #56, merged 2026-10-21 |
+| 18.6 API interface consistency review | with 18, before the v1.0 tag |
+| 9.5 operational work out of the package | #58, merged 2026-10-21 |
 | Architecture diagrams | new PR from `docs/architecture-diagrams` |
 | 19 tube-source merge as a package function | with 11.1, in v1.0 |
 | 20 indicator over long records | undecided |
@@ -521,7 +575,11 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
 - **11. Background CPU and memory.** Maps animate when hidden. Pause particles,
   crossfades and autoplay on `visibilitychange` and off-viewport.
 - **12. Image export unreliable.** chromote startup times out mid-batch; retry
-  each webshot call.
+  each webshot call. **Fixed on `feature/item17-gif-export`, awaiting
+  review** (2026-10-15): `take_screenshots()` retries a failed or empty
+  screenshot, 3 attempts with a 1 s then 2 s pause
+  (`quickmap.screenshot_attempts`), then stops naming the frame and Chrome's
+  error. Tested with a mocked webshot; the timeout itself was not reproduced.
 - **13. Sub-annual limit values.** The indicator hides below annual resolution;
   needs resolution-aware targets in the YAML. Post-1.0. When resolved,
   rebuild the hosted episode map with the mean and maximum on:

@@ -194,6 +194,16 @@
   color: #666;
 }
 
+/* The figures change every step; equal-width digits in a fixed box keep the
+   legend from moving sideways as they do (up to 99.9). */
+#qmIndicatorValue,
+#qmIndicatorMaxValue {
+  display: inline-block;
+  min-width: 4ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 /* The maximum's diamond: a square turned 45 degrees. Distinguished from the
    mean by SHAPE, not colour — colour already carries the concentration band,
    so both markers take the band colour of their own value. */
