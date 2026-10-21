@@ -25,7 +25,7 @@ Usage:
 
 Example (this branch's canonical comparison set — see the companion .md):
     python3 260818_html_dom_compare_v1.py \\
-        "/Users/iarla/Coding/260814 Merton AQAP maps and figures refresh/animations" \\
+        "/Users/iarla/Coding/quickmap-work/260814 Merton AQAP maps and figures refresh/animations" \\
         "/Users/iarla/Coding/260818 Merton AQAP item9-retest/animations"
 
 Exit code 0 if every compared pair matches structurally, 1 otherwise.

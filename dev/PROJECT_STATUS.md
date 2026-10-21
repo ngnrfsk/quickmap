@@ -82,6 +82,16 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 - 2026-10-15: item 16.5 done: Squarespace links repointed to `_latest`.
 - 2026-10-15: Iarla asked for A1–A3 unattended: PR for `chore/status-item16`,
   defect 12 retry, item 17 GIF export.
+- 2026-10-16: banners stay as they are: "strip" (white, theme colour as a
+  rule) is the default, "bar" is set per theme (Croydon). Documented in
+  `vignettes/styling.Rmd` and CLAUDE.md Themes.
+- 2026-10-16: PR #55 merged (squash).
+- 2026-10-16: item 18 must also list every setting outside function
+  arguments: theme keys, colour-scale keys and `quickmap.*` options.
+- 2026-10-19: operational work done with quickmap lives in
+  `~/Coding/quickmap-work/`, outside the package, not in a folder inside it
+  (PR #57, which added `work/` to the package, closed). A step towards the
+  package standing alone as a library. Item 9.5.
 
 ## Waiting on Iarla
 
@@ -118,8 +128,15 @@ Items are never renumbered; other documents cite these numbers.
     `map.marker_labels`.
 4.  Defects and roadmap to GitHub Issues, plus DESCRIPTION `URL:`/`BugReports:`.
     Steps 2 and 3 of dev/260816_item9_status_restructure_plan.md.
-5.  Client scripts move to a workspace repo; `inst/examples/` keeps generic
-    ones. May finish post-1.0 if the package no longer depends on them.
+5.  **Done 2026-10-19.** Operational work moved out of the package to
+    `~/Coding/quickmap-work/`, one sub-folder per job, outside the package's
+    git and build (`~/Coding/quickmap-work/README.md`). Five job scripts left
+    `inst/examples/` (Merton AQAP maps, RSP maps, Wandsworth proposed sensors,
+    two Breathe London data-prep scripts); `episode_example.R` and
+    `test_episode_example.R` stay as generic examples, the first pinned by
+    the characterisation tests. Five job folders moved from `~/Coding/`:
+    swlonrsp-maps-build, Croydon LCA maps, Merton AQAP refresh, 251007 maps
+    refresh, Nine Elms (260312_ides_of_march).
 6.  Four `sapply()` calls to `vapply()`; the live one is in
     `create_generic_icons()`, around R/quickmap.R:3092.
 7.  **Done (PR #53).** Audit docs against code; mark dev docs current or
@@ -156,7 +173,7 @@ Items are never renumbered; other documents cite these numbers.
 7.  **Defra workbook reader (11.1), drafted 2026-09-11** as
     dev/item11_defra-tubes-xlsx_v1.R, with a bundled Croydon theme
     (`inst/themes/croydon.yaml`). Test files live outside the repo in
-    `/Users/iarla/Coding/260911 Croydon LCA maps/`. Still to do, from the
+    `/Users/iarla/Coding/quickmap-work/260911 Croydon LCA maps/`. Still to do, from the
     Croydon live-data test of 11 to 22 September:
 
     *Reader, script to package function:*
@@ -200,7 +217,7 @@ Items are never renumbered; other documents cite these numbers.
     file passes since the correction. tests/test_quickmap.R completed. **All three demo maps signed
     off by Iarla, 2026-10-13; merged as PR #54.** Demo maps regenerated 2026-10-13 from
     dev/item11_tiles-legend_demo-maps_v2.R into
-    `/Users/iarla/Coding/260911 Croydon LCA maps/aq_maps/`:
+    `/Users/iarla/Coding/quickmap-work/260911 Croydon LCA maps/aq_maps/`:
     - item11_merton-annual_v2.html — streets visible when opened from disk;
       legend panel lavender from merton.yaml with a white heading pill. v1
       signed off 2026-09-22: the lavender legend, white banner and purple rule
@@ -284,15 +301,16 @@ Items are never renumbered; other documents cite these numbers.
     (2), Wandsworth (2), Wandsworth sensor locations (1), the PM2.5 episode of
     15–20 January 2024 (1).
 2.  **Done.** Scripts are in a new local repo,
-    `/Users/iarla/Coding/swlonrsp-maps-build` (first commit 20e76d6, no GitHub
+    `/Users/iarla/Coding/quickmap-work/swlonrsp-maps-build` (first commit 20e76d6, no GitHub
     remote yet): one script per borough plus the episode, run by
     `Rscript build_all.R`. All 12 rebuild with v0.9.9.14 into its `build/`.
-3.  Sources of each map's method: `inst/examples/quickmap_create_RSP_maps.R`
-    (six `*_Map_*` files), the Merton AQAP `merton_animation_v1.R` (three
-    `*_latest`), the Croydon `croydon_maps_v4.R`, `inst/examples/
-    episode_example.R` and `inst/examples/
-    quickmap_create_wandsworth_new_sensors.R`. All inputs were already held;
-    the Breathe London API key was not needed.
+3.  Sources of each map's method: `quickmap_create_RSP_maps.R`
+    (six `*_Map_*` files; now in the scripts repo's `legacy/`), the Merton
+    AQAP `merton_animation_v1.R` (three `*_latest`), the Croydon
+    `croydon_maps_v4.R`, `inst/examples/episode_example.R` and
+    `quickmap_create_wandsworth_new_sensors.R` (now in
+    `~/Coding/quickmap-work/wandsworth-proposed-sensors/`). All inputs were
+    already held; the Breathe London API key was not needed.
 4.  Compared with the hosted copies by title, time steps and legend bands:
     titles and steps match on all 12. Ten differences are listed in that
     repo's README.md; its STATUS.md holds the open points. The main ones:
@@ -315,7 +333,7 @@ Items are never renumbered; other documents cite these numbers.
     can now retire (clear the old names in `maps.csv`, deploy with
     `--remove`, with Iarla's go-ahead). Remaining: Wandsworth banner contrast (2.7:1, fix in
     `inst/themes/wandsworth.yaml`); open points in
-    `/Users/iarla/Coding/swlonrsp-maps-build/STATUS.md`.
+    `/Users/iarla/Coding/quickmap-work/swlonrsp-maps-build/STATUS.md`.
 6.  Found while building, for item 11: `from_rdata()` prepends `DATA_PATH`
     to an absolute path, so a prepared `.Rdata` outside `DATA_PATH` cannot be
     passed by path (same subject as 11.4).
@@ -346,6 +364,13 @@ Items are never renumbered; other documents cite these numbers.
 3.  Its discrepancies against the roxygen text are the last docs-vs-code check
     before `R CMD CHECK` (9.2) is declared clean for release.
 4.  Open: whether it stays a dev/ document or becomes a manual chapter.
+5.  Also lists every setting that is not a function argument, each traced to
+    where the code reads it (added 2026-10-16; checked then: no complete list
+    exists): theme YAML keys (defined by `get_default_theme()`; partly in
+    `vignettes/styling.Rmd` and CLAUDE.md), colour-scale YAML keys (CLAUDE.md
+    and `vignettes/styling.Rmd`), and `quickmap.*` options (`time_step_cap`,
+    `lazy_step_threshold`, `lazy_size_threshold`, `output_dir`,
+    `screenshot_attempts`; documented only where each is used).
 
 ### 19. One combined tube table per council — Merton built 2026-10-15
 
@@ -353,7 +378,7 @@ Items are never renumbered; other documents cite these numbers.
     (ASR) table, the GLA London files and project workbooks. The site maps
     used only the ASR table, so the Merton map starts in 2019 although
     Merton data goes back to 2012.
-2.  Prototype in `/Users/iarla/Coding/swlonrsp-maps-build/scripts/tubes/`:
+2.  Prototype in `/Users/iarla/Coding/quickmap-work/swlonrsp-maps-build/scripts/tubes/`:
     `tube_merge.R` holds general functions (`normalise_tube_id()`,
     `tube_long_from_wide()`, `merge_colocated_tubes()`,
     `combine_tube_sources()`, `write_tube_outputs()`); `merton_tubes.R` holds
@@ -500,7 +525,7 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
 - **13. Sub-annual limit values.** The indicator hides below annual resolution;
   needs resolution-aware targets in the YAML. Post-1.0. When resolved,
   rebuild the hosted episode map with the mean and maximum on:
-  `/Users/iarla/Coding/swlonrsp-maps-build/RULES.md`, rule 21.
+  `/Users/iarla/Coding/quickmap-work/swlonrsp-maps-build/RULES.md`, rule 21.
 - **14. Fixed panel unexplained.** "Network mean, N sites" counts fewer sites
   than are on screen; add a tooltip.
 - **15. Split import from map creation.**

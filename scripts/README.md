@@ -8,12 +8,15 @@ All of them expect to be run **from the repository root**, e.g.
 
 | Folder | What is in it |
 |---|---|
-| `clients/` | Deliverables for a real job. `merton_print-set_v5.R` builds the seven-year NO2 print set for the LB Merton Air Quality Action Plan |
 | `demos/` | Scripts that render something for a human to look at: the current examples, the worked API examples, the speed-control and wind demos, the symbol sampler |
 | `manual/` | Builds the pkgdown user manual — its data, its assets and its chunk runner |
 | `tools/` | Maintenance. Two tidy `aq_maps/`, one tidies `dev/concepts/`, one screenshots a saved map at a chosen width |
 
 ## Where the rest went
+
+- **Work for a real job** (maps for a council, a website or a report) is not
+  part of the package: it is in `~/Coding/quickmap-work/`, one folder per
+  job. That includes the LB Merton AQAP print set once in `clients/`.
 
 - **Chart and table scripts** are in `quickplot/` — a separate thing from
   QuickMap, which is a mapping tool.
