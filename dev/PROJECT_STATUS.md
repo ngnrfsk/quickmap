@@ -102,6 +102,8 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 - 2026-10-21: item 17 v3 signed off. Flag settings follow the code's own
   practice, else best practice: `export_animation = "gif"` stays.
 - 2026-10-21: review API interface consistency before v1.0 (item 18.6).
+- 2026-10-21: PR #58 (item 9.5) merged, then PR #56 (item 17, v0.9.9.15),
+  both squash.
 
 ## Waiting on Iarla
 
@@ -116,8 +118,6 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
     currently carries it.
 3.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
     `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
-4.  **Name PRs #56 and #58 to merge.** Both edit this file; the second to
-    merge needs a rebase. #58 (item 9.5) is small and suggested first.
 
 --------------------------------------------------------------------------------
 
@@ -350,7 +350,7 @@ Items are never renumbered; other documents cite these numbers.
     to an absolute path, so a prepared `.Rdata` outside `DATA_PATH` cannot be
     passed by path (same subject as 11.4).
 
-### 17. GIF export of the animation — urgent, after PR #53 merges
+### 17. GIF export of the animation — done 2026-10-21 (PR #56)
 
 1.  Does not exist: no `gif`, `gifski`, `magick` or `av` anywhere in R/,
     DESCRIPTION or NEWS.md (checked 2026-10-13).
@@ -524,9 +524,9 @@ Items are never renumbered; other documents cite these numbers.
 | Rest of 11, defects and features | new PR, after #51 merges |
 | 13 stack retest | new PR, not urgent |
 | 14 dev/ rename | new PR, low priority |
-| 17 GIF export | #56, signed off 2026-10-21, awaiting merge |
+| 17 GIF export | #56, merged 2026-10-21 |
 | 18.6 API interface consistency review | with 18, before the v1.0 tag |
-| 9.5 operational work out of the package | #58, awaiting merge |
+| 9.5 operational work out of the package | #58, merged 2026-10-21 |
 | Architecture diagrams | new PR from `docs/architecture-diagrams` |
 | 19 tube-source merge as a package function | with 11.1, in v1.0 |
 | 20 indicator over long records | undecided |
