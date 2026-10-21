@@ -99,6 +99,9 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
   v0.9.9.13 default.
 - 2026-10-19: fix the legend ramp's sideways shift in PR #56 rather than
   backlog it.
+- 2026-10-21: item 17 v3 signed off. Flag settings follow the code's own
+  practice, else best practice: `export_animation = "gif"` stays.
+- 2026-10-21: review API interface consistency before v1.0 (item 18.6).
 
 ## Waiting on Iarla
 
@@ -113,10 +116,7 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
     currently carries it.
 3.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
     `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
-4.  **Sign off item 17 v3 (PR #56)**: the GIFs and HTML maps in iCloud
-    `dev/item17/maps/` (`*_v3*`); check the legend ramp holds still. Also
-    decide `export_animation = "gif"` against `export_gif = TRUE`.
-5.  **Name PRs #56 and #58 to merge.** Both edit this file; the second to
+4.  **Name PRs #56 and #58 to merge.** Both edit this file; the second to
     merge needs a rebase. #58 (item 9.5) is small and suggested first.
 
 --------------------------------------------------------------------------------
@@ -394,6 +394,10 @@ Items are never renumbered; other documents cite these numbers.
     files). Ramp left edge across Merton frames: v2 391–395 px, v3 405 px in
     all 14. Demo v3: `dev/item17_gif-export_demo-maps_v3.R`. A maximum of
     100 or more still widens the box.
+11. Signed off 2026-10-21 (Iarla): v3 passed. Argument kept as
+    `export_animation = "gif"`: no `quickmap()` argument takes TRUE/FALSE,
+    `export_image` takes a value (dimensions), and CLAUDE.md principle 4 is
+    multi-value over boolean.
 
 ### 18. Create a new API guide — after items 17, 12 and 11, before the v1.0 tag
 
@@ -414,6 +418,11 @@ Items are never renumbered; other documents cite these numbers.
     and `vignettes/styling.Rmd`), and `quickmap.*` options (`time_step_cap`,
     `lazy_step_threshold`, `lazy_size_threshold`, `output_dir`,
     `screenshot_attempts`; documented only where each is used).
+6.  Review API interface consistency (Iarla, 2026-10-21), using the
+    catalogue: argument names and spelling, value types (multi-value over
+    boolean), defaults, and the same setting named alike across functions and
+    theme keys. Changes land before the v1.0 tag, with the old names kept
+    with a warning as `marker_labels` was.
 
 ### 19. One combined tube table per council — Merton built 2026-10-15
 
@@ -515,7 +524,8 @@ Items are never renumbered; other documents cite these numbers.
 | Rest of 11, defects and features | new PR, after #51 merges |
 | 13 stack retest | new PR, not urgent |
 | 14 dev/ rename | new PR, low priority |
-| 17 GIF export | #56, v3 awaiting sign-off |
+| 17 GIF export | #56, signed off 2026-10-21, awaiting merge |
+| 18.6 API interface consistency review | with 18, before the v1.0 tag |
 | 9.5 operational work out of the package | #58, awaiting merge |
 | Architecture diagrams | new PR from `docs/architecture-diagrams` |
 | 19 tube-source merge as a package function | with 11.1, in v1.0 |
