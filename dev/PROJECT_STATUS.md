@@ -545,6 +545,12 @@ Items 2 and 5 inserted 2026-07-05; item 10 on 07-06, renumbering UI defects to
 - **quickplot**: Heatmap, Trend, Exceedance figures on QuickMap's chrome. Own
   repo after 1.0. Prototypes and README:
   `~/Coding/quickmap-work/260814 Merton AQAP maps and figures refresh/scripts/quickplot_README.md`.
+  Coupling found 2026-11-10: the prototypes call 6 unexported quickmap
+  functions via `:::` (`assign_colour`, `convert_colors_to_hex`,
+  `get_contrast_text_color`, `build_banner_css`, `build_legend_css`,
+  `generate_legend_html`), which CRAN rejects across packages and which no
+  quickmap test protects. Signatures still match as of 0.9.9.15. Family
+  framework options and costs: open decision, raised in chat 2026-11-10.
 - **Ecosystem integrations**: ERA5 via ecmwfr, saqgetr, OpenAQ, Mazama
   AirMonitor, stars/terra underlays. Each a `from_*()` wrapper.
   dev/260707_v2_integration_candidates.md.
