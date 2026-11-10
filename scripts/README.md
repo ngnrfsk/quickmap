@@ -18,8 +18,9 @@ All of them expect to be run **from the repository root**, e.g.
   part of the package: it is in `~/Coding/quickmap-work/`, one folder per
   job. That includes the LB Merton AQAP print set once in `clients/`.
 
-- **Chart and table scripts** are in `quickplot/` — a separate thing from
-  QuickMap, which is a mapping tool.
+- **Chart and table scripts** (quickplot, a separate thing from QuickMap) are
+  in `~/Coding/quickmap-work/260814 Merton AQAP maps and figures refresh/scripts/`,
+  with `quickplot_README.md`.
 - **The indicator design chain** is in `dev/concepts/indicator/code/`, with the
   other set-aside ideas under `dev/concepts/`.
 - **Superseded versions and demos for merged roadmap items** were deleted on

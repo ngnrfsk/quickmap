@@ -543,7 +543,8 @@ Items 2 and 5 inserted 2026-07-05; item 10 on 07-06, renumbering UI defects to
 ## Post-1.0
 
 - **quickplot**: Heatmap, Trend, Exceedance figures on QuickMap's chrome. Own
-  repo after 1.0. `quickplot/README.md`.
+  repo after 1.0. Prototypes and README:
+  `~/Coding/quickmap-work/260814 Merton AQAP maps and figures refresh/scripts/quickplot_README.md`.
 - **Ecosystem integrations**: ERA5 via ecmwfr, saqgetr, OpenAQ, Mazama
   AirMonitor, stars/terra underlays. Each a `from_*()` wrapper.
   dev/260707_v2_integration_candidates.md.
