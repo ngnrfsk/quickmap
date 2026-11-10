@@ -549,8 +549,15 @@ Items 2 and 5 inserted 2026-07-05; item 10 on 07-06, renumbering UI defects to
   functions via `:::` (`assign_colour`, `convert_colors_to_hex`,
   `get_contrast_text_color`, `build_banner_css`, `build_legend_css`,
   `generate_legend_html`), which CRAN rejects across packages and which no
-  quickmap test protects. Signatures still match as of 0.9.9.15. Family
-  framework options and costs: open decision, raised in chat 2026-11-10.
+  quickmap test protects. Signatures still match as of 0.9.9.15. Interim:
+  README.md "Building companion tools" lists the interface (2026-11-10).
+- **Companion-tool interface, backlog** (proposed 2026-11-10, deferred as more
+  than current need): export the functions listed in README.md "Building
+  companion tools"; route companion data and output paths through quickmap's
+  resolvers; add a quickmap test rendering a fixture table and chart with them,
+  compared against saved copies; a manual pre-release script re-running the
+  quickplot prototypes. Estimate 2–3 days. A shared core package (1–2 weeks)
+  stays deferred per the 2026-08-06 decision.
 - **Ecosystem integrations**: ERA5 via ecmwfr, saqgetr, OpenAQ, Mazama
   AirMonitor, stars/terra underlays. Each a `from_*()` wrapper.
   dev/260707_v2_integration_candidates.md.
