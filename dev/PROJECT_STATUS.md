@@ -550,7 +550,9 @@ Items 2 and 5 inserted 2026-07-05; item 10 on 07-06, renumbering UI defects to
   `get_contrast_text_color`, `build_banner_css`, `build_legend_css`,
   `generate_legend_html`), which CRAN rejects across packages and which no
   quickmap test protects. Signatures still match as of 0.9.9.15. Interim:
-  README.md "Building companion tools" lists the interface (2026-11-10).
+  README.md "Building companion tools" lists the interface, and each listed
+  function is marked `# PROTECTED: companion-tool interface` in R/quickmap.R,
+  with a matching rule in CLAUDE.md (2026-11-10).
 - **Companion-tool interface, backlog** (proposed 2026-11-10, deferred as more
   than current need): export the functions listed in README.md "Building
   companion tools"; route companion data and output paths through quickmap's

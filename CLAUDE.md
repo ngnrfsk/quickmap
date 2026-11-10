@@ -242,6 +242,7 @@ Leaflet output satisfies (a), which remains the operative constraint.
 - The public API may change for ease of use, but examples, docs, vignettes and tests must stay consistent within the same change.
 - The YAML colour scale format — other scripts depend on it.
 - The `{{placeholder}}` template pattern.
+- Functions marked `# PROTECTED: companion-tool interface` in R/quickmap.R. quickplot calls them, mostly via `:::`, and no test covers that use yet; the fuller protection is a backlog item in dev/PROJECT_STATUS.md.
 
 ### Permissions and command style — autonomous safety
 

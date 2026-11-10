@@ -87,8 +87,9 @@ create_generic_icons() → add_layer() → generate_map_layers()
 
 Tools that reuse quickmap's styling (banner, legend, colour scales) so their
 output matches the maps. Entries marked `internal` are not exported: call them
-with `quickmap:::` and expect them to change without notice. Arguments as of
-the version in `DESCRIPTION`.
+with `quickmap:::`. Each function carries a `# PROTECTED: companion-tool
+interface` comment in `R/quickmap.R`; changing one means updating this list and
+its callers. Arguments as of the version in `DESCRIPTION`.
 
 ```yaml
 quickmap_interface:

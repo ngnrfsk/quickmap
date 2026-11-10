@@ -1200,6 +1200,8 @@ show_borough_colours <- function(borough = NULL) {
 #' @return List containing colour scale definition
 #' @family config
 #' @export
+# PROTECTED: companion-tool interface (README.md, "Building companion tools").
+# quickplot calls this. Keep signature and output, or update README and callers.
 load_colour_scale <- function(scale_name) {
   scale <- load_yaml_config(
     scale_name,
@@ -1364,6 +1366,8 @@ get_default_theme <- function() {
 #' @return Complete theme list (merged with defaults)
 #' @family config
 #' @export
+# PROTECTED: companion-tool interface (README.md, "Building companion tools").
+# quickplot calls this. Keep signature and output, or update README and callers.
 load_theme <- function(theme_file = NULL) {
   defaults <- get_default_theme()
 
@@ -1444,6 +1448,8 @@ get_colour_legend <- function(scale = "lbrut_no2") {
 #' @return Colour name or hex code
 #' @family colour
 #' @keywords internal
+# PROTECTED: companion-tool interface (README.md, "Building companion tools").
+# quickplot calls this. Keep signature and output, or update README and callers.
 assign_colour <- function(value, scale = "lbrut_no2") {
   if (is.na(value) || !is.numeric(value)) return("white")
 
@@ -1459,6 +1465,8 @@ assign_colour <- function(value, scale = "lbrut_no2") {
 #' @param color_vector Character vector of R color names or hex codes
 #' @return Character vector of hex codes (uppercase format)
 #' @family colour
+# PROTECTED: companion-tool interface (README.md, "Building companion tools").
+# quickplot calls this. Keep signature and output, or update README and callers.
 convert_colors_to_hex <- function(color_vector) {
   sapply(
     color_vector,
@@ -1625,6 +1633,8 @@ trim_colour_scale <- function(legend_scale, data_max = NULL) {
 #' @param indicator_placement "right", "title_row" or "under_title".
 #' @return HTML string.
 #' @keywords internal
+# PROTECTED: companion-tool interface (README.md, "Building companion tools").
+# quickplot calls this. Keep signature and output, or update README and callers.
 generate_legend_html <- function(
   scale_name,
   collapsed_mobile = TRUE,
@@ -2094,6 +2104,8 @@ lighten_color <- function(color, amount = 15) {
 #' @param color Background color (hex or R color name)
 #' @return "white" for dark backgrounds, "black" for light backgrounds
 #' @family colour
+# PROTECTED: companion-tool interface (README.md, "Building companion tools").
+# quickplot calls this. Keep signature and output, or update README and callers.
 get_contrast_text_color <- function(color) {
   rgb_vals <- col2rgb(color)[, 1]
 
@@ -2297,6 +2309,8 @@ generate_banner_key_html <- function(key) {
 }
 
 #' @keywords internal
+# PROTECTED: companion-tool interface (README.md, "Building companion tools").
+# quickplot calls this. Keep signature and output, or update README and callers.
 build_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE,
                              banner_style = "strip", text_colour = "white") {
   banner_dir <- get_package_dir("banner")
@@ -2369,6 +2383,8 @@ build_banner_css <- function(banner_colour = "#2c3e50", image_mode = FALSE,
 }
 
 #' @keywords internal
+# PROTECTED: companion-tool interface (README.md, "Building companion tools").
+# quickplot calls this. Keep signature and output, or update README and callers.
 build_legend_css <- function(banner_colour = "#2c3e50", image_mode = FALSE,
                              legend_background = "white") {
   legend_dir <- get_package_dir("legend")
@@ -2444,6 +2460,8 @@ add_year_and_static_layers <- function(
 #' @param output_dir Directory prepended to `output_file`, or NULL.
 #' @return The path to write, with `~` expanded.
 #' @keywords internal
+# PROTECTED: companion-tool interface (README.md, "Building companion tools").
+# quickplot calls this. Keep signature and output, or update README and callers.
 resolve_output_path <- function(output_file, output_dir = NULL) {
   if (missing(output_file) || is.null(output_file) ||
       !is.character(output_file) || length(output_file) != 1L ||
@@ -2636,6 +2654,8 @@ finalize_and_save_map <- function(
 #'   option, default 3
 #' @return `image_files`, invisibly
 #' @keywords internal
+# PROTECTED: companion-tool interface (README.md, "Building companion tools").
+# quickplot calls this. Keep signature and output, or update README and callers.
 take_screenshots <- function(
   html_file,
   image_files,
