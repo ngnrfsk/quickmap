@@ -98,7 +98,7 @@ quickmap_interface:
   scales_dir: system.file("config/scales", package = "quickmap")   # <name>.yaml
   themes_dir: system.file("themes", package = "quickmap")
   functions:
-    load_colour_scale(name):                  {status: exported, returns: "list: thresholds, colours, labels, domain"}
+    load_colour_scale(name):                  {status: exported, returns: "list: thresholds, colours, labels, domain, legend_order", stops: "thresholds not ascending"}
     load_theme(theme_file = NULL):            {status: exported, returns: "theme list merged over defaults"}
     assign_colour(value, scale):              {status: internal, returns: "colour for one value"}
     convert_colors_to_hex(color_vector):      {status: internal, returns: "hex strings (R colour names differ from CSS)"}

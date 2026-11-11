@@ -71,12 +71,18 @@
   margin-top: 0.2rem;
 }
 
+/* Each label is exactly its block's width. min-width: 0 lets a flex item
+   shrink below its text; with nowrap a long label widened its column, pushed
+   the row past the ramp and ran into its neighbours. Long labels now wrap. */
 .ramp-label {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   text-align: center;
   font-size: 0.85rem;
   color: #333;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.15;
 }
 
 /* Footnote-symbol key as quiet pills */

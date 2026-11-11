@@ -2,39 +2,44 @@ name: deltas
 title: Fall in NO2 levels, µg/m3, year on year
 pollutant: NO2
 shape: square
+# Values are falls: positive = lower than the year before. Each band includes
+# its lower bound, so a fall of exactly 8 is "Fall ≥8" and a fall of 0 is
+# "Fall 0 to <2". In rise terms the closed end is the upper figure.
 thresholds:
-  - .Inf
-  - 8
-  - 6
-  - 4
-  - 2
-  - 0
-  - -2
-  - -4
-  - -6
-  - -8
   - -.Inf
+  - -8
+  - -6
+  - -4
+  - -2
+  - 0
+  - 2
+  - 4
+  - 6
+  - 8
+  - .Inf
 colours:
-  - "#084594"
-  - "#2171B5"
-  - "#4292C6"
-  - "#6BAED6"
-  - "#9ECAE1"
-  - "#FEE391"
-  - "#FEB24C"
-  - "#FB6A4A"
-  - "#DE2D26"
   - "#A50F15"
+  - "#DE2D26"
+  - "#FB6A4A"
+  - "#FEB24C"
+  - "#FEE391"
+  - "#9ECAE1"
+  - "#6BAED6"
+  - "#4292C6"
+  - "#2171B5"
+  - "#084594"
   - "white"
 labels:
-  - ">8"
-  - "6-8"
-  - "4-6"
-  - "2-4"
-  - "0-2"
-  - "Increase 0-2"
-  - "increase of 2-4"
-  - "increase of 4-6"
-  - "increase of 6-8"
-  - "increase over 8"
+  - "Rise >8"
+  - "Rise >6 to 8"
+  - "Rise >4 to 6"
+  - "Rise >2 to 4"
+  - "Rise >0 to 2"
+  - "Fall 0 to <2"
+  - "Fall 2 to <4"
+  - "Fall 4 to <6"
+  - "Fall 6 to <8"
+  - "Fall ≥8"
   - "Site not in use"
+# Legend reads largest fall first; the missing-value entry stays last.
+legend_order: descending

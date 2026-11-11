@@ -1212,6 +1212,14 @@ load_colour_scale <- function(scale_name) {
   # Convert thresholds to numeric if present
   if (!is.null(scale$thresholds)) {
     scale$thresholds <- as.numeric(scale$thresholds)
+    # findInterval() needs ascending breaks; its own error names neither the
+    # scale nor the fix
+    if (is.unsorted(scale$thresholds)) {
+      stop(sprintf(
+        "Colour scale '%s': thresholds must be in ascending order",
+        scale_name
+      ), call. = FALSE)
+    }
   }
 
   scale$name <- scale_name
@@ -1656,6 +1664,15 @@ generate_legend_html <- function(
 
   legend_scale <- trim_colour_scale(legend_scale, data_max)
 
+  if (is_descending_legend(legend_scale)) {
+    # Reverse the value bands only; a trailing missing-value entry stays last
+    n_bands <- legend_band_count(legend_scale)
+    order <- c(rev(seq_len(n_bands)),
+               seq_along(legend_scale$colours)[-seq_len(n_bands)])
+    legend_scale$colours <- legend_scale$colours[order]
+    legend_scale$labels <- legend_scale$labels[order]
+  }
+
   hex_colors <- convert_colors_to_hex(legend_scale$colours)
 
   # Ramp legend (item 10, approved design): a thin row of colour blocks
@@ -1772,33 +1789,66 @@ generate_legend_html <- function(
 #' therefore be placed band by band — find the band, then interpolate inside
 #' it — never by a straight value/max fraction.
 #'
-#' The open-ended top band (`.Inf`) has no width to interpolate within, so a
-#' value inside it sits at the band's midpoint; anything else would imply a
-#' precision the scale does not have.
+#' An open-ended band (`.Inf` or `-.Inf`) has no width to interpolate within,
+#' so a value inside it sits at the band's midpoint; anything else would imply
+#' a precision the scale does not have.
 #'
 #' @param value A concentration
 #' @param thresholds The scale's thresholds
 #' @param n_blocks Number of blocks the legend actually rendered, which may
 #'   include a trailing "insufficient data" block that is not a value band
+#' @param descending TRUE when the legend draws its bands highest first
+#'   (`legend_order: descending`); the position is mirrored within the bands
 #' @return Percentage of the ramp's width, 0-100
 #' @family legend
 #' @keywords internal
-ramp_position <- function(value, thresholds, n_blocks) {
+ramp_position <- function(value, thresholds, n_blocks, descending = FALSE) {
   if (is.na(value) || n_blocks < 1) return(0)
-  finite_upper <- thresholds[-1]
+  upper_bounds <- thresholds[-1]
   band <- findInterval(value, thresholds, left.open = FALSE)
-  band <- max(1, min(band, length(finite_upper)))
+  band <- max(1, min(band, length(upper_bounds)))
 
   lower <- thresholds[band]
-  upper <- finite_upper[band]
-  frac <- if (is.finite(upper) && upper > lower) {
+  upper <- upper_bounds[band]
+  frac <- if (is.finite(lower) && is.finite(upper) && upper > lower) {
     (value - lower) / (upper - lower)
   } else {
-    0.5 # open-ended top band: midpoint, no false precision
+    0.5 # open-ended band: midpoint, no false precision
   }
   frac <- max(0, min(1, frac))
 
-  round(100 * (band - 1 + frac) / n_blocks, 2)
+  blocks_from_left <- band - 1 + frac
+  if (descending) {
+    blocks_from_left <- min(n_blocks, length(upper_bounds)) - blocks_from_left
+  }
+
+  round(100 * blocks_from_left / n_blocks, 2)
+}
+
+#' Does the legend draw this scale's bands highest first?
+#'
+#' Set by the scale's optional `legend_order: descending` key. Thresholds stay
+#' ascending in the YAML either way; only the legend's left-to-right order
+#' changes. Categorical scales (no thresholds) ignore the key.
+#'
+#' @param scale Scale list from [load_colour_scale()]
+#' @return TRUE or FALSE
+#' @family legend
+#' @keywords internal
+is_descending_legend <- function(scale) {
+  !is.null(scale$thresholds) && identical(scale$legend_order, "descending")
+}
+
+#' Number of value bands in a (possibly trimmed) scale
+#'
+#' Colours beyond the last band are the missing-value entry, not a band.
+#'
+#' @param scale Scale list from [load_colour_scale()] or [trim_colour_scale()]
+#' @return Integer
+#' @family legend
+#' @keywords internal
+legend_band_count <- function(scale) {
+  min(length(scale$colours), length(scale$thresholds) - 1)
 }
 
 #' Mark the network figures on the legend's colour ramp
@@ -1842,6 +1892,7 @@ generate_indicator_bar <- function(
   scale_data <- trim_colour_scale(load_colour_scale(scale_name), data_max)
   n_blocks <- length(scale_data$colours)
   thresholds <- load_colour_scale(scale_name)$thresholds
+  descending <- is_descending_legend(scale_data)
 
   step <- if (image_mode && !is.null(display_times)) {
     as.character(display_times[1])
@@ -1851,7 +1902,8 @@ generate_indicator_bar <- function(
   idx <- match(step, indicator$times)
   if (is.na(idx)) idx <- 1
 
-  mean_pos <- ramp_position(indicator$values[idx], thresholds, n_blocks)
+  mean_pos <- ramp_position(indicator$values[idx], thresholds, n_blocks,
+                            descending)
   mean_colour <- convert_colors_to_hex(
     assign_colour(indicator$values[idx], scale_name)
   )
@@ -1862,7 +1914,8 @@ generate_indicator_bar <- function(
   crowded <- FALSE
   max_html <- ""
   if (show_max) {
-    max_pos <- ramp_position(indicator$max_values[idx], thresholds, n_blocks)
+    max_pos <- ramp_position(indicator$max_values[idx], thresholds, n_blocks,
+                             descending)
     max_colour <- convert_colors_to_hex(
       assign_colour(indicator$max_values[idx], scale_name)
     )
@@ -1938,9 +1991,9 @@ generate_indicator_html <- function(
   if (is.null(indicator) || length(indicator$values) == 0) return("")
 
   thresholds <- load_colour_scale(scale_name)$thresholds
-  n_blocks <- length(
-    trim_colour_scale(load_colour_scale(scale_name), data_max)$colours
-  )
+  trimmed <- trim_colour_scale(load_colour_scale(scale_name), data_max)
+  n_blocks <- length(trimmed$colours)
+  descending <- is_descending_legend(trimmed)
   show_max <- isTRUE(show_max) && !is.null(indicator$max_values)
 
   # The step to show: one image shows one step; the slider drives the rest
@@ -2033,7 +2086,7 @@ generate_indicator_html <- function(
   # browser never has to know the colour scale
   positions <- vapply(
     indicator$values, ramp_position, 0,
-    thresholds = thresholds, n_blocks = n_blocks
+    thresholds = thresholds, n_blocks = n_blocks, descending = descending
   )
   colours <- convert_colors_to_hex(vapply(
     indicator$values, assign_colour, "", scale = scale_name
@@ -2043,7 +2096,7 @@ generate_indicator_html <- function(
   if (show_max) {
     max_positions <- vapply(
       indicator$max_values, ramp_position, 0,
-      thresholds = thresholds, n_blocks = n_blocks
+      thresholds = thresholds, n_blocks = n_blocks, descending = descending
     )
     max_fields <- sprintf(
       paste0(',"maxValues":[%s],"maxW":[%s],"maxColours":[%s],',
@@ -3015,7 +3068,8 @@ build_lazy_payload <- function(
   colour_scale
 ) {
   scale_data <- load_colour_scale(colour_scale)
-  finite <- is.finite(scale_data$thresholds)
+  # A band per threshold except the open top one; colours pair by position
+  bands <- scale_data$thresholds < Inf
   colours_hex <- convert_colors_to_hex(unlist(scale_data$colours))
   times <- as.character(sort(unique(display_times)))
 
@@ -3086,12 +3140,14 @@ build_lazy_payload <- function(
     )
   }
 
-  # Infinite thresholds are dropped: JSON has no Inf, and the controller
-  # treats "above the last threshold" as the top band anyway
+  # JSON has no Inf. The top .Inf is dropped: the controller treats "above the
+  # last threshold" as the top band anyway. A bottom -.Inf (deltas) becomes
+  # -1e300, so values below the first finite threshold keep their band colour
+  # instead of falling through to naColour.
   list(
     times = I(times),
-    thresholds = I(scale_data$thresholds[finite]),
-    colours = I(colours_hex[finite]),
+    thresholds = I(pmax(scale_data$thresholds[bands], -1e300)),
+    colours = I(colours_hex[bands]),
     naColour = colours_hex[length(colours_hex)],
     layers = layers
   )

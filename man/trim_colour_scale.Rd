@@ -40,6 +40,8 @@ Other legend:
 \code{\link{generate_indicator_bar}()},
 \code{\link{generate_indicator_html}()},
 \code{\link{get_symbol_for_index}()},
+\code{\link{is_descending_legend}()},
+\code{\link{legend_band_count}()},
 \code{\link{parse_legend_label}()},
 \code{\link{ramp_position}()}
 }
