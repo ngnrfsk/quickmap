@@ -1,6 +1,6 @@
 # Scale "deltas": colour assignment fails, legend overflows — 2026-11-11
 
-Status: fixed on `fix/deltas-scale` (v0.9.9.16), awaiting visual sign-off — defects 20 and 21 in dev/PROJECT_STATUS.md; plan dev/261111_deltas_scale_fix_plan.md. Found with installed quickmap 0.9.9.15. No quickmap R code uses this scale.
+Status: fixed on `fix/deltas-scale` (v0.9.9.16, PR #60), awaiting visual sign-off — defects 20 and 21 in dev/PROJECT_STATUS.md; plan dev/261111_deltas_scale_fix_plan.md. Found with installed quickmap 0.9.9.15. No quickmap R code uses this scale.
 
 ## Defect 1: `assign_colour()` stops
 

@@ -122,7 +122,7 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
     currently carries it.
 3.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
     `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
-4.  **Visual sign-off of `fix/deltas-scale`** (defects 20 and 21, raised
+4.  **Visual sign-off of PR #60, `fix/deltas-scale`** (defects 20 and 21, raised
     2026-11-11). Demo maps from dev/deltas_demo-maps_v1.R in `aq_maps/`;
     what to look at is in the script's header. The legend CSS change alters
     every scale's legend.
@@ -647,7 +647,7 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
 - **20. `deltas` scale stops `assign_colour()`.** Found 2026-11-11
   (dev/261111_deltas_issue.md). Thresholds were listed high to low;
   `findInterval()` needs ascending. **Fixed on `fix/deltas-scale`
-  (v0.9.9.16), awaiting visual sign-off**: thresholds ascending, bands and
+  (v0.9.9.16), PR #60, awaiting visual sign-off**: thresholds ascending, bands and
   labels reversed to match, "Site not in use" kept as the missing-value
   entry, labels state the closed end ("Fall 0 to <2", "Fall ≥8");
   `load_colour_scale()` stops on descending thresholds. The reorder put
@@ -724,7 +724,7 @@ Index, documents, code and demonstration maps: dev/concepts/README.md.
 ## Recent work
 
 - **11 November**: defects 20 and 21 (deltas scale, legend label overflow)
-  fixed on `fix/deltas-scale`, v0.9.9.16. 31 new tests; suite 613 passed, 0
+  fixed on `fix/deltas-scale` (PR #60, stacked on #59), v0.9.9.16. 31 new tests; suite 613 passed, 0
   failed. Awaiting visual sign-off.
 - **17 August (later)**: the manual folded onto `feature/item9-output-paths` —
   PR #48's five rewritten chapters and front page, PR #52's 17 example maps and
