@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>Documented claims the code contradicts</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">Documented claims the code contradicts</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">Found by reading the source; CLAUDE.md says the code is the source of truth.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">Cites: Q: = R/quickmap.R, W: = R/wind.R. &#x27;grep only&#x27; = not traced by hand</text>
+<rect x="40" y="98" width="1200" height="26" fill="#1f2937"/>
+<text x="46" y="116" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="start">#</text>
+<text x="76" y="116" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="start">Documented</text>
+<text x="566" y="116" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="start">Code says</text>
+<text x="1096" y="116" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="start">Evidence</text>
+<rect x="40" y="124" width="1200" height="80" fill="#fee2e2" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="145" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">1</text>
+<text x="76" y="145" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Pipeline runs load_data_file to generate_map_layers in order</text>
+<text x="566" y="145" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">quickmap() passes sf layers, so load_data_file is not reached on</text>
+<text x="566" y="162" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">that path. generate_map_layers is the outer driver calling</text>
+<text x="566" y="179" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">prepare_generic_layer_data and add_layer; add_layer calls</text>
+<text x="566" y="196" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">create_generic_icons.</text>
+<text x="1096" y="145" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Q:3823, Q:3674</text>
+<rect x="40" y="204" width="1200" height="46" fill="#fee2e2" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="225" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">2</text>
+<text x="76" y="225" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">generate_map_layers emits HTML and static exports from one</text>
+<text x="76" y="242" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">loop</text>
+<text x="566" y="225" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">It only draws markers. Static frames use</text>
+<text x="566" y="242" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">add_year_and_static_layers in the shared loop.</text>
+<text x="1096" y="225" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Q:2309, Q:4279</text>
+<rect x="40" y="250" width="1200" height="34" fill="#fee2e2" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="271" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">3</text>
+<text x="76" y="271" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Example quickmap(&quot;wandsworth_2017_2024.csv&quot;, boroughs = ...)</text>
+<text x="566" y="271" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">output_file is required, so the call errors.</text>
+<text x="1096" y="271" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Q:2354</text>
+<rect x="40" y="284" width="1200" height="34" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="305" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">4</text>
+<text x="76" y="305" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">who_no2.yaml has 5 bands, name, pollutant</text>
+<text x="566" y="305" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Real file: 11 bands, no name, no pollutant.</text>
+<text x="1096" y="305" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">who_no2.yaml</text>
+<rect x="40" y="318" width="1200" height="46" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="339" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">5</text>
+<text x="76" y="339" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Theme keys legend.show, legend.background, banner.text_color,</text>
+<text x="76" y="356" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">controls.background, controls.text_color</text>
+<text x="566" y="339" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Not read anywhere in R/quickmap.R (grep only).</text>
+<text x="1096" y="339" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Q:1274-1344</text>
+<rect x="40" y="364" width="1200" height="46" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="385" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">6</text>
+<text x="76" y="385" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">A missing placeholder is a hard error</text>
+<text x="566" y="385" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Only a {{key}} absent from the template errors; an unfilled</text>
+<text x="566" y="402" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">template placeholder passes silently.</text>
+<text x="1096" y="385" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Q:72-88</text>
+<rect x="40" y="410" width="1200" height="46" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="431" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">7</text>
+<text x="76" y="431" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Two timer-start sites must read currentInterval</text>
+<text x="566" y="431" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">One startTimer() reads it; the lazy fade reads</text>
+<text x="566" y="448" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapPlayInterval.</text>
+<text x="1096" y="431" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">time-</text>
+<text x="1096" y="448" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">slider.js:143-148</text>
+<rect x="40" y="456" width="1200" height="34" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="477" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">8</text>
+<text x="76" y="477" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Wind comes from one worldmet station</text>
+<text x="566" y="477" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Any data frame with date, ws, wd is accepted.</text>
+<text x="1096" y="477" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">W:25-58</text>
+<rect x="40" y="490" width="1200" height="34" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="511" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">9</text>
+<text x="76" y="511" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">indicator.placement defaults to title_row</text>
+<text x="566" y="511" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">True in get_default_theme; function fallbacks use right.</text>
+<text x="1096" y="511" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Q:4216, Q:2937</text>
+<rect x="40" y="524" width="1200" height="46" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="545" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">10</text>
+<text x="76" y="545" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Controls comments describe the roller menu and switchToYear</text>
+<text x="566" y="545" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Stale: replaced by the time slider.</text>
+<text x="1096" y="545" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">wind-</text>
+<text x="1096" y="562" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">controller.js:4</text>
+<text x="40" y="586" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Red rows 1-3 change how a reader should understand the pipeline or break a copied example.</text>
+</svg>

@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QuickMap Architecture</title>
+<style>
+:root{--bg:#f9fafb;--fg:#1f2937;--muted:#4b5563;--card:#ffffff;--line:#d1d5db;--link:#1d4ed8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#111827;--fg:#e5e7eb;--muted:#9ca3af;--card:#1f2937;--line:#374151;--link:#93c5fd}}
+:root[data-theme="dark"]{--bg:#111827;--fg:#e5e7eb;--muted:#9ca3af;--card:#1f2937;--line:#374151;--link:#93c5fd}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 Arial,Helvetica,sans-serif}
+header,main{max-width:1320px;margin:0 auto;padding:16px}
+h1{font-size:24px;margin:8px 0}p{color:var(--muted);margin:4px 0 12px}
+nav{display:flex;flex-wrap:wrap;gap:8px 16px;margin-bottom:8px}a{color:var(--link)}
+section{margin:0 0 24px}figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px}
+svg{width:100%;height:auto;display:block}figcaption{padding:8px 4px 0;color:var(--muted);font-size:14px}
+</style></head><body>
+<header><h1>QuickMap architecture</h1>
+<p>Nine views built from reading the source at v0.9.9.13 (branch feature/item9-output-paths, audited 2026-10-05). Each box cites file:line. View 8 lists claims in CLAUDE.md that the code contradicts. Each view is also a standalone SVG and PNG for slides.</p>
+<nav><a href="#v01_system_overview">01_system_overview System overview</a><a href="#v02_quickmap_to_render_stages">02_quickmap_to_render_stages quickmap() to render_pollution_map(): stages</a><a href="#v03_loop_lazy_static_save">03_loop_lazy_static_save Per-step loop, lazy path, static export, save and inject</a><a href="#v04_qm_layer_data_model">04_qm_layer_data_model qm_layer: the atomic data unit</a><a href="#v05_configuration">05_configuration Configuration: scales, themes, templates and their loaders</a><a href="#v06_r_to_browser_boundary">06_r_to_browser_boundary R to browser boundary and the JS call order</a><a href="#v07_wind_data_flow">07_wind_data_flow Wind animation data flow</a><a href="#v08_docs_vs_code">08_docs_vs_code Documented claims the code contradicts</a><a href="#v09_technology_stack">09_technology_stack Technology stack by layer</a></nav></header>
+<main>
+<section id="v01_system_overview"><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>System overview</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">System overview</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">Inputs become qm_layer objects; quickmap() renders one self-contained HTML map, optionally a JPG per step.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">Source audit 2026-10-05, v0.9.9.13, branch feature/item9-output-paths</text>
+<rect x="40" y="110" width="250" height="80" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Diffusion-tube CSV</text>
+<text x="50" y="158" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Easting, Northing</text>
+<text x="50" y="176" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  (EPSG:27700), year columns</text>
+<rect x="40" y="202" width="250" height="80" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="232" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Schools CSV</text>
+<text x="50" y="250" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Easting, Northing, Level,</text>
+<text x="50" y="268" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  School</text>
+<rect x="40" y="294" width="250" height="80" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="324" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">RData / OpenAir</text>
+<text x="50" y="342" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">siteCode, year, pollutant,</text>
+<text x="50" y="360" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  lat, lon</text>
+<rect x="40" y="386" width="250" height="80" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="416" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Wind (worldmet)</text>
+<text x="50" y="434" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">date, ws, wd</text>
+<rect x="340" y="110" width="270" height="270" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="350" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_csv / from_rdata /</text>
+<text x="350" y="158" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_openair</text>
+<text x="350" y="175" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R/qm_layer.R:400, 453, 475</text>
+<text x="350" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Return a qm_layer: sf object,</text>
+<text x="350" y="211" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  long format, one row per marker</text>
+<text x="350" y="229" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  per time step, metadata in</text>
+<text x="350" y="247" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  attr(x, &#x27;qm&#x27;)</text>
+<text x="350" y="268" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">as_qm_layer (A:44) routes: .rdata</text>
+<text x="350" y="286" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  path to from_rdata, other</text>
+<text x="350" y="304" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  string to from_csv, data.frame</text>
+<text x="350" y="322" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  to qm_layer()</text>
+<rect x="340" y="386" width="270" height="100" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="350" y="416" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_worldmet</text>
+<text x="350" y="433" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R/wind.R:25</text>
+<text x="350" y="451" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Returns qm_wind (date, ws, wd, u,</text>
+<text x="350" y="469" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  v), not a qm_layer</text>
+<rect x="660" y="110" width="270" height="132" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="670" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">quickmap()</text>
+<text x="670" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R/quickmap_api.R:136</text>
+<text x="670" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Normalises layers, infers</text>
+<text x="670" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  pollutant, adds legacy columns.</text>
+<text x="670" y="211" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  create_pollution_map() (A:262)</text>
+<text x="670" y="229" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  delegates here.</text>
+<rect x="660" y="266" width="270" height="224" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="670" y="296" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">render_pollution_map()</text>
+<text x="670" y="313" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R/quickmap.R:4075</text>
+<text x="670" y="331" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Settings and theme</text>
+<text x="670" y="352" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Boundary and data</text>
+<text x="670" y="373" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Time steps and viewport</text>
+<text x="670" y="394" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Lazy or eager decision</text>
+<text x="670" y="415" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Per-step loop</text>
+<text x="670" y="436" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Wind layer</text>
+<text x="670" y="457" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Save and inject banner, slider,</text>
+<text x="670" y="475" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  indicator, legend</text>
+<rect x="980" y="250" width="260" height="100" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="990" y="280" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Interactive HTML</text>
+<text x="990" y="298" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Self-contained Leaflet map; JS</text>
+<text x="990" y="316" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  and CSS inlined; chrome</text>
+<text x="990" y="334" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  injected into the saved file</text>
+<rect x="980" y="370" width="260" height="100" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="990" y="400" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">JPG per time step</text>
+<text x="990" y="418" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">webshot2 screenshot of an</text>
+<text x="990" y="436" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  intermediate HTML, which is</text>
+<text x="990" y="454" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  then deleted</text>
+<rect x="40" y="520" width="1200" height="90" rx="6" fill="#d1fae5" stroke="#047857" stroke-width="2"/>
+<text x="50" y="550" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">inst/ configuration, loaded at build time</text>
+<text x="50" y="568" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">14 colour scales (YAML), 5 themes (YAML), banner and legend CSS/HTML templates with {{placeholder}}, controls JS: time-slider, indicator, wind-controller,</text>
+<text x="50" y="586" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  lazy-time-controller, layer-cache, vendored leaflet-velocity</text>
+<text x="40" y="640" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#4b5563" text-anchor="start">Size: R/ is 5,368 lines (quickmap.R 4,378; qm_layer.R 481; quickmap_api.R 318; wind.R 178). Version 0.9.9.13.</text>
+<path d="M 290 150 L 340 150" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="340,150 330.8,153.9 330.8,146.1" fill="#4b5563"/>
+<path d="M 290 242 L 340 242" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="340,242 330.8,245.9 330.8,238.1" fill="#4b5563"/>
+<path d="M 290 334 L 340 334" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="340,334 330.8,337.9 330.8,330.1" fill="#4b5563"/>
+<path d="M 290 426 L 340 426" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="340,426 330.8,429.9 330.8,422.1" fill="#4b5563"/>
+<path d="M 610 165 L 660 165" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="660,165 650.8,168.9 650.8,161.1" fill="#4b5563"/>
+<path d="M 610 436 L 635 436 L 635 330 L 660 330" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="660,330 650.8,333.9 650.8,326.1" fill="#4b5563"/>
+<text x="648" y="456" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="middle">wind</text>
+<path d="M 795 242 L 795 266" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="795,266 791.1,256.8 798.9,256.8" fill="#4b5563"/>
+<path d="M 930 300 L 980 300" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="980,300 970.8,303.9 970.8,296.1" fill="#4b5563"/>
+<path d="M 930 420 L 980 420" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="980,420 970.8,423.9 970.8,416.1" fill="#4b5563"/>
+<path d="M 795 520 L 795 490" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="795,490 798.9,499.2 791.1,499.2" fill="#4b5563"/>
+</svg>
+<figcaption>System overview · <a href="svg/01_system_overview.svg">SVG</a> · <a href="png/01_system_overview.png">PNG</a></figcaption></figure></section>
+<section id="v02_quickmap_to_render_stages"><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>quickmap() to render_pollution_map(): stages</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">quickmap() to render_pollution_map(): stages</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">Front end converts every layer to sf with legacy columns; the renderer then runs six set-up stages.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">R/quickmap_api.R and R/quickmap.R; Q: = R/quickmap.R, A: = R/quickmap_api.R</text>
+<text x="40" y="108" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">quickmap()   R/quickmap_api.R:136</text>
+<rect x="40" y="120" width="200" height="150" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">absorb_legacy_args</text>
+<text x="50" y="167" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2390</text>
+<text x="50" y="185" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Renames marker_labels</text>
+<text x="50" y="203" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  to symbol_labels</text>
+<path d="M 240 195 L 290 195" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="290,195 280.8,198.9 280.8,191.1" fill="#4b5563"/>
+<rect x="290" y="120" width="200" height="150" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="300" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">as_qm_layer</text>
+<text x="300" y="167" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">A:44</text>
+<text x="300" y="185" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">.rdata to from_rdata;</text>
+<text x="300" y="203" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  other string to</text>
+<text x="300" y="221" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  from_csv; data.frame</text>
+<text x="300" y="239" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  to qm_layer()</text>
+<path d="M 490 195 L 540 195" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="540,195 530.8,198.9 530.8,191.1" fill="#4b5563"/>
+<rect x="540" y="120" width="200" height="150" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="550" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Infer pollutant</text>
+<text x="550" y="167" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">A:171-179</text>
+<text x="550" y="185" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">From the first time-</text>
+<text x="550" y="203" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  varying layer</text>
+<path d="M 740 195 L 790 195" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="790,195 780.8,198.9 780.8,191.1" fill="#4b5563"/>
+<rect x="790" y="120" width="200" height="150" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="800" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">qm_to_legacy</text>
+<text x="800" y="167" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">A:15</text>
+<text x="800" y="185" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Adds year_str,</text>
+<text x="800" y="203" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  siteCode, Longitude,</text>
+<text x="800" y="221" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  Latitude for the</text>
+<text x="800" y="239" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  renderer</text>
+<path d="M 990 195 L 1040 195" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="1040,195 1030.8,198.9 1030.8,191.1" fill="#4b5563"/>
+<rect x="1040" y="120" width="200" height="150" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="1050" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Ids and symbols</text>
+<text x="1050" y="167" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">A:184-196</text>
+<text x="1050" y="185" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">make.unique ids from</text>
+<text x="1050" y="203" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  layer name;</text>
+<text x="1050" y="221" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  data_symbols from</text>
+<text x="1050" y="239" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  layer shape</text>
+<path d="M 1140 270 L 1140 290 L 137 290 L 137 336" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="137,336 133.1,326.8 140.9,326.8" fill="#4b5563"/>
+<text x="1240" y="322" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="end">render_pollution_map()   R/quickmap.R:4075</text>
+<rect x="40.0" y="336" width="194" height="250" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50.0" y="366" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">1 Settings</text>
+<text x="50.0" y="383" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:4099-4131</text>
+<text x="50.0" y="400" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">resolve_output_path</text>
+<text x="50.0" y="417" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:2354)</text>
+<text x="50.0" y="437" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">parse_export_params</text>
+<text x="50.0" y="454" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:3768)</text>
+<text x="50.0" y="474" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">load_theme (Q:1351)</text>
+<text x="50.0" y="494" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Explicit argument beats</text>
+<text x="50.0" y="511" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  theme</text>
+<rect x="241.2" y="336" width="194" height="250" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="251.2" y="366" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">2 Boundary</text>
+<text x="251.2" y="383" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:4137-4143</text>
+<text x="251.2" y="400" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">get_boundary_sf (Q:1028)</text>
+<text x="251.2" y="420" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">None when vignette =</text>
+<text x="251.2" y="437" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  FALSE</text>
+<rect x="442.4" y="336" width="194" height="250" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="452.4" y="366" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">3 Data</text>
+<text x="452.4" y="383" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:4146</text>
+<text x="452.4" y="400" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">load_spatial_data_sources</text>
+<text x="452.4" y="417" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:3798)</text>
+<text x="452.4" y="437" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Layers are already sf,</text>
+<text x="452.4" y="454" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  so they pass through</text>
+<text x="452.4" y="471" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:3823)</text>
+<rect x="643.5999999999999" y="336" width="194" height="250" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="653.5999999999999" y="366" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">4 Times, viewport</text>
+<text x="653.5999999999999" y="383" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:4153-4160</text>
+<text x="653.5999999999999" y="400" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">determine_times_and_viewport</text>
+<text x="653.5999999999999" y="417" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:3915)</text>
+<text x="653.5999999999999" y="437" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">apply_time_step_cap</text>
+<text x="653.5999999999999" y="454" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:2749): keeps latest</text>
+<text x="653.5999999999999" y="471" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  200</text>
+<rect x="844.8" y="336" width="194" height="250" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="854.8" y="366" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">5 Styling inputs</text>
+<text x="854.8" y="383" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:4165-4212</text>
+<text x="854.8" y="400" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">default_play_speed</text>
+<text x="854.8" y="420" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">get_colour_legend</text>
+<text x="854.8" y="440" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">create_base_map (Q:3636)</text>
+<text x="854.8" y="460" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">get_measurement_layers</text>
+<text x="854.8" y="477" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:4185)</text>
+<text x="854.8" y="497" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">build_indicator_data</text>
+<text x="854.8" y="514" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:4201)</text>
+<text x="854.8" y="534" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">build_banner_key</text>
+<text x="854.8" y="551" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:4212)</text>
+<rect x="1046.0" y="336" width="194" height="250" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="1056.0" y="366" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">6 Lazy decision</text>
+<text x="1056.0" y="383" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:4234</text>
+<text x="1056.0" y="400" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">use_lazy_rendering</text>
+<text x="1056.0" y="417" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:2783)</text>
+<text x="1056.0" y="437" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">More than 50 steps or ~5</text>
+<text x="1056.0" y="454" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  MB</text>
+<text x="1056.0" y="474" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">build_lazy_payload</text>
+<text x="1056.0" y="491" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:4244)</text>
+<rect x="40" y="602" width="1200" height="80" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="632" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Next: per-step loop and save (slide 3)</text>
+<text x="50" y="650" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Lazy threshold: steps above quickmap.lazy_step_threshold (50), or 1e6 + 65 x rows above quickmap.lazy_size_threshold (5e6). JPG export always uses the pre-</text>
+<text x="50" y="668" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  built path.</text>
+</svg>
+<figcaption>quickmap() to render_pollution_map(): stages · <a href="svg/02_quickmap_to_render_stages.svg">SVG</a> · <a href="png/02_quickmap_to_render_stages.png">PNG</a></figcaption></figure></section>
+<section id="v03_loop_lazy_static_save"><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>Per-step loop, lazy path, static export, save and inject</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">Per-step loop, lazy path, static export, save and inject</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">Three lanes draw markers; the interactive lanes converge on one finish that writes the HTML.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">R/quickmap.R, R/wind.R; Q: = R/quickmap.R, W: = R/wind.R</text>
+<rect x="40" y="110" width="170" height="120" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">1 Interactive,</text>
+<text x="50" y="158" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">eager</text>
+<text x="50" y="176" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">50 steps or fewer</text>
+<rect x="230" y="110" width="170" height="120" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="240" y="140" font-family="Arial, Helvetica, sans-serif" font-size="13.2" font-weight="bold" fill="#1f2937" text-anchor="start">generate_map_layers</text>
+<text x="240" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3674</text>
+<text x="240" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">One layer group per</text>
+<text x="240" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  step, loop at</text>
+<text x="240" y="211" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  Q:4265</text>
+<rect x="428" y="110" width="170" height="120" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="438" y="140" font-family="Arial, Helvetica, sans-serif" font-size="9.6" font-weight="bold" fill="#1f2937" text-anchor="start">prepare_generic_layer_data</text>
+<text x="438" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3305</text>
+<text x="438" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">via</text>
+<text x="438" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  get_layer_year_data</text>
+<rect x="626" y="110" width="170" height="120" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="636" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">add_layer</text>
+<text x="636" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3334</text>
+<text x="636" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Labels, label</text>
+<text x="636" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  options, noHide</text>
+<rect x="824" y="110" width="170" height="120" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="834" y="140" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="bold" fill="#1f2937" text-anchor="start">create_generic_icons</text>
+<text x="834" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3162</text>
+<text x="834" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">assign_colour per</text>
+<text x="834" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  marker (Q:3195)</text>
+<rect x="1022" y="110" width="170" height="120" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="1032" y="140" font-family="Arial, Helvetica, sans-serif" font-size="15.6" font-weight="bold" fill="#1f2937" text-anchor="start">makeSymbolsSize,</text>
+<text x="1032" y="158" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">addMarkers</text>
+<text x="1032" y="175" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">leaflet</text>
+<text x="1032" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Shape, size, colour</text>
+<path d="M 400 170 L 428 170" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="428,170 418.8,173.9 418.8,166.1" fill="#4b5563"/>
+<path d="M 598 170 L 626 170" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="626,170 616.8,173.9 616.8,166.1" fill="#4b5563"/>
+<path d="M 796 170 L 824 170" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="824,170 814.8,173.9 814.8,166.1" fill="#4b5563"/>
+<path d="M 994 170 L 1022 170" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="1022,170 1012.8,173.9 1012.8,166.1" fill="#4b5563"/>
+<rect x="40" y="244" width="170" height="130" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="274" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">2 Interactive,</text>
+<text x="50" y="292" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">lazy</text>
+<text x="50" y="310" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">More than 50 steps</text>
+<text x="50" y="328" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  or ~5 MB</text>
+<rect x="230" y="244" width="170" height="130" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="240" y="274" font-family="Arial, Helvetica, sans-serif" font-size="13.2" font-weight="bold" fill="#1f2937" text-anchor="start">generate_map_layers</text>
+<text x="240" y="291" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:4251</text>
+<text x="240" y="309" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Called once with</text>
+<text x="240" y="327" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  &quot;static_only&quot; for</text>
+<text x="240" y="345" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  schools etc.</text>
+<rect x="428" y="244" width="170" height="130" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="438" y="274" font-family="Arial, Helvetica, sans-serif" font-size="13.9" font-weight="bold" fill="#1f2937" text-anchor="start">build_lazy_payload</text>
+<text x="438" y="291" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2806</text>
+<text x="438" y="309" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">times, thresholds,</text>
+<text x="438" y="327" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  colours, sites</text>
+<text x="438" y="345" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  with per-step v[]</text>
+<rect x="626" y="244" width="170" height="130" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="636" y="274" font-family="Arial, Helvetica, sans-serif" font-size="15.6" font-weight="bold" fill="#1f2937" text-anchor="start">add_map_controls</text>
+<text x="636" y="291" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3607-3614</text>
+<text x="636" y="309" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">onRender(lazy-time-</text>
+<text x="636" y="327" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  controller.js,</text>
+<text x="636" y="345" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  payload); digits</text>
+<text x="636" y="363" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  = 7</text>
+<path d="M 400 309 L 428 309" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="428,309 418.8,312.9 418.8,305.1" fill="#4b5563"/>
+<path d="M 598 309 L 626 309" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="626,309 616.8,312.9 616.8,305.1" fill="#4b5563"/>
+<rect x="40" y="388" width="170" height="115" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="418" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">3 Static JPG</text>
+<text x="50" y="436" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">One frame per step</text>
+<rect x="230" y="388" width="170" height="115" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="240" y="418" font-family="Arial, Helvetica, sans-serif" font-size="9.6" font-weight="bold" fill="#1f2937" text-anchor="start">add_year_and_static_layers</text>
+<text x="240" y="435" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2309</text>
+<text x="240" y="453" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Called from the</text>
+<text x="240" y="471" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  shared loop</text>
+<text x="240" y="489" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:4279)</text>
+<rect x="428" y="388" width="170" height="115" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="438" y="418" font-family="Arial, Helvetica, sans-serif" font-size="11.9" font-weight="bold" fill="#1f2937" text-anchor="start">finalize_and_save_map</text>
+<text x="438" y="435" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:4301</text>
+<text x="438" y="453" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Writes</text>
+<text x="438" y="471" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  &lt;stem&gt;_&lt;step&gt;.html</text>
+<rect x="626" y="388" width="170" height="115" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="636" y="418" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">webshot2</text>
+<text x="636" y="435" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2517-2526</text>
+<text x="636" y="453" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Screenshot to .jpg;</text>
+<text x="636" y="471" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  HTML unlinked</text>
+<path d="M 400 445 L 428 445" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="428,445 418.8,448.9 418.8,441.1" fill="#4b5563"/>
+<path d="M 598 445 L 626 445" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="626,445 616.8,448.9 616.8,441.1" fill="#4b5563"/>
+<rect x="40" y="517" width="170" height="168" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="547" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Common finish</text>
+<text x="50" y="565" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Lanes 1 and 2 only</text>
+<rect x="230" y="517" width="170" height="168" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="240" y="547" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">add_wind_layer</text>
+<text x="240" y="564" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">W:173, Q:4336</text>
+<text x="240" y="582" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Interactive,</text>
+<text x="240" y="600" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  temporal only</text>
+<rect x="428" y="517" width="170" height="168" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="438" y="547" font-family="Arial, Helvetica, sans-serif" font-size="11.9" font-weight="bold" fill="#1f2937" text-anchor="start">finalize_and_save_map</text>
+<text x="438" y="564" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2453</text>
+<text x="438" y="582" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Interactive = TRUE</text>
+<rect x="626" y="517" width="170" height="168" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="636" y="547" font-family="Arial, Helvetica, sans-serif" font-size="15.6" font-weight="bold" fill="#1f2937" text-anchor="start">add_map_controls</text>
+<text x="636" y="564" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3558</text>
+<text x="636" y="582" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Boundary,</text>
+<text x="636" y="600" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  fitBounds,</text>
+<text x="636" y="618" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  setView, layer-</text>
+<text x="636" y="636" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  cache or lazy JS,</text>
+<text x="636" y="654" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  vignette</text>
+<rect x="824" y="517" width="170" height="168" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="834" y="547" font-family="Arial, Helvetica, sans-serif" font-size="13.2" font-weight="bold" fill="#1f2937" text-anchor="start">save_html_and_style</text>
+<text x="834" y="564" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2544</text>
+<text x="834" y="582" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">saveWidget</text>
+<text x="834" y="600" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  selfcontained</text>
+<text x="834" y="618" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:2566); remove</text>
+<text x="834" y="636" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  _files (Q:2595)</text>
+<rect x="1022" y="517" width="170" height="168" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="1032" y="547" font-family="Arial, Helvetica, sans-serif" font-size="8.6" font-weight="bold" fill="#1f2937" text-anchor="start">inject_banner_legend_controls</text>
+<text x="1032" y="564" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2921</text>
+<text x="1032" y="582" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Banner, CSS,</text>
+<text x="1032" y="600" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  slider,</text>
+<text x="1032" y="618" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  indicator,</text>
+<text x="1032" y="636" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  legend; missing</text>
+<text x="1032" y="654" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  anchor is an</text>
+<text x="1032" y="672" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  error</text>
+<path d="M 400 600 L 428 600" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="428,600 418.8,603.9 418.8,596.1" fill="#4b5563"/>
+<path d="M 598 600 L 626 600" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="626,600 616.8,603.9 616.8,596.1" fill="#4b5563"/>
+<path d="M 796 600 L 824 600" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="824,600 814.8,603.9 814.8,596.1" fill="#4b5563"/>
+<path d="M 994 600 L 1022 600" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="1022,600 1012.8,603.9 1012.8,596.1" fill="#4b5563"/>
+<path d="M 1192 170 L 1230 170 L 1230 560 L 1192 560" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="1192,560 1201.2,556.1 1201.2,563.9" fill="#4b5563"/>
+<path d="M 796 309 L 1230 309" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="1230,309 1220.8,312.9 1220.8,305.1" fill="#4b5563"/>
+</svg>
+<figcaption>Per-step loop, lazy path, static export, save and inject · <a href="svg/03_loop_lazy_static_save.svg">SVG</a> · <a href="png/03_loop_lazy_static_save.png">PNG</a></figcaption></figure></section>
+<section id="v04_qm_layer_data_model"><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>qm_layer: the atomic data unit</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">qm_layer: the atomic data unit</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">One sf object in long format, with metadata in attr(x, &#x27;qm&#x27;). Constructors differ by source.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">R/qm_layer.R, R/quickmap_api.R, R/wind.R; L: = R/qm_layer.R</text>
+<rect x="40" y="110" width="380" height="148" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_csv</text>
+<text x="50" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">L:400</text>
+<text x="50" y="174" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Temporal (no School column, more than one four-</text>
+<text x="50" y="191" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  digit column): pivot_longer, transform_to_wgs84,</text>
+<text x="50" y="208" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  shape circle.</text>
+<text x="50" y="228" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Static: code from School, value_col Level if</text>
+<text x="50" y="245" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  present, shape cross.</text>
+<rect x="40" y="270" width="380" height="94" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="300" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_rdata</text>
+<text x="50" y="317" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">L:453</text>
+<text x="50" y="335" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">load_rdata_file (Q:554), duck-typed; shape</text>
+<text x="50" y="353" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  diamond</text>
+<rect x="40" y="376" width="380" height="94" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="406" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_openair</text>
+<text x="50" y="423" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">L:475</text>
+<text x="50" y="441" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">convert_openair_to_spatial (Q:235); shape</text>
+<text x="50" y="459" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  diamond</text>
+<rect x="40" y="482" width="380" height="90" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="512" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_worldmet</text>
+<text x="50" y="529" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">wind.R:25</text>
+<text x="50" y="547" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Returns qm_wind, not a qm_layer; see slide 7</text>
+<rect x="450" y="110" width="380" height="340" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="460" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">qm_layer: sf data.frame, long format</text>
+<text x="460" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">L:184, constants L:10-37</text>
+<text x="460" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Class c(&#x27;qm_layer&#x27;, sf classes)</text>
+<text x="460" y="196" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">code (required)</text>
+<text x="460" y="217" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">lat, lon, geometry (EPSG:4326)</text>
+<text x="460" y="238" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">time_label, time_sort (temporal layers only)</text>
+<text x="460" y="259" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">value column, named by value_col</text>
+<text x="460" y="280" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">label column, named by label_col</text>
+<text x="460" y="301" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Aliases dropped: siteCode and site_code to</text>
+<text x="460" y="319" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  code; year_str to time_label; Latitude and</text>
+<text x="460" y="337" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  latitude to lat; Longitude and longitude to</text>
+<text x="460" y="355" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  lon</text>
+<path d="M 420 175 L 450 175" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="450,175 440.8,178.9 440.8,171.1" fill="#4b5563"/>
+<path d="M 420 317 L 450 317" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="450,317 440.8,320.9 440.8,313.1" fill="#4b5563"/>
+<path d="M 420 423 L 450 423" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="450,423 440.8,426.9 440.8,419.1" fill="#4b5563"/>
+<rect x="860" y="110" width="380" height="120" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="870" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">attr(x, &#x27;qm&#x27;)</text>
+<text x="870" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">L:299-310</text>
+<text x="870" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">value_col, time_col (&#x27;time_label&#x27; or NULL),</text>
+<text x="870" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  label_col, shape, name, resolution (year,</text>
+<text x="870" y="211" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  month, day, hour, minute)</text>
+<rect x="860" y="242" width="380" height="230" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="870" y="272" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Validation in qm_layer()</text>
+<text x="870" y="289" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">L:194-297</text>
+<text x="870" y="306" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Shape: aliases (square to rect, cross to simple-</text>
+<text x="870" y="323" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  cross), then validate_and_fix_icon_shape (Q:3046)</text>
+<text x="870" y="343" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Time: explicit time_col, then Date/POSIXct, then</text>
+<text x="870" y="360" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  name-gated parse (L:97); grammar YYYY to YYYY-MM-</text>
+<text x="870" y="377" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  DD HH:MM:SS</text>
+<text x="870" y="397" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Value: explicit, then known pollutant (no2, pm25,</text>
+<text x="870" y="414" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  pm10, nox, no, o3, so2, co), then the sole</text>
+<text x="870" y="431" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  candidate, else error</text>
+<rect x="450" y="490" width="790" height="100" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<text x="460" y="520" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Renderer still reads legacy columns</text>
+<text x="460" y="537" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">A:181</text>
+<text x="460" y="555" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">qm_to_legacy (A:15) adds year_str, siteCode, Longitude, Latitude, so qm_layer is not yet the only</text>
+<text x="460" y="573" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  contract inside render_pollution_map().</text>
+<path d="M 640 450 L 640 490" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="640,490 636.1,480.8 643.9,480.8" fill="#4b5563"/>
+</svg>
+<figcaption>qm_layer: the atomic data unit · <a href="svg/04_qm_layer_data_model.svg">SVG</a> · <a href="png/04_qm_layer_data_model.png">PNG</a></figcaption></figure></section>
+<section id="v05_configuration"><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>Configuration: scales, themes, templates and their loaders</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">Configuration: scales, themes, templates and their loaders</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">Styling lives in inst/ files; three loaders feed the renderer. Explicit arguments beat themes.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">R/quickmap.R, inst/; Q: = R/quickmap.R</text>
+<rect x="40" y="110" width="360" height="170" rx="6" fill="#d1fae5" stroke="#047857" stroke-width="2"/>
+<text x="50" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Colour scales   inst/config/scales</text>
+<text x="50" y="158" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">(14)</text>
+<text x="50" y="175" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">11 continuous: colours, thresholds (last .Inf),</text>
+<text x="50" y="192" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  labels, title. 3 categorical (schools,</text>
+<text x="50" y="209" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  nine_elms, nine_elms_consolidated): colours,</text>
+<text x="50" y="226" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  domain, labels, title.</text>
+<text x="50" y="246" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">footnote_symbols: false only in lbm_aqap_no2,</text>
+<text x="50" y="263" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  lbm_aqap_pm10</text>
+<rect x="40" y="292" width="360" height="160" rx="6" fill="#d1fae5" stroke="#047857" stroke-width="2"/>
+<text x="50" y="322" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Themes   inst/themes (5)</text>
+<text x="50" y="339" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">airstat, high_contrast, merton, richmond,</text>
+<text x="50" y="356" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  wandsworth: partial files merged over</text>
+<text x="50" y="373" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  defaults. Keys: banner, legend, map, controls,</text>
+<text x="50" y="390" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  indicator, wind. palette appears in 3 files</text>
+<text x="50" y="407" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  and is undocumented.</text>
+<rect x="40" y="464" width="360" height="150" rx="6" fill="#d1fae5" stroke="#047857" stroke-width="2"/>
+<text x="50" y="494" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Templates   inst/banner, legend,</text>
+<text x="50" y="512" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">controls</text>
+<text x="50" y="529" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">{{placeholder}} in CSS and HTML:</text>
+<text x="50" y="546" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  banner_style_css, mobile_css,</text>
+<text x="50" y="563" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  legend_header_bg, legend_header_hover, accent,</text>
+<text x="50" y="580" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  accent_light, legend_items, legend_title</text>
+<rect x="470" y="110" width="340" height="170" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="480" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">load_colour_scale</text>
+<text x="480" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:1203</text>
+<text x="480" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Reads YAML through load_yaml_config</text>
+<text x="480" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:1225); coerces thresholds to numeric;</text>
+<text x="480" y="211" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  does not validate.</text>
+<rect x="470" y="292" width="340" height="160" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="480" y="322" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">load_theme</text>
+<text x="480" y="339" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:1351</text>
+<text x="480" y="357" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Merges file over get_default_theme</text>
+<text x="480" y="375" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:1274) with modifyList. Missing or</text>
+<text x="480" y="393" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  invalid file warns and falls back.</text>
+<text x="480" y="411" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  Legacy map.marker_labels is renamed with</text>
+<text x="480" y="429" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  a warning.</text>
+<rect x="470" y="464" width="340" height="150" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="480" y="494" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">apply_template_replacements</text>
+<text x="480" y="511" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:72-88</text>
+<text x="480" y="529" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">A {{key}} absent from the template is an</text>
+<text x="480" y="547" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  error. A template placeholder with no</text>
+<text x="480" y="565" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  replacement passes silently.</text>
+<rect x="880" y="110" width="360" height="170" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="890" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Consumers: colour</text>
+<text x="890" y="157" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">assign_colour (Q:1431): findInterval on</text>
+<text x="890" y="174" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  thresholds; NA gives white; called from</text>
+<text x="890" y="191" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  create_generic_icons (Q:3195).</text>
+<text x="890" y="211" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">generate_legend_html (Q:1622) checks colours and</text>
+<text x="890" y="228" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  labels lengths.</text>
+<rect x="880" y="292" width="360" height="160" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<text x="890" y="322" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Consumers: theme</text>
+<text x="890" y="339" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Precedence: argument, then theme, then default</text>
+<text x="890" y="356" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:4111-4130).</text>
+<text x="890" y="376" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Never read (grep of quickmap.R): legend.show,</text>
+<text x="890" y="393" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  legend.background, banner.text_color,</text>
+<text x="890" y="410" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  controls.background, controls.text_color.</text>
+<rect x="880" y="464" width="360" height="150" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="890" y="494" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Consumers: templates</text>
+<text x="890" y="511" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">build_banner_css (Q:2211), build_legend_css</text>
+<text x="890" y="528" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:2283), load_time_slider_control</text>
+<text x="890" y="545" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:2644-2719); injected by</text>
+<text x="890" y="562" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  inject_banner_legend_controls.</text>
+<path d="M 400 195 L 470 195" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="470,195 460.8,198.9 460.8,191.1" fill="#4b5563"/>
+<path d="M 810 195 L 880 195" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="880,195 870.8,198.9 870.8,191.1" fill="#4b5563"/>
+<path d="M 400 372 L 470 372" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="470,372 460.8,375.9 460.8,368.1" fill="#4b5563"/>
+<path d="M 810 372 L 880 372" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="880,372 870.8,375.9 870.8,368.1" fill="#4b5563"/>
+<path d="M 400 539 L 470 539" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="470,539 460.8,542.9 460.8,535.1" fill="#4b5563"/>
+<path d="M 810 539 L 880 539" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="880,539 870.8,542.9 870.8,535.1" fill="#4b5563"/>
+</svg>
+<figcaption>Configuration: scales, themes, templates and their loaders · <a href="svg/05_configuration.svg">SVG</a> · <a href="png/05_configuration.png">PNG</a></figcaption></figure></section>
+<section id="v06_r_to_browser_boundary"><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>R to browser boundary and the JS call order</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">R to browser boundary and the JS call order</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">R writes one HTML file; in the browser, switchToTime calls wind, then indicator, then the lazy or eager path.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">R/quickmap.R, inst/controls/*; Q: = R/quickmap.R</text>
+<text x="40" y="108" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">R, at build time</text>
+<rect x="40" y="120" width="330" height="110" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Leaflet widget</text>
+<text x="50" y="167" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2566</text>
+<text x="50" y="185" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">htmlwidgets saveWidget(selfcontained =</text>
+<text x="50" y="203" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  TRUE) with JS dependencies inlined</text>
+<rect x="40" y="242" width="330" height="170" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="272" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">onRender attachments</text>
+<text x="50" y="289" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3607-3618</text>
+<text x="50" y="306" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Wind first: wind-controller.js plus wind</text>
+<text x="50" y="323" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  payload (Q:4336).</text>
+<text x="50" y="343" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Then layer-cache.js (eager) or lazy-time-</text>
+<text x="50" y="360" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  controller.js plus lazy payload</text>
+<text x="50" y="377" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:3607-3618).</text>
+<rect x="40" y="424" width="330" height="230" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="454" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">String injection into the saved</text>
+<text x="50" y="472" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">file</text>
+<text x="50" y="489" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2921-3039</text>
+<text x="50" y="506" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Anchors &lt;/head&gt;, &lt;body, &lt;/body&gt; (missing is</text>
+<text x="50" y="523" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  an error).</text>
+<text x="50" y="543" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Banner, CSS, window.quickmapConfig</text>
+<text x="50" y="560" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  {autoplay, playSpeed, speeds}, time-</text>
+<text x="50" y="577" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  slider.js, window.quickmapIndicatorData</text>
+<text x="50" y="594" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  plus indicator.js, legend.</text>
+<text x="450" y="108" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Saved HTML: window objects</text>
+<rect x="450" y="120" width="340" height="534" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="460" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Registered at load</text>
+<text x="460" y="167" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapConfig</text>
+<text x="460" y="187" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  from R; defaults {autoplay: false,</text>
+<text x="460" y="204" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  playSpeed: 500}</text>
+<text x="460" y="224" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapLayerCache</text>
+<text x="460" y="244" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  layer-cache.js:23, or a stub at lazy-time-</text>
+<text x="460" y="261" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  controller.js:241</text>
+<text x="460" y="281" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapTimeController</text>
+<text x="460" y="301" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  lazy only; lazy-time-controller.js:240</text>
+<text x="460" y="321" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapWindController</text>
+<text x="460" y="341" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  wind-controller.js:37; shows the last step</text>
+<text x="460" y="358" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  at load (38)</text>
+<text x="460" y="378" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapIndicatorController</text>
+<text x="460" y="398" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  indicator.js:107; returns early if no</text>
+<text x="460" y="415" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  indicator data (11)</text>
+<text x="460" y="435" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapPlayInterval</text>
+<text x="460" y="455" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  time-slider.js:158; the lazy fade reads it</text>
+<text x="460" y="472" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (160-164)</text>
+<text x="860" y="108" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Browser: switchToTime  time-slider.js:20-56</text>
+<rect x="860" y="120" width="380" height="80" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="870" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">1 Wind setTime(label)</text>
+<text x="870" y="167" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Lines 26-28; updates or removes the velocity layer</text>
+<rect x="860" y="222" width="380" height="80" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="870" y="252" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">2 Indicator setTime</text>
+<text x="870" y="269" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Lines 29-31; above the lazy early return</text>
+<rect x="860" y="324" width="380" height="90" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="870" y="354" font-family="Arial, Helvetica, sans-serif" font-size="15.8" font-weight="bold" fill="#1f2937" text-anchor="start">3 Lazy: quickmapTimeController.setTime</text>
+<text x="870" y="371" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Lines 32-36; returns, so step 4 is skipped</text>
+<rect x="860" y="436" width="380" height="90" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="870" y="466" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">4 Eager: layer-cache</text>
+<text x="870" y="483" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Lines 37-52; add and remove layer groups</text>
+<rect x="860" y="548" width="380" height="106" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="870" y="578" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Timer</text>
+<text x="870" y="595" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">One startTimer() (143-148) reads currentInterval();</text>
+<text x="870" y="612" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  play, resume-after-hidden and speed change all go</text>
+<text x="870" y="629" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  through it.</text>
+<path d="M 370 175 L 450 175" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="450,175 440.8,178.9 440.8,171.1" fill="#4b5563"/>
+<path d="M 370 327 L 450 327" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="450,327 440.8,330.9 440.8,323.1" fill="#4b5563"/>
+<path d="M 370 539 L 450 539" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="450,539 440.8,542.9 440.8,535.1" fill="#4b5563"/>
+<path d="M 790 160 L 860 160" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="860,160 850.8,163.9 850.8,156.1" fill="#4b5563"/>
+<path d="M 1050 200 L 1050 222" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="1050,222 1046.1,212.8 1053.9,212.8" fill="#4b5563"/>
+<path d="M 1050 302 L 1050 324" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="1050,324 1046.1,314.8 1053.9,314.8" fill="#4b5563"/>
+<path d="M 1050 414 L 1050 436" fill="none" stroke="#4b5563" stroke-width="2" stroke-dasharray="6 4"/>
+<polygon points="1050,436 1046.1,426.8 1053.9,426.8" fill="#4b5563"/>
+<text x="1100" y="430" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="middle">not lazy</text>
+</svg>
+<figcaption>R to browser boundary and the JS call order · <a href="svg/06_r_to_browser_boundary.svg">SVG</a> · <a href="png/06_r_to_browser_boundary.png">PNG</a></figcaption></figure></section>
+<section id="v07_wind_data_flow"><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>Wind animation data flow</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">Wind animation data flow</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">One uniform wind value per time step across the map, rendered by vendored leaflet-velocity. Interactive HTML only.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">R/wind.R, inst/controls/wind-controller.js; W: = R/wind.R</text>
+<rect x="40" y="120" width="275" height="230" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_worldmet</text>
+<text x="50" y="167" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">W:25-58</text>
+<text x="50" y="184" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Data frame, or</text>
+<text x="50" y="201" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  worldmet::importNOAA(station,</text>
+<text x="50" y="218" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  year). Needs date, ws, wd; drops</text>
+<text x="50" y="235" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  NA. u = -ws sin(wd), v = -ws</text>
+<text x="50" y="252" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  cos(wd).</text>
+<path d="M 315 235 L 348 235" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="348,235 338.8,238.9 338.8,231.1" fill="#4b5563"/>
+<rect x="348" y="120" width="275" height="230" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="358" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">build_wind_payload</text>
+<text x="358" y="167" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">W:86-134</text>
+<text x="358" y="184" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Date format chosen from step-label</text>
+<text x="358" y="201" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  width (4, 7, 10, 13, 16 chars).</text>
+<text x="358" y="218" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  Mean u and v per step. 2x2 grid</text>
+<text x="358" y="235" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  over bbox + 3 degrees. maxVelocity</text>
+<text x="358" y="252" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  = ceiling(max ws) + 2. Empty step</text>
+<text x="358" y="269" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  is null.</text>
+<path d="M 623 235 L 656 235" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="656,235 646.8,238.9 646.8,231.1" fill="#4b5563"/>
+<rect x="656" y="120" width="275" height="230" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="666" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">wind_style_options</text>
+<text x="666" y="167" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">W:140</text>
+<text x="666" y="184" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Theme wind block over defaults:</text>
+<text x="666" y="201" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  colour_ramp to colorScale,</text>
+<text x="666" y="218" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  particle_density to</text>
+<text x="666" y="235" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  particleMultiplier, line_width to</text>
+<text x="666" y="252" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  lineWidth, velocity_scale to</text>
+<text x="666" y="269" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  velocityScale.</text>
+<path d="M 931 235 L 964 235" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="964,235 954.8,238.9 954.8,231.1" fill="#4b5563"/>
+<rect x="964" y="120" width="275" height="230" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="974" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Attach to the widget</text>
+<text x="974" y="167" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">W:173, Q:4335-4343</text>
+<text x="974" y="184" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">add_wind_layer: onRender(wind-</text>
+<text x="974" y="201" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  controller.js, payload).</text>
+<text x="974" y="218" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  velocity_dependency (W:159)</text>
+<text x="974" y="235" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  inlines the plugin.</text>
+<text x="40" y="394" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">In the browser</text>
+<rect x="40" y="406" width="360" height="150" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="50" y="436" font-family="Arial, Helvetica, sans-serif" font-size="15.3" font-weight="bold" fill="#1f2937" text-anchor="start">quickmapWindController.setTime(label)</text>
+<text x="50" y="453" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">wind-controller.js:37. Looks up the frame by</text>
+<text x="50" y="470" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  label; a null frame removes the layer (13).</text>
+<rect x="460" y="406" width="360" height="150" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="470" y="436" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">L.velocityLayer</text>
+<text x="470" y="453" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Created on first call (25) and added to the map;</text>
+<text x="470" y="470" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  updateData(frame) afterwards (19).</text>
+<rect x="880" y="406" width="360" height="150" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="890" y="436" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">leaflet-velocity 2.1.4, patched</text>
+<text x="890" y="453" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Vendored, unminified. QUICKMAP patch markers at</text>
+<text x="890" y="470" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  lines 103, 341, 823-877, 933, 1019-1036.</text>
+<path d="M 1102 350 L 1102 380 L 220 380 L 220 406" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="220,406 216.1,396.8 223.9,396.8" fill="#4b5563"/>
+<path d="M 400 481 L 460 481" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="460,481 450.8,484.9 450.8,477.1" fill="#4b5563"/>
+<path d="M 820 481 L 880 481" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="880,481 870.8,484.9 870.8,477.1" fill="#4b5563"/>
+<rect x="40" y="580" width="1200" height="90" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="610" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Scope</text>
+<text x="50" y="627" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Interactive maps with temporal data only; never in JPG frames. The field is uniform: one averaged vector for the whole map at each step. Non-uniform fields are a</text>
+<text x="50" y="644" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  post-1.0 plan.</text>
+</svg>
+<figcaption>Wind animation data flow · <a href="svg/07_wind_data_flow.svg">SVG</a> · <a href="png/07_wind_data_flow.png">PNG</a></figcaption></figure></section>
+<section id="v08_docs_vs_code"><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>Documented claims the code contradicts</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">Documented claims the code contradicts</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">Found by reading the source; CLAUDE.md says the code is the source of truth.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">Cites: Q: = R/quickmap.R, W: = R/wind.R. &#x27;grep only&#x27; = not traced by hand</text>
+<rect x="40" y="98" width="1200" height="26" fill="#1f2937"/>
+<text x="46" y="116" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="start">#</text>
+<text x="76" y="116" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="start">Documented</text>
+<text x="566" y="116" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="start">Code says</text>
+<text x="1096" y="116" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="start">Evidence</text>
+<rect x="40" y="124" width="1200" height="80" fill="#fee2e2" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="145" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">1</text>
+<text x="76" y="145" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Pipeline runs load_data_file to generate_map_layers in order</text>
+<text x="566" y="145" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">quickmap() passes sf layers, so load_data_file is not reached on</text>
+<text x="566" y="162" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">that path. generate_map_layers is the outer driver calling</text>
+<text x="566" y="179" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">prepare_generic_layer_data and add_layer; add_layer calls</text>
+<text x="566" y="196" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">create_generic_icons.</text>
+<text x="1096" y="145" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Q:3823, Q:3674</text>
+<rect x="40" y="204" width="1200" height="46" fill="#fee2e2" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="225" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">2</text>
+<text x="76" y="225" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">generate_map_layers emits HTML and static exports from one</text>
+<text x="76" y="242" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">loop</text>
+<text x="566" y="225" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">It only draws markers. Static frames use</text>
+<text x="566" y="242" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">add_year_and_static_layers in the shared loop.</text>
+<text x="1096" y="225" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Q:2309, Q:4279</text>
+<rect x="40" y="250" width="1200" height="34" fill="#fee2e2" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="271" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">3</text>
+<text x="76" y="271" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Example quickmap(&quot;wandsworth_2017_2024.csv&quot;, boroughs = ...)</text>
+<text x="566" y="271" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">output_file is required, so the call errors.</text>
+<text x="1096" y="271" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Q:2354</text>
+<rect x="40" y="284" width="1200" height="34" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="305" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">4</text>
+<text x="76" y="305" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">who_no2.yaml has 5 bands, name, pollutant</text>
+<text x="566" y="305" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Real file: 11 bands, no name, no pollutant.</text>
+<text x="1096" y="305" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">who_no2.yaml</text>
+<rect x="40" y="318" width="1200" height="46" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="339" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">5</text>
+<text x="76" y="339" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Theme keys legend.show, legend.background, banner.text_color,</text>
+<text x="76" y="356" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">controls.background, controls.text_color</text>
+<text x="566" y="339" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Not read anywhere in R/quickmap.R (grep only).</text>
+<text x="1096" y="339" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Q:1274-1344</text>
+<rect x="40" y="364" width="1200" height="46" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="385" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">6</text>
+<text x="76" y="385" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">A missing placeholder is a hard error</text>
+<text x="566" y="385" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Only a {{key}} absent from the template errors; an unfilled</text>
+<text x="566" y="402" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">template placeholder passes silently.</text>
+<text x="1096" y="385" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Q:72-88</text>
+<rect x="40" y="410" width="1200" height="46" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="431" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">7</text>
+<text x="76" y="431" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Two timer-start sites must read currentInterval</text>
+<text x="566" y="431" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">One startTimer() reads it; the lazy fade reads</text>
+<text x="566" y="448" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapPlayInterval.</text>
+<text x="1096" y="431" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">time-</text>
+<text x="1096" y="448" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">slider.js:143-148</text>
+<rect x="40" y="456" width="1200" height="34" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="477" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">8</text>
+<text x="76" y="477" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Wind comes from one worldmet station</text>
+<text x="566" y="477" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Any data frame with date, ws, wd is accepted.</text>
+<text x="1096" y="477" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">W:25-58</text>
+<rect x="40" y="490" width="1200" height="34" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="511" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">9</text>
+<text x="76" y="511" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">indicator.placement defaults to title_row</text>
+<text x="566" y="511" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">True in get_default_theme; function fallbacks use right.</text>
+<text x="1096" y="511" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Q:4216, Q:2937</text>
+<rect x="40" y="524" width="1200" height="46" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+<text x="46" y="545" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">10</text>
+<text x="76" y="545" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Controls comments describe the roller menu and switchToYear</text>
+<text x="566" y="545" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Stale: replaced by the time slider.</text>
+<text x="1096" y="545" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">wind-</text>
+<text x="1096" y="562" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">controller.js:4</text>
+<text x="40" y="586" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Red rows 1-3 change how a reader should understand the pipeline or break a copied example.</text>
+</svg>
+<figcaption>Documented claims the code contradicts · <a href="svg/08_docs_vs_code.svg">SVG</a> · <a href="png/08_docs_vs_code.png">PNG</a></figcaption></figure></section>
+<section id="v09_technology_stack"><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>Technology stack by layer</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">Technology stack by layer</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">Data flows top to bottom: R packages build the map, a saved HTML file carries it, the browser runs it.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">DESCRIPTION (Imports, Suggests), R/, inst/controls/, .claude/; CLAUDE.md claims marked</text>
+<rect x="40" y="98" width="1200" height="78" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="128" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Data in</text>
+<text x="50" y="145" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">CSV (diffusion tubes, schools), RData objects, OpenAir tibbles, NOAA wind through worldmet.</text>
+<text x="50" y="165" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Suggests: openair, worldmet, httr, jsonlite. Planned: Breathe London API (roadmap item 12, blocked on an API key).</text>
+<rect x="40" y="182" width="1200" height="78" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="212" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Spatial data and wrangling (R)</text>
+<text x="50" y="229" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">sf: British National Grid EPSG:27700 to WGS84 EPSG:4326. dplyr, tidyr, lubridate, zeallot, yaml.</text>
+<text x="50" y="249" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Boundaries come from get_boundary_sf (Q:1028); scales and themes are read as YAML.</text>
+<rect x="40" y="266" width="1200" height="78" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="296" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Map construction (R)</text>
+<text x="50" y="313" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">leaflet (R package, 2.2.2 or later), leaflegend, htmlwidgets (1.6.2 or later), htmltools.</text>
+<text x="50" y="333" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">htmlwidgets saveWidget(selfcontained = TRUE) writes the file; onRender attaches the JS controllers.</text>
+<rect x="40" y="350" width="1200" height="78" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="50" y="380" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Browser runtime (JS)</text>
+<text x="50" y="397" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Leaflet map inside the widget. Hand-written JS files in inst/controls: time-slider, indicator, lazy-time-controller, layer-cache, wind-controller.</text>
+<text x="50" y="417" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Vendored leaflet-velocity 2.1.4, patched, for wind. All JS and CSS inlined into the one HTML file.</text>
+<rect x="40" y="434" width="1200" height="78" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="464" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Static export</text>
+<text x="50" y="481" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">webshot2 screenshots an intermediate HTML to JPG (headless Chrome; the roadmap defect list names chromote).</text>
+<text x="50" y="501" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">The intermediate HTML is deleted. Wind is not drawn in JPG frames.</text>
+<rect x="40" y="518" width="1200" height="78" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="548" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Docs, tests, tooling</text>
+<text x="50" y="565" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">testthat suite in tests/testthat; vignettes (knitr, rmarkdown); pkgdown site in docs/.</text>
+<text x="50" y="585" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Claude Code hooks: gatekeeper.py (Python) and protect-main.sh (jq) guard unattended runs and commits on main.</text>
+<rect x="40" y="608" width="1200" height="78" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="638" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Rendering backend decision (per CLAUDE.md; not traced in this audit)</text>
+<text x="50" y="655" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Leaflet with Canvas markers restyled from one embedded JSON payload (&quot;Option D&quot;), approved 2026-07-06. MapLibre/mapgl is the post-1.0 path.</text>
+<text x="50" y="675" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Default base tiles are OpenStreetMap when base_tiles is NULL (CLAUDE.md). Sharing constraint: output must work as a self-contained file.</text>
+</svg>
+<figcaption>Technology stack by layer · <a href="svg/09_technology_stack.svg">SVG</a> · <a href="png/09_technology_stack.png">PNG</a></figcaption></figure></section>
+</main></body></html>

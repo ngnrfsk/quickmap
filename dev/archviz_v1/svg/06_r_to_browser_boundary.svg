@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>R to browser boundary and the JS call order</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">R to browser boundary and the JS call order</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">R writes one HTML file; in the browser, switchToTime calls wind, then indicator, then the lazy or eager path.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">R/quickmap.R, inst/controls/*; Q: = R/quickmap.R</text>
+<text x="40" y="108" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">R, at build time</text>
+<rect x="40" y="120" width="330" height="110" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Leaflet widget</text>
+<text x="50" y="167" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2566</text>
+<text x="50" y="185" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">htmlwidgets saveWidget(selfcontained =</text>
+<text x="50" y="203" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  TRUE) with JS dependencies inlined</text>
+<rect x="40" y="242" width="330" height="170" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="272" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">onRender attachments</text>
+<text x="50" y="289" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3607-3618</text>
+<text x="50" y="306" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Wind first: wind-controller.js plus wind</text>
+<text x="50" y="323" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  payload (Q:4336).</text>
+<text x="50" y="343" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Then layer-cache.js (eager) or lazy-time-</text>
+<text x="50" y="360" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  controller.js plus lazy payload</text>
+<text x="50" y="377" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:3607-3618).</text>
+<rect x="40" y="424" width="330" height="230" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="454" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">String injection into the saved</text>
+<text x="50" y="472" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">file</text>
+<text x="50" y="489" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2921-3039</text>
+<text x="50" y="506" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Anchors &lt;/head&gt;, &lt;body, &lt;/body&gt; (missing is</text>
+<text x="50" y="523" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  an error).</text>
+<text x="50" y="543" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Banner, CSS, window.quickmapConfig</text>
+<text x="50" y="560" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  {autoplay, playSpeed, speeds}, time-</text>
+<text x="50" y="577" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  slider.js, window.quickmapIndicatorData</text>
+<text x="50" y="594" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  plus indicator.js, legend.</text>
+<text x="450" y="108" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Saved HTML: window objects</text>
+<rect x="450" y="120" width="340" height="534" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="460" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Registered at load</text>
+<text x="460" y="167" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapConfig</text>
+<text x="460" y="187" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  from R; defaults {autoplay: false,</text>
+<text x="460" y="204" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  playSpeed: 500}</text>
+<text x="460" y="224" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapLayerCache</text>
+<text x="460" y="244" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  layer-cache.js:23, or a stub at lazy-time-</text>
+<text x="460" y="261" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  controller.js:241</text>
+<text x="460" y="281" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapTimeController</text>
+<text x="460" y="301" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  lazy only; lazy-time-controller.js:240</text>
+<text x="460" y="321" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapWindController</text>
+<text x="460" y="341" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  wind-controller.js:37; shows the last step</text>
+<text x="460" y="358" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  at load (38)</text>
+<text x="460" y="378" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapIndicatorController</text>
+<text x="460" y="398" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  indicator.js:107; returns early if no</text>
+<text x="460" y="415" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  indicator data (11)</text>
+<text x="460" y="435" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">window.quickmapPlayInterval</text>
+<text x="460" y="455" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  time-slider.js:158; the lazy fade reads it</text>
+<text x="460" y="472" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (160-164)</text>
+<text x="860" y="108" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Browser: switchToTime  time-slider.js:20-56</text>
+<rect x="860" y="120" width="380" height="80" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="870" y="150" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">1 Wind setTime(label)</text>
+<text x="870" y="167" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Lines 26-28; updates or removes the velocity layer</text>
+<rect x="860" y="222" width="380" height="80" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="870" y="252" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">2 Indicator setTime</text>
+<text x="870" y="269" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Lines 29-31; above the lazy early return</text>
+<rect x="860" y="324" width="380" height="90" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="870" y="354" font-family="Arial, Helvetica, sans-serif" font-size="15.8" font-weight="bold" fill="#1f2937" text-anchor="start">3 Lazy: quickmapTimeController.setTime</text>
+<text x="870" y="371" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Lines 32-36; returns, so step 4 is skipped</text>
+<rect x="860" y="436" width="380" height="90" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="870" y="466" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">4 Eager: layer-cache</text>
+<text x="870" y="483" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Lines 37-52; add and remove layer groups</text>
+<rect x="860" y="548" width="380" height="106" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="870" y="578" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Timer</text>
+<text x="870" y="595" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">One startTimer() (143-148) reads currentInterval();</text>
+<text x="870" y="612" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  play, resume-after-hidden and speed change all go</text>
+<text x="870" y="629" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  through it.</text>
+<path d="M 370 175 L 450 175" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="450,175 440.8,178.9 440.8,171.1" fill="#4b5563"/>
+<path d="M 370 327 L 450 327" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="450,327 440.8,330.9 440.8,323.1" fill="#4b5563"/>
+<path d="M 370 539 L 450 539" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="450,539 440.8,542.9 440.8,535.1" fill="#4b5563"/>
+<path d="M 790 160 L 860 160" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="860,160 850.8,163.9 850.8,156.1" fill="#4b5563"/>
+<path d="M 1050 200 L 1050 222" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="1050,222 1046.1,212.8 1053.9,212.8" fill="#4b5563"/>
+<path d="M 1050 302 L 1050 324" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="1050,324 1046.1,314.8 1053.9,314.8" fill="#4b5563"/>
+<path d="M 1050 414 L 1050 436" fill="none" stroke="#4b5563" stroke-width="2" stroke-dasharray="6 4"/>
+<polygon points="1050,436 1046.1,426.8 1053.9,426.8" fill="#4b5563"/>
+<text x="1100" y="430" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="middle">not lazy</text>
+</svg>

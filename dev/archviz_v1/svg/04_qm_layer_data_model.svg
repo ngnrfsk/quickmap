@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>qm_layer: the atomic data unit</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">qm_layer: the atomic data unit</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">One sf object in long format, with metadata in attr(x, &#x27;qm&#x27;). Constructors differ by source.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">R/qm_layer.R, R/quickmap_api.R, R/wind.R; L: = R/qm_layer.R</text>
+<rect x="40" y="110" width="380" height="148" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_csv</text>
+<text x="50" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">L:400</text>
+<text x="50" y="174" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Temporal (no School column, more than one four-</text>
+<text x="50" y="191" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  digit column): pivot_longer, transform_to_wgs84,</text>
+<text x="50" y="208" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  shape circle.</text>
+<text x="50" y="228" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Static: code from School, value_col Level if</text>
+<text x="50" y="245" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  present, shape cross.</text>
+<rect x="40" y="270" width="380" height="94" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="300" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_rdata</text>
+<text x="50" y="317" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">L:453</text>
+<text x="50" y="335" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">load_rdata_file (Q:554), duck-typed; shape</text>
+<text x="50" y="353" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  diamond</text>
+<rect x="40" y="376" width="380" height="94" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="406" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_openair</text>
+<text x="50" y="423" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">L:475</text>
+<text x="50" y="441" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">convert_openair_to_spatial (Q:235); shape</text>
+<text x="50" y="459" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  diamond</text>
+<rect x="40" y="482" width="380" height="90" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="512" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_worldmet</text>
+<text x="50" y="529" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">wind.R:25</text>
+<text x="50" y="547" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Returns qm_wind, not a qm_layer; see slide 7</text>
+<rect x="450" y="110" width="380" height="340" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="460" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">qm_layer: sf data.frame, long format</text>
+<text x="460" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">L:184, constants L:10-37</text>
+<text x="460" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Class c(&#x27;qm_layer&#x27;, sf classes)</text>
+<text x="460" y="196" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">code (required)</text>
+<text x="460" y="217" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">lat, lon, geometry (EPSG:4326)</text>
+<text x="460" y="238" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">time_label, time_sort (temporal layers only)</text>
+<text x="460" y="259" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">value column, named by value_col</text>
+<text x="460" y="280" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">label column, named by label_col</text>
+<text x="460" y="301" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Aliases dropped: siteCode and site_code to</text>
+<text x="460" y="319" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  code; year_str to time_label; Latitude and</text>
+<text x="460" y="337" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  latitude to lat; Longitude and longitude to</text>
+<text x="460" y="355" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  lon</text>
+<path d="M 420 175 L 450 175" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="450,175 440.8,178.9 440.8,171.1" fill="#4b5563"/>
+<path d="M 420 317 L 450 317" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="450,317 440.8,320.9 440.8,313.1" fill="#4b5563"/>
+<path d="M 420 423 L 450 423" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="450,423 440.8,426.9 440.8,419.1" fill="#4b5563"/>
+<rect x="860" y="110" width="380" height="120" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="870" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">attr(x, &#x27;qm&#x27;)</text>
+<text x="870" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">L:299-310</text>
+<text x="870" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">value_col, time_col (&#x27;time_label&#x27; or NULL),</text>
+<text x="870" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  label_col, shape, name, resolution (year,</text>
+<text x="870" y="211" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  month, day, hour, minute)</text>
+<rect x="860" y="242" width="380" height="230" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="870" y="272" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Validation in qm_layer()</text>
+<text x="870" y="289" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">L:194-297</text>
+<text x="870" y="306" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Shape: aliases (square to rect, cross to simple-</text>
+<text x="870" y="323" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  cross), then validate_and_fix_icon_shape (Q:3046)</text>
+<text x="870" y="343" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Time: explicit time_col, then Date/POSIXct, then</text>
+<text x="870" y="360" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  name-gated parse (L:97); grammar YYYY to YYYY-MM-</text>
+<text x="870" y="377" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  DD HH:MM:SS</text>
+<text x="870" y="397" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Value: explicit, then known pollutant (no2, pm25,</text>
+<text x="870" y="414" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  pm10, nox, no, o3, so2, co), then the sole</text>
+<text x="870" y="431" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  candidate, else error</text>
+<rect x="450" y="490" width="790" height="100" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<text x="460" y="520" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Renderer still reads legacy columns</text>
+<text x="460" y="537" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">A:181</text>
+<text x="460" y="555" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">qm_to_legacy (A:15) adds year_str, siteCode, Longitude, Latitude, so qm_layer is not yet the only</text>
+<text x="460" y="573" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  contract inside render_pollution_map().</text>
+<path d="M 640 450 L 640 490" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="640,490 636.1,480.8 643.9,480.8" fill="#4b5563"/>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>Technology stack by layer</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">Technology stack by layer</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">Data flows top to bottom: R packages build the map, a saved HTML file carries it, the browser runs it.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">DESCRIPTION (Imports, Suggests), R/, inst/controls/, .claude/; CLAUDE.md claims marked</text>
+<rect x="40" y="98" width="1200" height="78" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="128" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Data in</text>
+<text x="50" y="145" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">CSV (diffusion tubes, schools), RData objects, OpenAir tibbles, NOAA wind through worldmet.</text>
+<text x="50" y="165" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Suggests: openair, worldmet, httr, jsonlite. Planned: Breathe London API (roadmap item 12, blocked on an API key).</text>
+<rect x="40" y="182" width="1200" height="78" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="212" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Spatial data and wrangling (R)</text>
+<text x="50" y="229" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">sf: British National Grid EPSG:27700 to WGS84 EPSG:4326. dplyr, tidyr, lubridate, zeallot, yaml.</text>
+<text x="50" y="249" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Boundaries come from get_boundary_sf (Q:1028); scales and themes are read as YAML.</text>
+<rect x="40" y="266" width="1200" height="78" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="50" y="296" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Map construction (R)</text>
+<text x="50" y="313" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">leaflet (R package, 2.2.2 or later), leaflegend, htmlwidgets (1.6.2 or later), htmltools.</text>
+<text x="50" y="333" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">htmlwidgets saveWidget(selfcontained = TRUE) writes the file; onRender attaches the JS controllers.</text>
+<rect x="40" y="350" width="1200" height="78" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+<text x="50" y="380" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Browser runtime (JS)</text>
+<text x="50" y="397" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Leaflet map inside the widget. Hand-written JS files in inst/controls: time-slider, indicator, lazy-time-controller, layer-cache, wind-controller.</text>
+<text x="50" y="417" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Vendored leaflet-velocity 2.1.4, patched, for wind. All JS and CSS inlined into the one HTML file.</text>
+<rect x="40" y="434" width="1200" height="78" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="464" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Static export</text>
+<text x="50" y="481" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">webshot2 screenshots an intermediate HTML to JPG (headless Chrome; the roadmap defect list names chromote).</text>
+<text x="50" y="501" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">The intermediate HTML is deleted. Wind is not drawn in JPG frames.</text>
+<rect x="40" y="518" width="1200" height="78" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="548" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Docs, tests, tooling</text>
+<text x="50" y="565" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">testthat suite in tests/testthat; vignettes (knitr, rmarkdown); pkgdown site in docs/.</text>
+<text x="50" y="585" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Claude Code hooks: gatekeeper.py (Python) and protect-main.sh (jq) guard unattended runs and commits on main.</text>
+<rect x="40" y="608" width="1200" height="78" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="638" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Rendering backend decision (per CLAUDE.md; not traced in this audit)</text>
+<text x="50" y="655" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Leaflet with Canvas markers restyled from one embedded JSON payload (&quot;Option D&quot;), approved 2026-07-06. MapLibre/mapgl is the post-1.0 path.</text>
+<text x="50" y="675" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Default base tiles are OpenStreetMap when base_tiles is NULL (CLAUDE.md). Sharing constraint: output must work as a self-contained file.</text>
+</svg>

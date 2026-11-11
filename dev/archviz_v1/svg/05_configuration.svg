@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>Configuration: scales, themes, templates and their loaders</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">Configuration: scales, themes, templates and their loaders</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">Styling lives in inst/ files; three loaders feed the renderer. Explicit arguments beat themes.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">R/quickmap.R, inst/; Q: = R/quickmap.R</text>
+<rect x="40" y="110" width="360" height="170" rx="6" fill="#d1fae5" stroke="#047857" stroke-width="2"/>
+<text x="50" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Colour scales   inst/config/scales</text>
+<text x="50" y="158" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">(14)</text>
+<text x="50" y="175" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">11 continuous: colours, thresholds (last .Inf),</text>
+<text x="50" y="192" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  labels, title. 3 categorical (schools,</text>
+<text x="50" y="209" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  nine_elms, nine_elms_consolidated): colours,</text>
+<text x="50" y="226" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  domain, labels, title.</text>
+<text x="50" y="246" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">footnote_symbols: false only in lbm_aqap_no2,</text>
+<text x="50" y="263" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  lbm_aqap_pm10</text>
+<rect x="40" y="292" width="360" height="160" rx="6" fill="#d1fae5" stroke="#047857" stroke-width="2"/>
+<text x="50" y="322" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Themes   inst/themes (5)</text>
+<text x="50" y="339" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">airstat, high_contrast, merton, richmond,</text>
+<text x="50" y="356" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  wandsworth: partial files merged over</text>
+<text x="50" y="373" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  defaults. Keys: banner, legend, map, controls,</text>
+<text x="50" y="390" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  indicator, wind. palette appears in 3 files</text>
+<text x="50" y="407" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  and is undocumented.</text>
+<rect x="40" y="464" width="360" height="150" rx="6" fill="#d1fae5" stroke="#047857" stroke-width="2"/>
+<text x="50" y="494" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Templates   inst/banner, legend,</text>
+<text x="50" y="512" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">controls</text>
+<text x="50" y="529" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">{{placeholder}} in CSS and HTML:</text>
+<text x="50" y="546" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  banner_style_css, mobile_css,</text>
+<text x="50" y="563" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  legend_header_bg, legend_header_hover, accent,</text>
+<text x="50" y="580" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  accent_light, legend_items, legend_title</text>
+<rect x="470" y="110" width="340" height="170" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="480" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">load_colour_scale</text>
+<text x="480" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:1203</text>
+<text x="480" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Reads YAML through load_yaml_config</text>
+<text x="480" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:1225); coerces thresholds to numeric;</text>
+<text x="480" y="211" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  does not validate.</text>
+<rect x="470" y="292" width="340" height="160" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="480" y="322" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">load_theme</text>
+<text x="480" y="339" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:1351</text>
+<text x="480" y="357" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Merges file over get_default_theme</text>
+<text x="480" y="375" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:1274) with modifyList. Missing or</text>
+<text x="480" y="393" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  invalid file warns and falls back.</text>
+<text x="480" y="411" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  Legacy map.marker_labels is renamed with</text>
+<text x="480" y="429" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  a warning.</text>
+<rect x="470" y="464" width="340" height="150" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="480" y="494" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">apply_template_replacements</text>
+<text x="480" y="511" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:72-88</text>
+<text x="480" y="529" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">A {{key}} absent from the template is an</text>
+<text x="480" y="547" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  error. A template placeholder with no</text>
+<text x="480" y="565" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  replacement passes silently.</text>
+<rect x="880" y="110" width="360" height="170" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="890" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Consumers: colour</text>
+<text x="890" y="157" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">assign_colour (Q:1431): findInterval on</text>
+<text x="890" y="174" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  thresholds; NA gives white; called from</text>
+<text x="890" y="191" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  create_generic_icons (Q:3195).</text>
+<text x="890" y="211" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">generate_legend_html (Q:1622) checks colours and</text>
+<text x="890" y="228" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  labels lengths.</text>
+<rect x="880" y="292" width="360" height="160" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<text x="890" y="322" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Consumers: theme</text>
+<text x="890" y="339" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Precedence: argument, then theme, then default</text>
+<text x="890" y="356" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:4111-4130).</text>
+<text x="890" y="376" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">Never read (grep of quickmap.R): legend.show,</text>
+<text x="890" y="393" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  legend.background, banner.text_color,</text>
+<text x="890" y="410" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  controls.background, controls.text_color.</text>
+<rect x="880" y="464" width="360" height="150" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="890" y="494" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Consumers: templates</text>
+<text x="890" y="511" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">build_banner_css (Q:2211), build_legend_css</text>
+<text x="890" y="528" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:2283), load_time_slider_control</text>
+<text x="890" y="545" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:2644-2719); injected by</text>
+<text x="890" y="562" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" fill="#1f2937" text-anchor="start">  inject_banner_legend_controls.</text>
+<path d="M 400 195 L 470 195" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="470,195 460.8,198.9 460.8,191.1" fill="#4b5563"/>
+<path d="M 810 195 L 880 195" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="880,195 870.8,198.9 870.8,191.1" fill="#4b5563"/>
+<path d="M 400 372 L 470 372" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="470,372 460.8,375.9 460.8,368.1" fill="#4b5563"/>
+<path d="M 810 372 L 880 372" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="880,372 870.8,375.9 870.8,368.1" fill="#4b5563"/>
+<path d="M 400 539 L 470 539" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="470,539 460.8,542.9 460.8,535.1" fill="#4b5563"/>
+<path d="M 810 539 L 880 539" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="880,539 870.8,542.9 870.8,535.1" fill="#4b5563"/>
+</svg>

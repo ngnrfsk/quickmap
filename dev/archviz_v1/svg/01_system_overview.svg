@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>System overview</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">System overview</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">Inputs become qm_layer objects; quickmap() renders one self-contained HTML map, optionally a JPG per step.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">Source audit 2026-10-05, v0.9.9.13, branch feature/item9-output-paths</text>
+<rect x="40" y="110" width="250" height="80" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Diffusion-tube CSV</text>
+<text x="50" y="158" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Easting, Northing</text>
+<text x="50" y="176" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  (EPSG:27700), year columns</text>
+<rect x="40" y="202" width="250" height="80" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="232" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Schools CSV</text>
+<text x="50" y="250" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Easting, Northing, Level,</text>
+<text x="50" y="268" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  School</text>
+<rect x="40" y="294" width="250" height="80" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="324" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">RData / OpenAir</text>
+<text x="50" y="342" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">siteCode, year, pollutant,</text>
+<text x="50" y="360" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  lat, lon</text>
+<rect x="40" y="386" width="250" height="80" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="416" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Wind (worldmet)</text>
+<text x="50" y="434" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">date, ws, wd</text>
+<rect x="340" y="110" width="270" height="270" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="350" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_csv / from_rdata /</text>
+<text x="350" y="158" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_openair</text>
+<text x="350" y="175" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R/qm_layer.R:400, 453, 475</text>
+<text x="350" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Return a qm_layer: sf object,</text>
+<text x="350" y="211" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  long format, one row per marker</text>
+<text x="350" y="229" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  per time step, metadata in</text>
+<text x="350" y="247" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  attr(x, &#x27;qm&#x27;)</text>
+<text x="350" y="268" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">as_qm_layer (A:44) routes: .rdata</text>
+<text x="350" y="286" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  path to from_rdata, other</text>
+<text x="350" y="304" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  string to from_csv, data.frame</text>
+<text x="350" y="322" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  to qm_layer()</text>
+<rect x="340" y="386" width="270" height="100" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="350" y="416" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">from_worldmet</text>
+<text x="350" y="433" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R/wind.R:25</text>
+<text x="350" y="451" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Returns qm_wind (date, ws, wd, u,</text>
+<text x="350" y="469" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  v), not a qm_layer</text>
+<rect x="660" y="110" width="270" height="132" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="670" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">quickmap()</text>
+<text x="670" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R/quickmap_api.R:136</text>
+<text x="670" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Normalises layers, infers</text>
+<text x="670" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  pollutant, adds legacy columns.</text>
+<text x="670" y="211" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  create_pollution_map() (A:262)</text>
+<text x="670" y="229" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  delegates here.</text>
+<rect x="660" y="266" width="270" height="224" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="670" y="296" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">render_pollution_map()</text>
+<text x="670" y="313" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R/quickmap.R:4075</text>
+<text x="670" y="331" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Settings and theme</text>
+<text x="670" y="352" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Boundary and data</text>
+<text x="670" y="373" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Time steps and viewport</text>
+<text x="670" y="394" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Lazy or eager decision</text>
+<text x="670" y="415" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Per-step loop</text>
+<text x="670" y="436" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Wind layer</text>
+<text x="670" y="457" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Save and inject banner, slider,</text>
+<text x="670" y="475" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  indicator, legend</text>
+<rect x="980" y="250" width="260" height="100" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="990" y="280" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Interactive HTML</text>
+<text x="990" y="298" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Self-contained Leaflet map; JS</text>
+<text x="990" y="316" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  and CSS inlined; chrome</text>
+<text x="990" y="334" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  injected into the saved file</text>
+<rect x="980" y="370" width="260" height="100" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="990" y="400" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">JPG per time step</text>
+<text x="990" y="418" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">webshot2 screenshot of an</text>
+<text x="990" y="436" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  intermediate HTML, which is</text>
+<text x="990" y="454" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  then deleted</text>
+<rect x="40" y="520" width="1200" height="90" rx="6" fill="#d1fae5" stroke="#047857" stroke-width="2"/>
+<text x="50" y="550" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">inst/ configuration, loaded at build time</text>
+<text x="50" y="568" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">14 colour scales (YAML), 5 themes (YAML), banner and legend CSS/HTML templates with {{placeholder}}, controls JS: time-slider, indicator, wind-controller,</text>
+<text x="50" y="586" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  lazy-time-controller, layer-cache, vendored leaflet-velocity</text>
+<text x="40" y="640" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#4b5563" text-anchor="start">Size: R/ is 5,368 lines (quickmap.R 4,378; qm_layer.R 481; quickmap_api.R 318; wind.R 178). Version 0.9.9.13.</text>
+<path d="M 290 150 L 340 150" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="340,150 330.8,153.9 330.8,146.1" fill="#4b5563"/>
+<path d="M 290 242 L 340 242" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="340,242 330.8,245.9 330.8,238.1" fill="#4b5563"/>
+<path d="M 290 334 L 340 334" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="340,334 330.8,337.9 330.8,330.1" fill="#4b5563"/>
+<path d="M 290 426 L 340 426" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="340,426 330.8,429.9 330.8,422.1" fill="#4b5563"/>
+<path d="M 610 165 L 660 165" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="660,165 650.8,168.9 650.8,161.1" fill="#4b5563"/>
+<path d="M 610 436 L 635 436 L 635 330 L 660 330" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="660,330 650.8,333.9 650.8,326.1" fill="#4b5563"/>
+<text x="648" y="456" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="middle">wind</text>
+<path d="M 795 242 L 795 266" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="795,266 791.1,256.8 798.9,256.8" fill="#4b5563"/>
+<path d="M 930 300 L 980 300" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="980,300 970.8,303.9 970.8,296.1" fill="#4b5563"/>
+<path d="M 930 420 L 980 420" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="980,420 970.8,423.9 970.8,416.1" fill="#4b5563"/>
+<path d="M 795 520 L 795 490" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="795,490 798.9,499.2 791.1,499.2" fill="#4b5563"/>
+</svg>

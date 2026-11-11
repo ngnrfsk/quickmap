@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<title>Per-step loop, lazy path, static export, save and inject</title>
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<text x="40" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="start">Per-step loop, lazy path, static export, save and inject</text>
+<text x="40" y="72" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#4b5563" text-anchor="start">Three lanes draw markers; the interactive lanes converge on one finish that writes the HTML.</text>
+<rect x="40" y="697" width="14" height="14" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="60" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">R code</text>
+<rect x="116.4" y="697" width="14" height="14" rx="3" fill="#d1fae5" stroke="#047857" stroke-width="1.5"/>
+<text x="136.4" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Configuration in inst/</text>
+<rect x="295.20000000000005" y="697" width="14" height="14" rx="3" fill="#ffedd5" stroke="#c2410c" stroke-width="1.5"/>
+<text x="315.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Browser JS</text>
+<rect x="397.20000000000005" y="697" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+<text x="417.20000000000005" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Input, output or note</text>
+<rect x="569.6" y="697" width="14" height="14" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="589.6" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Code differs from docs</text>
+<text x="1240" y="708" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="end">R/quickmap.R, R/wind.R; Q: = R/quickmap.R, W: = R/wind.R</text>
+<rect x="40" y="110" width="170" height="120" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">1 Interactive,</text>
+<text x="50" y="158" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">eager</text>
+<text x="50" y="176" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">50 steps or fewer</text>
+<rect x="230" y="110" width="170" height="120" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="240" y="140" font-family="Arial, Helvetica, sans-serif" font-size="13.2" font-weight="bold" fill="#1f2937" text-anchor="start">generate_map_layers</text>
+<text x="240" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3674</text>
+<text x="240" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">One layer group per</text>
+<text x="240" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  step, loop at</text>
+<text x="240" y="211" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  Q:4265</text>
+<rect x="428" y="110" width="170" height="120" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="438" y="140" font-family="Arial, Helvetica, sans-serif" font-size="9.6" font-weight="bold" fill="#1f2937" text-anchor="start">prepare_generic_layer_data</text>
+<text x="438" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3305</text>
+<text x="438" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">via</text>
+<text x="438" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  get_layer_year_data</text>
+<rect x="626" y="110" width="170" height="120" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="636" y="140" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">add_layer</text>
+<text x="636" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3334</text>
+<text x="636" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Labels, label</text>
+<text x="636" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  options, noHide</text>
+<rect x="824" y="110" width="170" height="120" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="834" y="140" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="bold" fill="#1f2937" text-anchor="start">create_generic_icons</text>
+<text x="834" y="157" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3162</text>
+<text x="834" y="175" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">assign_colour per</text>
+<text x="834" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  marker (Q:3195)</text>
+<rect x="1022" y="110" width="170" height="120" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="1032" y="140" font-family="Arial, Helvetica, sans-serif" font-size="15.6" font-weight="bold" fill="#1f2937" text-anchor="start">makeSymbolsSize,</text>
+<text x="1032" y="158" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">addMarkers</text>
+<text x="1032" y="175" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">leaflet</text>
+<text x="1032" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Shape, size, colour</text>
+<path d="M 400 170 L 428 170" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="428,170 418.8,173.9 418.8,166.1" fill="#4b5563"/>
+<path d="M 598 170 L 626 170" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="626,170 616.8,173.9 616.8,166.1" fill="#4b5563"/>
+<path d="M 796 170 L 824 170" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="824,170 814.8,173.9 814.8,166.1" fill="#4b5563"/>
+<path d="M 994 170 L 1022 170" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="1022,170 1012.8,173.9 1012.8,166.1" fill="#4b5563"/>
+<rect x="40" y="244" width="170" height="130" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="274" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">2 Interactive,</text>
+<text x="50" y="292" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">lazy</text>
+<text x="50" y="310" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">More than 50 steps</text>
+<text x="50" y="328" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  or ~5 MB</text>
+<rect x="230" y="244" width="170" height="130" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="240" y="274" font-family="Arial, Helvetica, sans-serif" font-size="13.2" font-weight="bold" fill="#1f2937" text-anchor="start">generate_map_layers</text>
+<text x="240" y="291" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:4251</text>
+<text x="240" y="309" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Called once with</text>
+<text x="240" y="327" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  &quot;static_only&quot; for</text>
+<text x="240" y="345" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  schools etc.</text>
+<rect x="428" y="244" width="170" height="130" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="438" y="274" font-family="Arial, Helvetica, sans-serif" font-size="13.9" font-weight="bold" fill="#1f2937" text-anchor="start">build_lazy_payload</text>
+<text x="438" y="291" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2806</text>
+<text x="438" y="309" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">times, thresholds,</text>
+<text x="438" y="327" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  colours, sites</text>
+<text x="438" y="345" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  with per-step v[]</text>
+<rect x="626" y="244" width="170" height="130" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="636" y="274" font-family="Arial, Helvetica, sans-serif" font-size="15.6" font-weight="bold" fill="#1f2937" text-anchor="start">add_map_controls</text>
+<text x="636" y="291" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3607-3614</text>
+<text x="636" y="309" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">onRender(lazy-time-</text>
+<text x="636" y="327" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  controller.js,</text>
+<text x="636" y="345" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  payload); digits</text>
+<text x="636" y="363" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  = 7</text>
+<path d="M 400 309 L 428 309" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="428,309 418.8,312.9 418.8,305.1" fill="#4b5563"/>
+<path d="M 598 309 L 626 309" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="626,309 616.8,312.9 616.8,305.1" fill="#4b5563"/>
+<rect x="40" y="388" width="170" height="115" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="418" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">3 Static JPG</text>
+<text x="50" y="436" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">One frame per step</text>
+<rect x="230" y="388" width="170" height="115" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="240" y="418" font-family="Arial, Helvetica, sans-serif" font-size="9.6" font-weight="bold" fill="#1f2937" text-anchor="start">add_year_and_static_layers</text>
+<text x="240" y="435" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2309</text>
+<text x="240" y="453" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Called from the</text>
+<text x="240" y="471" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  shared loop</text>
+<text x="240" y="489" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:4279)</text>
+<rect x="428" y="388" width="170" height="115" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="438" y="418" font-family="Arial, Helvetica, sans-serif" font-size="11.9" font-weight="bold" fill="#1f2937" text-anchor="start">finalize_and_save_map</text>
+<text x="438" y="435" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:4301</text>
+<text x="438" y="453" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Writes</text>
+<text x="438" y="471" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  &lt;stem&gt;_&lt;step&gt;.html</text>
+<rect x="626" y="388" width="170" height="115" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="636" y="418" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">webshot2</text>
+<text x="636" y="435" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2517-2526</text>
+<text x="636" y="453" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Screenshot to .jpg;</text>
+<text x="636" y="471" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  HTML unlinked</text>
+<path d="M 400 445 L 428 445" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="428,445 418.8,448.9 418.8,441.1" fill="#4b5563"/>
+<path d="M 598 445 L 626 445" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="626,445 616.8,448.9 616.8,441.1" fill="#4b5563"/>
+<rect x="40" y="517" width="170" height="168" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+<text x="50" y="547" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">Common finish</text>
+<text x="50" y="565" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Lanes 1 and 2 only</text>
+<rect x="230" y="517" width="170" height="168" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="240" y="547" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1f2937" text-anchor="start">add_wind_layer</text>
+<text x="240" y="564" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">W:173, Q:4336</text>
+<text x="240" y="582" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Interactive,</text>
+<text x="240" y="600" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  temporal only</text>
+<rect x="428" y="517" width="170" height="168" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="438" y="547" font-family="Arial, Helvetica, sans-serif" font-size="11.9" font-weight="bold" fill="#1f2937" text-anchor="start">finalize_and_save_map</text>
+<text x="438" y="564" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2453</text>
+<text x="438" y="582" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Interactive = TRUE</text>
+<rect x="626" y="517" width="170" height="168" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="636" y="547" font-family="Arial, Helvetica, sans-serif" font-size="15.6" font-weight="bold" fill="#1f2937" text-anchor="start">add_map_controls</text>
+<text x="636" y="564" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:3558</text>
+<text x="636" y="582" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Boundary,</text>
+<text x="636" y="600" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  fitBounds,</text>
+<text x="636" y="618" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  setView, layer-</text>
+<text x="636" y="636" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  cache or lazy JS,</text>
+<text x="636" y="654" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  vignette</text>
+<rect x="824" y="517" width="170" height="168" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="834" y="547" font-family="Arial, Helvetica, sans-serif" font-size="13.2" font-weight="bold" fill="#1f2937" text-anchor="start">save_html_and_style</text>
+<text x="834" y="564" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2544</text>
+<text x="834" y="582" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">saveWidget</text>
+<text x="834" y="600" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  selfcontained</text>
+<text x="834" y="618" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  (Q:2566); remove</text>
+<text x="834" y="636" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  _files (Q:2595)</text>
+<rect x="1022" y="517" width="170" height="168" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="1032" y="547" font-family="Arial, Helvetica, sans-serif" font-size="8.6" font-weight="bold" fill="#1f2937" text-anchor="start">inject_banner_legend_controls</text>
+<text x="1032" y="564" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="normal" fill="#4b5563" text-anchor="start">Q:2921</text>
+<text x="1032" y="582" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">Banner, CSS,</text>
+<text x="1032" y="600" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  slider,</text>
+<text x="1032" y="618" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  indicator,</text>
+<text x="1032" y="636" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  legend; missing</text>
+<text x="1032" y="654" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  anchor is an</text>
+<text x="1032" y="672" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" fill="#1f2937" text-anchor="start">  error</text>
+<path d="M 400 600 L 428 600" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="428,600 418.8,603.9 418.8,596.1" fill="#4b5563"/>
+<path d="M 598 600 L 626 600" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="626,600 616.8,603.9 616.8,596.1" fill="#4b5563"/>
+<path d="M 796 600 L 824 600" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="824,600 814.8,603.9 814.8,596.1" fill="#4b5563"/>
+<path d="M 994 600 L 1022 600" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="1022,600 1012.8,603.9 1012.8,596.1" fill="#4b5563"/>
+<path d="M 1192 170 L 1230 170 L 1230 560 L 1192 560" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="1192,560 1201.2,556.1 1201.2,563.9" fill="#4b5563"/>
+<path d="M 796 309 L 1230 309" fill="none" stroke="#4b5563" stroke-width="2"/>
+<polygon points="1230,309 1220.8,312.9 1220.8,305.1" fill="#4b5563"/>
+</svg>
