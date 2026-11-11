@@ -83,6 +83,35 @@ create_generic_icons() → add_layer() → generate_map_layers()
   websites, one folder per job, using the installed package. Not in this repository.
 - **openair / worldmet**: optional dependencies for pulling monitoring and wind data.
 
+## Building companion tools
+
+Tools that reuse quickmap's styling (banner, legend, colour scales) so their
+output matches the maps. Entries marked `internal` are not exported: call them
+with `quickmap:::`. Each function carries a `# PROTECTED: companion-tool
+interface` comment in `R/quickmap.R`; changing one means updating this list and
+its callers. Arguments as of the version in `DESCRIPTION`.
+
+```yaml
+quickmap_interface:
+  depends: library(quickmap)                  # installed package, never source("R/...")
+  data_root: Sys.getenv("DATA_PATH")          # relative input paths resolve here
+  scales_dir: system.file("config/scales", package = "quickmap")   # <name>.yaml
+  themes_dir: system.file("themes", package = "quickmap")
+  functions:
+    load_colour_scale(name):                  {status: exported, returns: "list: thresholds, colours, labels, domain, legend_order", stops: "thresholds not ascending"}
+    load_theme(theme_file = NULL):            {status: exported, returns: "theme list merged over defaults"}
+    assign_colour(value, scale):              {status: internal, returns: "colour for one value"}
+    convert_colors_to_hex(color_vector):      {status: internal, returns: "hex strings (R colour names differ from CSS)"}
+    get_contrast_text_color(color):           {status: internal, returns: "black or white text for a background"}
+    build_banner_css(banner_colour, image_mode = FALSE, banner_style = "strip", text_colour = "white"): {status: internal}
+    build_legend_css(banner_colour, image_mode = FALSE, legend_background = "white"):                   {status: internal}
+    generate_legend_html(scale_name, collapsed_mobile = TRUE):      {status: internal}
+    resolve_output_path(output_file, output_dir = NULL):            {status: internal, rule: "caller names every output"}
+    take_screenshots(html_file, image_files, image_dimensions):     {status: internal, rule: "use for JPG export; retries"}
+  image_mode: TRUE for static (JPG) export CSS, FALSE for interactive HTML
+  dependency_direction: companion tools use quickmap; quickmap never uses them
+```
+
 ## Repository layout
 
 | Path | Contents |

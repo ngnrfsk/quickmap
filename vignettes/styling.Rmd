@@ -65,6 +65,14 @@ The legend is generated from this file — labels with a description after
 the range (like "10: Good") gain a footnote symbol and appear in the
 legend's key row.
 
+- Thresholds run lowest to highest; a scale listing them otherwise stops
+  with an error. Each band includes its lower threshold: 10 is "10-20".
+- Five thresholds bound four bands. The fifth colour and label are for
+  missing values.
+- `legend_order: descending` draws the bands highest first in the legend,
+  with the missing-value entry still last. `deltas` uses it so the largest
+  fall reads first.
+
 ## 3. Themes — one file for the whole look
 
 A theme bundles every visual choice so a series of maps stays consistent:

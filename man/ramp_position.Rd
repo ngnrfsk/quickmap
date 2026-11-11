@@ -4,7 +4,7 @@
 \alias{ramp_position}
 \title{Position a value along the rendered legend ramp}
 \usage{
-ramp_position(value, thresholds, n_blocks)
+ramp_position(value, thresholds, n_blocks, descending = FALSE)
 }
 \arguments{
 \item{value}{A concentration}
@@ -13,6 +13,9 @@ ramp_position(value, thresholds, n_blocks)
 
 \item{n_blocks}{Number of blocks the legend actually rendered, which may
 include a trailing "insufficient data" block that is not a value band}
+
+\item{descending}{TRUE when the legend draws its bands highest first
+(\code{legend_order: descending}); the position is mirrored within the bands}
 }
 \value{
 Percentage of the ramp's width, 0-100
@@ -26,9 +29,9 @@ therefore be placed band by band — find the band, then interpolate inside
 it — never by a straight value/max fraction.
 }
 \details{
-The open-ended top band (\code{.Inf}) has no width to interpolate within, so a
-value inside it sits at the band's midpoint; anything else would imply a
-precision the scale does not have.
+An open-ended band (\code{.Inf} or \code{-.Inf}) has no width to interpolate within,
+so a value inside it sits at the band's midpoint; anything else would imply
+a precision the scale does not have.
 }
 \seealso{
 Other legend: 
@@ -36,6 +39,8 @@ Other legend:
 \code{\link{generate_indicator_bar}()},
 \code{\link{generate_indicator_html}()},
 \code{\link{get_symbol_for_index}()},
+\code{\link{is_descending_legend}()},
+\code{\link{legend_band_count}()},
 \code{\link{parse_legend_label}()},
 \code{\link{trim_colour_scale}()}
 }

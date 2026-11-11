@@ -88,7 +88,7 @@ Types are duck-typed by column, never by filename. Full column tables: vignettes
 
 ### Colour scales
 
-`load_colour_scale("who_no2")` reads the YAML and coerces `thresholds` to numeric. It does not validate; the colours/labels length check is in `generate_legend_html()`.
+`load_colour_scale("who_no2")` reads the YAML, coerces `thresholds` to numeric and stops if they are not ascending (`findInterval()` needs ascending breaks). It checks nothing else; the colours/labels length check is in `generate_legend_html()`. n+1 thresholds bound n bands; a colour and label after the last band are the missing-value entry (`assign_colour()` returns white for NA).
 
 ``` yaml
 name: who_no2
@@ -101,7 +101,7 @@ labels: ["< 10: Good", "10-20: Fair", "20-40: Poor", "> 40: Bad", "No data"]
 footnote_symbols: true   # optional, default true
 ```
 
-Categorical scales use `domain` for the values matched against the data, and `labels` for what is displayed. A label `"range: description"` puts `range` under its ramp block and `description` in a band-coloured pill; no colon, no pill. `footnote_symbols: false` drops the `†`/`‡`/`§` cross-references and keeps the pills.
+Categorical scales use `domain` for the values matched against the data, and `labels` for what is displayed. A label `"range: description"` puts `range` under its ramp block and `description` in a band-coloured pill; no colon, no pill. `footnote_symbols: false` drops the `†`/`‡`/`§` cross-references and keeps the pills. `legend_order: descending` draws the bands highest first, missing-value entry last (`is_descending_legend()`); `ramp_position()` mirrors the indicator to match. Used by `deltas`.
 
 ### Themes
 
@@ -242,6 +242,7 @@ Leaflet output satisfies (a), which remains the operative constraint.
 - The public API may change for ease of use, but examples, docs, vignettes and tests must stay consistent within the same change.
 - The YAML colour scale format — other scripts depend on it.
 - The `{{placeholder}}` template pattern.
+- Functions marked `# PROTECTED: companion-tool interface` in R/quickmap.R. quickplot calls them, mostly via `:::`, and no test covers that use yet; the fuller protection is a backlog item in dev/PROJECT_STATUS.md.
 
 ### Permissions and command style — autonomous safety
 

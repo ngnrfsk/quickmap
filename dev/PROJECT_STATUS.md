@@ -6,7 +6,7 @@ editor_options:
 
 # QuickMap Project Status
 
-**Last Updated**: 2026-10-15 **Current Version**: v0.9.9.15
+**Last Updated**: 2026-11-11 **Current Version**: v0.9.9.16
 
 Version history: NEWS.md. History before 2026-08-16:
 dev/archive/PROJECT_STATUS_history_to_260816.md.
@@ -104,6 +104,10 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
 - 2026-10-21: review API interface consistency before v1.0 (item 18.6).
 - 2026-10-21: PR #58 (item 9.5) merged, then PR #56 (item 17, v0.9.9.15),
   both squash.
+- 2026-11-11: deltas fix plan approved as written
+  (dev/261111_deltas_scale_fix_plan.md), including the `legend_order` scale
+  key and the legend label CSS change for every scale. Branched from
+  `docs/readme-quickplot-move` (PR #59, open), not `main`.
 
 ## Waiting on Iarla
 
@@ -118,6 +122,10 @@ dev/archive/PROJECT_STATUS_history_to_260816.md.
     currently carries it.
 3.  **Get a Breathe London API key** at breathelondon.org/developers. Put it in
     `~/.Renviron` as `BREATHE_LONDON_KEY`. Unblocks PR #51.
+4.  **Visual sign-off of PR #60, `fix/deltas-scale`** (defects 20 and 21, raised
+    2026-11-11). Demo maps from dev/deltas_demo-maps_v1.R in `aq_maps/`;
+    what to look at is in the script's header. The legend CSS change alters
+    every scale's legend.
 
 --------------------------------------------------------------------------------
 
@@ -545,6 +553,21 @@ Items 2 and 5 inserted 2026-07-05; item 10 on 07-06, renumbering UI defects to
 - **quickplot**: Heatmap, Trend, Exceedance figures on QuickMap's chrome. Own
   repo after 1.0. Prototypes and README:
   `~/Coding/quickmap-work/260814 Merton AQAP maps and figures refresh/scripts/quickplot_README.md`.
+  Coupling found 2026-11-10: the prototypes call 6 unexported quickmap
+  functions via `:::` (`assign_colour`, `convert_colors_to_hex`,
+  `get_contrast_text_color`, `build_banner_css`, `build_legend_css`,
+  `generate_legend_html`), which CRAN rejects across packages and which no
+  quickmap test protects. Signatures still match as of 0.9.9.15. Interim:
+  README.md "Building companion tools" lists the interface, and each listed
+  function is marked `# PROTECTED: companion-tool interface` in R/quickmap.R,
+  with a matching rule in CLAUDE.md (2026-11-10).
+- **Companion-tool interface, backlog** (proposed 2026-11-10, deferred as more
+  than current need): export the functions listed in README.md "Building
+  companion tools"; route companion data and output paths through quickmap's
+  resolvers; add a quickmap test rendering a fixture table and chart with them,
+  compared against saved copies; a manual pre-release script re-running the
+  quickplot prototypes. Estimate 2–3 days. A shared core package (1–2 weeks)
+  stays deferred per the 2026-08-06 decision.
 - **Ecosystem integrations**: ERA5 via ecmwfr, saqgetr, OpenAQ, Mazama
   AirMonitor, stars/terra underlays. Each a `from_*()` wrapper.
   dev/260707_v2_integration_candidates.md.
@@ -621,6 +644,25 @@ Cleared at item 11. Ids provisional until migrated to GitHub Issues.
   Forcing lazy on the seven site annual maps cut them 15–29%. Making it the
   default needs these fixed first, and means interactive maps and static
   exports always render through different code (exports stay pre-built).
+- **20. `deltas` scale stops `assign_colour()`.** Found 2026-11-11
+  (dev/261111_deltas_issue.md). Thresholds were listed high to low;
+  `findInterval()` needs ascending. **Fixed on `fix/deltas-scale`
+  (v0.9.9.16), PR #60, awaiting visual sign-off**: thresholds ascending, bands and
+  labels reversed to match, "Site not in use" kept as the missing-value
+  entry, labels state the closed end ("Fall 0 to <2", "Fall ≥8");
+  `load_colour_scale()` stops on descending thresholds. The reorder put
+  `-Inf` first, which two places did not handle: the lazy payload drew
+  "rise >8" in the no-data colour, and `ramp_position()` returned NaN in
+  that band. Both fixed. New scale key `legend_order: descending` keeps the
+  legend largest fall first.
+- **21. Legend labels overflow their blocks.** Found with 20. Cause:
+  `.ramp-label { flex: 1; white-space: nowrap }` — a label longer than its
+  block widened its column and pushed the row past the ramp, labels running
+  together. Not deltas only: at 600 px, 11 of 14 scales had labels wider
+  than their block and 6 ran past the page edge
+  (dev/deltas_legend-measure_v1.R). **Fixed on `fix/deltas-scale`**: labels
+  are exactly their block's width and wrap; 0 of 14 wider after. A word
+  longer than its block now splits mid-word ("Insuff-icient" at 600 px).
 
 ### Documentation that contradicts the code
 
@@ -681,6 +723,9 @@ Index, documents, code and demonstration maps: dev/concepts/README.md.
 
 ## Recent work
 
+- **11 November**: defects 20 and 21 (deltas scale, legend label overflow)
+  fixed on `fix/deltas-scale` (PR #60, stacked on #59), v0.9.9.16. 31 new tests; suite 613 passed, 0
+  failed. Awaiting visual sign-off.
 - **17 August (later)**: the manual folded onto `feature/item9-output-paths` —
   PR #48's five rewritten chapters and front page, PR #52's 17 example maps and
   README, and item 9's `output_file`/`symbol_labels` reconciled across them.
